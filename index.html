@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOTUL-DRIVE · График дежурств</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#d11f2d; --red-dark:#a8151f; --red-soft:rgba(209,31,45,.08);
+    --ink:#1f2430; --graphite:#2e2e2e; --graphite-soft:rgba(46,46,46,.08);
+    --slate:#1b458f; --slate-soft:rgba(27,69,143,.10);
+    --bekzod:var(--red); --bekzod-soft:var(--red-soft);
+    --svyat:var(--graphite); --svyat-soft:var(--graphite-soft);
+    --krist:var(--slate); --krist-soft:var(--slate-soft);
+    --bg:#eef0f3; --card:#ffffff; --line:#e6e8ec; --muted:#7a8290;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Manrope',system-ui,sans-serif;color:var(--ink);
+    background:var(--bg);min-height:100vh;padding:28px 16px 60px;
+  }
+  .wrap{max-width:1060px;margin:0 auto}
+
+  /* TOP BAR */
+  .topbar{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:16px 22px;display:flex;align-items:center;gap:18px;
+    box-shadow:0 6px 20px rgba(20,25,40,.05);margin-bottom:22px;
+  }
+  .logo{display:flex;align-items:center;gap:13px}
+  .badge{
+    width:54px;height:54px;border-radius:50%;flex:none;position:relative;
+    background:
+      linear-gradient(135deg,var(--red) 0 49.5%, #141414 50.5% 100%);
+    border:2px solid #111;box-shadow:inset 0 2px 6px rgba(255,255,255,.25),0 3px 8px rgba(0,0,0,.25);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .badge span{
+    font-weight:800;font-size:20px;letter-spacing:-1px;color:#fff;
+    text-shadow:0 1px 2px rgba(0,0,0,.45);
+  }
+  .logo-text .brand{font-weight:800;font-size:22px;letter-spacing:.5px;color:var(--ink);line-height:1}
+  .logo-text .sub{font-size:10.5px;font-weight:700;letter-spacing:.22em;color:var(--muted);margin-top:4px}
+  .topbar .spacer{flex:1}
+  .topbar .title{text-align:right}
+  .topbar .title .t{font-weight:800;font-size:18px}
+  .topbar .title .r{font-size:13px;color:var(--muted);font-weight:600;margin-top:2px}
+  .topbar .title .t::before{content:"";display:inline-block;width:22px;height:3px;background:var(--red);
+    border-radius:2px;vertical-align:middle;margin-right:8px}
+
+  /* LEGEND */
+  .legend{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+  .person{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 18px;
+    box-shadow:0 4px 14px rgba(20,25,40,.04);position:relative;overflow:hidden;
+  }
+  .person::before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:var(--c)}
+  .person .top{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+  .person .dot{width:13px;height:13px;border-radius:50%;background:var(--c)}
+  .person .name{font-weight:800;font-size:17px}
+  .person .mode{margin-left:auto;font-size:11px;font-weight:700;color:var(--muted);
+    border:1px solid var(--line);padding:3px 9px;border-radius:999px}
+  .duties{display:flex;flex-wrap:wrap;gap:6px}
+  .pill{font-size:11px;font-weight:700;padding:4px 9px;border-radius:8px;
+    background:var(--soft);color:var(--c);border:1px solid transparent}
+  .p-bekzod{--c:var(--bekzod);--soft:var(--bekzod-soft)}
+  .p-svyat{--c:var(--svyat);--soft:var(--svyat-soft)}
+  .p-krist{--c:var(--krist);--soft:var(--krist-soft)}
+
+  /* TABLE */
+  .tablecard{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;
+    box-shadow:0 6px 20px rgba(20,25,40,.05)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  thead th{text-align:left;padding:14px 16px;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+    color:#fff;font-weight:700;background:var(--graphite)}
+  thead th:first-child{background:var(--red)}
+  tbody td{padding:11px 16px;border-top:1px solid var(--line);vertical-align:middle}
+  tbody tr:hover{background:#f8f9fb}
+  tr.weekend{background:var(--red-soft)}
+  tr.weekend:hover{background:rgba(209,31,45,.12)}
+  .date{font-weight:800;font-size:15px;white-space:nowrap}
+  .wd{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;color:var(--muted);
+    border:1px solid var(--line);border-radius:6px;padding:1px 7px}
+  .wd.we{color:var(--red);border-color:rgba(209,31,45,.35)}
+
+  .cell{display:flex;flex-direction:column;gap:6px}
+  .badge2{display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:13px;color:var(--c)}
+  .badge2 .mk{width:9px;height:9px;border-radius:50%;background:var(--c)}
+  .b-bekzod{--c:var(--bekzod)} .b-svyat{--c:var(--svyat)} .b-krist{--c:var(--krist)}
+  .duty{display:flex;flex-wrap:wrap;gap:4px}
+  .duty .pill{font-size:10px;padding:3px 7px}
+  .off{color:var(--muted);font-weight:600;opacity:.7;font-size:13px}
+
+  /* STATS */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;
+    position:relative;overflow:hidden;box-shadow:0 4px 14px rgba(20,25,40,.04)}
+  .stat::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--c)}
+  .stat .num{font-size:34px;font-weight:800;color:var(--c)}
+  .stat .lbl{font-size:13px;color:var(--muted);font-weight:700;margin-top:2px}
+  .s-bekzod{--c:var(--bekzod)} .s-svyat{--c:var(--svyat)} .s-krist{--c:var(--krist)}
+
+  .note{text-align:center;color:var(--muted);font-size:12px;margin-top:20px;line-height:1.7}
+
+  @media(max-width:720px){
+    body{padding:16px 10px 44px}
+    .legend,.stats{grid-template-columns:1fr}
+    .topbar{flex-wrap:wrap;gap:12px;padding:14px 16px}
+    .topbar .title{text-align:left;width:100%}
+    .topbar .title .t::before{display:none}
+
+    /* таблица → карточки по дням */
+    .tablecard{background:transparent;border:none;box-shadow:none;border-radius:0}
+    table,tbody,tr,td{display:block;width:100%}
+    thead{display:none}
+    tbody tr{
+      background:var(--card);border:1px solid var(--line);border-radius:14px;
+      margin-bottom:12px;padding:6px 4px;box-shadow:0 4px 14px rgba(20,25,40,.04);overflow:hidden;
+    }
+    tbody tr.weekend{border-color:rgba(209,31,45,.3)}
+    tbody td{border:none;border-top:1px solid var(--line);padding:11px 16px}
+    tbody td.date-cell{
+      border-top:none;background:var(--graphite);color:#fff;border-radius:10px;margin:2px 2px 6px;
+      display:flex;align-items:center;gap:8px
+    }
+    tr.weekend td.date-cell{background:var(--red)}
+    td.date-cell .wd,tr.weekend td.date-cell .wd{color:#fff;border-color:rgba(255,255,255,.4)}
+    tbody td[data-label]::before{
+      content:attr(data-label);display:block;font-size:11px;font-weight:800;text-transform:uppercase;
+      letter-spacing:.06em;color:var(--muted);margin-bottom:6px;
+    }
+  }
+  @media print{
+    body{background:#fff;padding:0}
+    .topbar,.tablecard,.person,.stat{box-shadow:none}
+    tr.weekend{background:#fdeef0}
+  }
+
+  /* REGULATIONS */
+  .reg{margin-top:28px}
+  .reg-head{display:flex;align-items:center;gap:10px;font-weight:800;font-size:21px;margin-bottom:14px}
+  .reg-bar{width:24px;height:3px;background:var(--red);border-radius:2px}
+  .reg-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .reg-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;
+    box-shadow:0 4px 14px rgba(20,25,40,.04)}
+  .reg-card.wide{grid-column:1 / -1}
+  .rc-title{font-weight:800;font-size:15px;margin-bottom:13px;display:flex;align-items:center;gap:8px}
+  .rc-list{list-style:none;display:flex;flex-direction:column;gap:9px;font-size:13.5px;line-height:1.45}
+  .rc-list li{padding-left:16px;position:relative}
+  .rc-list li::before{content:"";position:absolute;left:0;top:7px;width:6px;height:6px;border-radius:50%;background:var(--red)}
+  .rc-list .muted{color:var(--muted)}
+  .callout{background:var(--red-soft);border:1px solid rgba(209,31,45,.22);border-radius:12px;
+    padding:13px 15px;font-size:13.5px;font-weight:600;line-height:1.5}
+  .callout b{color:var(--red)}
+  .src-pills{display:flex;flex-wrap:wrap;gap:7px}
+  .src-pills .pill{background:var(--graphite-soft);color:var(--ink);font-size:12px;border:1px solid var(--line)}
+  .fine-list{display:flex;flex-direction:column}
+  .fine-list .row{display:flex;justify-content:space-between;align-items:center;gap:14px;
+    padding:10px 0;border-top:1px solid var(--line);font-size:13.5px}
+  .fine-list .row:first-child{border-top:none}
+  .fine-list .amt{font-weight:800;color:var(--red);white-space:nowrap}
+  .bonus{background:linear-gradient(135deg,rgba(27,69,143,.12),rgba(27,69,143,.03));
+    border:1px solid rgba(27,69,143,.28);border-radius:12px;padding:14px 16px;font-size:14px;font-weight:600;line-height:1.5}
+  .bonus b{color:var(--slate)}
+  @media(max-width:720px){.reg-grid{grid-template-columns:1fr}}
+
+  /* PASSWORD GATE */
+  body.locked{overflow:hidden}
+  body.locked .wrap{filter:blur(6px);pointer-events:none;user-select:none}
+  #gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#1b1b1f,#2e2e2e 60%,#3a0d11);padding:20px}
+  body:not(.locked) #gate{display:none}
+  .gate-card{background:#fff;border-radius:20px;padding:30px 28px;width:min(360px,92vw);text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,.45)}
+  .gate-card .badge{margin:0 auto 14px}
+  .gate-title{font-weight:800;font-size:22px;color:var(--ink)}
+  .gate-sub{font-size:13px;color:var(--muted);font-weight:600;margin:6px 0 20px}
+  #gate-pass{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;
+    font-family:inherit;font-size:15px;font-weight:600;outline:none;transition:border .15s}
+  #gate-pass:focus{border-color:var(--red)}
+  #gate-btn{width:100%;margin-top:12px;padding:13px;border:none;border-radius:12px;cursor:pointer;
+    background:var(--red);color:#fff;font-family:inherit;font-weight:800;font-size:15px;transition:background .15s}
+  #gate-btn:hover{background:var(--red-dark)}
+  .gate-err{color:var(--red);font-size:13px;font-weight:700;height:18px;margin-top:10px}
+  .gate-foot{font-size:11px;color:var(--muted);font-weight:600;margin-top:16px;letter-spacing:.04em}
+</style>
+</head>
+<body class="locked">
+
+<div id="gate">
+  <div class="gate-card">
+    <div class="badge"><span>MD</span></div>
+    <div class="gate-title">График дежурств</div>
+    <div class="gate-sub">MOTUL-DRIVE · введите пароль</div>
+    <input id="gate-pass" type="password" placeholder="Пароль" autocomplete="off">
+    <button id="gate-btn">Открыть</button>
+    <div class="gate-err" id="gate-err"></div>
+    <div class="gate-foot">Доступ только для сотрудников</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="logo">
+      <div class="badge"><span>MD</span></div>
+      <div class="logo-text">
+        <div class="brand">MOTUL-DRIVE</div>
+        <div class="sub">ЦЕНТР ЗАМЕНЫ МАСЛА</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="title">
+      <div class="t">График дежурств</div>
+      <div class="r">28 июня — 27 июля 2026 · 30 дней</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="person p-bekzod">
+      <div class="top"><span class="dot"></span><span class="name">Бекзод</span><span class="mode">2 / 2</span></div>
+      <div class="duties">
+        <span class="pill">Авито</span><span class="pill">Max</span><span class="pill">ВКонтакте</span><span class="pill">Телефон</span><span class="pill">ZZAP</span>
+      </div>
+    </div>
+    <div class="person p-svyat">
+      <div class="top"><span class="dot"></span><span class="name">Святослав</span><span class="mode">2 / 2</span></div>
+      <div class="duties">
+        <span class="pill">Авито</span><span class="pill">Max</span><span class="pill">ВКонтакте</span><span class="pill">Телефон</span><span class="pill">ZZAP</span>
+      </div>
+    </div>
+    <div class="person p-krist">
+      <div class="top"><span class="dot"></span><span class="name">Кристиан</span><span class="mode">5 / 2 · чт, вс</span></div>
+      <div class="duties">
+        <span class="pill">Telegram</span><span class="pill">WhatsApp</span><span class="pill">Почта</span><span class="pill">Д2</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tablecard">
+    <table>
+      <thead>
+        <tr><th style="width:130px">Дата</th><th>Бекзод</th><th>Святослав</th><th>Кристиан</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <div class="stats">
+    <div class="stat s-bekzod"><div class="num">15</div><div class="lbl">смен · Бекзод</div></div>
+    <div class="stat s-svyat"><div class="num">15</div><div class="lbl">смен · Святослав</div></div>
+    <div class="stat s-krist"><div class="num">21</div><div class="lbl">смен · Кристиан</div></div>
+  </div>
+
+  <div class="note">
+    Бекзод и Святослав — график 2/2 в противофазе · Кристиан работает всё, кроме четверга и воскресенья.<br>
+    По четвергам и воскресеньям на смене один человек.
+  </div>
+
+  <!-- РЕГЛАМЕНТ -->
+  <div class="reg">
+    <div class="reg-head"><span class="reg-bar"></span>Регламент работы</div>
+    <div class="reg-grid">
+
+      <div class="reg-card">
+        <div class="rc-title">🕐 Часы работы</div>
+        <ul class="rc-list">
+          <li><b>Святослав, Бекзод</b> — 08:00–20:00 <span class="muted">(приход 07:55)</span></li>
+          <li><b>Кристиан</b> — 09:00–18:00 <span class="muted">(приход 08:45)</span></li>
+          <li class="muted">При отсутствии заявок Кристиан может уйти раньше</li>
+          <li class="muted">Бронь авто ежедневно 08:00–20:00</li>
+        </ul>
+      </div>
+
+      <div class="reg-card">
+        <div class="rc-title">⏰ Опоздания</div>
+        <div class="callout">
+          Опоздание более чем на минуту — <b>−3000 ₽</b>.<br>
+          Одно опоздание в месяц — без штрафа.
+        </div>
+      </div>
+
+      <div class="reg-card">
+        <div class="rc-title">⏱️ Сроки</div>
+        <ul class="rc-list">
+          <li>Трансляция в <b>MAX</b> — в течение <b>5 минут</b> после оформления</li>
+          <li>Фильтры перед машиной — в течение <b>10 минут</b></li>
+          <li>СДЭК внести в Лайвсклад — <b>к 18:00</b></li>
+          <li>Обзвон пропущенных вызовов — <b>до 12:00</b> следующего дня</li>
+        </ul>
+      </div>
+
+      <div class="reg-card">
+        <div class="rc-title">📥 Источники заявок <span class="muted" style="font-weight:600">— проверять в конце дня</span></div>
+        <div class="src-pills">
+          <span class="pill">E-mail</span><span class="pill">WhatsApp</span><span class="pill">Telegram</span>
+          <span class="pill">Max</span><span class="pill">Авито</span><span class="pill">Drive2</span>
+          <span class="pill">ВКонтакте</span><span class="pill">Звонки</span><span class="pill">Обратный звонок</span>
+        </div>
+      </div>
+
+      <div class="reg-card wide">
+        <div class="rc-title">⚠️ Штрафы</div>
+        <div class="fine-list">
+          <div class="row"><span>Запись не по шаблону</span><span class="amt">−1000 ₽</span></div>
+          <div class="row"><span>Отсутствие позиции (виновным)</span><span class="amt">−3000 ₽</span></div>
+          <div class="row"><span>Ответ на телефон при оформлении клиента</span><span class="amt">−1000 ₽</span></div>
+          <div class="row"><span>Необработанная заявка</span><span class="amt">−3000 ₽</span></div>
+          <div class="row"><span>Три и более необработанных заявок</span><span class="amt">−10 000 ₽</span></div>
+          <div class="row"><span>Пропущенный видеоролик</span><span class="amt">−3000 ₽</span></div>
+          <div class="row"><span>Несоблюдение УПД</span><span class="amt">−2000 ₽</span></div>
+          <div class="row"><span>СДЭК не внесена в Лайвсклад (за каждую)</span><span class="amt">−500 ₽</span></div>
+          <div class="row"><span>Масло не внесено в отчёт (исполнителю)</span><span class="amt">−5000 ₽</span></div>
+          <div class="row"><span>Последний на смене не предупредил в трансляции о записи на 08:00 на следующий день</span><span class="amt">−3000 ₽</span></div>
+        </div>
+      </div>
+
+      <div class="reg-card wide">
+        <div class="rc-title">🏆 Бонус месяца</div>
+        <div class="bonus">
+          В конце месяца <b>50% от суммы всех собранных штрафов</b> получает сотрудник,
+          набравший <b>меньше всего штрафов</b>.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const DUTY = {
+    work: ["Авито","Max","ВКонтакте","Телефон","ZZAP"],
+    krist: ["Telegram","WhatsApp","Почта","Д2"],
+    all: ["Авито","Max","ВКонтакте","Телефон","ZZAP","Telegram","WhatsApp","Почта","Д2"]
+  };
+  // b=Бекзод, s=Святослав, k=Кристиан (1=работает), последний флаг=выходной-подсветка
+  const data = [
+    ["28.06","Вс",1,0,0,1],
+    ["29.06","Пн",0,1,1,0],
+    ["30.06","Вт",0,1,1,0],
+    ["01.07","Ср",1,0,1,0],
+    ["02.07","Чт",1,0,0,0],
+    ["03.07","Пт",0,1,1,0],
+    ["04.07","Сб",0,1,1,1],
+    ["05.07","Вс",1,0,0,1],
+    ["06.07","Пн",1,0,1,0],
+    ["07.07","Вт",0,1,1,0],
+    ["08.07","Ср",0,1,1,0],
+    ["09.07","Чт",1,0,0,0],
+    ["10.07","Пт",1,0,1,0],
+    ["11.07","Сб",0,1,1,1],
+    ["12.07","Вс",0,1,0,1],
+    ["13.07","Пн",1,0,1,0],
+    ["14.07","Вт",1,0,1,0],
+    ["15.07","Ср",0,1,1,0],
+    ["16.07","Чт",0,1,0,0],
+    ["17.07","Пт",1,0,1,0],
+    ["18.07","Сб",1,0,1,1],
+    ["19.07","Вс",0,1,0,1],
+    ["20.07","Пн",0,1,1,0],
+    ["21.07","Вт",1,0,1,0],
+    ["22.07","Ср",1,0,1,0],
+    ["23.07","Чт",0,1,0,0],
+    ["24.07","Пт",0,1,1,0],
+    ["25.07","Сб",1,0,1,1],
+    ["26.07","Вс",1,0,0,1],
+    ["27.07","Пн",0,1,1,0],
+  ];
+
+  const pills = arr => `<div class="duty">${arr.map(d=>`<span class="pill">${d}</span>`).join("")}</div>`;
+  const workCell = (cls,duties,solo) => `<div class="cell"><span class="badge2 ${cls}"><span class="mk"></span>${solo?"На смене один · всё на нём":"На смене"}</span>${pills(duties)}</div>`;
+  const offCell = `<span class="off">выходной</span>`;
+
+  const rows = data.map(([date,wd,b,s,k,we])=>{
+    const solo = (b+s+k)===1;                 // один человек на смене → берёт все обязанности
+    const pairDuty = solo ? DUTY.all : DUTY.work;
+    const cls = we ? "weekend":"";
+    const weCls = (wd==="Сб"||wd==="Вс") ? "wd we":"wd";
+    return `<tr class="${cls}">
+      <td class="date-cell"><span class="date">${date}</span><span class="${weCls}">${wd}</span></td>
+      <td data-label="Бекзод">${b?workCell("b-bekzod",pairDuty,solo):offCell}</td>
+      <td data-label="Святослав">${s?workCell("b-svyat",pairDuty,solo):offCell}</td>
+      <td data-label="Кристиан">${k?workCell("b-krist",DUTY.krist):offCell}</td>
+    </tr>`;
+  }).join("");
+  document.getElementById("rows").innerHTML = rows;
+
+  /* ---- Password gate ---- */
+  const PASS_ENC = "TW90dWxEcml2ZQ=="; // base64("MotulDrive")
+  const enc = s => btoa(unescape(encodeURIComponent(s)));
+  const gate = document.getElementById("gate");
+  const inp  = document.getElementById("gate-pass");
+  const err  = document.getElementById("gate-err");
+
+  function unlock(){ document.body.classList.remove("locked"); }
+  function tryUnlock(){
+    if(enc(inp.value) === PASS_ENC){
+      sessionStorage.setItem("md_ok","1");
+      unlock();
+    } else {
+      err.textContent = "Неверный пароль";
+      inp.value = ""; inp.focus();
+    }
+  }
+  if(sessionStorage.getItem("md_ok") === "1"){
+    unlock();
+  } else {
+    inp.focus();
+    document.getElementById("gate-btn").addEventListener("click", tryUnlock);
+    inp.addEventListener("keydown", e => { if(e.key === "Enter") tryUnlock(); });
+  }
+</script>
+</body>
+</html>
