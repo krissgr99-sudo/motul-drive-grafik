@@ -47,27 +47,7 @@
 
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:var(--font);color:var(--ink);background:var(--bg);min-height:100vh;padding:28px 16px 60px}
-  .layout{max-width:1380px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
-  .wrap{min-width:0}
-
-  /* ===================== ЦИТАТА (правая колонка) ===================== */
-  .aside{position:sticky;top:28px}
-  .quote-card{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--red);
-    border-radius:var(--r-2xl);box-shadow:var(--shadow);padding:20px 22px 16px;position:relative}
-  .quote-head{display:flex;align-items:center;gap:7px;font-weight:800;font-size:var(--fs-xs);
-    text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
-  .quote-mark{font-family:Georgia,serif;font-size:52px;line-height:.7;color:rgba(var(--red-rgb),.22);height:26px}
-  .quote-text{font-size:var(--fs-lg);font-weight:700;line-height:1.5;color:var(--ink)}
-  .quote-author{margin-top:12px;font-size:var(--fs-base);font-weight:700;color:var(--red);text-align:right}
-  .quote-foot{display:flex;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
-  .quote-refresh{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;
-    color:var(--muted);font-family:inherit;font-weight:700;font-size:var(--fs-xs);padding:6px 12px;
-    border-radius:var(--r-pill);cursor:pointer;transition:color .15s,border-color .15s}
-  .quote-refresh:hover{color:var(--red);border-color:rgba(var(--red-rgb),.4)}
-  @media(max-width:980px){
-    .layout{grid-template-columns:1fr}
-    .aside{position:static}
-  }
+  .wrap{max-width:1060px;margin:0 auto}
 
   /* ===================== ШАПКА / ЛОГОТИП ===================== */
   .topbar{
@@ -126,14 +106,8 @@
   .badge2{display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:var(--fs-base);color:rgb(var(--c-rgb))}
   .badge2 .mk{width:9px;height:9px;border-radius:50%;background:rgb(var(--c-rgb));flex:none}
   .duty{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
-  .tag{display:inline-flex;align-items:center;gap:5px;font-size:var(--fs-2xs);font-weight:700;
-    padding:3px 9px 3px 3px;border-radius:var(--r-pill);background:rgba(var(--shadow-rgb),.05);color:var(--tag-ink)}
-  .ic{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:5px;
-    background:var(--svc,#888);flex:none;overflow:hidden}
-  .ic img{width:11px;height:11px;display:block}
-  .ic-letter{display:none;color:#fff;font-size:9px;font-weight:800;line-height:1}
-  .ic.noimg img{display:none}
-  .ic.noimg .ic-letter{display:inline-flex}
+  .tag{font-size:var(--fs-2xs);font-weight:700;padding:3px 9px;border-radius:var(--r-pill);
+    background:rgba(var(--shadow-rgb),.05);color:var(--tag-ink)}
   .off{color:var(--muted);font-weight:600;opacity:.7;font-size:var(--fs-base)}
 
   .note{text-align:center;color:var(--muted);font-size:var(--fs-sm);margin-top:20px;line-height:1.7}
@@ -179,7 +153,7 @@
 
   /* ===================== ЭКРАН ВХОДА (пароль) ===================== */
   body.locked{overflow:hidden}
-  body.locked .layout{filter:blur(6px);pointer-events:none;user-select:none}
+  body.locked .wrap{filter:blur(6px);pointer-events:none;user-select:none}
   #gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:var(--gate-bg);padding:20px}
   body:not(.locked) #gate{display:none}
   .gate-card{background:#fff;border-radius:var(--r-3xl);padding:30px 28px;width:min(360px,92vw);text-align:center;box-shadow:var(--shadow-pop)}
@@ -214,7 +188,6 @@
   </form>
 </div>
 
-<div class="layout">
 <div class="wrap">
 
   <!-- Шапка -->
@@ -249,22 +222,7 @@
     По четвергам и воскресеньям на смене один человек.
   </div>
 
-</div><!-- /.wrap -->
-
-  <!-- Правая колонка: цитата -->
-  <aside class="aside">
-    <div class="quote-card">
-      <div class="quote-head">✦ Цитата</div>
-      <div class="quote-mark">“</div>
-      <div class="quote-text" id="quote-text"></div>
-      <div class="quote-author" id="quote-author"></div>
-      <div class="quote-foot">
-        <button class="quote-refresh" id="quote-refresh" type="button">↻ Другая</button>
-      </div>
-    </div>
-  </aside>
-
-</div><!-- /.layout -->
+</div>
 
 <script>
   /* =========================================================
@@ -272,21 +230,7 @@
      и расписание. Вёрстка ниже строится автоматически.
      ========================================================= */
 
-  // Сервисы: бренд-цвет, slug логотипа (simple-icons) и буква-запас на случай,
-  // если логотип не загрузится. Иконку добавить/сменить можно тут, в одном месте.
-  const SERVICE = {
-    "Telegram":  { color:"#229ED9", slug:"telegram", letter:"T" },
-    "WhatsApp":  { color:"#25D366", slug:"whatsapp", letter:"W" },
-    "ВКонтакте": { color:"#0077FF", slug:"vk",       letter:"В" },
-    "Авито":     { color:"#00AAFF", slug:"avito",    letter:"А" },
-    "Max":       { color:"#7C4DFF", slug:null,       letter:"M" },
-    "Телефон":   { color:"#34A853", slug:null,       letter:"☎" },
-    "ZZAP":      { color:"#FF6A00", slug:null,       letter:"Z" },
-    "Почта":     { color:"#1565C0", slug:null,       letter:"✉" },
-    "Д2":        { color:"#E8772E", slug:"drive2",   letter:"Д" },
-  };
-
-  // Наборы обязанностей (имена ссылаются на SERVICE выше)
+  // Наборы обязанностей
   const DUTY = {
     pair:  ["Авито","Max","ВКонтакте","Телефон","ZZAP"], // Бекзод / Святослав
     krist: ["Telegram","WhatsApp","Почта","Д2"],         // Кристиан
@@ -317,14 +261,8 @@
   /* =========================== РЕНДЕР =========================== */
   const isWeekend = wd => wd === "Сб" || wd === "Вс";
 
-  // Чип обязанности: логотип сервиса (или буква-запас) + название
-  function chip(name){
-    const s = SERVICE[name] || { color:"#888", slug:null, letter:name[0] };
-    const img = s.slug
-      ? `<img src="https://cdn.simpleicons.org/${s.slug}/ffffff" alt="" loading="lazy" onerror="this.closest('.ic').classList.add('noimg')">`
-      : "";
-    return `<span class="tag"><span class="ic${s.slug ? "" : " noimg"}" style="--svc:${s.color}">${img}<span class="ic-letter">${s.letter}</span></span>${name}</span>`;
-  }
+  // Чип обязанности (просто название)
+  const chip = name => `<span class="tag">${name}</span>`;
   const dutyRow = (arr, cls) => `<div class="${cls}">${arr.map(chip).join("")}</div>`;
 
   // Легенда
@@ -356,55 +294,6 @@
       ${cells}
     </tr>`;
   }).join("");
-
-  /* ===================== Цитата дня ===================== */
-  const QUOTES = [
-    { t:"Дорогу осилит идущий.", a:"" },
-    { t:"Делай, что должно, и будь, что будет.", a:"Марк Аврелий" },
-    { t:"Успех — это сумма небольших усилий, повторяемых день за днём.", a:"Роберт Кольер" },
-    { t:"Кто хочет — ищет возможности, кто не хочет — ищет причины.", a:"" },
-    { t:"Качество — это не поступок, это привычка.", a:"Аристотель" },
-    { t:"Начни с того, что есть. Используй, что имеешь. Делай, что можешь.", a:"Артур Эш" },
-    { t:"Не бойся идти медленно — бойся стоять на месте.", a:"Китайская пословица" },
-    { t:"Дисциплина — это мост между целью и её достижением.", a:"Джим Рон" },
-    { t:"Единственный способ делать великую работу — любить то, что ты делаешь.", a:"Стив Джобс" },
-    { t:"Не считай дни — сделай так, чтобы дни считались.", a:"Мухаммед Али" },
-    { t:"Внимание к мелочам рождает совершенство.", a:"Микеланджело" },
-    { t:"Маленький прогресс каждый день даёт большие результаты.", a:"" },
-    { t:"Терпение и труд всё перетрут.", a:"Пословица" },
-    { t:"Лучший способ начать — перестать говорить и начать делать.", a:"Уолт Дисней" },
-    { t:"Сделанное лучше, чем идеальное в мечтах.", a:"" },
-    { t:"Профессионал делает на совесть даже то, что никто не проверит.", a:"" },
-    { t:"Каждое утро — чистая страница. Напиши хорошую.", a:"" },
-    { t:"Будь тем изменением, которое хочешь видеть в мире.", a:"Махатма Ганди" },
-    { t:"Спокойствие и порядок рождают результат.", a:"" },
-    { t:"Удача приходит к тем, кто действует.", a:"" },
-    { t:"Сегодня — лучший день, чтобы стать лучше, чем вчера.", a:"" },
-    { t:"Большие дела начинаются с одного маленького шага.", a:"Лао-цзы" },
-  ];
-
-  // Как часто меняется цитата: 1 час. Чтобы «раз в день» — поставь 24*60*60*1000.
-  const PERIOD_MS = 60 * 60 * 1000;
-  const pickIndex = () => Math.floor(Date.now() / PERIOD_MS) % QUOTES.length;
-  const qText = document.getElementById("quote-text");
-  const qAuthor = document.getElementById("quote-author");
-  function showQuote(i){
-    qText.textContent = "« " + QUOTES[i].t + " »";
-    qAuthor.textContent = QUOTES[i].a ? "— " + QUOTES[i].a : "";
-  }
-  showQuote(pickIndex());
-
-  // Авто-смена при наступлении нового часа (пока вкладка открыта)
-  let shownPeriod = Math.floor(Date.now() / PERIOD_MS);
-  setInterval(() => {
-    const p = Math.floor(Date.now() / PERIOD_MS);
-    if(p !== shownPeriod){ shownPeriod = p; showQuote(pickIndex()); }
-  }, 30000);
-
-  // Кнопка «Другая» — случайная цитата
-  document.getElementById("quote-refresh").addEventListener("click", () => {
-    showQuote(Math.floor(Math.random() * QUOTES.length));
-  });
 
   /* ===================== Экран входа (пароль) ===================== */
   const PASS_ENC = "TW90dWxEcml2ZQ=="; // base64("MotulDrive")
