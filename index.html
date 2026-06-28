@@ -7,189 +7,173 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* =========================================================
+     ТОКЕНЫ ДИЗАЙНА — всё меняется отсюда (цвет, шрифт, размеры)
+     ========================================================= */
   :root{
-    --red:#d11f2d; --red-dark:#a8151f; --red-soft:rgba(209,31,45,.08);
-    --ink:#1f2430; --graphite:#2e2e2e; --graphite-soft:rgba(46,46,46,.08);
-    --slate:#1b458f; --slate-soft:rgba(27,69,143,.10);
-    --bekzod:var(--red); --bekzod-soft:var(--red-soft);
-    --svyat:var(--graphite); --svyat-soft:var(--graphite-soft);
-    --krist:var(--slate); --krist-soft:var(--slate-soft);
-    --bg:#eef0f3; --card:#ffffff; --line:#e6e8ec; --muted:#7a8290;
+    /* --- Бренд-цвета: задаются ОДИН раз как RGB-тройки --- */
+    --red-rgb:209,31,45;     /* фирменный красный (Бекзод) */
+    --black-rgb:46,46,46;    /* графитовый (Святослав)     */
+    --blue-rgb:27,69,143;    /* синий «Динамо» (Кристиан)  */
+    --shadow-rgb:20,25,40;   /* цвет теней                 */
+
+    /* готовые сплошные цвета из троек выше */
+    --red:rgb(var(--red-rgb));
+    --red-dark:#a8151f;
+    --black:rgb(var(--black-rgb));
+    --blue:rgb(var(--blue-rgb));
+
+    /* --- Нейтральные --- */
+    --bg:#eef0f3; --card:#fff; --line:#e6e8ec; --ink:#1f2430; --muted:#7a8290;
+    --row-hover:#f8f9fb; --logo-dark:#141414; --tag-ink:#5a6170;
+
+    /* --- Шрифт и шкала размеров (один рычаг на каждый размер) --- */
+    --font:'Manrope',system-ui,sans-serif;
+    --fs-2xs:10px; --fs-xs:11px; --fs-sm:12px; --fs-base:13px;
+    --fs-md:14px;  --fs-lg:15px; --fs-xl:17px; --fs-2xl:18px; --fs-3xl:22px;
+
+    /* --- Скругления --- */
+    --r-xs:6px; --r-sm:8px; --r-md:12px; --r-lg:14px;
+    --r-xl:16px; --r-2xl:18px; --r-3xl:20px; --r-pill:999px;
+
+    /* --- Тени --- */
+    --shadow:0 6px 20px rgba(var(--shadow-rgb),.05);
+    --shadow-sm:0 4px 14px rgba(var(--shadow-rgb),.04);
+    --shadow-pop:0 20px 60px rgba(0,0,0,.45);
+
+    /* --- Фон экрана входа --- */
+    --gate-bg:linear-gradient(135deg,#1b1b1f,var(--black) 60%,#3a0d11);
   }
+
   *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    font-family:'Manrope',system-ui,sans-serif;color:var(--ink);
-    background:var(--bg);min-height:100vh;padding:28px 16px 60px;
-  }
+  body{font-family:var(--font);color:var(--ink);background:var(--bg);min-height:100vh;padding:28px 16px 60px}
   .wrap{max-width:1060px;margin:0 auto}
 
-  /* TOP BAR */
+  /* ===================== ШАПКА / ЛОГОТИП ===================== */
   .topbar{
-    background:var(--card);border:1px solid var(--line);border-radius:18px;
-    padding:16px 22px;display:flex;align-items:center;gap:18px;
-    box-shadow:0 6px 20px rgba(20,25,40,.05);margin-bottom:22px;
+    background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);
+    padding:16px 22px;display:flex;align-items:center;gap:18px;box-shadow:var(--shadow);margin-bottom:22px;
   }
   .logo{display:flex;align-items:center;gap:13px}
   .badge{
     width:54px;height:54px;border-radius:50%;flex:none;position:relative;
-    background:
-      linear-gradient(135deg,var(--red) 0 49.5%, #141414 50.5% 100%);
-    border:2px solid #111;box-shadow:inset 0 2px 6px rgba(255,255,255,.25),0 3px 8px rgba(0,0,0,.25);
+    background:linear-gradient(135deg,var(--red) 0 49.5%, var(--logo-dark) 50.5% 100%);
+    border:2px solid var(--logo-dark);
+    box-shadow:inset 0 2px 6px rgba(255,255,255,.25),0 3px 8px rgba(0,0,0,.25);
     display:flex;align-items:center;justify-content:center;
   }
-  .badge span{
-    font-weight:800;font-size:20px;letter-spacing:-1px;color:#fff;
-    text-shadow:0 1px 2px rgba(0,0,0,.45);
-  }
-  .logo-text .brand{font-weight:800;font-size:22px;letter-spacing:.5px;color:var(--ink);line-height:1}
-  .logo-text .sub{font-size:10.5px;font-weight:700;letter-spacing:.22em;color:var(--muted);margin-top:4px}
-  .topbar .spacer{flex:1}
-  .topbar .title{text-align:right}
-  .topbar .title .t{font-weight:800;font-size:18px}
-  .topbar .title .r{font-size:13px;color:var(--muted);font-weight:600;margin-top:2px}
-  .topbar .title .t::before{content:"";display:inline-block;width:22px;height:3px;background:var(--red);
+  .badge span{font-weight:800;font-size:20px;letter-spacing:-1px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45)}
+  .brand{font-weight:800;font-size:var(--fs-3xl);letter-spacing:.5px;color:var(--ink);line-height:1}
+  .sub{font-size:var(--fs-2xs);font-weight:700;letter-spacing:.22em;color:var(--muted);margin-top:4px}
+  .spacer{flex:1}
+  .title{text-align:right}
+  .title .t{font-weight:800;font-size:var(--fs-2xl)}
+  .title .r{font-size:var(--fs-base);color:var(--muted);font-weight:600;margin-top:2px}
+  .title .t::before{content:"";display:inline-block;width:22px;height:3px;background:var(--red);
     border-radius:2px;vertical-align:middle;margin-right:8px}
 
-  /* LEGEND */
+  /* ===================== ЛЕГЕНДА (люди) ===================== */
   .legend{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
   .person{
-    background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 18px;
-    box-shadow:0 4px 14px rgba(20,25,40,.04);position:relative;overflow:hidden;
+    background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);padding:15px 18px;
+    box-shadow:var(--shadow-sm);position:relative;overflow:hidden;
   }
-  .person::before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:var(--c)}
-  .person .top{display:flex;align-items:center;gap:10px;margin-bottom:9px}
-  .person .dot{width:13px;height:13px;border-radius:50%;background:var(--c)}
-  .person .name{font-weight:800;font-size:17px}
-  .person .mode{margin-left:auto;font-size:11px;font-weight:700;color:var(--muted);
-    border:1px solid var(--line);padding:3px 9px;border-radius:999px}
+  .person::before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:rgb(var(--c-rgb))}
+  .ptop{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+  .dot{width:13px;height:13px;border-radius:50%;background:rgb(var(--c-rgb))}
+  .pname{font-weight:800;font-size:var(--fs-xl)}
+  .mode{margin-left:auto;font-size:var(--fs-xs);font-weight:700;color:var(--muted);
+    border:1px solid var(--line);padding:3px 9px;border-radius:var(--r-pill)}
   .duties{display:flex;flex-wrap:wrap;gap:6px}
-  .pill{font-size:11px;font-weight:700;padding:4px 9px;border-radius:8px;
-    background:var(--soft);color:var(--c);border:1px solid transparent}
-  .p-bekzod{--c:var(--bekzod);--soft:var(--bekzod-soft)}
-  .p-svyat{--c:var(--svyat);--soft:var(--svyat-soft)}
-  .p-krist{--c:var(--krist);--soft:var(--krist-soft)}
+  .pill{font-size:var(--fs-xs);font-weight:700;padding:4px 9px;border-radius:var(--r-sm);
+    background:rgba(var(--c-rgb),.1);color:rgb(var(--c-rgb));border:1px solid transparent}
 
-  /* TABLE */
-  .tablecard{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;
-    box-shadow:0 6px 20px rgba(20,25,40,.05)}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  thead th{text-align:left;padding:14px 16px;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
-    color:#fff;font-weight:700;background:var(--graphite)}
+  /* ===================== ТАБЛИЦА ===================== */
+  .tablecard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);overflow:hidden;box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:collapse;font-size:var(--fs-md)}
+  thead th{text-align:left;padding:14px 16px;font-size:var(--fs-xs);letter-spacing:.07em;text-transform:uppercase;
+    color:#fff;font-weight:700;background:var(--black)}
   thead th:first-child{background:var(--red)}
+  .th-date{width:130px}
   tbody td{padding:11px 16px;border-top:1px solid var(--line);vertical-align:middle}
-  tbody tr:hover{background:#f8f9fb}
-  tr.weekend{background:var(--red-soft)}
-  tr.weekend:hover{background:rgba(209,31,45,.12)}
-  .date{font-weight:800;font-size:15px;white-space:nowrap}
-  .wd{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;color:var(--muted);
-    border:1px solid var(--line);border-radius:6px;padding:1px 7px}
-  .wd.we{color:var(--red);border-color:rgba(209,31,45,.35)}
+  tbody tr:hover{background:var(--row-hover)}
+  tr.weekend{background:rgba(var(--red-rgb),.08)}
+  tr.weekend:hover{background:rgba(var(--red-rgb),.12)}
+  .date{font-weight:800;font-size:var(--fs-lg);white-space:nowrap}
+  .wd{display:inline-block;margin-left:8px;font-size:var(--fs-xs);font-weight:700;color:var(--muted);
+    border:1px solid var(--line);border-radius:var(--r-xs);padding:1px 7px}
+  .wd.we{color:var(--red);border-color:rgba(var(--red-rgb),.35)}
 
   .cell{display:flex;flex-direction:column;gap:6px}
-  .badge2{display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:13px;color:var(--c)}
-  .badge2 .mk{width:9px;height:9px;border-radius:50%;background:var(--c)}
-  .b-bekzod{--c:var(--bekzod)} .b-svyat{--c:var(--svyat)} .b-krist{--c:var(--krist)}
+  .badge2{display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:var(--fs-base);color:rgb(var(--c-rgb))}
+  .badge2 .mk{width:9px;height:9px;border-radius:50%;background:rgb(var(--c-rgb))}
   .duty{display:flex;flex-wrap:wrap;gap:4px}
-  .duty .pill{font-size:10px;padding:3px 7px}
-  .off{color:var(--muted);font-weight:600;opacity:.7;font-size:13px}
+  .tag{font-size:var(--fs-2xs);font-weight:700;padding:3px 7px;border-radius:var(--r-xs);
+    background:rgba(var(--shadow-rgb),.05);color:var(--tag-ink)}
+  .off{color:var(--muted);font-weight:600;opacity:.7;font-size:var(--fs-base)}
 
-  /* STATS */
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
-  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;
-    position:relative;overflow:hidden;box-shadow:0 4px 14px rgba(20,25,40,.04)}
-  .stat::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--c)}
-  .stat .num{font-size:34px;font-weight:800;color:var(--c)}
-  .stat .lbl{font-size:13px;color:var(--muted);font-weight:700;margin-top:2px}
-  .s-bekzod{--c:var(--bekzod)} .s-svyat{--c:var(--svyat)} .s-krist{--c:var(--krist)}
+  .note{text-align:center;color:var(--muted);font-size:var(--fs-sm);margin-top:20px;line-height:1.7}
 
-  .note{text-align:center;color:var(--muted);font-size:12px;margin-top:20px;line-height:1.7}
-
+  /* ===================== АДАПТИВ (телефоны) ===================== */
   @media(max-width:720px){
     body{padding:16px 10px 44px}
-    .legend,.stats{grid-template-columns:1fr}
+    .legend{grid-template-columns:1fr}
     .topbar{flex-wrap:wrap;gap:12px;padding:14px 16px}
-    .topbar .title{text-align:left;width:100%}
-    .topbar .title .t::before{display:none}
+    .title{text-align:left;width:100%}
+    .title .t::before{display:none}
 
     /* таблица → карточки по дням */
     .tablecard{background:transparent;border:none;box-shadow:none;border-radius:0}
     table,tbody,tr,td{display:block;width:100%}
     thead{display:none}
     tbody tr{
-      background:var(--card);border:1px solid var(--line);border-radius:14px;
-      margin-bottom:12px;padding:6px 4px;box-shadow:0 4px 14px rgba(20,25,40,.04);overflow:hidden;
+      background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+      margin-bottom:12px;padding:6px 4px;box-shadow:var(--shadow-sm);overflow:hidden;
     }
-    tbody tr.weekend{border-color:rgba(209,31,45,.3)}
+    tbody tr.weekend{border-color:rgba(var(--red-rgb),.3)}
     tbody td{border:none;border-top:1px solid var(--line);padding:11px 16px}
     tbody td.date-cell{
-      border-top:none;background:var(--graphite);color:#fff;border-radius:10px;margin:2px 2px 6px;
-      display:flex;align-items:center;gap:8px
+      border-top:none;background:var(--black);color:#fff;border-radius:var(--r-md);margin:2px 2px 6px;
+      display:flex;align-items:center;gap:8px;
     }
     tr.weekend td.date-cell{background:var(--red)}
     td.date-cell .wd,tr.weekend td.date-cell .wd{color:#fff;border-color:rgba(255,255,255,.4)}
     tbody td[data-label]::before{
-      content:attr(data-label);display:block;font-size:11px;font-weight:800;text-transform:uppercase;
+      content:attr(data-label);display:block;font-size:var(--fs-xs);font-weight:800;text-transform:uppercase;
       letter-spacing:.06em;color:var(--muted);margin-bottom:6px;
     }
   }
+
+  /* ===================== ПЕЧАТЬ ===================== */
   @media print{
     body{background:#fff;padding:0}
-    .topbar,.tablecard,.person,.stat{box-shadow:none}
+    .topbar,.tablecard,.person{box-shadow:none}
     tr.weekend{background:#fdeef0}
   }
 
-  /* REGULATIONS */
-  .reg{margin-top:28px}
-  .reg-head{display:flex;align-items:center;gap:10px;font-weight:800;font-size:21px;margin-bottom:14px}
-  .reg-bar{width:24px;height:3px;background:var(--red);border-radius:2px}
-  .reg-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-  .reg-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;
-    box-shadow:0 4px 14px rgba(20,25,40,.04)}
-  .reg-card.wide{grid-column:1 / -1}
-  .rc-title{font-weight:800;font-size:15px;margin-bottom:13px;display:flex;align-items:center;gap:8px}
-  .rc-list{list-style:none;display:flex;flex-direction:column;gap:9px;font-size:13.5px;line-height:1.45}
-  .rc-list li{padding-left:16px;position:relative}
-  .rc-list li::before{content:"";position:absolute;left:0;top:7px;width:6px;height:6px;border-radius:50%;background:var(--red)}
-  .rc-list .muted{color:var(--muted)}
-  .callout{background:var(--red-soft);border:1px solid rgba(209,31,45,.22);border-radius:12px;
-    padding:13px 15px;font-size:13.5px;font-weight:600;line-height:1.5}
-  .callout b{color:var(--red)}
-  .src-pills{display:flex;flex-wrap:wrap;gap:7px}
-  .src-pills .pill{background:var(--graphite-soft);color:var(--ink);font-size:12px;border:1px solid var(--line)}
-  .fine-list{display:flex;flex-direction:column}
-  .fine-list .row{display:flex;justify-content:space-between;align-items:center;gap:14px;
-    padding:10px 0;border-top:1px solid var(--line);font-size:13.5px}
-  .fine-list .row:first-child{border-top:none}
-  .fine-list .amt{font-weight:800;color:var(--red);white-space:nowrap}
-  .bonus{background:linear-gradient(135deg,rgba(27,69,143,.12),rgba(27,69,143,.03));
-    border:1px solid rgba(27,69,143,.28);border-radius:12px;padding:14px 16px;font-size:14px;font-weight:600;line-height:1.5}
-  .bonus b{color:var(--slate)}
-  @media(max-width:720px){.reg-grid{grid-template-columns:1fr}}
-
-  /* PASSWORD GATE */
+  /* ===================== ЭКРАН ВХОДА (пароль) ===================== */
   body.locked{overflow:hidden}
   body.locked .wrap{filter:blur(6px);pointer-events:none;user-select:none}
-  #gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(135deg,#1b1b1f,#2e2e2e 60%,#3a0d11);padding:20px}
+  #gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:var(--gate-bg);padding:20px}
   body:not(.locked) #gate{display:none}
-  .gate-card{background:#fff;border-radius:20px;padding:30px 28px;width:min(360px,92vw);text-align:center;
-    box-shadow:0 20px 60px rgba(0,0,0,.45)}
+  .gate-card{background:#fff;border-radius:var(--r-3xl);padding:30px 28px;width:min(360px,92vw);text-align:center;box-shadow:var(--shadow-pop)}
   .gate-card .badge{margin:0 auto 14px}
-  .gate-title{font-weight:800;font-size:22px;color:var(--ink)}
-  .gate-sub{font-size:13px;color:var(--muted);font-weight:600;margin:6px 0 20px}
-  #gate-pass{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;
-    font-family:inherit;font-size:15px;font-weight:600;outline:none;transition:border .15s}
+  .gate-title{font-weight:800;font-size:var(--fs-3xl);color:var(--ink)}
+  .gate-sub{font-size:var(--fs-base);color:var(--muted);font-weight:600;margin:6px 0 20px}
+  #gate-pass{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:var(--r-md);
+    font-family:inherit;font-size:var(--fs-lg);font-weight:600;outline:none;transition:border .15s}
   #gate-pass:focus{border-color:var(--red)}
-  #gate-btn{width:100%;margin-top:12px;padding:13px;border:none;border-radius:12px;cursor:pointer;
-    background:var(--red);color:#fff;font-family:inherit;font-weight:800;font-size:15px;transition:background .15s}
+  #gate-btn{width:100%;margin-top:12px;padding:13px;border:none;border-radius:var(--r-md);cursor:pointer;
+    background:var(--red);color:#fff;font-family:inherit;font-weight:800;font-size:var(--fs-lg);transition:background .15s}
   #gate-btn:hover{background:var(--red-dark)}
-  .gate-err{color:var(--red);font-size:13px;font-weight:700;height:18px;margin-top:10px}
-  .gate-foot{font-size:11px;color:var(--muted);font-weight:600;margin-top:16px;letter-spacing:.04em}
+  .gate-err{color:var(--red);font-size:var(--fs-base);font-weight:700;height:18px;margin-top:10px}
+  .gate-foot{font-size:var(--fs-xs);color:var(--muted);font-weight:600;margin-top:16px;letter-spacing:.04em}
   .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 </style>
 </head>
 <body class="locked">
 
+<!-- Экран ввода пароля -->
 <div id="gate">
   <form id="gate-form" class="gate-card" autocomplete="on">
     <div class="badge"><span>MD</span></div>
@@ -206,6 +190,7 @@
 
 <div class="wrap">
 
+  <!-- Шапка -->
   <div class="topbar">
     <div class="logo">
       <div class="badge"><span>MD</span></div>
@@ -221,32 +206,13 @@
     </div>
   </div>
 
-  <div class="legend">
-    <div class="person p-bekzod">
-      <div class="top"><span class="dot"></span><span class="name">Бекзод</span><span class="mode">2 / 2</span></div>
-      <div class="duties">
-        <span class="pill">Авито</span><span class="pill">Max</span><span class="pill">ВКонтакте</span><span class="pill">Телефон</span><span class="pill">ZZAP</span>
-      </div>
-    </div>
-    <div class="person p-svyat">
-      <div class="top"><span class="dot"></span><span class="name">Святослав</span><span class="mode">2 / 2</span></div>
-      <div class="duties">
-        <span class="pill">Авито</span><span class="pill">Max</span><span class="pill">ВКонтакте</span><span class="pill">Телефон</span><span class="pill">ZZAP</span>
-      </div>
-    </div>
-    <div class="person p-krist">
-      <div class="top"><span class="dot"></span><span class="name">Кристиан</span><span class="mode">5 / 2 · чт, вс</span></div>
-      <div class="duties">
-        <span class="pill">Telegram</span><span class="pill">WhatsApp</span><span class="pill">Почта</span><span class="pill">Д2</span>
-      </div>
-    </div>
-  </div>
+  <!-- Легенда (генерируется из PEOPLE) -->
+  <div class="legend" id="legend"></div>
 
+  <!-- Таблица (шапка и тело генерируются из PEOPLE + SCHEDULE) -->
   <div class="tablecard">
     <table>
-      <thead>
-        <tr><th style="width:130px">Дата</th><th>Бекзод</th><th>Святослав</th><th>Кристиан</th></tr>
-      </thead>
+      <thead><tr id="thead-row"></tr></thead>
       <tbody id="rows"></tbody>
     </table>
   </div>
@@ -256,76 +222,84 @@
     По четвергам и воскресеньям на смене один человек.
   </div>
 
-
 </div>
 
 <script>
+  /* =========================================================
+     ДАННЫЕ — единственное место, где меняются люди, обязанности
+     и расписание. Вёрстка ниже строится автоматически.
+     ========================================================= */
+
+  // Наборы обязанностей
   const DUTY = {
-    work: ["Авито","Max","ВКонтакте","Телефон","ZZAP"],
-    krist: ["Telegram","WhatsApp","Почта","Д2"],
-    all: ["Авито","Max","ВКонтакте","Телефон","ZZAP","Telegram","WhatsApp","Почта","Д2"]
+    pair:  ["Авито","Max","ВКонтакте","Телефон","ZZAP"], // Бекзод / Святослав
+    krist: ["Telegram","WhatsApp","Почта","Д2"],         // Кристиан
   };
-  // b=Бекзод, s=Святослав, k=Кристиан (1=работает), последний флаг=выходной-подсветка
-  const data = [
-    ["28.06","Вс",1,0,0,1],
-    ["29.06","Пн",0,1,1,0],
-    ["30.06","Вт",0,1,1,0],
-    ["01.07","Ср",1,0,1,0],
-    ["02.07","Чт",1,0,0,0],
-    ["03.07","Пт",0,1,1,0],
-    ["04.07","Сб",0,1,1,1],
-    ["05.07","Вс",1,0,0,1],
-    ["06.07","Пн",1,0,1,0],
-    ["07.07","Вт",0,1,1,0],
-    ["08.07","Ср",0,1,1,0],
-    ["09.07","Чт",1,0,0,0],
-    ["10.07","Пт",1,0,1,0],
-    ["11.07","Сб",0,1,1,1],
-    ["12.07","Вс",0,1,0,1],
-    ["13.07","Пн",1,0,1,0],
-    ["14.07","Вт",1,0,1,0],
-    ["15.07","Ср",0,1,1,0],
-    ["16.07","Чт",0,1,0,0],
-    ["17.07","Пт",1,0,1,0],
-    ["18.07","Сб",1,0,1,1],
-    ["19.07","Вс",0,1,0,1],
-    ["20.07","Пн",0,1,1,0],
-    ["21.07","Вт",1,0,1,0],
-    ["22.07","Ср",1,0,1,0],
-    ["23.07","Чт",0,1,0,0],
-    ["24.07","Пт",0,1,1,0],
-    ["25.07","Сб",1,0,1,1],
-    ["26.07","Вс",1,0,0,1],
-    ["27.07","Пн",0,1,1,0],
+  DUTY.all = [...DUTY.pair, ...DUTY.krist];               // авто-объединение, не дублируем руками
+
+  // Люди: имя, режим, цвет (RGB-токен), обязанности.
+  // soloAll = true → когда человек один на смене, берёт ВСЕ обязанности.
+  const PEOPLE = [
+    { name:"Бекзод",    mode:"2 / 2",          rgb:"var(--red-rgb)",   duties:DUTY.pair,  soloAll:true  },
+    { name:"Святослав", mode:"2 / 2",          rgb:"var(--black-rgb)", duties:DUTY.pair,  soloAll:true  },
+    { name:"Кристиан",  mode:"5 / 2 · чт, вс", rgb:"var(--blue-rgb)",  duties:DUTY.krist, soloAll:false },
   ];
 
-  const pills = arr => `<div class="duty">${arr.map(d=>`<span class="pill">${d}</span>`).join("")}</div>`;
-  const workCell = (cls,duties,solo) => `<div class="cell"><span class="badge2 ${cls}"><span class="mk"></span>${solo?"На смене один · всё на нём":"На смене"}</span>${pills(duties)}</div>`;
-  const offCell = `<span class="off">выходной</span>`;
+  // Расписание: дата, день недели, кто работает (1/0) в порядке PEOPLE.
+  // Выходной-подсветка вычисляется автоматически из дня недели.
+  const SCHEDULE = [
+    ["28.06","Вс",1,0,0], ["29.06","Пн",0,1,1], ["30.06","Вт",0,1,1], ["01.07","Ср",1,0,1],
+    ["02.07","Чт",1,0,0], ["03.07","Пт",0,1,1], ["04.07","Сб",0,1,1], ["05.07","Вс",1,0,0],
+    ["06.07","Пн",1,0,1], ["07.07","Вт",0,1,1], ["08.07","Ср",0,1,1], ["09.07","Чт",1,0,0],
+    ["10.07","Пт",1,0,1], ["11.07","Сб",0,1,1], ["12.07","Вс",0,1,0], ["13.07","Пн",1,0,1],
+    ["14.07","Вт",1,0,1], ["15.07","Ср",0,1,1], ["16.07","Чт",0,1,0], ["17.07","Пт",1,0,1],
+    ["18.07","Сб",1,0,1], ["19.07","Вс",0,1,0], ["20.07","Пн",0,1,1], ["21.07","Вт",1,0,1],
+    ["22.07","Ср",1,0,1], ["23.07","Чт",0,1,0], ["24.07","Пт",0,1,1], ["25.07","Сб",1,0,1],
+    ["26.07","Вс",1,0,0], ["27.07","Пн",0,1,1],
+  ];
 
-  const rows = data.map(([date,wd,b,s,k,we])=>{
-    const solo = (b+s+k)===1;                 // один человек на смене → берёт все обязанности
-    const pairDuty = solo ? DUTY.all : DUTY.work;
-    const cls = we ? "weekend":"";
-    const weCls = (wd==="Сб"||wd==="Вс") ? "wd we":"wd";
-    return `<tr class="${cls}">
-      <td class="date-cell"><span class="date">${date}</span><span class="${weCls}">${wd}</span></td>
-      <td data-label="Бекзод">${b?workCell("b-bekzod",pairDuty,solo):offCell}</td>
-      <td data-label="Святослав">${s?workCell("b-svyat",pairDuty,solo):offCell}</td>
-      <td data-label="Кристиан">${k?workCell("b-krist",DUTY.krist):offCell}</td>
+  /* =========================== РЕНДЕР =========================== */
+  const isWeekend = wd => wd === "Сб" || wd === "Вс";
+  const tags = arr => `<div class="duty">${arr.map(d => `<span class="tag">${d}</span>`).join("")}</div>`;
+
+  // Легенда
+  document.getElementById("legend").innerHTML = PEOPLE.map(p => `
+    <div class="person" style="--c-rgb:${p.rgb}">
+      <div class="ptop"><span class="dot"></span><span class="pname">${p.name}</span><span class="mode">${p.mode}</span></div>
+      <div class="duties">${p.duties.map(d => `<span class="pill">${d}</span>`).join("")}</div>
+    </div>`).join("");
+
+  // Шапка таблицы
+  document.getElementById("thead-row").innerHTML =
+    `<th class="th-date">Дата</th>` + PEOPLE.map(p => `<th>${p.name}</th>`).join("");
+
+  // Тело таблицы
+  document.getElementById("rows").innerHTML = SCHEDULE.map(([date, wd, ...work]) => {
+    const weekend = isWeekend(wd);
+    const solo = work.reduce((a, b) => a + b, 0) === 1;
+    const cells = PEOPLE.map((p, i) => {
+      if(!work[i]) return `<td data-label="${p.name}"><span class="off">выходной</span></td>`;
+      const duties = (solo && p.soloAll) ? DUTY.all : p.duties;
+      const label  = solo ? "На смене один · всё на нём" : "На смене";
+      return `<td data-label="${p.name}">
+        <div class="cell" style="--c-rgb:${p.rgb}">
+          <span class="badge2"><span class="mk"></span>${label}</span>${tags(duties)}
+        </div></td>`;
+    }).join("");
+    return `<tr class="${weekend ? "weekend" : ""}">
+      <td class="date-cell"><span class="date">${date}</span><span class="wd${weekend ? " we" : ""}">${wd}</span></td>
+      ${cells}
     </tr>`;
   }).join("");
-  document.getElementById("rows").innerHTML = rows;
 
-  /* ---- Password gate ---- */
+  /* ===================== Экран входа (пароль) ===================== */
   const PASS_ENC = "TW90dWxEcml2ZQ=="; // base64("MotulDrive")
   const enc = s => btoa(unescape(encodeURIComponent(s)));
-  const gate = document.getElementById("gate");
   const inp  = document.getElementById("gate-pass");
   const err  = document.getElementById("gate-err");
-
   const form = document.getElementById("gate-form");
-  function unlock(){ document.body.classList.remove("locked"); }
+
+  const unlock = () => document.body.classList.remove("locked");
   function tryUnlock(){
     if(enc(inp.value) === PASS_ENC){
       sessionStorage.setItem("md_ok","1");
