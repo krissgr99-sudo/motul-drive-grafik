@@ -61,6 +61,129 @@
   .title .t::before{content:"";width:20px;height:3px;border-radius:2px;background:var(--c-red);display:inline-block}
   .title .r{font-weight:600;font-size:12px;color:var(--muted)}
 
+  /* ===================== МЕНЮ / ШТОРКА / СТРАНИЦЫ ===================== */
+  .topleft{display:flex;align-items:center;gap:14px}
+  .menu-btn{width:42px;height:42px;border-radius:13px;border:1px solid var(--line);background:var(--card);
+    color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;
+    box-shadow:var(--shadow);transition:border-color .15s}
+  .menu-btn:hover{border-color:var(--line-strong)}
+  .menu-btn span,.menu-btn span::before,.menu-btn span::after{display:block;width:18px;height:2px;background:currentColor;border-radius:2px;transition:.2s}
+  .menu-btn span{position:relative}
+  .menu-btn span::before,.menu-btn span::after{content:"";position:absolute;left:0}
+  .menu-btn span::before{top:-6px}
+  .menu-btn span::after{top:6px}
+
+  #drawer-overlay{position:fixed;inset:0;background:rgba(15,18,22,.45);opacity:0;visibility:hidden;transition:opacity .2s;z-index:60}
+  body.menu-open #drawer-overlay{opacity:1;visibility:visible}
+  #drawer{position:fixed;top:0;left:0;bottom:0;width:270px;max-width:82vw;background:var(--card);
+    border-right:1px solid var(--line);z-index:61;transform:translateX(-100%);transition:transform .22s ease;
+    display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  body.menu-open #drawer{transform:none}
+  .drawer-head{display:flex;align-items:center;gap:12px;padding:18px;border-bottom:1px solid var(--line)}
+  .drawer-head .badge{width:40px;height:40px}
+  .drawer-head .badge span{font-size:15px}
+  .drawer-brand{font-weight:800;font-size:15px;letter-spacing:.3px}
+  .drawer-close{margin-left:auto;width:34px;height:34px;border:none;background:transparent;color:var(--muted);
+    font-size:22px;line-height:1;cursor:pointer;border-radius:8px}
+  .drawer-close:hover{background:var(--card2);color:var(--text)}
+  .drawer-nav{padding:12px;display:flex;flex-direction:column;gap:4px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:none;background:transparent;color:var(--text);
+    font-family:inherit;font-size:15px;font-weight:700;text-align:left;border-radius:12px;cursor:pointer;transition:background .15s}
+  .nav-item:hover{background:var(--card2)}
+  .nav-item.active{background:color-mix(in srgb, var(--c-red) 12%, transparent);color:var(--c-red)}
+  .nav-item .ic{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.55;flex:none}
+
+  .page[hidden]{display:none}
+  .placeholder{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
+    padding:64px 24px;text-align:center}
+  .placeholder .pic{font-size:42px;margin-bottom:12px}
+  .placeholder h2{font-size:20px;margin:0 0 6px;color:var(--text)}
+  .placeholder p{font-size:14px;margin:0;color:var(--muted)}
+
+  /* ===================== ШАБЛОНЫ ===================== */
+  .tpl-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .tpl-search{flex:1;min-width:220px;position:relative}
+  .tpl-search input{width:100%;padding:12px 14px 12px 40px;border-radius:12px;border:1px solid var(--line);
+    background:var(--card);color:var(--text);font:inherit;font-size:14px;outline:none;box-shadow:var(--shadow);transition:border-color .15s}
+  .tpl-search input:focus{border-color:var(--c-red)}
+  .tpl-search::before{content:"⌕";position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:18px;opacity:.55}
+  .tpl-copyall{padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);
+    font:inherit;font-weight:700;font-size:13px;cursor:pointer;box-shadow:var(--shadow);white-space:nowrap;transition:.15s}
+  .tpl-copyall:hover{border-color:var(--c-red);color:var(--c-red)}
+  .tpl-copyall.ok{border-color:#1a8a3c;color:#1a8a3c}
+  .tpl-brands{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .tpl-brand{padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--text);
+    font:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:.15s}
+  .tpl-brand:hover{border-color:var(--line-strong)}
+  .tpl-brand.active{background:var(--c-red);color:#fff;border-color:var(--c-red)}
+  .tpl-subtabs{display:flex;gap:8px;flex-wrap:wrap;margin:-8px 0 18px}
+  .tpl-subtabs[hidden]{display:none}
+  .tpl-sub{padding:7px 15px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--muted);
+    font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;transition:.15s}
+  .tpl-sub:hover{color:var(--text);border-color:var(--line-strong)}
+  .tpl-sub.active{background:var(--c-graphite);color:#fff;border-color:var(--c-graphite)}
+
+  /* фильтры-фасеты */
+  .tpl-facets{display:flex;flex-direction:column;gap:9px;margin:0 0 18px;padding:14px 15px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+  .tpl-facets[hidden]{display:none}
+  .tpl-facet{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .tpl-facet-label{font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);
+    width:64px;flex:none}
+  .tpl-chip{padding:6px 13px;border-radius:999px;border:1px solid var(--line);background:var(--card2);color:var(--text);
+    font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;transition:.15s}
+  .tpl-chip:hover{border-color:var(--line-strong)}
+  .tpl-chip.active{background:var(--c-red);color:#fff;border-color:var(--c-red)}
+  .tpl-facet-reset{margin-left:auto;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;
+    color:var(--muted);font:inherit;font-weight:700;font-size:12px;cursor:pointer}
+  .tpl-facet-reset:hover{color:var(--c-red);border-color:var(--c-red)}
+
+  /* бейджи на карточке */
+  .tpl-head-main{flex:1;display:flex;flex-direction:column;gap:7px;min-width:0}
+  .tpl-badges{display:flex;flex-wrap:wrap;gap:5px}
+  .tpl-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:3px 9px;border-radius:7px;
+    line-height:1.3;white-space:nowrap}
+  .tpl-badge.b-app{background:rgba(26,138,60,.14);color:#1a8a3c;border:1px solid rgba(26,138,60,.30)}
+  .tpl-badge.b-part{background:rgba(214,142,18,.16);color:#b9770a;border:1px solid rgba(214,142,18,.32)}
+  .tpl-badge.b-hybrid{background:rgba(27,69,143,.13);color:#1b458f;border:1px solid rgba(27,69,143,.30)}
+  .tpl-badge.b-lock{background:rgba(209,31,45,.12);color:#d11f2d;border:1px solid rgba(209,31,45,.30)}
+  .tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px;align-items:start}
+  .tpl-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;
+    transition:border-color .15s,box-shadow .15s}
+  .tpl-card.open{border-color:var(--line-strong)}
+  .tpl-card.is-todo{border-style:dashed;opacity:.9}
+
+  .tpl-card-head{width:100%;display:flex;align-items:center;gap:13px;padding:14px 16px;
+    background:transparent;border:none;font:inherit;color:inherit;text-align:left;cursor:pointer;transition:background .15s}
+  .tpl-card-head:hover{background:var(--card2)}
+  .tpl-brand-block{display:flex;flex-direction:column;align-items:center;gap:7px;flex:none;width:46px}
+  .tpl-brand-tag{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#fff;background:var(--c-graphite);
+    padding:5px 9px;border-radius:6px}
+  .tpl-brand-logo{width:32px;height:32px;display:block}
+  .tpl-brand-logo svg{width:100%;height:100%;display:block}
+  .tpl-title{flex:1;font-weight:800;font-size:14.5px;line-height:1.32}
+  .tpl-chevron{flex:none;width:18px;height:18px;position:relative;color:var(--muted);transition:transform .25s}
+  .tpl-card.open .tpl-chevron{transform:rotate(180deg)}
+  .tpl-chevron::before{content:"";position:absolute;left:3px;top:4px;width:8px;height:8px;
+    border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);border-radius:1px}
+
+  .tpl-collapse{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}
+  .tpl-card.open .tpl-collapse{grid-template-rows:1fr}
+  .tpl-collapse-inner{overflow:hidden;min-height:0}
+
+  .tpl-tags{display:flex;flex-wrap:wrap;gap:5px;padding:4px 16px 0}
+  .tpl-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--chip-bg);color:var(--chip-text);border:1px solid var(--line)}
+  .tpl-body{margin:13px 16px;padding:13px 14px;background:var(--card2);border:1px solid var(--line);border-radius:12px;
+    font-size:12.5px;line-height:1.62;white-space:pre-wrap;word-break:break-word;color:var(--text);max-height:340px;overflow:auto}
+  .tpl-todo-note{margin:13px 16px;padding:20px 16px;text-align:center;color:var(--muted);font-size:13px;line-height:1.5;
+    background:var(--card2);border:1px dashed var(--line-strong);border-radius:12px}
+  .tpl-actions{padding:0 16px 16px;display:flex;gap:10px}
+  .tpl-copy{flex:1;padding:11px;border:none;border-radius:11px;background:var(--c-red);color:#fff;font:inherit;font-weight:700;
+    font-size:13px;cursor:pointer;transition:background .15s}
+  .tpl-copy:hover{background:#a8151f}
+  .tpl-copy.ok{background:#1a8a3c}
+  .tpl-empty{grid-column:1/-1;padding:48px 24px;text-align:center;color:var(--muted);font-size:14px}
+
   /* ===================== БАННЕР «СЕГОДНЯ» ===================== */
   .today{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;
     padding:18px 20px;margin-bottom:18px;box-shadow:var(--shadow);overflow:hidden}
@@ -210,15 +333,35 @@
 </div>
 
 <main id="app">
+
+  <!-- Боковое меню -->
+  <div id="drawer-overlay"></div>
+  <aside id="drawer">
+    <div class="drawer-head">
+      <div class="badge"><span>MD</span></div>
+      <div class="drawer-brand">MOTUL-DRIVE</div>
+      <button class="drawer-close" id="drawer-close" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <nav class="drawer-nav">
+      <button class="nav-item" data-page="grafik"><span class="ic"></span>График</button>
+      <button class="nav-item" data-page="shablony"><span class="ic"></span>Шаблоны</button>
+      <button class="nav-item" data-page="tseny"><span class="ic"></span>Цены</button>
+      <button class="nav-item" data-page="prodazhi"><span class="ic"></span>Продажи</button>
+    </nav>
+  </aside>
+
   <div class="wrap">
 
     <!-- Шапка -->
     <div class="topbar">
-      <div class="logo">
-        <div class="badge"><span>MD</span></div>
-        <div>
-          <div class="brand">MOTUL-DRIVE</div>
-          <div class="sub">ЦЕНТР ЗАМЕНЫ МАСЛА</div>
+      <div class="topleft">
+        <button class="menu-btn" id="menu-btn" type="button" aria-label="Меню"><span></span></button>
+        <div class="logo">
+          <div class="badge"><span>MD</span></div>
+          <div>
+            <div class="brand">MOTUL-DRIVE</div>
+            <div class="sub">ЦЕНТР ЗАМЕНЫ МАСЛА</div>
+          </div>
         </div>
       </div>
       <div class="topright">
@@ -228,6 +371,9 @@
         </div>
       </div>
     </div>
+
+    <!-- ===== Страница: График ===== -->
+    <div id="page-grafik" class="page">
 
     <!-- Сегодня -->
     <div id="today"></div>
@@ -250,6 +396,30 @@
     <div class="note">
       <span class="nd"></span>
       <span>Бекзод и Святослав — график 2/2 в противофазе · Кристиан работает всё, кроме четверга и воскресенья. По четвергам и воскресеньям на смене один человек — он берёт все обязанности.</span>
+    </div>
+
+    </div><!-- /page-grafik -->
+
+    <!-- ===== Страница: Шаблоны ===== -->
+    <div id="page-shablony" class="page" hidden>
+      <div class="tpl-toolbar">
+        <div class="tpl-search"><input id="tpl-search" type="text" placeholder="Поиск: марка, коробка, узел…" autocomplete="off"></div>
+        <button class="tpl-copyall" id="tpl-copyall" type="button">Копировать всё видимое</button>
+      </div>
+      <div class="tpl-brands" id="tpl-brands"></div>
+      <div class="tpl-subtabs" id="tpl-subtabs" hidden></div>
+      <div class="tpl-facets" id="tpl-facets" hidden></div>
+      <div class="tpl-grid" id="tpl-grid"></div>
+    </div>
+
+    <!-- ===== Страница: Цены ===== -->
+    <div id="page-tseny" class="page" hidden>
+      <div class="placeholder"><div class="pic">🏷️</div><h2>Цены</h2><p>Раздел в разработке.</p></div>
+    </div>
+
+    <!-- ===== Страница: Продажи ===== -->
+    <div id="page-prodazhi" class="page" hidden>
+      <div class="placeholder"><div class="pic">📈</div><h2>Продажи</h2><p>Раздел в разработке.</p></div>
     </div>
 
   </div>
@@ -386,6 +556,284 @@
     }
     document.getElementById("today").innerHTML = html;
   })();
+
+  /* =========================================================
+     ШАБЛОНЫ — данные правятся здесь
+     Каждая карточка = объект. parts ссылаются на TPL_BLOCKS,
+     поэтому общий блок АКПП / мосты переиспользуется и не дублируется.
+     todo:true — карточка-заготовка (ждёт данных).
+     ========================================================= */
+  const TPL_BLOCKS = {
+    akpp8hp:
+`1. Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76
+Трансмиссионное масло Motul ATF6 105774 12л 21600 руб.
+Промывочная присадка для АКПП BARDAHL 2200 руб.
+Оригинальный Фильтр-поддон ZF 1087298437 9000 руб.
+Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76 с промывкой системы 6000 руб.
+Итого: 38800 руб.
+
+1.1 Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76
+Оригинальное трансмиссионное масло ZF8HP S671090312 12л 26400 руб.
+Промывочная присадка для АКПП BARDAHL 2200 руб.
+Оригинальный Фильтр-поддон ZF 1087298437 9000 руб.
+Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76 с промывкой системы 6000 руб.
+Итого: 43600 руб.`,
+    partial8hp:
+`1.2 Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 (заменой фильтр-поддона)
+Оригинальное трансмиссионное масло ZF8HP S671090312 5л 11000 руб.
+Оригинальный Фильтр-поддон ZF 1087298437 9000 руб.
+Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 с заменой фильтр-поддона 3000 руб.
+Итого: 23000 руб.`,
+    partialMild:
+`1.2 Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 (заменой фильтр-поддона)
+Оригинальное трансмиссионное масло ZF8HP S671090312 5л 11000 руб.
+Оригинальный Фильтр-поддон ZF  19000 руб.
+Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 с заменой фильтр-поддона 3000 руб.
+Итого: 33000 руб.`,
+    diffs:
+`Также можем заменить масла в переднем, заднем дифференциале и раздаточной коробке.
+Масло Motul +замена 11550р
+Оригинал BMW +замена 28500р
+Motul ничем не уступает оригиналу`,
+    diffsBlock:
+`Также можем заменить масла в переднем, заднем дифференциале и раздаточной
+Масло  Motul +замена 12450р
+Оригинал BMW +замена31500р
+Motul ничем не уступает оригиналу`,
+    akppMild:
+`Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76
+Трансмиссионное масло Motul ATF6 105774 12л 21600 руб.
+Промывочная присадка для АКПП BARDAHL 2200 руб.
+Оригинальный Фильтр-поддон ZF  19000 руб.
+Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76 с промывкой системы 6000 руб.
+Итого: 48800 руб.
+
+1.1 Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76
+Оригинальное трансмиссионное масло ZF8HP S671090312 12л 26400 руб.
+Промывочная присадка для АКПП BARDAHL 2200 руб.
+Оригинальный Фильтр-поддон ZF  19000 руб.
+Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76 с промывкой системы 6000 руб.
+Итого: 53600 руб.`,
+  };
+
+  const TEMPLATES = [
+    { brand:"BMW", box:"8 ступка", title:"Аппаратная замена + мосты и раздатка", tags:["АКПП","Мосты","Раздатка"],                         parts:["akpp8hp","diffs"] },
+    { brand:"BMW", box:"8 ступка", title:"Аппаратная замена + мосты и раздатка (с блокировкой)", tags:["АКПП","Мосты","Раздатка","Блокировка"],  parts:["akpp8hp","diffsBlock"] },
+    { brand:"BMW", box:"8 ступка", title:"Частичная замена + мосты и раздатка",  tags:["АКПП","Частичная","Мосты","Раздатка"],             parts:["partial8hp","diffs"] },
+    { brand:"BMW", box:"8 ступка", title:"Частичная замена + мосты и раздатка (с блокировкой)", tags:["АКПП","Частичная","Мосты","Раздатка","Блокировка"], parts:["partial8hp","diffsBlock"] },
+    { brand:"BMW", box:"8 ступка", title:"Мягкий гибрид · аппаратная замена + мосты и раздатка", tags:["АКПП","Mild Hybrid","Мосты","Раздатка"], parts:["akppMild","diffs"] },
+    { brand:"BMW", box:"8 ступка", title:"Мягкий гибрид · аппаратная замена + мосты и раздатка (с блокировкой)", tags:["АКПП","Mild Hybrid","Мосты","Раздатка","Блокировка"], parts:["akppMild","diffsBlock"] },
+    { brand:"BMW", box:"8 ступка", title:"Мягкий гибрид · частичная замена + мосты и раздатка", tags:["АКПП","Mild Hybrid","Частичная","Мосты","Раздатка"], parts:["partialMild","diffs"] },
+    { brand:"BMW", box:"8 ступка", title:"Мягкий гибрид · частичная замена + мосты и раздатка (с блокировкой)", tags:["АКПП","Mild Hybrid","Частичная","Мосты","Раздатка","Блокировка"], parts:["partialMild","diffsBlock"] },
+
+    { brand:"BMW", box:"6 ступка", title:"Аппаратная замена + мосты и раздатка", tags:["АКПП","Мосты","Раздатка"], todo:true },
+  ];
+  const tplBody = t => (t.parts||[]).map(p=>TPL_BLOCKS[p]).join("\n\n");
+
+  // Логотипы марок (inline SVG — работает офлайн). Добавляешь марку → добавляешь сюда значок.
+  const BRAND_LOGOS = {
+    BMW:
+`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BMW">
+  <circle cx="50" cy="50" r="49" fill="#1d1d1d"/>
+  <circle cx="50" cy="50" r="48.5" fill="none" stroke="#e6e8ec" stroke-width=".8"/>
+  <circle cx="50" cy="50" r="33" fill="#fff"/>
+  <path d="M50 50 L50 17 A33 33 0 0 1 83 50 Z" fill="#0166B1"/>
+  <path d="M50 50 L50 83 A33 33 0 0 1 17 50 Z" fill="#0166B1"/>
+  <circle cx="50" cy="50" r="33" fill="none" stroke="#1d1d1d" stroke-width="1.2"/>
+  <text x="50" y="13.2" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="12.5" fill="#fff">BMW</text>
+</svg>`,
+  };
+
+  (function(){
+    const grid       = document.getElementById("tpl-grid");
+    const brandsBox  = document.getElementById("tpl-brands");
+    const subtabsBox = document.getElementById("tpl-subtabs");
+    const facetsBox  = document.getElementById("tpl-facets");
+    const searchInp  = document.getElementById("tpl-search");
+    const copyAllBtn = document.getElementById("tpl-copyall");
+    let activeBrand = "all", activeBox = "all", query = "";
+    const filters = { type:null, engine:null, lock:null };
+    const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+    // Атрибуты карточки выводятся из тегов — отдельно проставлять не нужно
+    const has = (t,x) => (t.tags||[]).includes(x);
+    const ATTR = {
+      type:   t => has(t,"Частичная")   ? "Частичная" : "Аппаратная",
+      engine: t => has(t,"Mild Hybrid") ? "Гибрид"    : "Обычная",
+      lock:   t => has(t,"Блокировка")  ? "С блокировкой" : "Без блокировки",
+    };
+    // Оси фильтров (порядок значений фиксирован для стабильного вида)
+    const FACETS = [
+      { key:"type",   label:"Тип",   order:["Аппаратная","Частичная"] },
+      { key:"engine", label:"Мотор", order:["Обычная","Гибрид"] },
+      { key:"lock",   label:"Блок.", order:["Без блокировки","С блокировкой"] },
+    ];
+
+    const brands = [...new Set(TEMPLATES.map(t=>t.brand))];
+    brandsBox.innerHTML = [`<button class="tpl-brand active" data-brand="all">Все</button>`]
+      .concat(brands.map(b=>`<button class="tpl-brand" data-brand="${esc(b)}">${esc(b)}</button>`)).join("");
+
+    // Подвкладки коробок — видны только когда выбрана конкретная марка
+    function renderSubtabs(){
+      const boxes = activeBrand==="all" ? []
+        : [...new Set(TEMPLATES.filter(t=>t.brand===activeBrand && t.box).map(t=>t.box))];
+      if(!boxes.length){ subtabsBox.hidden = true; subtabsBox.innerHTML = ""; return; }
+      subtabsBox.hidden = false;
+      subtabsBox.innerHTML = boxes.map(b=>
+        `<button class="tpl-sub ${b===activeBox?"active":""}" data-box="${esc(b)}">${esc(b)}</button>`).join("");
+    }
+
+    // Базовый набор (марка+коробка) — из него строим фильтры
+    const baseSet = () => TEMPLATES.filter(t =>
+      (activeBrand==="all"||t.brand===activeBrand) && (activeBox==="all"||t.box===activeBox));
+
+    // Фильтры-фасеты — видны только когда выбрана марка и есть из чего выбирать
+    function renderFacets(){
+      if(activeBrand==="all"){ facetsBox.hidden = true; facetsBox.innerHTML = ""; return; }
+      const base = baseSet();
+      const rows = FACETS.map(f=>{
+        const present = new Set(base.map(t=>ATTR[f.key](t)));
+        const vals = f.order.filter(v=>present.has(v));
+        if(vals.length < 2) return ""; // выбирать не из чего — ось скрываем
+        const chips = vals.map(v=>
+          `<button class="tpl-chip ${filters[f.key]===v?"active":""}" data-facet="${f.key}" data-val="${esc(v)}">${esc(v)}</button>`).join("");
+        return `<div class="tpl-facet"><span class="tpl-facet-label">${esc(f.label)}</span>${chips}</div>`;
+      }).filter(Boolean);
+      if(!rows.length){ facetsBox.hidden = true; facetsBox.innerHTML = ""; return; }
+      let html = rows.join("");
+      if(FACETS.some(f=>filters[f.key])){
+        // кнопку сброса вставляем в конец первой строки фасета (уйдёт вправо)
+        html = html.replace("</div>", `<button class="tpl-facet-reset" data-reset>Сбросить ✕</button></div>`);
+      }
+      facetsBox.hidden = false;
+      facetsBox.innerHTML = html;
+    }
+
+    const visible = () => TEMPLATES.filter(t=>{
+      if(activeBrand!=="all" && t.brand!==activeBrand) return false;
+      if(activeBox!=="all" && t.box!==activeBox) return false;
+      for(const f of FACETS){ if(filters[f.key] && ATTR[f.key](t)!==filters[f.key]) return false; }
+      if(query){
+        const hay = (t.brand+" "+(t.box||"")+" "+t.title+" "+(t.tags||[]).join(" ")+" "+tplBody(t)).toLowerCase();
+        if(!hay.includes(query)) return false;
+      }
+      return true;
+    });
+
+    async function copyText(text, btn){
+      try { await navigator.clipboard.writeText(text); }
+      catch(e){
+        const ta=document.createElement("textarea"); ta.value=text;
+        ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
+        ta.select(); try{ document.execCommand("copy"); }catch(_){} ta.remove();
+      }
+      if(btn){
+        const old=btn.textContent; btn.textContent="✓ Скопировано"; btn.classList.add("ok");
+        setTimeout(()=>{ btn.textContent=old; btn.classList.remove("ok"); }, 1500);
+      }
+    }
+
+    function render(){
+      const list = visible();
+      if(!list.length){ grid.innerHTML = `<div class="tpl-empty">Ничего не найдено</div>`; return; }
+      grid.innerHTML = list.map((t,i)=>{
+        const tags = (t.tags||[]).map(x=>`<span class="tpl-tag">${esc(x)}</span>`).join("");
+        const logo = BRAND_LOGOS[t.brand] || "";
+        const typ = ATTR.type(t);
+        const badges = [`<span class="tpl-badge ${typ==="Частичная"?"b-part":"b-app"}">${typ}</span>`];
+        if(ATTR.engine(t)==="Гибрид")        badges.push(`<span class="tpl-badge b-hybrid">⚡ Гибрид</span>`);
+        if(ATTR.lock(t)==="С блокировкой")   badges.push(`<span class="tpl-badge b-lock">🔒 Блокировка</span>`);
+        return `<div class="tpl-card ${t.todo?"is-todo":""}">
+          <button class="tpl-card-head" type="button" aria-expanded="false">
+            <span class="tpl-brand-block">
+              <span class="tpl-brand-tag">${esc(t.brand)}</span>
+              ${logo ? `<span class="tpl-brand-logo">${logo}</span>` : ""}
+            </span>
+            <span class="tpl-head-main">
+              <span class="tpl-title">${esc(t.title)}</span>
+              <span class="tpl-badges">${badges.join("")}</span>
+            </span>
+            <span class="tpl-chevron"></span>
+          </button>
+          <div class="tpl-collapse"><div class="tpl-collapse-inner">
+            ${tags ? `<div class="tpl-tags">${tags}</div>` : ""}
+            ${t.todo
+              ? `<div class="tpl-todo-note">Шаблон ещё не заполнен — пришли цифры, и он появится здесь.</div>`
+              : `<div class="tpl-body">${esc(tplBody(t))}</div>
+                 <div class="tpl-actions"><button class="tpl-copy" type="button" data-i="${i}">📋 Копировать</button></div>`}
+          </div></div>
+        </div>`;
+      }).join("");
+      grid.querySelectorAll(".tpl-card-head").forEach(head=>{
+        head.addEventListener("click", ()=>{
+          const card = head.closest(".tpl-card");
+          const open = card.classList.toggle("open");
+          head.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+      });
+      grid.querySelectorAll(".tpl-copy").forEach(btn=>{
+        btn.addEventListener("click", e=>{ e.stopPropagation(); copyText(tplBody(list[+btn.dataset.i]), btn); });
+      });
+    }
+
+    const resetFilters = () => FACETS.forEach(f=>filters[f.key]=null);
+
+    brandsBox.addEventListener("click", e=>{
+      const b = e.target.closest(".tpl-brand"); if(!b) return;
+      activeBrand = b.dataset.brand;
+      // при выборе марки сразу открываем первую коробку (чтобы не валить всё в кучу)
+      const boxes = activeBrand==="all" ? [] : [...new Set(TEMPLATES.filter(t=>t.brand===activeBrand && t.box).map(t=>t.box))];
+      activeBox = boxes[0] || "all";
+      resetFilters();
+      brandsBox.querySelectorAll(".tpl-brand").forEach(x=>x.classList.toggle("active", x===b));
+      renderSubtabs(); renderFacets(); render();
+    });
+    subtabsBox.addEventListener("click", e=>{
+      const s = e.target.closest(".tpl-sub"); if(!s) return;
+      activeBox = (activeBox === s.dataset.box) ? "all" : s.dataset.box; // повторный клик — снять фильтр
+      resetFilters();
+      subtabsBox.querySelectorAll(".tpl-sub").forEach(x=>x.classList.toggle("active", x.dataset.box===activeBox));
+      renderFacets(); render();
+    });
+    facetsBox.addEventListener("click", e=>{
+      if(e.target.closest("[data-reset]")){ resetFilters(); renderFacets(); render(); return; }
+      const chip = e.target.closest(".tpl-chip"); if(!chip) return;
+      const k = chip.dataset.facet, v = chip.dataset.val;
+      filters[k] = (filters[k]===v) ? null : v; // повторный клик снимает ось
+      renderFacets(); render();
+    });
+    searchInp.addEventListener("input", ()=>{ query = searchInp.value.trim().toLowerCase(); render(); });
+    copyAllBtn.addEventListener("click", ()=>{
+      const text = visible().filter(t=>!t.todo)
+        .map(t=>`${t.brand} · ${t.title}\n\n${tplBody(t)}`).join("\n\n— — — — —\n\n");
+      if(text) copyText(text, copyAllBtn);
+    });
+    renderSubtabs(); renderFacets(); render();
+  })();
+
+  /* ===================== Меню и страницы ===================== */
+  const PAGES = {
+    grafik:   { t:"График дежурств", r:"28 июня — 27 июля 2026 · 30 дней" },
+    shablony: { t:"Шаблоны",         r:"Каталог · выбери марку, копируй и отправляй клиенту" },
+    tseny:    { t:"Цены",            r:"Раздел в разработке" },
+    prodazhi: { t:"Продажи",         r:"Раздел в разработке" },
+  };
+  const titleT = document.querySelector(".title .t");
+  const titleR = document.querySelector(".title .r");
+  const closeMenu = () => document.body.classList.remove("menu-open");
+  function showPage(id){
+    document.querySelectorAll(".page").forEach(p => { p.hidden = (p.id !== "page-" + id); });
+    document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.page === id));
+    if(PAGES[id]){ titleT.textContent = PAGES[id].t; titleR.textContent = PAGES[id].r; }
+    closeMenu();
+    window.scrollTo(0, 0);
+  }
+  document.getElementById("menu-btn").addEventListener("click", () => document.body.classList.add("menu-open"));
+  document.getElementById("drawer-overlay").addEventListener("click", closeMenu);
+  document.getElementById("drawer-close").addEventListener("click", closeMenu);
+  document.querySelectorAll(".nav-item").forEach(n => n.addEventListener("click", () => showPage(n.dataset.page)));
+  document.addEventListener("keydown", e => { if(e.key === "Escape") closeMenu(); });
+  showPage("grafik");
 
   /* ===================== Экран входа (пароль) ===================== */
   const PASS_ENC = "TW90dWxEcml2ZQ=="; // base64("MotulDrive")
