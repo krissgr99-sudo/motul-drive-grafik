@@ -90,12 +90,12 @@
 
   /* ===================== ТАБЛИЦА ===================== */
   .tablecard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);overflow:hidden;box-shadow:var(--shadow)}
-  table{width:100%;border-collapse:collapse;font-size:var(--fs-md)}
-  thead th{text-align:left;padding:14px 16px;font-size:var(--fs-xs);letter-spacing:.07em;text-transform:uppercase;
+  table{width:100%;border-collapse:collapse;font-size:var(--fs-md);table-layout:fixed}
+  thead th{text-align:center;padding:14px 16px;font-size:var(--fs-xs);letter-spacing:.07em;text-transform:uppercase;
     color:#fff;font-weight:700;background:var(--black)}
   thead th:first-child{background:var(--red)}
-  .th-date{width:130px}
-  tbody td{padding:11px 16px;border-top:1px solid var(--line);vertical-align:middle}
+  .th-date{width:120px}
+  tbody td{padding:11px 16px;border-top:1px solid var(--line);vertical-align:middle;text-align:center}
   tbody tr:hover{background:var(--row-hover)}
   tr.weekend{background:rgba(var(--red-rgb),.08)}
   tr.weekend:hover{background:rgba(var(--red-rgb),.12)}
@@ -104,10 +104,10 @@
     border:1px solid var(--line);border-radius:var(--r-xs);padding:1px 7px}
   .wd.we{color:var(--red);border-color:rgba(var(--red-rgb),.35)}
 
-  .cell{display:flex;flex-direction:column;gap:6px}
+  .cell{display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center}
   .badge2{display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:var(--fs-base);color:rgb(var(--c-rgb))}
-  .badge2 .mk{width:9px;height:9px;border-radius:50%;background:rgb(var(--c-rgb))}
-  .duty{display:flex;flex-wrap:wrap;gap:4px}
+  .badge2 .mk{width:9px;height:9px;border-radius:50%;background:rgb(var(--c-rgb));flex:none}
+  .duty{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
   .tag{font-size:var(--fs-2xs);font-weight:700;padding:3px 7px;border-radius:var(--r-xs);
     background:rgba(var(--shadow-rgb),.05);color:var(--tag-ink)}
   .off{color:var(--muted);font-weight:600;opacity:.7;font-size:var(--fs-base)}
@@ -131,7 +131,9 @@
       margin-bottom:12px;padding:6px 4px;box-shadow:var(--shadow-sm);overflow:hidden;
     }
     tbody tr.weekend{border-color:rgba(var(--red-rgb),.3)}
-    tbody td{border:none;border-top:1px solid var(--line);padding:11px 16px}
+    tbody td{border:none;border-top:1px solid var(--line);padding:11px 16px;text-align:left}
+    .cell{align-items:flex-start;text-align:left}
+    .duty{justify-content:flex-start}
     tbody td.date-cell{
       border-top:none;background:var(--black);color:#fff;border-radius:var(--r-md);margin:2px 2px 6px;
       display:flex;align-items:center;gap:8px;
