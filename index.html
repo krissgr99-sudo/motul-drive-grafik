@@ -85,8 +85,6 @@
   .mode{margin-left:auto;font-size:var(--fs-xs);font-weight:700;color:var(--muted);
     border:1px solid var(--line);padding:3px 9px;border-radius:var(--r-pill)}
   .duties{display:flex;flex-wrap:wrap;gap:6px}
-  .pill{font-size:var(--fs-xs);font-weight:700;padding:4px 9px;border-radius:var(--r-sm);
-    background:rgba(var(--c-rgb),.1);color:rgb(var(--c-rgb));border:1px solid transparent}
 
   /* ===================== ТАБЛИЦА ===================== */
   .tablecard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-2xl);overflow:hidden;box-shadow:var(--shadow)}
@@ -107,9 +105,15 @@
   .cell{display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center}
   .badge2{display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:var(--fs-base);color:rgb(var(--c-rgb))}
   .badge2 .mk{width:9px;height:9px;border-radius:50%;background:rgb(var(--c-rgb));flex:none}
-  .duty{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
-  .tag{font-size:var(--fs-2xs);font-weight:700;padding:3px 7px;border-radius:var(--r-xs);
-    background:rgba(var(--shadow-rgb),.05);color:var(--tag-ink)}
+  .duty{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+  .tag{display:inline-flex;align-items:center;gap:5px;font-size:var(--fs-2xs);font-weight:700;
+    padding:3px 9px 3px 3px;border-radius:var(--r-pill);background:rgba(var(--shadow-rgb),.05);color:var(--tag-ink)}
+  .ic{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:5px;
+    background:var(--svc,#888);flex:none;overflow:hidden}
+  .ic img{width:11px;height:11px;display:block}
+  .ic-letter{display:none;color:#fff;font-size:9px;font-weight:800;line-height:1}
+  .ic.noimg img{display:none}
+  .ic.noimg .ic-letter{display:inline-flex}
   .off{color:var(--muted);font-weight:600;opacity:.7;font-size:var(--fs-base)}
 
   .note{text-align:center;color:var(--muted);font-size:var(--fs-sm);margin-top:20px;line-height:1.7}
@@ -232,7 +236,21 @@
      и расписание. Вёрстка ниже строится автоматически.
      ========================================================= */
 
-  // Наборы обязанностей
+  // Сервисы: бренд-цвет, slug логотипа (simple-icons) и буква-запас на случай,
+  // если логотип не загрузится. Иконку добавить/сменить можно тут, в одном месте.
+  const SERVICE = {
+    "Telegram":  { color:"#229ED9", slug:"telegram", letter:"T" },
+    "WhatsApp":  { color:"#25D366", slug:"whatsapp", letter:"W" },
+    "ВКонтакте": { color:"#0077FF", slug:"vk",       letter:"В" },
+    "Авито":     { color:"#00AAFF", slug:"avito",    letter:"А" },
+    "Max":       { color:"#7C4DFF", slug:null,       letter:"M" },
+    "Телефон":   { color:"#34A853", slug:null,       letter:"☎" },
+    "ZZAP":      { color:"#FF6A00", slug:null,       letter:"Z" },
+    "Почта":     { color:"#1565C0", slug:null,       letter:"✉" },
+    "Д2":        { color:"#E8772E", slug:"drive2",   letter:"Д" },
+  };
+
+  // Наборы обязанностей (имена ссылаются на SERVICE выше)
   const DUTY = {
     pair:  ["Авито","Max","ВКонтакте","Телефон","ZZAP"], // Бекзод / Святослав
     krist: ["Telegram","WhatsApp","Почта","Д2"],         // Кристиан
@@ -262,13 +280,22 @@
 
   /* =========================== РЕНДЕР =========================== */
   const isWeekend = wd => wd === "Сб" || wd === "Вс";
-  const tags = arr => `<div class="duty">${arr.map(d => `<span class="tag">${d}</span>`).join("")}</div>`;
+
+  // Чип обязанности: логотип сервиса (или буква-запас) + название
+  function chip(name){
+    const s = SERVICE[name] || { color:"#888", slug:null, letter:name[0] };
+    const img = s.slug
+      ? `<img src="https://cdn.simpleicons.org/${s.slug}/ffffff" alt="" loading="lazy" onerror="this.closest('.ic').classList.add('noimg')">`
+      : "";
+    return `<span class="tag"><span class="ic${s.slug ? "" : " noimg"}" style="--svc:${s.color}">${img}<span class="ic-letter">${s.letter}</span></span>${name}</span>`;
+  }
+  const dutyRow = (arr, cls) => `<div class="${cls}">${arr.map(chip).join("")}</div>`;
 
   // Легенда
   document.getElementById("legend").innerHTML = PEOPLE.map(p => `
     <div class="person" style="--c-rgb:${p.rgb}">
       <div class="ptop"><span class="dot"></span><span class="pname">${p.name}</span><span class="mode">${p.mode}</span></div>
-      <div class="duties">${p.duties.map(d => `<span class="pill">${d}</span>`).join("")}</div>
+      ${dutyRow(p.duties, "duties")}
     </div>`).join("");
 
   // Шапка таблицы
@@ -285,7 +312,7 @@
       const label  = solo ? "На смене один · всё на нём" : "На смене";
       return `<td data-label="${p.name}">
         <div class="cell" style="--c-rgb:${p.rgb}">
-          <span class="badge2"><span class="mk"></span>${label}</span>${tags(duties)}
+          <span class="badge2"><span class="mk"></span>${label}</span>${dutyRow(duties, "duty")}
         </div></td>`;
     }).join("");
     return `<tr class="${weekend ? "weekend" : ""}">
