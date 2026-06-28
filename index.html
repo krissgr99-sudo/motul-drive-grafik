@@ -174,7 +174,7 @@
   .tpl-tags{display:flex;flex-wrap:wrap;gap:5px;padding:4px 16px 0}
   .tpl-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--chip-bg);color:var(--chip-text);border:1px solid var(--line)}
   .tpl-body{margin:13px 16px;padding:13px 14px;background:var(--card2);border:1px solid var(--line);border-radius:12px;
-    font-size:12.5px;line-height:1.62;white-space:pre-wrap;word-break:break-word;color:var(--text);max-height:340px;overflow:auto}
+    font-size:12.5px;line-height:1.62;white-space:pre-wrap;word-break:break-word;color:var(--text)}
   .tpl-todo-note{margin:13px 16px;padding:20px 16px;text-align:center;color:var(--muted);font-size:13px;line-height:1.5;
     background:var(--card2);border:1px dashed var(--line-strong);border-radius:12px}
   .tpl-actions{padding:0 16px 16px;display:flex;gap:10px}
@@ -808,7 +808,27 @@
       grid.querySelectorAll(".tpl-copy").forEach(btn=>{
         btn.addEventListener("click", e=>{ e.stopPropagation(); copyText(tplBody(list[+btn.dataset.i]), btn); });
       });
+      equalizeHeads();
     }
+
+    // Все свёрнутые карточки — одной высоты (= самой высокой). Вырос один → выросли все.
+    function equalizeHeads(){
+      const heads = grid.querySelectorAll(".tpl-card-head");
+      if(!heads.length) return;
+      heads.forEach(h => h.style.minHeight = "");        // сброс перед замером натуральной высоты
+      let max = 0;
+      heads.forEach(h => { if(h.offsetHeight > max) max = h.offsetHeight; });
+      if(!max) return;                                   // вкладка скрыта (высота 0) — пересчитаем при показе
+      heads.forEach(h => h.style.minHeight = max + "px");
+    }
+    const equalizeSoon = () => requestAnimationFrame(equalizeHeads);
+    window.equalizeTplHeads = equalizeSoon;              // дёргается из showPage, когда вкладка становится видимой
+    // при изменении ширины окна заголовки переносятся иначе — пересчитываем
+    let eqRaf;
+    window.addEventListener("resize", () => {
+      cancelAnimationFrame(eqRaf);
+      eqRaf = requestAnimationFrame(equalizeHeads);
+    });
 
     const resetFilters = () => FACETS.forEach(f=>filters[f.key]=null);
 
@@ -859,6 +879,8 @@
     document.querySelectorAll(".page").forEach(p => { p.hidden = (p.id !== "page-" + id); });
     document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.page === id));
     if(PAGES[id]){ titleT.textContent = PAGES[id].t; titleR.textContent = PAGES[id].r; }
+    // вкладка стала видимой — выровнять высоту карточек шаблонов (на скрытой вкладке высота = 0)
+    if(id === "shablony" && window.equalizeTplHeads) window.equalizeTplHeads();
     closeMenu();
     window.scrollTo(0, 0);
   }
