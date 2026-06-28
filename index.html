@@ -185,20 +185,23 @@
   #gate-btn:hover{background:var(--red-dark)}
   .gate-err{color:var(--red);font-size:13px;font-weight:700;height:18px;margin-top:10px}
   .gate-foot{font-size:11px;color:var(--muted);font-weight:600;margin-top:16px;letter-spacing:.04em}
+  .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 </style>
 </head>
 <body class="locked">
 
 <div id="gate">
-  <div class="gate-card">
+  <form id="gate-form" class="gate-card" autocomplete="on">
     <div class="badge"><span>MD</span></div>
     <div class="gate-title">График дежурств</div>
     <div class="gate-sub">MOTUL-DRIVE · введите пароль</div>
-    <input id="gate-pass" type="password" placeholder="Пароль" autocomplete="off">
-    <button id="gate-btn">Открыть</button>
+    <input class="vh" type="text" name="username" id="gate-user" value="motul-drive"
+           autocomplete="username" readonly tabindex="-1" aria-hidden="true">
+    <input id="gate-pass" name="password" type="password" placeholder="Пароль" autocomplete="current-password">
+    <button type="submit" id="gate-btn">Открыть</button>
     <div class="gate-err" id="gate-err"></div>
     <div class="gate-foot">Доступ только для сотрудников</div>
-  </div>
+  </form>
 </div>
 
 <div class="wrap">
@@ -321,11 +324,12 @@
   const inp  = document.getElementById("gate-pass");
   const err  = document.getElementById("gate-err");
 
+  const form = document.getElementById("gate-form");
   function unlock(){ document.body.classList.remove("locked"); }
   function tryUnlock(){
     if(enc(inp.value) === PASS_ENC){
       sessionStorage.setItem("md_ok","1");
-      unlock();
+      unlock();              // форма прячется → менеджер паролей предложит сохранить
     } else {
       err.textContent = "Неверный пароль";
       inp.value = ""; inp.focus();
@@ -335,8 +339,7 @@
     unlock();
   } else {
     inp.focus();
-    document.getElementById("gate-btn").addEventListener("click", tryUnlock);
-    inp.addEventListener("keydown", e => { if(e.key === "Enter") tryUnlock(); });
+    form.addEventListener("submit", e => { e.preventDefault(); tryUnlock(); });
   }
 </script>
 </body>
