@@ -293,7 +293,7 @@
     body{background:#fff;color:#111;padding:0}
     #gate{display:none !important}
     body.locked #app{filter:none}
-    .topbar,.person,.tablecard,.note{box-shadow:none}
+    .topbar,.tablecard,.note{box-shadow:none}
   }
 
   /* ===================== ЭКРАН ВХОДА ===================== */
@@ -558,77 +558,117 @@
   })();
 
   /* =========================================================
-     ШАБЛОНЫ — данные правятся здесь
-     Каждая карточка = объект. parts ссылаются на TPL_BLOCKS,
-     поэтому общий блок АКПП / мосты переиспользуется и не дублируется.
-     todo:true — карточка-заготовка (ждёт данных).
+     ШАБЛОНЫ ПРАЙСОВ — всё правится в таблицах ниже, дублей нет.
+
+     PRICE     — позиции и цены. ЕДИНСТВЕННОЕ место с суммами.
+                 Поменял число → пересчитаются и строки, и «Итого» (складывается само).
+     DIFFS     — доплата за мосты/раздатку (без блокировки / с блокировкой).
+     BOXES     — из каких позиций состоит услуга по каждой коробке.
+     TEMPLATES — комбинации (марка/коробка/тип/гибрид/блокировка). Заголовок,
+                 теги, текст, бейджи и фильтры строятся из них автоматически.
      ========================================================= */
-  const TPL_BLOCKS = {
-    akpp8hp:
-`1. Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76
-Трансмиссионное масло Motul ATF6 105774 12л 21600 руб.
-Промывочная присадка для АКПП BARDAHL 2200 руб.
-Оригинальный Фильтр-поддон ZF 1087298437 9000 руб.
-Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76 с промывкой системы 6000 руб.
-Итого: 38800 руб.
 
-1.1 Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76
-Оригинальное трансмиссионное масло ZF8HP S671090312 12л 26400 руб.
-Промывочная присадка для АКПП BARDAHL 2200 руб.
-Оригинальный Фильтр-поддон ZF 1087298437 9000 руб.
-Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76 с промывкой системы 6000 руб.
-Итого: 43600 руб.`,
-    partial8hp:
-`1.2 Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 (заменой фильтр-поддона)
-Оригинальное трансмиссионное масло ZF8HP S671090312 5л 11000 руб.
-Оригинальный Фильтр-поддон ZF 1087298437 9000 руб.
-Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 с заменой фильтр-поддона 3000 руб.
-Итого: 23000 руб.`,
-    partialMild:
-`1.2 Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 (заменой фильтр-поддона)
-Оригинальное трансмиссионное масло ZF8HP S671090312 5л 11000 руб.
-Оригинальный Фильтр-поддон ZF  19000 руб.
-Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 с заменой фильтр-поддона 3000 руб.
-Итого: 33000 руб.`,
-    diffs:
-`Также можем заменить масла в переднем, заднем дифференциале и раздаточной коробке.
-Масло Motul +замена 11550р
-Оригинал BMW +замена 28500р
-Motul ничем не уступает оригиналу`,
-    diffsBlock:
-`Также можем заменить масла в переднем, заднем дифференциале и раздаточной
-Масло  Motul +замена 12450р
-Оригинал BMW +замена31500р
-Motul ничем не уступает оригиналу`,
-    akppMild:
-`Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76
-Трансмиссионное масло Motul ATF6 105774 12л 21600 руб.
-Промывочная присадка для АКПП BARDAHL 2200 руб.
-Оригинальный Фильтр-поддон ZF  19000 руб.
-Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76 с промывкой системы 6000 руб.
-Итого: 48800 руб.
-
-1.1 Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76
-Оригинальное трансмиссионное масло ZF8HP S671090312 12л 26400 руб.
-Промывочная присадка для АКПП BARDAHL 2200 руб.
-Оригинальный Фильтр-поддон ZF  19000 руб.
-Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76 с промывкой системы 6000 руб.
-Итого: 53600 руб.`,
+  // 1) Позиции прайса: ключ → [название, цена ₽]. Цены живут только здесь.
+  const PRICE = {
+    oil_motul_12: ["Трансмиссионное масло Motul ATF6 105774 12л", 21600],
+    oil_zf_12:    ["Оригинальное трансмиссионное масло ZF8HP S671090312 12л", 26400],
+    oil_zf_5:     ["Оригинальное трансмиссионное масло ZF8HP S671090312 5л", 11000],
+    bardahl:      ["Промывочная присадка для АКПП BARDAHL", 2200],
+    filter_std:   ["Оригинальный Фильтр-поддон ZF 1087298437", 9000],
+    filter_mild:  ["Оригинальный Фильтр-поддон ZF", 19000],
+    work_full:    ["Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76 с промывкой системы", 6000],
+    work_partial: ["Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 с заменой фильтр-поддона", 3000],
   };
 
-  const TEMPLATES = [
-    { brand:"BMW", box:"8 ступка", title:"Аппаратная замена + мосты и раздатка", tags:["АКПП","Мосты","Раздатка"],                         parts:["akpp8hp","diffs"] },
-    { brand:"BMW", box:"8 ступка", title:"Аппаратная замена + мосты и раздатка (с блокировкой)", tags:["АКПП","Мосты","Раздатка","Блокировка"],  parts:["akpp8hp","diffsBlock"] },
-    { brand:"BMW", box:"8 ступка", title:"Частичная замена + мосты и раздатка",  tags:["АКПП","Частичная","Мосты","Раздатка"],             parts:["partial8hp","diffs"] },
-    { brand:"BMW", box:"8 ступка", title:"Частичная замена + мосты и раздатка (с блокировкой)", tags:["АКПП","Частичная","Мосты","Раздатка","Блокировка"], parts:["partial8hp","diffsBlock"] },
-    { brand:"BMW", box:"8 ступка", title:"Мягкий гибрид · аппаратная замена + мосты и раздатка", tags:["АКПП","Mild Hybrid","Мосты","Раздатка"], parts:["akppMild","diffs"] },
-    { brand:"BMW", box:"8 ступка", title:"Мягкий гибрид · аппаратная замена + мосты и раздатка (с блокировкой)", tags:["АКПП","Mild Hybrid","Мосты","Раздатка","Блокировка"], parts:["akppMild","diffsBlock"] },
-    { brand:"BMW", box:"8 ступка", title:"Мягкий гибрид · частичная замена + мосты и раздатка", tags:["АКПП","Mild Hybrid","Частичная","Мосты","Раздатка"], parts:["partialMild","diffs"] },
-    { brand:"BMW", box:"8 ступка", title:"Мягкий гибрид · частичная замена + мосты и раздатка (с блокировкой)", tags:["АКПП","Mild Hybrid","Частичная","Мосты","Раздатка","Блокировка"], parts:["partialMild","diffsBlock"] },
+  // 2) Доплата за мосты/раздатку (3 узла). Меняешь только числа.
+  const DIFFS = {
+    head: "Также можем заменить масла в переднем, заднем дифференциале и раздаточной коробке.",
+    note: "Motul ничем не уступает оригиналу",
+    "Без блокировки": { motul: 11550, orig: 28500 },
+    "С блокировкой":  { motul: 12450, orig: 31500 },
+  };
 
-    { brand:"BMW", box:"6 ступка", title:"Аппаратная замена + мосты и раздатка", tags:["АКПП","Мосты","Раздатка"], todo:true },
+  // 3) Услуги по коробкам. Новую коробку (6-ступку) добавляешь сюда + позиции в PRICE.
+  //    filter — какой фильтр-поддон для обычной / гибрида.
+  const BOXES = {
+    "8 ступка": {
+      filter: { "Обычная": "filter_std", "Гибрид": "filter_mild" },
+      "Аппаратная": {
+        head: "Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76",
+        variants: f => [
+          { label: "1.",  items: ["oil_motul_12", "bardahl", f, "work_full"] },
+          { label: "1.1", items: ["oil_zf_12",    "bardahl", f, "work_full"] },
+        ],
+      },
+      "Частичная": {
+        head: "Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 (заменой фильтр-поддона)",
+        variants: f => [
+          { label: "1.2", items: ["oil_zf_5", f, "work_partial"] },
+        ],
+      },
+    },
+  };
+
+  // ---- генераторы: тексты собираются отсюда, руками не дублируются ----
+  const engineOf = t => t.hybrid ? "Гибрид" : "Обычная";
+  const lockOf   = t => t.lock   ? "С блокировкой" : "Без блокировки";
+
+  function renderVariant(v, head){
+    const lines = [`${v.label} ${head}`];
+    let sum = 0;
+    for(const key of v.items){
+      const item = PRICE[key];
+      if(!item) continue;                 // неизвестная позиция — пропускаем, не падаем
+      lines.push(`${item[0]} ${item[1]} руб.`);
+      sum += item[1];
+    }
+    lines.push(`Итого: ${sum} руб.`);     // «Итого» = сумма позиций, считается само
+    return lines.join("\n");
+  }
+  function renderDiffs(t){
+    const d = DIFFS[lockOf(t)];
+    if(!d) return "";
+    return [DIFFS.head, `Масло Motul +замена ${d.motul}р`, `Оригинал BMW +замена ${d.orig}р`, DIFFS.note].join("\n");
+  }
+
+  // Текст шаблона: АКПП (1-2 варианта) + при необходимости мосты/раздатка
+  function tplBody(t){
+    const box = BOXES[t.box];
+    const svc = box && box[t.type];
+    if(!svc) return "";                    // нет данных по услуге (заготовка) — пусто
+    const filterKey = box.filter[engineOf(t)];
+    const akpp = svc.variants(filterKey).map(v => renderVariant(v, svc.head)).join("\n\n");
+    return t.diffs ? `${akpp}\n\n${renderDiffs(t)}` : akpp;
+  }
+  // Заголовок и теги — тоже из полей карточки, единый источник правды
+  function tplTitle(t){
+    const type = t.hybrid ? t.type.toLowerCase() : t.type;
+    return (t.hybrid ? "Мягкий гибрид · " : "") + type + " замена"
+         + (t.diffs ? " + мосты и раздатка" : "")
+         + (t.lock  ? " (с блокировкой)"   : "");
+  }
+  function tplTags(t){
+    const tags = ["АКПП", t.type];
+    if(t.hybrid) tags.push("Гибрид", "Mild Hybrid");
+    if(t.diffs)  tags.push("Мосты", "Раздатка");
+    if(t.lock)   tags.push("Блокировка");
+    return tags;
+  }
+
+  // 4) Карточки = комбинации флагов. Больше ничего задавать не нужно.
+  //    type: "Аппаратная" | "Частичная"; hybrid/lock/diffs: true/false; todo — заготовка.
+  const TEMPLATES = [
+    { brand:"BMW", box:"8 ступка", type:"Аппаратная", hybrid:false, lock:false, diffs:true },
+    { brand:"BMW", box:"8 ступка", type:"Аппаратная", hybrid:false, lock:true,  diffs:true },
+    { brand:"BMW", box:"8 ступка", type:"Частичная",  hybrid:false, lock:false, diffs:true },
+    { brand:"BMW", box:"8 ступка", type:"Частичная",  hybrid:false, lock:true,  diffs:true },
+    { brand:"BMW", box:"8 ступка", type:"Аппаратная", hybrid:true,  lock:false, diffs:true },
+    { brand:"BMW", box:"8 ступка", type:"Аппаратная", hybrid:true,  lock:true,  diffs:true },
+    { brand:"BMW", box:"8 ступка", type:"Частичная",  hybrid:true,  lock:false, diffs:true },
+    { brand:"BMW", box:"8 ступка", type:"Частичная",  hybrid:true,  lock:true,  diffs:true },
+
+    { brand:"BMW", box:"6 ступка", type:"Аппаратная", hybrid:false, lock:false, diffs:true, todo:true },
   ];
-  const tplBody = t => (t.parts||[]).map(p=>TPL_BLOCKS[p]).join("\n\n");
 
   // Логотипы марок (inline SVG — работает офлайн). Добавляешь марку → добавляешь сюда значок.
   const BRAND_LOGOS = {
@@ -655,18 +695,11 @@ Motul ничем не уступает оригиналу`,
     const filters = { type:null, engine:null, lock:null };
     const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 
-    // Атрибуты карточки выводятся из тегов — отдельно проставлять не нужно
-    const has = (t,x) => (t.tags||[]).includes(x);
-    const ATTR = {
-      type:   t => has(t,"Частичная")   ? "Частичная" : "Аппаратная",
-      engine: t => has(t,"Mild Hybrid") ? "Гибрид"    : "Обычная",
-      lock:   t => has(t,"Блокировка")  ? "С блокировкой" : "Без блокировки",
-    };
-    // Оси фильтров (порядок значений фиксирован для стабильного вида)
+    // Оси фильтров: get(t) берёт значение прямо из полей карточки (порядок значений фиксирован)
     const FACETS = [
-      { key:"type",   label:"Тип",   order:["Аппаратная","Частичная"] },
-      { key:"engine", label:"Мотор", order:["Обычная","Гибрид"] },
-      { key:"lock",   label:"Блок.", order:["Без блокировки","С блокировкой"] },
+      { key:"type",   label:"Тип",   get:t=>t.type, order:["Аппаратная","Частичная"] },
+      { key:"engine", label:"Мотор", get:engineOf,  order:["Обычная","Гибрид"] },
+      { key:"lock",   label:"Блок.", get:lockOf,    order:["Без блокировки","С блокировкой"] },
     ];
 
     const brands = [...new Set(TEMPLATES.map(t=>t.brand))];
@@ -692,7 +725,7 @@ Motul ничем не уступает оригиналу`,
       if(activeBrand==="all"){ facetsBox.hidden = true; facetsBox.innerHTML = ""; return; }
       const base = baseSet();
       const rows = FACETS.map(f=>{
-        const present = new Set(base.map(t=>ATTR[f.key](t)));
+        const present = new Set(base.map(t=>f.get(t)));
         const vals = f.order.filter(v=>present.has(v));
         if(vals.length < 2) return ""; // выбирать не из чего — ось скрываем
         const chips = vals.map(v=>
@@ -712,9 +745,9 @@ Motul ничем не уступает оригиналу`,
     const visible = () => TEMPLATES.filter(t=>{
       if(activeBrand!=="all" && t.brand!==activeBrand) return false;
       if(activeBox!=="all" && t.box!==activeBox) return false;
-      for(const f of FACETS){ if(filters[f.key] && ATTR[f.key](t)!==filters[f.key]) return false; }
+      for(const f of FACETS){ if(filters[f.key] && f.get(t)!==filters[f.key]) return false; }
       if(query){
-        const hay = (t.brand+" "+(t.box||"")+" "+t.title+" "+(t.tags||[]).join(" ")+" "+tplBody(t)).toLowerCase();
+        const hay = (t.brand+" "+(t.box||"")+" "+tplTitle(t)+" "+tplTags(t).join(" ")+" "+tplBody(t)).toLowerCase();
         if(!hay.includes(query)) return false;
       }
       return true;
@@ -737,29 +770,30 @@ Motul ничем не уступает оригиналу`,
       const list = visible();
       if(!list.length){ grid.innerHTML = `<div class="tpl-empty">Ничего не найдено</div>`; return; }
       grid.innerHTML = list.map((t,i)=>{
-        const tags = (t.tags||[]).map(x=>`<span class="tpl-tag">${esc(x)}</span>`).join("");
+        const tags = tplTags(t).map(x=>`<span class="tpl-tag">${esc(x)}</span>`).join("");
         const logo = BRAND_LOGOS[t.brand] || "";
-        const typ = ATTR.type(t);
-        const badges = [`<span class="tpl-badge ${typ==="Частичная"?"b-part":"b-app"}">${typ}</span>`];
-        if(ATTR.engine(t)==="Гибрид")        badges.push(`<span class="tpl-badge b-hybrid">⚡ Гибрид</span>`);
-        if(ATTR.lock(t)==="С блокировкой")   badges.push(`<span class="tpl-badge b-lock">🔒 Блокировка</span>`);
-        return `<div class="tpl-card ${t.todo?"is-todo":""}">
+        const body = tplBody(t);
+        const placeholder = t.todo || !body;   // нет данных по услуге → показываем как заготовку
+        const badges = [`<span class="tpl-badge ${t.type==="Частичная"?"b-part":"b-app"}">${esc(t.type)}</span>`];
+        if(t.hybrid) badges.push(`<span class="tpl-badge b-hybrid">⚡ Гибрид</span>`);
+        if(t.lock)   badges.push(`<span class="tpl-badge b-lock">🔒 Блокировка</span>`);
+        return `<div class="tpl-card ${placeholder?"is-todo":""}">
           <button class="tpl-card-head" type="button" aria-expanded="false">
             <span class="tpl-brand-block">
               <span class="tpl-brand-tag">${esc(t.brand)}</span>
               ${logo ? `<span class="tpl-brand-logo">${logo}</span>` : ""}
             </span>
             <span class="tpl-head-main">
-              <span class="tpl-title">${esc(t.title)}</span>
+              <span class="tpl-title">${esc(tplTitle(t))}</span>
               <span class="tpl-badges">${badges.join("")}</span>
             </span>
             <span class="tpl-chevron"></span>
           </button>
           <div class="tpl-collapse"><div class="tpl-collapse-inner">
             ${tags ? `<div class="tpl-tags">${tags}</div>` : ""}
-            ${t.todo
+            ${placeholder
               ? `<div class="tpl-todo-note">Шаблон ещё не заполнен — пришли цифры, и он появится здесь.</div>`
-              : `<div class="tpl-body">${esc(tplBody(t))}</div>
+              : `<div class="tpl-body">${esc(body)}</div>
                  <div class="tpl-actions"><button class="tpl-copy" type="button" data-i="${i}">📋 Копировать</button></div>`}
           </div></div>
         </div>`;
@@ -804,8 +838,8 @@ Motul ничем не уступает оригиналу`,
     });
     searchInp.addEventListener("input", ()=>{ query = searchInp.value.trim().toLowerCase(); render(); });
     copyAllBtn.addEventListener("click", ()=>{
-      const text = visible().filter(t=>!t.todo)
-        .map(t=>`${t.brand} · ${t.title}\n\n${tplBody(t)}`).join("\n\n— — — — —\n\n");
+      const text = visible().map(t=>[t, tplBody(t)]).filter(([t,b])=>!t.todo && b)
+        .map(([t,b])=>`${t.brand} · ${tplTitle(t)}\n\n${b}`).join("\n\n— — — — —\n\n");
       if(text) copyText(text, copyAllBtn);
     });
     renderSubtabs(); renderFacets(); render();
