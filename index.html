@@ -85,11 +85,11 @@
     padding:16px 16px 16px 19px;overflow:hidden;box-shadow:var(--shadow);
   }
   .person::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--cc)}
-  .ptop{display:flex;align-items:center;gap:10px}
-  .dot{width:9px;height:9px;border-radius:50%;background:var(--cc);flex:none;
+  .ptop{position:relative;display:flex;align-items:center;justify-content:center;min-height:26px}
+  .dot{position:absolute;left:0;width:9px;height:9px;border-radius:50%;background:var(--cc);flex:none;
     box-shadow:0 0 0 3px color-mix(in srgb, var(--cc) 18%, transparent)}
-  .pname{font-weight:800;font-size:16px;flex:1}
-  .mode{font-size:11px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap;
+  .pname{font-weight:800;font-size:16px}
+  .mode{position:absolute;right:0;font-size:11px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap;
     background:color-mix(in srgb, var(--cc) 14%, transparent);color:var(--cc);
     border:1px solid color-mix(in srgb, var(--cc) 32%, transparent)}
   .duties{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
