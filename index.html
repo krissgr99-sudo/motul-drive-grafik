@@ -578,6 +578,17 @@
     filter_mild:  ["Оригинальный Фильтр-поддон ZF", 19000],
     work_full:    ["Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76 с промывкой системы", 6000],
     work_partial: ["Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 с заменой фильтр-поддона", 3000],
+    // Aisin 8F22 (BMW X1 F48)
+    oil_motul_11:    ["Трансмиссионное масло Motul ATF6 105774 11л", 19800],
+    work_full_aisin: ["Полная аппаратная замена масла в АКПП Aisin 8F22 с промывкой системы", 5000],
+    // 8G45 / 09S (масло Ravenol, допуск AW2)
+    oil_ravenol_11:  ["Трансмиссионное масло Ravenol ATF T-ULV Fluid 1211146-001 11л", 35200],
+    work_full_09s:   ["Полная аппаратная замена масла в АКПП с промывкой 09S/8G45", 5000],
+    // Муфта Haldex (BMW X1 F48)
+    oil_haldex:       ["Трансмиссионное масло для муфты Haldex 101172 1шт", 3000],
+    haldex_ring:      ["Уплотнительное кольцо BMW Haldex", 3500],
+    work_haldex_cut:  ["Замена масла в муфте Haldex (методом спил)", 6000],
+    work_haldex_full: ["Замена масла в муфте Haldex полным разбором", 10000],
   };
 
   // 2) Доплата за мосты/раздатку (3 узла). Меняешь только числа.
@@ -586,6 +597,19 @@
     note: "Motul ничем не уступает оригиналу",
     "Без блокировки": { motul: 11550, orig: 28500 },
     "С блокировкой":  { motul: 12450, orig: 31500 },
+  };
+
+  // 2.1) Мосты для переднеприводной платформы (X1 F48) — без раздатки, только Motul.
+  const AXLES_X1 = { head: "Передний и задний дифференциал.", motul: 11000 };
+
+  // 2.2) Муфта Haldex (X1 F48) — отдельный блок с двумя вариантами. Цены — в PRICE.
+  const HALDEX = {
+    head:  "Замена масла в муфте Haldex (BMW X1 F48)",
+    intro: "2 варианта:",
+    variants: [
+      { label: "1)", items: ["oil_haldex", "work_haldex_cut"] },
+      { label: "2)", items: ["oil_haldex", "haldex_ring", "work_haldex_full"] },
+    ],
   };
 
   // 3) Услуги по коробкам. Новую коробку (6-ступку) добавляешь сюда + позиции в PRICE.
@@ -604,6 +628,29 @@
         head: "Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 (заменой фильтр-поддона)",
         variants: f => [
           { label: "1.2", items: ["oil_zf_5", f, "work_partial"] },
+        ],
+      },
+    },
+    // Переднеприводная платформа BMW X1 F48: Aisin 8F22, без фильтр-поддона.
+    // axles/haldex — дополнительные блоки этой коробки (мосты и муфта Haldex).
+    "8 ступка Aisin": {
+      axles: AXLES_X1,
+      haldex: HALDEX,
+      "Аппаратная": {
+        head: "Полная аппаратная замена масла в АКПП Aisin 8F22",
+        variants: () => [
+          { label: "1.", items: ["oil_motul_11", "bardahl", "work_full_aisin"] },
+        ],
+      },
+    },
+    // 8G45 / 09S на масле Ravenol (допуск AW2). Мосты и Haldex — те же, что у X1 F48.
+    "8G45-09S": {
+      axles: AXLES_X1,
+      haldex: HALDEX,
+      "Аппаратная": {
+        head: "С трансмиссионным маслом Ravenol допуском AW2",
+        variants: () => [
+          { label: "1.", items: ["oil_ravenol_11", "bardahl", "work_full_09s"] },
         ],
       },
     },
@@ -630,18 +677,42 @@
     if(!d) return "";
     return [DIFFS.head, `Масло Motul +замена ${d.motul}р`, `Оригинал BMW +замена ${d.orig}р`, DIFFS.note].join("\n");
   }
+  // Простые мосты (X1 F48): один блок, только Motul.
+  function renderAxles(a){
+    return `${a.head}\nМасло Motul +замена ${a.motul}р`;
+  }
+  // Муфта Haldex: общий заголовок + варианты с собственным «Итого».
+  function renderHaldex(h){
+    const blocks = h.variants.map(v=>{
+      const lines = [v.label];
+      let sum = 0;
+      for(const key of v.items){
+        const item = PRICE[key];
+        if(!item) continue;
+        lines.push(`${item[0]} ${item[1]} руб.`);
+        sum += item[1];
+      }
+      lines.push(`Итого: ${sum} руб.`);
+      return lines.join("\n");
+    });
+    return `${h.head}\n${h.intro}\n\n${blocks.join("\n\n")}`;
+  }
 
-  // Текст шаблона: АКПП (1-2 варианта) + при необходимости мосты/раздатка
+  // Текст шаблона: АКПП (1-2 варианта) + при необходимости мосты/раздатка/Haldex
   function tplBody(t){
     const box = BOXES[t.box];
     const svc = box && box[t.type];
     if(!svc) return "";                    // нет данных по услуге (заготовка) — пусто
-    const filterKey = box.filter[engineOf(t)];
-    const akpp = svc.variants(filterKey).map(v => renderVariant(v, svc.head)).join("\n\n");
-    return t.diffs ? `${akpp}\n\n${renderDiffs(t)}` : akpp;
+    const filterKey = box.filter ? box.filter[engineOf(t)] : null;
+    const parts = [svc.variants(filterKey).map(v => renderVariant(v, svc.head)).join("\n\n")];
+    if(t.diffs)   parts.push(renderDiffs(t));        // ZF: мосты + раздатка (зависит от блокировки)
+    if(box.axles) parts.push(renderAxles(box.axles)); // простой блок мостов (данные в коробке)
+    if(box.haldex)parts.push(renderHaldex(box.haldex));
+    return parts.filter(Boolean).join("\n\n");
   }
   // Заголовок и теги — тоже из полей карточки, единый источник правды
   function tplTitle(t){
+    if(t.title) return t.title;            // нестандартная карточка — свой заголовок
     const type = t.hybrid ? t.type.toLowerCase() : t.type;
     return (t.hybrid ? "Мягкий гибрид · " : "") + type + " замена"
          + (t.diffs ? " + мосты и раздатка" : "")
@@ -652,6 +723,7 @@
     if(t.hybrid) tags.push("Гибрид", "Mild Hybrid");
     if(t.diffs)  tags.push("Мосты", "Раздатка");
     if(t.lock)   tags.push("Блокировка");
+    if(t.extraTags) tags.push(...t.extraTags);
     return tags;
   }
 
@@ -666,6 +738,14 @@
     { brand:"BMW", box:"8 ступка", type:"Аппаратная", hybrid:true,  lock:true,  diffs:true },
     { brand:"BMW", box:"8 ступка", type:"Частичная",  hybrid:true,  lock:false, diffs:true },
     { brand:"BMW", box:"8 ступка", type:"Частичная",  hybrid:true,  lock:true,  diffs:true },
+
+    { brand:"BMW", box:"8 ступка Aisin", type:"Аппаратная", hybrid:false, lock:false, diffs:false,
+      title:"Аппаратная замена · Aisin 8F22 + мосты и Haldex",
+      extraTags:["Aisin 8F22", "X1 F48", "Мосты", "Haldex"] },
+
+    { brand:"BMW", box:"8G45-09S", type:"Аппаратная", hybrid:false, lock:false, diffs:false,
+      title:"Аппаратная замена · 8G45-09S + мосты и Haldex",
+      extraTags:["8G45", "09S", "Ravenol AW2", "Мосты", "Haldex"] },
 
     { brand:"BMW", box:"6 ступка", type:"Аппаратная", hybrid:false, lock:false, diffs:true, todo:true },
   ];
