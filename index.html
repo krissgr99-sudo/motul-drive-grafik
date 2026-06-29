@@ -1023,6 +1023,7 @@
     if(PAGES[id]){ titleT.textContent = PAGES[id].t; titleR.textContent = PAGES[id].r; }
     // вкладка стала видимой — выровнять высоту карточек шаблонов (на скрытой вкладке высота = 0)
     if(id === "shablony" && window.equalizeTplHeads) window.equalizeTplHeads();
+    try { localStorage.setItem("md_page", id); } catch(e){}  // запомнить вкладку для следующей загрузки
     closeMenu();
     window.scrollTo(0, 0);
   }
@@ -1031,7 +1032,10 @@
   document.getElementById("drawer-close").addEventListener("click", closeMenu);
   document.querySelectorAll(".nav-item").forEach(n => n.addEventListener("click", () => showPage(n.dataset.page)));
   document.addEventListener("keydown", e => { if(e.key === "Escape") closeMenu(); });
-  showPage("grafik");
+  // при загрузке открываем последнюю просмотренную вкладку (если её нет — график)
+  let startPage = "grafik";
+  try { const saved = localStorage.getItem("md_page"); if(saved && PAGES[saved]) startPage = saved; } catch(e){}
+  showPage(startPage);
 
   /* ===================== Экран входа (пароль) ===================== */
   const PASS_ENC = "TW90dWxEcml2ZQ=="; // base64("MotulDrive")
