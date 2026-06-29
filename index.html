@@ -578,6 +578,12 @@
     filter_mild:  ["Оригинальный Фильтр-поддон ZF", 19000],
     work_full:    ["Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76 с промывкой системы", 6000],
     work_partial: ["Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 с заменой фильтр-поддона", 3000],
+    // Полный гибрид ZF 8HP60 (PHEV): заводское масло Hybrid2, оригинальный поддон BMW, работа 10000
+    oil_zf_hyb2_12: ["Оригинальное трансмиссионное масло ZF Hybrid2 (то что с завода) 12л", 52800],
+    oil_zf_hyb2_5:  ["Оригинальное трансмиссионное масло ZF Hybrid2 (то что с завода) 5л", 22000],
+    filter_bmw_60:  ["Оригинальный Фильтр-поддон BMW", 47000],
+    work_full_60:   ["Полная аппаратная замена масла в АКПП ZF 8HP60 с промывкой системы", 10000],
+    work_part_60:   ["Частичная замена масла в АКПП ZF 8HP60 с заменой фильтр-поддона", 7000],
     // 6-ступка (ZF 6HP): на 1 литр масла больше, чем у 8-ступки (Motul +1800, ZF +2200 за литр)
     oil_motul_13: ["Трансмиссионное масло Motul ATF6 105774 13л", 23400],
     oil_zf6_13:   ["Оригинальное трансмиссионное масло ZF6HP S671090255 13л", 28600],
@@ -636,19 +642,36 @@
   //    filter — какой фильтр-поддон для обычной / гибрида.
   const BOXES = {
     "8 ступка": {
-      filter: { "Обычная": "filter_std", "Гибрид": "filter_mild" },
+      filter: { "Обычная": "filter_std", "Мягкий гибрид": "filter_mild" },
       "Аппаратная": {
         head: "Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76",
         variants: f => [
           { label: "1.",  items: ["oil_motul_12", "bardahl", f, "work_full"] },
           { label: "1.1", items: ["oil_zf_12",    "bardahl", f, "work_full"] },
         ],
+        // Полный гибрид = другой агрегат ZF 8HP60: 3 варианта масла, поддон BMW, работа 10000.
+        "Гибрид": {
+          head: "Полная аппаратная замена масла в АКПП ZF 8HP60",
+          variants: () => [
+            { label: "1.",  items: ["oil_zf_hyb2_12", "bardahl", "filter_bmw_60", "work_full_60"] },
+            { label: "1.1", items: ["oil_motul_12",   "bardahl", "filter_bmw_60", "work_full_60"] },
+            { label: "1.2", items: ["oil_zf_12",      "bardahl", "filter_bmw_60", "work_full_60"] },
+          ],
+        },
       },
       "Частичная": {
         head: "Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 (заменой фильтр-поддона)",
         variants: f => [
           { label: "1.2", items: ["oil_zf_5", f, "work_partial"] },
         ],
+        // Полный гибрид 8HP60: тот же поддон BMW, работа частичной 7000. Два масла на выбор.
+        "Гибрид": {
+          head: "Частичная замена масла в АКПП ZF 8HP60 (заменой фильтр-поддона)",
+          variants: () => [
+            { label: "1.2", items: ["oil_zf_hyb2_5", "filter_bmw_60", "work_part_60"] },
+            { label: "1.3", items: ["oil_zf_5",      "filter_bmw_60", "work_part_60"] },
+          ],
+        },
       },
     },
     // 6-ступка ZF 6HP: всё как у 8-ступки, но на 1 литр масла больше и обозначение 6HP.
@@ -694,7 +717,8 @@
   };
 
   // ---- генераторы: тексты собираются отсюда, руками не дублируются ----
-  const engineOf = t => t.hybrid ? "Гибрид" : "Обычная";
+  // Мотор: "Обычная" | "Мягкий гибрид" | "Гибрид". Старый флаг hybrid:true = мягкий гибрид.
+  const engineOf = t => t.engine ? t.engine : (t.hybrid ? "Мягкий гибрид" : "Обычная");
   const lockOf   = t => t.lock   ? "С блокировкой" : "Без блокировки";
 
   function renderVariant(v, head){
@@ -751,9 +775,11 @@
   // Текст шаблона: АКПП (1-2 варианта) + при необходимости мосты/раздатка/Haldex
   function tplBody(t){
     const box = BOXES[t.box];
-    const svc = box && box[t.type];
+    let svc = box && box[t.type];
     if(!svc) return "";                    // нет данных по услуге (заготовка) — пусто
-    const filterKey = box.filter ? box.filter[engineOf(t)] : null;
+    const eng = engineOf(t);
+    if(svc[eng]) svc = svc[eng];           // мотор переопределяет услугу (полный гибрид = др. агрегат)
+    const filterKey = box.filter ? box.filter[eng] : null;
     const parts = [svc.variants(filterKey).map(v => renderVariant(v, svc.head)).join("\n\n")];
     if(t.diffs)         parts.push(renderDiffs(t));  // ZF: мосты + раздатка (зависит от блокировки)
     if(t.diffsDetailed) parts.push(renderDiffsDetailed(DIFFS_DETAILED)); // поузловой расчёт мостов
@@ -764,15 +790,19 @@
   // Заголовок и теги — тоже из полей карточки, единый источник правды
   function tplTitle(t){
     if(t.title) return t.title;            // нестандартная карточка — свой заголовок
-    const type = t.hybrid ? t.type.toLowerCase() : t.type;
+    const eng = engineOf(t);
+    const isHyb = eng !== "Обычная";
+    const type = isHyb ? t.type.toLowerCase() : t.type;
     return (t.prefix ? t.prefix + " · " : "")  // подпись в начале (напр. «Шестиступка»)
-         + (t.hybrid ? "Мягкий гибрид · " : "") + type + " замена"
+         + (isHyb ? eng + " · " : "") + type + " замена"
          + (t.diffs ? " + мосты и раздатка" : "")
          + (t.lock  ? " (с блокировкой)"   : "");
   }
   function tplTags(t){
     const tags = ["АКПП", t.type];
-    if(t.hybrid) tags.push("Гибрид", "Mild Hybrid");
+    const eng = engineOf(t);
+    if(eng === "Мягкий гибрид") tags.push("Мягкий гибрид", "Mild Hybrid");
+    if(eng === "Гибрид")        tags.push("Гибрид", "ZF 8HP60");
     if(t.diffs)  tags.push("Мосты", "Раздатка");
     if(t.lock)   tags.push("Блокировка");
     if(t.extraTags) tags.push(...t.extraTags);
@@ -790,6 +820,12 @@
     { brand:"BMW", box:"8 ступка", type:"Аппаратная", hybrid:true,  lock:true,  diffs:true },
     { brand:"BMW", box:"8 ступка", type:"Частичная",  hybrid:true,  lock:false, diffs:true },
     { brand:"BMW", box:"8 ступка", type:"Частичная",  hybrid:true,  lock:true,  diffs:true },
+
+    // Полный гибрид ZF 8HP60 (PHEV) — три варианта масла, поддон BMW, работа 10000
+    { brand:"BMW", box:"8 ступка", type:"Аппаратная", engine:"Гибрид", lock:false, diffs:true },
+    { brand:"BMW", box:"8 ступка", type:"Аппаратная", engine:"Гибрид", lock:true,  diffs:true },
+    { brand:"BMW", box:"8 ступка", type:"Частичная",  engine:"Гибрид", lock:false, diffs:true },
+    { brand:"BMW", box:"8 ступка", type:"Частичная",  engine:"Гибрид", lock:true,  diffs:true },
 
     { brand:"BMW", box:"8 ступка Aisin", type:"Аппаратная", hybrid:false, lock:false, diffs:false,
       title:"Аппаратная замена · Aisin 8F22 + мосты и Haldex",
@@ -840,7 +876,7 @@
     // Оси фильтров: get(t) берёт значение прямо из полей карточки (порядок значений фиксирован)
     const FACETS = [
       { key:"type",   label:"Тип",   get:t=>t.type, order:["Аппаратная","Частичная"] },
-      { key:"engine", label:"Мотор", get:engineOf,  order:["Обычная","Гибрид"] },
+      { key:"engine", label:"Мотор", get:engineOf,  order:["Обычная","Мягкий гибрид","Гибрид"] },
       { key:"lock",   label:"Блок.", get:lockOf,    order:["Без блокировки","С блокировкой"] },
       { key:"axle",   label:"Мост",  get:t=>t.diffsDetailed?"Трёхсекционный":"Обычный", order:["Обычный","Трёхсекционный"] },
     ];
@@ -918,7 +954,8 @@
         const body = tplBody(t);
         const placeholder = t.todo || !body;   // нет данных по услуге → показываем как заготовку
         const badges = [`<span class="tpl-badge ${t.type==="Частичная"?"b-part":"b-app"}">${esc(t.type)}</span>`];
-        if(t.hybrid) badges.push(`<span class="tpl-badge b-hybrid">⚡ Гибрид</span>`);
+        const eng = engineOf(t);
+        if(eng !== "Обычная") badges.push(`<span class="tpl-badge b-hybrid">⚡ ${esc(eng)}</span>`);
         if(t.lock)   badges.push(`<span class="tpl-badge b-lock">🔒 Блокировка</span>`);
         return `<div class="tpl-card ${placeholder?"is-todo":""}">
           <button class="tpl-card-head" type="button" aria-expanded="false">
