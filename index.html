@@ -578,6 +578,20 @@
     filter_mild:  ["Оригинальный Фильтр-поддон ZF", 19000],
     work_full:    ["Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76 с промывкой системы", 6000],
     work_partial: ["Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 с заменой фильтр-поддона", 3000],
+    // 6-ступка (ZF 6HP): на 1 литр масла больше, чем у 8-ступки (Motul +1800, ZF +2200 за литр)
+    oil_motul_13: ["Трансмиссионное масло Motul ATF6 105774 13л", 23400],
+    oil_zf6_13:   ["Оригинальное трансмиссионное масло ZF6HP S671090255 13л", 28600],
+    filter_6hp:   ["Оригинальный Фильтр-поддон ZF 24152333903 / 24152333907", 9000],
+    work_full_6hp:["Полная аппаратная замена масла в АКПП ZF 6HP с промывкой системы", 6000],
+    oil_zf6_6:    ["Оригинальное трансмиссионное масло ZF6HP S671090255 6л", 13200],
+    work_part_6hp:["Частичная замена масла в АКПП ZF 6HP с заменой фильтр-поддона", 3000],
+    // Детальные мосты/раздатка (задний мост трёхсекционный) — цены со скрина
+    diff_oil_front:   ["Трансмиссионное масло Motul Gear 300 75W90 105777 1.5л", 6750],
+    diff_work_front:  ["Замена масла в переднем дифференциале", 1000],
+    diff_oil_transf:  ["Трансмиссионное масло Motul Multi DCTF 105786 0.6л", 1800],
+    diff_work_transf: ["Замена масла в раздаточной коробке", 1000],
+    diff_oil_rear:    ["Трансмиссионное масло Motul Gear 300 LS 75W90 синтетическое 105778 1.1л", 6050],
+    diff_work_rear3:  ["Замена масла в заднем дифференциале (трёхсекционный)", 3000],
     // Aisin 8F22 (BMW X1 F48)
     oil_motul_11:    ["Трансмиссионное масло Motul ATF6 105774 11л", 19800],
     work_full_aisin: ["Полная аппаратная замена масла в АКПП Aisin 8F22 с промывкой системы", 5000],
@@ -599,10 +613,16 @@
     "С блокировкой":  { motul: 12450, orig: 31500 },
   };
 
-  // 2.1) Мосты для переднеприводной платформы (X1 F48) — без раздатки, только Motul.
+  // 2.1) Детальные мосты/раздатка — поузловой расчёт, задний мост трёхсекционный. Цены в PRICE.
+  const DIFFS_DETAILED = {
+    head: "Также можем заменить масла в мостах и раздаточной коробке (задний мост трёхсекционный):",
+    items: ["diff_oil_front", "diff_work_front", "diff_oil_transf", "diff_work_transf", "diff_oil_rear", "diff_work_rear3"],
+  };
+
+  // 2.2) Мосты для переднеприводной платформы (X1 F48) — без раздатки, только Motul.
   const AXLES_X1 = { head: "Передний и задний дифференциал.", motul: 11000 };
 
-  // 2.2) Муфта Haldex (X1 F48) — отдельный блок с двумя вариантами. Цены — в PRICE.
+  // 2.3) Муфта Haldex (X1 F48) — отдельный блок с двумя вариантами. Цены — в PRICE.
   const HALDEX = {
     head:  "Замена масла в муфте Haldex (BMW X1 F48)",
     intro: "2 варианта:",
@@ -628,6 +648,23 @@
         head: "Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 (заменой фильтр-поддона)",
         variants: f => [
           { label: "1.2", items: ["oil_zf_5", f, "work_partial"] },
+        ],
+      },
+    },
+    // 6-ступка ZF 6HP: всё как у 8-ступки, но на 1 литр масла больше и обозначение 6HP.
+    "6 ступка": {
+      filter: { "Обычная": "filter_6hp", "Гибрид": "filter_mild" },
+      "Аппаратная": {
+        head: "Полная аппаратная замена масла в АКПП ZF 6HP",
+        variants: f => [
+          { label: "1.",  items: ["oil_motul_13", "bardahl", f, "work_full_6hp"] },
+          { label: "1.1", items: ["oil_zf6_13",   "bardahl", f, "work_full_6hp"] },
+        ],
+      },
+      "Частичная": {
+        head: "Частичная замена масла в АКПП ZF 6HP (заменой фильтр-поддона)",
+        variants: f => [
+          { label: "1.2", items: ["oil_zf6_6", f, "work_part_6hp"] },
         ],
       },
     },
@@ -677,6 +714,19 @@
     if(!d) return "";
     return [DIFFS.head, `Масло Motul +замена ${d.motul}р`, `Оригинал BMW +замена ${d.orig}р`, DIFFS.note].join("\n");
   }
+  // Детальные мосты/раздатка: поузловой список с собственным «Итого».
+  function renderDiffsDetailed(d){
+    const lines = [d.head];
+    let sum = 0;
+    for(const key of d.items){
+      const item = PRICE[key];
+      if(!item) continue;
+      lines.push(`${item[0]} ${item[1]} руб.`);
+      sum += item[1];
+    }
+    lines.push(`Итого по мостам и раздатке: ${sum} руб.`);
+    return lines.join("\n");
+  }
   // Простые мосты (X1 F48): один блок, только Motul.
   function renderAxles(a){
     return `${a.head}\nМасло Motul +замена ${a.motul}р`;
@@ -705,7 +755,8 @@
     if(!svc) return "";                    // нет данных по услуге (заготовка) — пусто
     const filterKey = box.filter ? box.filter[engineOf(t)] : null;
     const parts = [svc.variants(filterKey).map(v => renderVariant(v, svc.head)).join("\n\n")];
-    if(t.diffs)   parts.push(renderDiffs(t));        // ZF: мосты + раздатка (зависит от блокировки)
+    if(t.diffs)         parts.push(renderDiffs(t));  // ZF: мосты + раздатка (зависит от блокировки)
+    if(t.diffsDetailed) parts.push(renderDiffsDetailed(DIFFS_DETAILED)); // поузловой расчёт мостов
     if(box.axles) parts.push(renderAxles(box.axles)); // простой блок мостов (данные в коробке)
     if(box.haldex)parts.push(renderHaldex(box.haldex));
     return parts.filter(Boolean).join("\n\n");
@@ -714,7 +765,8 @@
   function tplTitle(t){
     if(t.title) return t.title;            // нестандартная карточка — свой заголовок
     const type = t.hybrid ? t.type.toLowerCase() : t.type;
-    return (t.hybrid ? "Мягкий гибрид · " : "") + type + " замена"
+    return (t.prefix ? t.prefix + " · " : "")  // подпись в начале (напр. «Шестиступка»)
+         + (t.hybrid ? "Мягкий гибрид · " : "") + type + " замена"
          + (t.diffs ? " + мосты и раздатка" : "")
          + (t.lock  ? " (с блокировкой)"   : "");
   }
@@ -747,7 +799,17 @@
       title:"Аппаратная замена · 09S + мосты и Haldex",
       extraTags:["09S", "Ravenol AW2", "Мосты", "Haldex"] },
 
-    { brand:"BMW", box:"6 ступка", type:"Аппаратная", hybrid:false, lock:false, diffs:true, todo:true },
+    { brand:"BMW", box:"6 ступка", type:"Аппаратная", hybrid:false, lock:false, diffs:true },
+    { brand:"BMW", box:"6 ступка", type:"Аппаратная", hybrid:false, lock:true,  diffs:true },
+    { brand:"BMW", box:"6 ступка", type:"Аппаратная", hybrid:false, lock:false, diffs:false, diffsDetailed:true,
+      title:"Аппаратная замена + мосты и раздатка (задний мост трёхсекционный)",
+      extraTags:["Мосты", "Раздатка", "Задний мост 3-секц."] },
+
+    { brand:"BMW", box:"6 ступка", type:"Частичная", hybrid:false, lock:false, diffs:true },
+    { brand:"BMW", box:"6 ступка", type:"Частичная", hybrid:false, lock:true,  diffs:true },
+    { brand:"BMW", box:"6 ступка", type:"Частичная", hybrid:false, lock:false, diffs:false, diffsDetailed:true,
+      title:"Частичная замена + мосты и раздатка (задний мост трёхсекционный)",
+      extraTags:["Мосты", "Раздатка", "Задний мост 3-секц."] },
   ];
 
   // Логотипы марок (inline SVG — работает офлайн). Добавляешь марку → добавляешь сюда значок.
