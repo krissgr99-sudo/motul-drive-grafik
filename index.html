@@ -834,7 +834,7 @@
     const searchInp  = document.getElementById("tpl-search");
     const copyAllBtn = document.getElementById("tpl-copyall");
     let activeBrand = "all", activeBox = "all", query = "";
-    const filters = { type:null, engine:null, lock:null };
+    const filters = { type:null, engine:null, lock:null, axle:null };
     const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 
     // Оси фильтров: get(t) берёт значение прямо из полей карточки (порядок значений фиксирован)
@@ -842,6 +842,7 @@
       { key:"type",   label:"Тип",   get:t=>t.type, order:["Аппаратная","Частичная"] },
       { key:"engine", label:"Мотор", get:engineOf,  order:["Обычная","Гибрид"] },
       { key:"lock",   label:"Блок.", get:lockOf,    order:["Без блокировки","С блокировкой"] },
+      { key:"axle",   label:"Мост",  get:t=>t.diffsDetailed?"Трёхсекционный":"Обычный", order:["Обычный","Трёхсекционный"] },
     ];
 
     const brands = [...new Set(TEMPLATES.map(t=>t.brand))];
