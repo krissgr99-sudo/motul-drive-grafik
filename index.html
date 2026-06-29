@@ -581,9 +581,9 @@
     // Aisin 8F22 (BMW X1 F48)
     oil_motul_11:    ["Трансмиссионное масло Motul ATF6 105774 11л", 19800],
     work_full_aisin: ["Полная аппаратная замена масла в АКПП Aisin 8F22 с промывкой системы", 5000],
-    // 8G45 / 09S (масло Ravenol, допуск AW2)
+    // 09S (масло Ravenol, допуск AW2)
     oil_ravenol_11:  ["Трансмиссионное масло Ravenol ATF T-ULV Fluid 1211146-001 11л", 35200],
-    work_full_09s:   ["Полная аппаратная замена масла в АКПП с промывкой 09S/8G45", 5000],
+    work_full_09s:   ["Полная аппаратная замена масла в АКПП с промывкой 09S", 5000],
     // Муфта Haldex (BMW X1 F48)
     oil_haldex:       ["Трансмиссионное масло для муфты Haldex 101172 1шт", 3000],
     haldex_ring:      ["Уплотнительное кольцо BMW Haldex", 3500],
@@ -643,8 +643,8 @@
         ],
       },
     },
-    // 8G45 / 09S на масле Ravenol (допуск AW2). Мосты и Haldex — те же, что у X1 F48.
-    "8G45-09S": {
+    // 09S на масле Ravenol (допуск AW2). Мосты и Haldex — те же, что у X1 F48.
+    "09S": {
       axles: AXLES_X1,
       haldex: HALDEX,
       "Аппаратная": {
@@ -743,9 +743,9 @@
       title:"Аппаратная замена · Aisin 8F22 + мосты и Haldex",
       extraTags:["Aisin 8F22", "X1 F48", "Мосты", "Haldex"] },
 
-    { brand:"BMW", box:"8G45-09S", type:"Аппаратная", hybrid:false, lock:false, diffs:false,
-      title:"Аппаратная замена · 8G45-09S + мосты и Haldex",
-      extraTags:["8G45", "09S", "Ravenol AW2", "Мосты", "Haldex"] },
+    { brand:"BMW", box:"09S", type:"Аппаратная", hybrid:false, lock:false, diffs:false,
+      title:"Аппаратная замена · 09S + мосты и Haldex",
+      extraTags:["09S", "Ravenol AW2", "Мосты", "Haldex"] },
 
     { brand:"BMW", box:"6 ступка", type:"Аппаратная", hybrid:false, lock:false, diffs:true, todo:true },
   ];
