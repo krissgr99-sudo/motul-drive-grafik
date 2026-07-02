@@ -1270,23 +1270,17 @@
   })();
 
   /* ===================== ПРОДАЖИ (данные → авто-рендер) =====================
-     SALES — временные ТЕСТОВЫЕ данные. Позже сюда пишет GitHub Actions из
-     LiveSklad API (заказ-наряд → его позиция count/soldPrice). Правь данные, не вёрстку:
-     таблица, карточки, плитки и «Итого» пересчитываются сами; день раскрывается в список
-     заказ-нарядов. Штук/сумма за день = сумма по его заказам (руками не дублируем).
+     Живые данные грузятся из sales.json (его раз в день обновляет робот GitHub Actions
+     из LiveSklad API). SALES ниже — ЗАПАСНЫЕ данные: показываются мгновенно и если
+     sales.json недоступен (например, файл открыт офлайн). Формат одинаковый.
+     Правь данные, не вёрстку: таблица, карточки, плитки и «Итого» считаются сами;
+     день раскрывается в список заказ-нарядов. Штук/сумма дня = сумма его заказов.
      days[].orders: [номер заказ-наряда, продано(шт), сумма(₽)] */
   const SALES = {
     product: "Промывка двигателя Liqui Moly Engine Flush (0,3л)",
-    updated: "2026-07-01",
+    updated: "2026-07-02",
     days: [
-      { date:"2026-06-23", orders:[ ["1041",1,2200], ["1047",2,4400] ] },
-      { date:"2026-06-24", orders:[ ["1053",2,4400], ["1058",1,2200], ["1061",2,4400] ] },
-      { date:"2026-06-25", orders:[ ["1066",2,4400] ] },
-      { date:"2026-06-26", orders:[] },
-      { date:"2026-06-27", orders:[ ["1072",3,6600], ["1079",3,6600] ] },
-      { date:"2026-06-28", orders:[ ["1085",4,8800] ] },
-      { date:"2026-06-29", orders:[ ["1090",3,6600], ["1094",2,4400], ["1099",2,4400] ] },
-      { date:"2026-06-30", orders:[ ["1103",3,6600] ] },
+      { date:"2026-07-02", orders:[ ["A024302",1,2200] ] },
     ],
   };
 
@@ -1311,11 +1305,13 @@
       `<div class="ord"><span class="ord-num">Заказ-наряд №${o[0]}</span><span class="ord-qty">${nf.format(o[1])} шт</span><span class="ord-sum">${money(o[2])}</span></div>`
     ).join("") + `</div>`;
 
+    let DATA = SALES; // сначала запасные; ниже подменяем свежими из sales.json
+
     function render(){
-      nameEl.textContent = SALES.product;
+      nameEl.textContent = DATA.product;
 
       // из каждого дня считаем штуки/сумму как сумму его заказов
-      const days = SALES.days.map(d => {
+      const days = DATA.days.map(d => {
         const orders = d.orders || [];
         return {
           dt: parse(d.date), orders,
@@ -1380,10 +1376,10 @@
       }).join("");
 
       // подпись: лучший день + когда обновлено
-      const upd = SALES.updated ? parse(SALES.updated) : null;
+      const upd = DATA.updated ? parse(DATA.updated) : null;
       updEl.textContent = upd ? `Обновлено ${dateFull(upd)} ${upd.getFullYear()}` : "";
       noteEl.textContent = best && best.sum
-        ? `Лучший день — ${dateFull(best.dt)}: ${nf.format(best.qty)} шт на ${money(best.sum)}. Нажми на день, чтобы увидеть заказ-наряды. Пока данные тестовые — подключим LiveSklad, и всё будет обновляться само.`
+        ? `Лучший день — ${dateFull(best.dt)}: ${nf.format(best.qty)} шт на ${money(best.sum)}. Нажми на день, чтобы увидеть заказ-наряды. Данные обновляются автоматически раз в день.`
         : "Пока нет продаж за период.";
     }
 
@@ -1402,7 +1398,12 @@
       btn.closest(".daycard").classList.toggle("open");
     });
 
-    render();
+    render(); // мгновенно рисуем запасные данные (и на случай офлайна)
+    // подтягиваем свежие продажи из sales.json (робот обновляет его раз в день)
+    fetch("sales.json?t=" + Date.now(), { cache:"no-store" })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if(j && Array.isArray(j.days)){ DATA = j; render(); } })
+      .catch(()=>{});
   })();
 
   /* ===================== Меню и страницы ===================== */
