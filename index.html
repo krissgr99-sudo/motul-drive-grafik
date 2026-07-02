@@ -1280,6 +1280,7 @@
     product: "Промывка двигателя Liqui Moly Engine Flush (0,3л)",
     updated: "2026-07-02",
     days: [
+      { date:"2026-07-01", orders:[ ["A024279",1,2200] ] },
       { date:"2026-07-02", orders:[ ["A024302",1,2200] ] },
     ],
   };
@@ -1336,8 +1337,8 @@
         `<div class="stat ${cls||""}"><div class="k">${k}</div><div class="v">${v}${u?`<span class="u">${u}</span>`:""}</div></div>`
       ).join("");
 
-      // новые сверху
-      const sorted = [...days].sort((a,b)=> b.dt - a.dt);
+      // по возрастанию даты: раньше — выше
+      const sorted = [...days].sort((a,b)=> a.dt - b.dt);
 
       // таблица (десктоп): строка дня + скрытая строка-деталь с заказами
       rowsEl.innerHTML = sorted.map(d => {
