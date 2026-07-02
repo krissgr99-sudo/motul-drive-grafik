@@ -206,9 +206,9 @@
   .tpl-card-head{width:100%;display:flex;align-items:center;gap:13px;padding:15px 16px;
     background:transparent;border:none;font:inherit;color:inherit;text-align:left;cursor:pointer;transition:background .15s}
   .tpl-card-head:hover{background:var(--fill-soft)}
-  .tpl-brand-block{display:flex;flex-direction:column;align-items:center;gap:7px;flex:none;width:46px}
-  .tpl-brand-tag{font-family:var(--font-mono);font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--tag-text);
-    background:var(--tag-bg);border:1px solid var(--tag-border);padding:5px 9px;border-radius:6px}
+  .tpl-brand-block{display:flex;flex-direction:column;align-items:center;gap:7px;flex:none;width:auto;min-width:46px}
+  .tpl-brand-tag{font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--tag-text);
+    white-space:nowrap;background:var(--tag-bg);border:1px solid var(--tag-border);padding:4px 8px;border-radius:6px}
   .tpl-brand-logo{width:32px;height:32px;display:block}
   .tpl-brand-logo svg{width:100%;height:100%;display:block}
   .tpl-title{flex:1;font-family:var(--font-disp);font-weight:600;font-size:14.5px;line-height:1.34}
@@ -332,6 +332,65 @@
     .topright{width:100%;justify-content:space-between}
     .title{align-items:flex-start}
   }
+
+  /* ===================== ПРОДАЖИ ===================== */
+  .sales-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .sales-prod{display:inline-flex;align-items:center;gap:9px;font-family:var(--font-disp);font-weight:700;font-size:15px;
+    background:var(--card);border:1px solid var(--line);border-radius:999px;padding:9px 16px;box-shadow:var(--shadow)}
+  .sales-prod-dot{width:9px;height:9px;border-radius:50%;background:var(--brand);flex:none;box-shadow:0 0 10px var(--brand)}
+  .sales-upd{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted)}
+  .sales-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+  .stat{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:15px 16px;box-shadow:var(--shadow)}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brand);opacity:.85}
+  .stat .k{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .stat .v{font-family:var(--font-disp);font-weight:700;font-size:23px;margin-top:9px;line-height:1;letter-spacing:.3px}
+  .stat .v .u{font-size:13px;font-weight:600;color:var(--muted);margin-left:3px}
+  .stat.accent .v{color:var(--accent-soft)}
+  .sales-qty{font-family:var(--font-disp);font-weight:700;font-size:15px}
+  .sales-sum{font-family:var(--font-disp);font-weight:700;font-size:14px}
+  .sales-zero{color:var(--muted);opacity:.55;font-weight:600}
+  .sales-wd{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+  tr.weekend .sales-wd{color:var(--accent-soft)}
+  /* строка «Итого» в таблице продаж */
+  tbody tr.sales-total td{border-top:2px solid var(--line-strong);background:var(--fill-soft)}
+  tbody tr.sales-total td.date-cell{font-family:var(--font-disp);font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.6px}
+  /* раскрытие дня (десктоп): строка дня кликабельна, деталь — следующий tr */
+  tbody tr.sales-day{cursor:pointer}
+  tbody tr.sales-day.no-orders{cursor:default}
+  .date-cell .dcell-wrap{display:flex;align-items:center;gap:10px}
+  .chev,.chev-sp{flex:none;width:14px;height:14px;position:relative}
+  .chev{color:var(--muted);transition:transform .25s,color .25s}
+  .chev::before{content:"";position:absolute;left:2px;top:3px;width:7px;height:7px;
+    border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);border-radius:1px}
+  tr.sales-day.open .chev{transform:rotate(180deg);color:var(--accent-soft)}
+  tbody tr.sales-day.open td{background:var(--rowhover)}
+  tbody tr.sales-detail:hover td{background:transparent}
+  tr.sales-detail > td{padding:0;border-left:none;border-top:none}
+  tr.sales-detail .collapse{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}
+  tr.sales-detail.open .collapse{grid-template-rows:1fr}
+  tr.sales-detail .collapse-inner{overflow:hidden;min-height:0}
+  /* список заказ-нарядов внутри раскрытого дня */
+  .ord-list{padding:2px 16px 16px}
+  .ord{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;margin-top:8px;
+    padding:11px 14px;background:var(--receipt);border:1px solid var(--line);border-radius:11px;
+    font-family:var(--font-mono);font-size:12.5px}
+  .ord-num{font-weight:600;color:var(--code-text);min-width:0}
+  .ord-qty{color:var(--muted);font-weight:600;text-align:right;white-space:nowrap}
+  .ord-sum{font-weight:700;color:var(--text);text-align:right;white-space:nowrap;min-width:78px}
+  /* мобильные карточки продаж */
+  .sday-btn{display:block;width:100%;padding:0;border:none;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
+  .daycard.sday .dhead .chev{margin-left:8px}
+  .daycard.sday.open .chev{transform:rotate(180deg);color:var(--accent-soft)}
+  .daycard .collapse{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}
+  .daycard.open .collapse{grid-template-rows:1fr}
+  .daycard .collapse-inner{overflow:hidden;min-height:0}
+  .scard-vals{display:flex;justify-content:space-between;gap:12px;padding:13px 15px}
+  .scard-val{display:flex;flex-direction:column;gap:5px}
+  .scard-val:last-child{align-items:flex-end}
+  .scard-val .k{font-family:var(--font-mono);font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .scard-val .v{font-family:var(--font-disp);font-weight:700;font-size:17px}
+  @media(max-width:720px){ .sales-stats{grid-template-columns:1fr 1fr} .sales-upd{margin-left:0} }
 
   /* ===================== ПЕЧАТЬ ===================== */
   @media print{
@@ -473,7 +532,24 @@
 
     <!-- ===== Страница: Продажи ===== -->
     <div id="page-prodazhi" class="page" hidden>
-      <div class="placeholder"><div class="pic">📈</div><h2>Продажи</h2><p>Раздел в разработке.</p></div>
+      <div class="sales-head">
+        <div class="sales-prod"><span class="sales-prod-dot"></span><span id="sales-prod-name">—</span></div>
+        <div class="sales-upd" id="sales-upd"></div>
+      </div>
+      <div class="sales-stats" id="sales-stats"></div>
+      <div class="tablecard">
+        <table>
+          <thead><tr>
+            <th class="th-date">Дата</th>
+            <th>День</th>
+            <th>Продано</th>
+            <th>Сумма</th>
+          </tr></thead>
+          <tbody id="sales-rows"></tbody>
+        </table>
+      </div>
+      <div class="cards" id="sales-cards"></div>
+      <div class="note"><span class="nd"></span><span id="sales-note"></span></div>
     </div>
 
   </div>
@@ -663,6 +739,28 @@
     haldex_ring:      ["Уплотнительное кольцо BMW Haldex", 3500],
     work_haldex_cut:  ["Замена масла в муфте Haldex (методом спил)", 6000],
     work_haldex_full: ["Замена масла в муфте Haldex полным разбором", 10000],
+    // Mercedes 9G-Tronic (725.0). Аппаратная — масло 13л + BARDAHL; слив-залив — масло 10л, без промывки.
+    // Названия поддонов и работ — дословно как у пользователя (у Mahle/ZF аппарат./слив различаются).
+    oil_mb_9g_13:      ["Трансмиссионное масло Mercedes-Benz 236.17 A000989590411 13л", 33800],
+    oil_mb_9g_10:      ["Трансмиссионное масло Mercedes-Benz 236.17 A000989590411 10л", 26000],
+    filter_mb_9g:      ["Оригинальный Фильтр-поддон MB A7252703707", 22000],
+    bolt_mb_9g:        ["Болт поддона м6 MERCEDES-BENZ A0029909503 10шт", 3500],
+    drain_mb_9g:       ["Сливная пробка гидротрансформатора (бублик) Mercedes Benz A0019901117 1шт", 500],
+    filter_sollo_9g:   ["Фильтр поддон SOLLO ZM PARTS (Germany) с болтами и трубками в комплекте", 14000],
+    filter_mahle_9g_a: ["Фильтр поддон Mahle (Germany) с болтами и трубками в комплекте", 16000],
+    filter_mahle_9g_f: ["Фильтр поддон Mahle (Germany) с болтами в комплекте", 16000],
+    filter_zf_9g_a:    ["Фильтр поддон ZF (Germany) с болтами и трубками в комплекте", 18000],
+    filter_zf_9g_f:    ["Фильтр поддон ZF (Germany) с болтами в комплекте", 18000],
+    work_full_9g_wash: ["Полная аппаратная замена масла в АКПП 9G-Tronic с промывкой системы", 8000],
+    work_full_9g:      ["Полная аппаратная замена масла в АКПП 9G-Tronic", 8000],
+    work_fill_9g:      ["Полная замена масла в АКПП 9G-Tronic (методом слил и залил)", 4000],
+    // Мосты + раздатка для 9G-Tronic (одинаковая сноска во всех 8 шаблонах). Итого 14000.
+    // Цены — суммарные по строке: Gear 300 = 2л×4500; масло раздатки Mercedes = 0,6л×2500.
+    mb_diff_oil:    ["Масло трансмиссионное Motul Gear 300 75W90 105777 2л", 9000],
+    mb_diff_front:  ["Замена масла в переднем дифференциале", 1000],
+    mb_diff_rear:   ["Замена масла в заднем дифференциале", 1000],
+    mb_transf_oil:  ["Трансмиссионное масло Mercedes 236.15 A000989270411 0.6л", 1500],
+    mb_transf_work: ["Замена масла в раздаточной коробке", 1500],
   };
 
   // 2) Доплата за мосты/раздатку (3 узла). Меняешь только числа.
@@ -690,6 +788,20 @@
       { label: "1)", items: ["oil_haldex", "work_haldex_cut"] },
       { label: "2)", items: ["oil_haldex", "haldex_ring", "work_haldex_full"] },
     ],
+  };
+
+  // Mercedes 9G-Tronic: 4 варианта поддона. Ключ берётся из поля t.filter карточки.
+  //    mb — оригинал MB (нужны отдельно болты + сливная пробка); остальные идут в сборе.
+  //    У Mahle/ZF название поддона в аппаратной (a) и слив-заливе (f) различается — отсюда две карты.
+  const MB9G_FILTER = {
+    app:  { mb:["filter_mb_9g","bolt_mb_9g","drain_mb_9g"], sollo:["filter_sollo_9g"], mahle:["filter_mahle_9g_a"], zf:["filter_zf_9g_a"] },
+    fill: { mb:["filter_mb_9g","bolt_mb_9g","drain_mb_9g"], sollo:["filter_sollo_9g"], mahle:["filter_mahle_9g_f"], zf:["filter_zf_9g_f"] },
+  };
+
+  // Сноска «мосты + раздатка» для 9G-Tronic — одинакова во всех 8 карточках (рендер renderDiffsDetailed → «Итого 14000»).
+  const MB9G_AXLES = {
+    head: "Также можем заменить масло в переднем, заднем дифференциале и раздаточной коробке:",
+    items: ["mb_diff_oil", "mb_diff_front", "mb_diff_rear", "mb_transf_oil", "mb_transf_work"],
   };
 
   // 3) Услуги по коробкам. Новую коробку (6-ступку) добавляешь сюда + позиции в PRICE.
@@ -754,6 +866,24 @@
         head: "Полная аппаратная замена масла в АКПП Aisin 8F22",
         variants: () => [
           { label: "1.", items: ["oil_motul_11", "bardahl", "work_full_aisin"] },
+        ],
+      },
+    },
+    // Mercedes 9G-Tronic (725.0): 2 метода, поддон выбирается полем t.filter (см. MB9G_FILTER).
+    // diffsBlock — сноска «мосты + раздатка», одинаковая во всех карточках этой коробки.
+    "9 ступка": {
+      diffsBlock: MB9G_AXLES,
+      "Аппаратная": {
+        head: "Полная аппаратная замена масла в АКПП 9G-Tronic",
+        variants: fk => [
+          { label: "1.", items: ["oil_mb_9g_13", "bardahl", ...MB9G_FILTER.app[fk],
+              fk==="mb" ? "work_full_9g_wash" : "work_full_9g"] },  // «…с промывкой системы» — только у оригинала MB
+        ],
+      },
+      "Слив-залив": {
+        head: "Полная замена масла в АКПП 9G-Tronic (методом слил и залил)",
+        variants: fk => [
+          { label: "1.", items: ["oil_mb_9g_10", ...MB9G_FILTER.fill[fk], "work_fill_9g"] },
         ],
       },
     },
@@ -833,10 +963,11 @@
     if(!svc) return "";                    // нет данных по услуге (заготовка) — пусто
     const eng = engineOf(t);
     if(svc[eng]) svc = svc[eng];           // мотор переопределяет услугу (полный гибрид = др. агрегат)
-    const filterKey = box.filter ? box.filter[eng] : null;
+    const filterKey = t.filter || (box.filter ? box.filter[eng] : null); // t.filter — явный выбор поддона (9G-Tronic)
     const parts = [svc.variants(filterKey).map(v => renderVariant(v, svc.head)).join("\n\n")];
     if(t.diffs)         parts.push(renderDiffs(t));  // ZF: мосты + раздатка (зависит от блокировки)
     if(t.diffsDetailed) parts.push(renderDiffsDetailed(DIFFS_DETAILED)); // поузловой расчёт мостов
+    if(box.diffsBlock)  parts.push(renderDiffsDetailed(box.diffsBlock)); // сноска мостов на уровне коробки (9G-Tronic)
     if(box.axles) parts.push(renderAxles(box.axles)); // простой блок мостов (данные в коробке)
     if(box.haldex)parts.push(renderHaldex(box.haldex));
     return parts.filter(Boolean).join("\n\n");
@@ -900,6 +1031,33 @@
     { brand:"BMW", box:"6 ступка", type:"Частичная", hybrid:false, lock:false, diffs:false, diffsDetailed:true,
       title:"Частичная замена + мосты и раздатка (задний мост трёхсекционный)",
       extraTags:["Мосты", "Раздатка", "Задний мост 3-секц."] },
+
+    // Mercedes 9G-Tronic (725.0). 4 аппаратные + 4 слив-залив, отличаются поддоном (t.filter).
+    { brand:"Mercedes", box:"9 ступка", type:"Аппаратная", filter:"mb",    hybrid:false, lock:false, diffs:false,
+      title:"Аппаратная замена · оригинальный поддон MB",
+      extraTags:["9G-Tronic", "725.0", "Поддон MB"] },
+    { brand:"Mercedes", box:"9 ступка", type:"Аппаратная", filter:"sollo", hybrid:false, lock:false, diffs:false,
+      title:"Аппаратная замена · поддон SOLLO ZM PARTS",
+      extraTags:["9G-Tronic", "725.0", "Поддон SOLLO"] },
+    { brand:"Mercedes", box:"9 ступка", type:"Аппаратная", filter:"mahle", hybrid:false, lock:false, diffs:false,
+      title:"Аппаратная замена · поддон Mahle",
+      extraTags:["9G-Tronic", "725.0", "Поддон Mahle"] },
+    { brand:"Mercedes", box:"9 ступка", type:"Аппаратная", filter:"zf",    hybrid:false, lock:false, diffs:false,
+      title:"Аппаратная замена · поддон ZF",
+      extraTags:["9G-Tronic", "725.0", "Поддон ZF"] },
+
+    { brand:"Mercedes", box:"9 ступка", type:"Слив-залив", filter:"mb",    hybrid:false, lock:false, diffs:false,
+      title:"Слив-залив · оригинальный поддон MB",
+      extraTags:["9G-Tronic", "725.0", "Поддон MB"] },
+    { brand:"Mercedes", box:"9 ступка", type:"Слив-залив", filter:"sollo", hybrid:false, lock:false, diffs:false,
+      title:"Слив-залив · поддон SOLLO ZM PARTS",
+      extraTags:["9G-Tronic", "725.0", "Поддон SOLLO"] },
+    { brand:"Mercedes", box:"9 ступка", type:"Слив-залив", filter:"mahle", hybrid:false, lock:false, diffs:false,
+      title:"Слив-залив · поддон Mahle",
+      extraTags:["9G-Tronic", "725.0", "Поддон Mahle"] },
+    { brand:"Mercedes", box:"9 ступка", type:"Слив-залив", filter:"zf",    hybrid:false, lock:false, diffs:false,
+      title:"Слив-залив · поддон ZF",
+      extraTags:["9G-Tronic", "725.0", "Поддон ZF"] },
   ];
 
   // Логотипы марок (inline SVG — работает офлайн). Добавляешь марку → добавляешь сюда значок.
@@ -913,6 +1071,18 @@
   <path d="M50 50 L50 83 A33 33 0 0 1 17 50 Z" fill="#0166B1"/>
   <circle cx="50" cy="50" r="33" fill="none" stroke="#1d1d1d" stroke-width="1.2"/>
   <text x="50" y="13.2" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="12.5" fill="#fff">BMW</text>
+</svg>`,
+    Mercedes:
+`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mercedes-Benz">
+  <circle cx="50" cy="50" r="49" fill="#1d1d1d"/>
+  <circle cx="50" cy="50" r="48.5" fill="none" stroke="#e6e8ec" stroke-width=".8"/>
+  <circle cx="50" cy="50" r="40" fill="none" stroke="#c7ccd1" stroke-width="4"/>
+  <g stroke="#c7ccd1" stroke-width="5" stroke-linecap="round">
+    <line x1="50" y1="50" x2="50" y2="16"/>
+    <line x1="50" y1="50" x2="21" y2="67"/>
+    <line x1="50" y1="50" x2="79" y2="67"/>
+  </g>
+  <circle cx="50" cy="50" r="3.6" fill="#c7ccd1"/>
 </svg>`,
   };
 
@@ -929,7 +1099,7 @@
 
     // Оси фильтров: get(t) берёт значение прямо из полей карточки (порядок значений фиксирован)
     const FACETS = [
-      { key:"type",   label:"Тип",   get:t=>t.type, order:["Аппаратная","Частичная"] },
+      { key:"type",   label:"Тип",   get:t=>t.type, order:["Аппаратная","Частичная","Слив-залив"] },
       { key:"engine", label:"Мотор", get:engineOf,  order:["Обычная","Мягкий гибрид","Гибрид"] },
       { key:"lock",   label:"Блок.", get:lockOf,    order:["Без блокировки","С блокировкой"] },
       { key:"axle",   label:"Мост",  get:t=>t.diffsDetailed?"Трёхсекционный":"Обычный", order:["Обычный","Трёхсекционный"] },
@@ -1099,12 +1269,148 @@
     renderSubtabs(); renderFacets(); render();
   })();
 
+  /* ===================== ПРОДАЖИ (данные → авто-рендер) =====================
+     SALES — временные ТЕСТОВЫЕ данные. Позже сюда пишет GitHub Actions из
+     LiveSklad API (заказ-наряд → его позиция count/soldPrice). Правь данные, не вёрстку:
+     таблица, карточки, плитки и «Итого» пересчитываются сами; день раскрывается в список
+     заказ-нарядов. Штук/сумма за день = сумма по его заказам (руками не дублируем).
+     days[].orders: [номер заказ-наряда, продано(шт), сумма(₽)] */
+  const SALES = {
+    product: "Промывка двигателя Liqui Moly Engine Flush (0,3л)",
+    updated: "2026-07-01",
+    days: [
+      { date:"2026-06-23", orders:[ ["1041",1,2200], ["1047",2,4400] ] },
+      { date:"2026-06-24", orders:[ ["1053",2,4400], ["1058",1,2200], ["1061",2,4400] ] },
+      { date:"2026-06-25", orders:[ ["1066",2,4400] ] },
+      { date:"2026-06-26", orders:[] },
+      { date:"2026-06-27", orders:[ ["1072",3,6600], ["1079",3,6600] ] },
+      { date:"2026-06-28", orders:[ ["1085",4,8800] ] },
+      { date:"2026-06-29", orders:[ ["1090",3,6600], ["1094",2,4400], ["1099",2,4400] ] },
+      { date:"2026-06-30", orders:[ ["1103",3,6600] ] },
+    ],
+  };
+
+  (function(){
+    const MONF = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+    const WD   = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"]; // getDay(): 0 = воскресенье
+    const nf = new Intl.NumberFormat("ru-RU");
+    const money = n => nf.format(n) + " ₽";
+    const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); };
+    const weekend = dt => dt.getDay()===0 || dt.getDay()===6;
+    const dateFull = dt => `${dt.getDate()} ${MONF[dt.getMonth()]}`;
+
+    const nameEl = document.getElementById("sales-prod-name");
+    const updEl  = document.getElementById("sales-upd");
+    const statsEl= document.getElementById("sales-stats");
+    const rowsEl = document.getElementById("sales-rows");
+    const cardsEl= document.getElementById("sales-cards");
+    const noteEl = document.getElementById("sales-note");
+
+    // список заказ-нарядов внутри раскрытого дня
+    const ordersHtml = orders => `<div class="ord-list">` + orders.map(o =>
+      `<div class="ord"><span class="ord-num">Заказ-наряд №${o[0]}</span><span class="ord-qty">${nf.format(o[1])} шт</span><span class="ord-sum">${money(o[2])}</span></div>`
+    ).join("") + `</div>`;
+
+    function render(){
+      nameEl.textContent = SALES.product;
+
+      // из каждого дня считаем штуки/сумму как сумму его заказов
+      const days = SALES.days.map(d => {
+        const orders = d.orders || [];
+        return {
+          dt: parse(d.date), orders,
+          qty: orders.reduce((s,o)=>s+o[1], 0),
+          sum: orders.reduce((s,o)=>s+o[2], 0),
+        };
+      });
+      // итоги считаются из данных — руками не дублируем
+      const totQty = days.reduce((s,d)=>s+d.qty, 0);
+      const totSum = days.reduce((s,d)=>s+d.sum, 0);
+      const avgDay   = days.length ? Math.round(totSum / days.length) : 0;
+      const avgCheck = totQty ? Math.round(totSum / totQty) : 0;
+      const best = days.reduce((b,d)=> (!b || d.sum>b.sum) ? d : b, null);
+
+      // плитки-итоги
+      statsEl.innerHTML = [
+        ["Выручка за период", money(totSum), "accent"],
+        ["Продано", nf.format(totQty), "", "шт"],
+        ["Средний чек", money(avgCheck)],
+        ["В среднем в день", money(avgDay)],
+      ].map(([k,v,cls,u]) =>
+        `<div class="stat ${cls||""}"><div class="k">${k}</div><div class="v">${v}${u?`<span class="u">${u}</span>`:""}</div></div>`
+      ).join("");
+
+      // новые сверху
+      const sorted = [...days].sort((a,b)=> b.dt - a.dt);
+
+      // таблица (десктоп): строка дня + скрытая строка-деталь с заказами
+      rowsEl.innerHTML = sorted.map(d => {
+        const we = weekend(d.dt);
+        const has = d.orders.length > 0;
+        const qty = has ? `<span class="sales-qty">${nf.format(d.qty)}</span>` : `<span class="sales-zero">0</span>`;
+        const sum = has ? `<span class="sales-sum">${money(d.sum)}</span>` : `<span class="sales-zero">—</span>`;
+        const dayRow = `<tr class="sales-day${we?" weekend":""}${has?"":" no-orders"}">
+          <td class="date-cell"><span class="dcell-wrap">${has?`<span class="chev"></span>`:`<span class="chev-sp"></span>`}<span><span class="dnum">${d.dt.getDate()}</span><span class="dmon">${MONF[d.dt.getMonth()]}</span></span></span></td>
+          <td><span class="sales-wd">${WD[d.dt.getDay()]}</span></td>
+          <td>${qty}</td>
+          <td>${sum}</td>
+        </tr>`;
+        const detailRow = has ? `<tr class="sales-detail"><td colspan="4"><div class="collapse"><div class="collapse-inner">${ordersHtml(d.orders)}</div></div></td></tr>` : "";
+        return dayRow + detailRow;
+      }).join("") +
+        `<tr class="sales-total">
+          <td class="date-cell" colspan="2">Итого за период</td>
+          <td><span class="sales-qty">${nf.format(totQty)} шт</span></td>
+          <td><span class="sales-sum">${money(totSum)}</span></td>
+        </tr>`;
+
+      // карточки (мобайл): шапка + значения кликабельны, ниже раскрывается список заказов
+      cardsEl.innerHTML = sorted.map(d => {
+        const we = weekend(d.dt);
+        const has = d.orders.length > 0;
+        const qty = has ? `${nf.format(d.qty)} шт` : `<span class="sales-zero">0 шт</span>`;
+        const sum = has ? money(d.sum) : `<span class="sales-zero">—</span>`;
+        const head = `<div class="dhead"><span class="dnum">${d.dt.getDate()}</span><span class="dmon">${MONF[d.dt.getMonth()]}</span><span class="dbadge">${WD[d.dt.getDay()]}</span>${has?`<span class="chev"></span>`:""}</div>
+          <div class="scard-vals">
+            <div class="scard-val"><span class="k">Продано</span><span class="v">${qty}</span></div>
+            <div class="scard-val"><span class="k">Сумма</span><span class="v">${sum}</span></div>
+          </div>`;
+        const body = has ? `<div class="collapse"><div class="collapse-inner">${ordersHtml(d.orders)}</div></div>` : "";
+        return `<div class="daycard${we?" weekend":""}${has?" sday":""}">${has?`<button class="sday-btn" type="button">${head}</button>`:head}${body}</div>`;
+      }).join("");
+
+      // подпись: лучший день + когда обновлено
+      const upd = SALES.updated ? parse(SALES.updated) : null;
+      updEl.textContent = upd ? `Обновлено ${dateFull(upd)} ${upd.getFullYear()}` : "";
+      noteEl.textContent = best && best.sum
+        ? `Лучший день — ${dateFull(best.dt)}: ${nf.format(best.qty)} шт на ${money(best.sum)}. Нажми на день, чтобы увидеть заказ-наряды. Пока данные тестовые — подключим LiveSklad, и всё будет обновляться само.`
+        : "Пока нет продаж за период.";
+    }
+
+    // раскрытие дня — десктоп (строка-деталь = следующий tr)
+    rowsEl.addEventListener("click", e => {
+      const row = e.target.closest("tr.sales-day");
+      if(!row || row.classList.contains("no-orders")) return;
+      const detail = row.nextElementSibling;
+      row.classList.toggle("open");
+      if(detail && detail.classList.contains("sales-detail")) detail.classList.toggle("open");
+    });
+    // раскрытие дня — мобайл (деталь внутри карточки)
+    cardsEl.addEventListener("click", e => {
+      const btn = e.target.closest(".sday-btn");
+      if(!btn) return;
+      btn.closest(".daycard").classList.toggle("open");
+    });
+
+    render();
+  })();
+
   /* ===================== Меню и страницы ===================== */
   const PAGES = {
     grafik:   { t:"График дежурств", r:"28 июня — 27 июля 2026 · 30 дней" },
     shablony: { t:"Шаблоны",         r:"Каталог · выбери марку, копируй и отправляй клиенту" },
     tseny:    { t:"Цены",            r:"Раздел в разработке" },
-    prodazhi: { t:"Продажи",         r:"Раздел в разработке" },
+    prodazhi: { t:"Продажи",         r:"Присадки · выручка и штуки по дням" },
   };
   const titleT = document.querySelector(".title .t");
   const titleR = document.querySelector(".title .r");
