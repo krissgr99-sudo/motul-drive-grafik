@@ -212,6 +212,7 @@
   .tpl-brand-logo{width:32px;height:32px;display:block}
   .tpl-brand-logo svg{width:100%;height:100%;display:block}
   .tpl-title{flex:1;font-family:var(--font-disp);font-weight:600;font-size:14.5px;line-height:1.34}
+  .tpl-title-accent{color:var(--accent-soft);font-weight:700}
   .tpl-chevron{flex:none;width:18px;height:18px;position:relative;color:var(--muted);transition:transform .25s}
   .tpl-card.open .tpl-chevron{transform:rotate(180deg);color:var(--accent-soft)}
   .tpl-chevron::before{content:"";position:absolute;left:3px;top:4px;width:8px;height:8px;
@@ -826,9 +827,14 @@
   const AXLES_X1 = { head: "Передний и задний дифференциал.", motul: 11000 };
 
   // 2.2.1) Мосты + Торсен (Audi/VW, ZF 8HP65) — вариант Motul или оригинал VAG (см. renderAxles).
+  //    G055 и G060 — два спека оригинального масла VAG, отличаются ценой оригинала (33000 / 39800).
   const AXLES_TORSEN = {
     head: "Также можем заменить масла в переднем, заднем дифференциале и в ТОРСЕН.",
-    motul: 17500, orig: 33000, origBrand: "Vag", note: "Motul ничем не уступает оригиналу", tail: "с G055",
+    motul: 17500, orig: 33000, origBrand: "Vag", note: "Motul ничем не уступает оригиналу",
+  };
+  const AXLES_TORSEN_G060 = {
+    head: "Также можем заменить масла в переднем, заднем дифференциале и в ТОРСЕН.",
+    motul: 17500, orig: 39800, origBrand: "Vag", note: "Motul ничем не уступает оригиналу",
   };
 
   // 2.3) Муфта Haldex (X1 F48) — отдельный блок с двумя вариантами. Цены — в PRICE.
@@ -1050,7 +1056,8 @@
     if(t.diffs)         parts.push(renderDiffs(t));  // ZF: мосты + раздатка (зависит от блокировки)
     if(t.diffsDetailed) parts.push(renderDiffsDetailed(DIFFS_DETAILED)); // поузловой расчёт мостов
     if(box.diffsBlock)  parts.push(renderDiffsDetailed(box.diffsBlock)); // сноска мостов на уровне коробки (9G-Tronic)
-    if(box.axles) parts.push(renderAxles(box.axles)); // простой блок мостов (данные в коробке)
+    const axles = t.axles || box.axles;                // t.axles — переопределение блока мостов на карточке (Торсен G055/G060)
+    if(axles) parts.push(renderAxles(axles));          // простой блок мостов (данные в коробке или карточке)
     if(box.haldex)parts.push(renderHaldex(box.haldex));
     return parts.filter(Boolean).join("\n\n");
   }
@@ -1151,7 +1158,13 @@
 
     // Audi / Volkswagen — ZF 8HP65: аппаратная (2 варианта масла) + мосты и Торсен.
     { brand:"Audi Volkswagen", box:"8 ступка ZF 8HP65", type:"Аппаратная", hybrid:false, lock:false, diffs:false,
-      title:"8 ступка ZF 8HP65 + мосты и Торсен",
+      title:"8 ступка ZF 8HP65 + мосты и Торсен G055",
+      titleAccent:"G055",
+      extraTags:["ZF 8HP65", "Motul ATF6 / оригинал ZF", "Мосты", "Торсен"] },
+    { brand:"Audi Volkswagen", box:"8 ступка ZF 8HP65", type:"Аппаратная", hybrid:false, lock:false, diffs:false,
+      axles:AXLES_TORSEN_G060,
+      title:"8 ступка ZF 8HP65 + мосты и Торсен G060",
+      titleAccent:"G060",
       extraTags:["ZF 8HP65", "Motul ATF6 / оригинал ZF", "Мосты", "Торсен"] },
   ];
 
@@ -1295,7 +1308,9 @@
               ${logo ? `<span class="tpl-brand-logo">${logo}</span>` : ""}
             </span>
             <span class="tpl-head-main">
-              <span class="tpl-title">${esc(tplTitle(t))}</span>
+              <span class="tpl-title">${t.titleAccent
+                ? esc(tplTitle(t)).replace(esc(t.titleAccent), `<strong class="tpl-title-accent">${esc(t.titleAccent)}</strong>`)
+                : esc(tplTitle(t))}</span>
               <span class="tpl-badges">${badges.join("")}</span>
             </span>
             <span class="tpl-chevron"></span>
@@ -1655,9 +1670,11 @@
       inp.value = ""; inp.focus();
     }
   }
+  // Локально (двойной клик file:// или localhost) пароль не спрашиваем — на GitHub Pages (https) остаётся.
+  const isLocal = location.protocol === "file:" || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
   let authed = false;
   try { authed = sessionStorage.getItem("md_auth") === "1"; } catch(e){}
-  if(authed){ unlock(); }
+  if(isLocal || authed){ unlock(); }
   else { inp.focus(); form.addEventListener("submit", e => { e.preventDefault(); tryUnlock(); }); }
 </script>
 </body>
