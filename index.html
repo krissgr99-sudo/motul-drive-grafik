@@ -1830,10 +1830,11 @@
      days[].orders: [номер заказ-наряда, продано(шт), сумма(₽)] */
   const SALES = {
     product: "Промывка двигателя Liqui Moly Engine Flush (0,3л)",
-    updated: "2026-07-02",
+    updated: "2026-07-03",
     days: [
       { date:"2026-07-01", orders:[ ["A024279",1,2200] ] },
       { date:"2026-07-02", orders:[ ["A024302",1,2200] ] },
+      { date:"2026-07-03", orders:[ ["A024311",1,2200], ["A024307",1,2200] ] },
     ],
   };
 
@@ -1846,7 +1847,11 @@
     const WD   = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"]; // getDay(): 0 = воскресенье
     const nf = new Intl.NumberFormat("ru-RU");
     const money = n => nf.format(n) + " ₽";
-    const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); };
+    const parse = s => {
+      const p = String(s).split("-");
+      if(p.length === 3){ const [y,m,d] = p.map(Number); if(!isNaN(y) && !isNaN(m) && !isNaN(d)) return new Date(y, m-1, d); }
+      const dt = new Date(s); return isNaN(dt.getTime()) ? new Date(NaN) : dt;
+    };
     const weekend = dt => dt.getDay()===0 || dt.getDay()===6;
     const dateFull = dt => `${dt.getDate()} ${MONF[dt.getMonth()]}`;
 
@@ -1880,6 +1885,7 @@
     // отмечаем вывод: сразу показываем ноль (оптимистично) и шлём в таблицу фоном
     function doWithdraw(pot){
       if(pot <= 0) return;
+      if(!salesSettled){ alert("Секунду — подгружаю свежие продажи. Нажми «Отметить вывод» ещё раз через пару секунд."); return; }
       if(!WITHDRAW_API){ alert("Копилка ещё не подключена к таблице."); return; }
       if(!confirm("Отметить вывод всей копилки — " + money(pot) + "?\nКопилка обнулится.")) return;
       const d = new Date(), p = n => String(n).padStart(2, "0");
@@ -1901,6 +1907,7 @@
 
     let DATA = SALES;         // сначала запасные; ниже подменяем свежими из sales.json
     let WD_DATA = WITHDRAWALS; // выводы: запас; ниже подменяем кэшем и свежими из таблицы
+    let salesSettled = false;  // true, когда sales.json загрузился (или точно не загрузится) — до этого вывод не отмечаем
 
     function render(){
       nameEl.textContent = DATA.product;
@@ -2058,7 +2065,8 @@
     fetch("sales.json?t=" + Date.now(), { cache:"no-store" })
       .then(r => r.ok ? r.json() : null)
       .then(j => { if(j && Array.isArray(j.days)){ DATA = j; render(); } })
-      .catch(()=>{});
+      .catch(()=>{})
+      .finally(() => { salesSettled = true; render(); });
     loadWithdrawals(); // свежие выводы из Google-таблицы (если копилка подключена)
   })();
 
