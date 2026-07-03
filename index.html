@@ -1860,7 +1860,7 @@
     const monthsEl = document.getElementById("sales-months");
     const MONN = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
     // Хранилище выводов копилки — Google Apps Script (таблица). Заполняется при подключении.
-    const WITHDRAW_API   = "";                         // URL веб-приложения Apps Script (…/exec)
+    const WITHDRAW_API   = "https://script.google.com/macros/s/AKfycbwGxC7-EvzNs9Fv47tcR5iDUwCFEUVz_Y3ToWld1tOXR8pip2rHLeCThUm2yL0f5tie/exec"; // веб-приложение Apps Script (таблица выводов)
     const WITHDRAW_TOKEN = "749ee6f82c31d87dfd00e2d5"; // секрет, совпадает с TOKEN в скрипте таблицы
     let   wdSeq = 0;
     const saveWdCache = list => { try { localStorage.setItem("md_withdrawals", JSON.stringify(list)); } catch(e){} };
