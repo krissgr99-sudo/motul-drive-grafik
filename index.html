@@ -191,6 +191,35 @@
   .tpl-tile-chip{font-family:var(--font-mono);font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:6px;
     background:var(--chip-bg);color:var(--chip-text);border:1px solid var(--line)}
   .tpl-tile-more{font-size:10.5px;font-weight:700;color:var(--accent-soft);align-self:center}
+  /* двухпанельный каталог: слева дерево семейство→модель, справа сметы */
+  .tpl-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:20px;align-items:start}
+  .tpl-nav{position:sticky;top:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);padding:8px;max-height:calc(100vh - 28px);overflow:auto}
+  .tpl-nav-home{margin-bottom:4px;border-bottom:1px solid var(--line);border-radius:10px 10px 0 0}
+  .tpl-nav-home.active-home{color:var(--accent-soft)}
+  .tpl-nav-group + .tpl-nav-group{margin-top:2px}
+  .tpl-nav-head{width:100%;display:flex;align-items:center;gap:9px;padding:9px 10px;border:none;background:transparent;
+    border-radius:10px;font:inherit;font-weight:700;color:var(--text);cursor:pointer;text-align:left;transition:background .12s}
+  .tpl-nav-head:hover{background:var(--fill-soft)}
+  .tpl-nav-group.active-brand > .tpl-nav-head{color:var(--accent-soft)}
+  .tpl-nav-logo{width:24px;height:24px;flex:none}
+  .tpl-nav-logo svg{width:100%;height:100%;display:block}
+  .tpl-nav-name{flex:1;font-size:13.5px}
+  .tpl-nav-chev{flex:none;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
+    transform:rotate(-45deg);transition:transform .2s;margin-right:3px}
+  .tpl-nav-group.open .tpl-nav-chev{transform:rotate(45deg)}
+  .tpl-nav-models{display:none;flex-direction:column;gap:2px;padding:2px 4px 8px 30px}
+  .tpl-nav-group.open .tpl-nav-models{display:flex}
+  .tpl-nav-model{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;border:none;
+    background:transparent;border-radius:8px;font:inherit;font-weight:600;font-size:12.5px;color:var(--muted);cursor:pointer;text-align:left;transition:.12s}
+  .tpl-nav-model:hover{background:var(--fill-soft);color:var(--text)}
+  .tpl-nav-model.active{background:var(--brand);color:#fff}
+  .tpl-nav-model.active .tpl-count{color:#fff}
+  .tpl-main{min-width:0}
+  @media (max-width:900px){
+    .tpl-layout{grid-template-columns:1fr;gap:14px}
+    .tpl-nav{position:static;max-height:none}
+  }
 
   /* фильтры-фасеты */
   .tpl-facets{display:flex;flex-direction:column;gap:10px;margin:0 0 18px;padding:15px 16px;
@@ -572,10 +601,13 @@
         <div class="tpl-search"><input id="tpl-search" type="text" placeholder="Найти коробку: 8HP65, DQ500, U660, вариатор…" autocomplete="off"></div>
         <button class="tpl-copyall" id="tpl-copyall" type="button">Копировать всё видимое</button>
       </div>
-      <div class="tpl-brands" id="tpl-brands"></div>
-      <div class="tpl-subtabs" id="tpl-subtabs" hidden></div>
-      <div class="tpl-facets" id="tpl-facets" hidden></div>
-      <div class="tpl-grid" id="tpl-grid"></div>
+      <div class="tpl-layout">
+        <aside class="tpl-nav" id="tpl-nav"></aside>
+        <section class="tpl-main">
+          <div class="tpl-facets" id="tpl-facets" hidden></div>
+          <div class="tpl-grid" id="tpl-grid"></div>
+        </section>
+      </div>
     </div>
 
     <!-- ===== Страница: Цены ===== -->
@@ -1658,12 +1690,11 @@
 
   (function(){
     const grid       = document.getElementById("tpl-grid");
-    const brandsBox  = document.getElementById("tpl-brands");
-    const subtabsBox = document.getElementById("tpl-subtabs");
+    const navBox     = document.getElementById("tpl-nav");
     const facetsBox  = document.getElementById("tpl-facets");
     const searchInp  = document.getElementById("tpl-search");
     const copyAllBtn = document.getElementById("tpl-copyall");
-    let activeBrand = "all", activeBox = "all", query = "";
+    let activeBrand = "all", activeBox = "all", query = "", expandedBrand = null;
     const filters = { type:null, engine:null, lock:null, axle:null };
     const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
     const cnt = n => n ? `<span class="tpl-count">${n}</span>` : "";   // бейдж-счётчик у вкладок/фильтров
@@ -1680,18 +1711,26 @@
     const brands = [...new Set(TEMPLATES.map(t=>t.brand))];
     const brandCount = b => TEMPLATES.filter(t=>t.brand===b).length;
     const boxCount   = (b,box) => TEMPLATES.filter(t=>t.brand===b && t.box===box).length;
-    brandsBox.innerHTML = [`<button class="tpl-brand active" data-brand="all">Все${cnt(TEMPLATES.length)}</button>`]
-      .concat(brands.map(b=>`<button class="tpl-brand" data-brand="${esc(b)}">${esc(b)}${cnt(brandCount(b))}</button>`)).join("");
+    const boxesOf    = b => [...new Set(TEMPLATES.filter(t=>t.brand===b && t.box).map(t=>t.box))];
 
-    // Подвкладки коробок — видны только когда выбрана конкретная марка
-    function renderSubtabs(){
-      const boxes = activeBrand==="all" ? []
-        : [...new Set(TEMPLATES.filter(t=>t.brand===activeBrand && t.box).map(t=>t.box))];
-      if(!boxes.length){ subtabsBox.hidden = true; subtabsBox.innerHTML = ""; return; }
-      subtabsBox.hidden = false;
-      // Подвкладки — коды моделей коробок со счётчиком карточек. Красный акцент живёт в заголовках (titleAccent).
-      subtabsBox.innerHTML = boxes.map(b=>
-        `<button class="tpl-sub ${b===activeBox?"active":""}" data-box="${esc(b)}">${esc(b)}${cnt(boxCount(activeBrand,b))}</button>`).join("");
+    // Левая панель — дерево «семейство → модель». Раскрыто семейство expandedBrand; активна модель activeBox.
+    function renderNav(){
+      const home = `<button class="tpl-nav-head tpl-nav-home ${activeBrand==="all"?"active-home":""}" data-home="1"><span class="tpl-nav-name">Все коробки</span>${cnt(TEMPLATES.length)}</button>`;
+      navBox.innerHTML = home + brands.map(b=>{
+        const open   = b===expandedBrand;
+        const isCur  = b===activeBrand;
+        const logo   = BRAND_LOGOS[b] || "";
+        const models = boxesOf(b).map(box=>
+          `<button class="tpl-nav-model ${(isCur&&box===activeBox)?"active":""}" data-brand="${esc(b)}" data-box="${esc(box)}">
+             <span>${esc(box)}</span>${cnt(boxCount(b,box))}</button>`).join("");
+        return `<div class="tpl-nav-group ${open?"open":""} ${isCur?"active-brand":""}" data-brand="${esc(b)}">
+          <button class="tpl-nav-head" data-brand="${esc(b)}">
+            ${logo?`<span class="tpl-nav-logo">${logo}</span>`:""}
+            <span class="tpl-nav-name">${esc(b)}</span>${cnt(brandCount(b))}<span class="tpl-nav-chev"></span>
+          </button>
+          <div class="tpl-nav-models">${models}</div>
+        </div>`;
+      }).join("");
     }
 
     // Базовый набор (марка+коробка) — из него строим фильтры
@@ -1746,14 +1785,21 @@
       }
     }
 
-    // Выбор семейства (из вкладки или плитки старта): открываем первую коробку.
+    // Выбор семейства (клик по заголовку в дереве / по плитке старта): раскрываем и открываем первую коробку.
     function selectBrand(b){
-      activeBrand = b;
-      const boxes = b==="all" ? [] : [...new Set(TEMPLATES.filter(t=>t.brand===b && t.box).map(t=>t.box))];
-      activeBox = boxes[0] || "all";
-      resetFilters();
-      brandsBox.querySelectorAll(".tpl-brand").forEach(x=>x.classList.toggle("active", x.dataset.brand===b));
-      renderSubtabs(); renderFacets(); render();
+      const boxes = boxesOf(b);
+      activeBrand = b; activeBox = boxes[0] || "all"; expandedBrand = b;
+      resetFilters(); renderNav(); renderFacets(); render();
+    }
+    // Выбор конкретной модели коробки в дереве.
+    function selectBox(b, box){
+      activeBrand = b; activeBox = box; expandedBrand = b;
+      resetFilters(); renderNav(); renderFacets(); render();
+    }
+    // Сброс к стартовому экрану (плитки).
+    function goHome(){
+      activeBrand = "all"; activeBox = "all"; expandedBrand = null;
+      resetFilters(); renderNav(); renderFacets(); render();
     }
 
     // Стартовый экран: плитки семейств вместо стены из всех карточек.
@@ -1851,16 +1897,16 @@
 
     const resetFilters = () => FACETS.forEach(f=>filters[f.key]=null);
 
-    brandsBox.addEventListener("click", e=>{
-      const b = e.target.closest(".tpl-brand"); if(!b) return;
-      selectBrand(b.dataset.brand);
-    });
-    subtabsBox.addEventListener("click", e=>{
-      const s = e.target.closest(".tpl-sub"); if(!s) return;
-      activeBox = (activeBox === s.dataset.box) ? "all" : s.dataset.box; // повторный клик — снять фильтр
-      resetFilters();
-      subtabsBox.querySelectorAll(".tpl-sub").forEach(x=>x.classList.toggle("active", x.dataset.box===activeBox));
-      renderFacets(); render();
+    navBox.addEventListener("click", e=>{
+      if(e.target.closest(".tpl-nav-home")){ goHome(); return; }
+      const model = e.target.closest(".tpl-nav-model");
+      if(model){ selectBox(model.dataset.brand, model.dataset.box); return; }
+      const head = e.target.closest(".tpl-nav-head");
+      if(head){
+        const b = head.dataset.brand;
+        if(expandedBrand===b){ expandedBrand = null; renderNav(); }  // повторный клик по раскрытом — свернуть группу
+        else selectBrand(b);                                          // раскрыть семейство + открыть первую коробку
+      }
     });
     facetsBox.addEventListener("click", e=>{
       if(e.target.closest("[data-reset]")){ resetFilters(); renderFacets(); render(); return; }
@@ -1875,7 +1921,7 @@
         .map(([t,b])=>`${t.brand} · ${tplTitle(t)}\n\n${b}`).join("\n\n— — — — —\n\n");
       if(text) copyText(text, copyAllBtn);
     });
-    renderSubtabs(); renderFacets(); render();
+    renderNav(); renderFacets(); render();
   })();
 
   /* ===================== ПРОДАЖИ (данные → авто-рендер) =====================
@@ -1924,6 +1970,7 @@
     // Хранилище выводов копилки — Google Apps Script (таблица). Заполняется при подключении.
     const WITHDRAW_API   = "https://script.google.com/macros/s/AKfycbwGxC7-EvzNs9Fv47tcR5iDUwCFEUVz_Y3ToWld1tOXR8pip2rHLeCThUm2yL0f5tie/exec"; // веб-приложение Apps Script (таблица выводов)
     const WITHDRAW_TOKEN = "749ee6f82c31d87dfd00e2d5"; // секрет, совпадает с TOKEN в скрипте таблицы
+    const OPENING = 17600; // стартовая сумма: касса с промывок до системы (до 01.07). Входит в копилку, спишется первым выводом. 0 = выкл.
     let   wdSeq = 0;
     const saveWdCache = list => { try { localStorage.setItem("md_withdrawals", JSON.stringify(list)); } catch(e){} };
     // читаем выводы из таблицы (JSONP — обходит CORS у Apps Script)
@@ -1947,7 +1994,8 @@
       if(!confirm("Отметить вывод всей копилки — " + money(pot) + "?\nКопилка обнулится.")) return;
       const d = new Date(), p = n => String(n).padStart(2, "0");
       const today = d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate());
-      (WD_DATA.withdrawals = WD_DATA.withdrawals || []).push({ date: today, amount: pot });
+      const nowTime = p(d.getHours()) + ":" + p(d.getMinutes());
+      (WD_DATA.withdrawals = WD_DATA.withdrawals || []).push({ date: today, amount: pot, time: nowTime });
       saveWdCache(WD_DATA.withdrawals);
       render();
       fetch(WITHDRAW_API, { method:"POST", mode:"no-cors",
@@ -2001,17 +2049,19 @@
       // ==== копилка и выводы ====
       const withdrawals = (WD_DATA.withdrawals || [])
         .filter(w => w && w.date)
-        .map(w => ({ dt: parse(w.date), amount: Number(w.amount) || 0 }))
+        .map(w => ({ dt: parse(w.date), amount: Number(w.amount) || 0, time: w.time || "" }))
         .sort((a,b)=> a.dt - b.dt);
       const totWithdrawn = withdrawals.reduce((s,w)=> s + w.amount, 0);
-      const pot = Math.max(0, totSum - totWithdrawn);
+      const pot = Math.max(0, OPENING + totSum - totWithdrawn);
       const lastW = withdrawals.length ? withdrawals[withdrawals.length - 1] : null;
-      const sinceQty = (lastW ? days.filter(d => d.dt > lastW.dt) : days).reduce((s,d)=> s + d.qty, 0);
 
       // карточка «Копилка»
+      const lastWhen = lastW ? dateFull(lastW.dt) + (lastW.time ? ", " + lastW.time : "") : "";
       const kopSub = lastW
-        ? `С прошлого вывода — ${dateFull(lastW.dt)} (${money(lastW.amount)}). Новых продаж: ${nf.format(sinceQty)} шт.`
-        : (totSum > 0 ? "Выводов ещё не было — вся выручка в копилке." : "Пока нет продаж.");
+        ? `Прошлый вывод: ${lastWhen} — ${money(lastW.amount)}.`
+        : (OPENING > 0
+            ? `Выводов ещё не было. В копилке: ${money(totSum)} продаж + ${money(OPENING)} с прошлого периода.`
+            : (totSum > 0 ? "Выводов ещё не было — вся выручка в копилке." : "Пока нет продаж."));
       const kopBtn = pot > 0
         ? `<button class="kopilka-btn" type="button" data-pot="${pot}">💸 Отметить вывод</button>`
         : `<span class="kopilka-btn is-disabled">Копилка пуста</span>`;
@@ -2029,7 +2079,7 @@
       rowsEl.innerHTML = timeline.map(item => {
         if(item.kind === "wd"){
           const w = item.w;
-          return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>💸 Вывод — <span class="wd-amount">${money(w.amount)}</span></span><span class="wd-note">${dateFull(w.dt)} · копилка обнулена</span></div></td></tr>`;
+          return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>💸 Вывод — <span class="wd-amount">${money(w.amount)}</span></span><span class="wd-note">${dateFull(w.dt)}${w.time ? ", " + w.time : ""} · копилка обнулена</span></div></td></tr>`;
         }
         const d = item.d;
         const we = weekend(d.dt);
@@ -2055,7 +2105,7 @@
       cardsEl.innerHTML = timeline.map(item => {
         if(item.kind === "wd"){
           const w = item.w;
-          return `<div class="withdraw-card"><span>💸 Вывод — <b>${money(w.amount)}</b></span><span class="wd-note">${dateFull(w.dt)}</span></div>`;
+          return `<div class="withdraw-card"><span>💸 Вывод — <b>${money(w.amount)}</b></span><span class="wd-note">${dateFull(w.dt)}${w.time ? ", " + w.time : ""}</span></div>`;
         }
         const d = item.d;
         const we = weekend(d.dt);
