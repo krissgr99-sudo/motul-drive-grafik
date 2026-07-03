@@ -171,6 +171,7 @@
     font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;transition:.15s}
   .tpl-sub:hover{color:var(--text);border-color:var(--line-strong)}
   .tpl-sub.active{background:var(--sub-active-bg);color:var(--sub-active-text);border-color:var(--sub-active-bg)}
+  .tpl-sub-accent{color:var(--accent-soft)}
 
   /* фильтры-фасеты */
   .tpl-facets{display:flex;flex-direction:column;gap:10px;margin:0 0 18px;padding:15px 16px;
@@ -807,6 +808,12 @@
     oil_zf8hp_12:          ["Оригинальное трансмиссионное масло ZF8HP S671090312 12л", 26400],
     filter_zf_8hp65:       ["Оригинальный Фильтр-поддон ZF 1103298006", 13000],
     work_full_8hp65_wash:  ["Полная аппаратная замена масла в АКПП ZF 8HP65 с промывкой системы", 7000],
+    oil_zf8hp_6:           ["Оригинальное трансмиссионное масло ZF8HP S671090312 6л", 13200],
+    work_part_8hp65:       ["Частичная замена масла в АКПП ZF 8HP65 с заменой фильтра", 4000],
+    // ZF 8HP65A — то же, что 8HP65, но другой фильтр-поддон (1103298119) и «A» в названиях работ.
+    filter_zf_8hp65a:      ["Оригинальный Фильтр-поддон ZF 1103298119", 16000],
+    work_full_8hp65a_wash: ["Полная аппаратная замена масла в АКПП ZF 8HP65A с промывкой системы", 7000],
+    work_part_8hp65a:      ["Частичная замена масла в АКПП ZF 8HP65A с заменой фильтра", 4000],
   };
 
   // 2) Доплата за мосты/раздатку (3 узла). Меняешь только числа.
@@ -978,6 +985,29 @@
         variants: () => [
           { label: "1.",  items: ["oil_motul_atf6_12", "bardahl", "filter_zf_8hp65", "work_full_8hp65_wash"] },
           { label: "1.1", items: ["oil_zf8hp_12",      "bardahl", "filter_zf_8hp65", "work_full_8hp65_wash"] },
+        ],
+      },
+      "Частичная": {
+        head: "Частичная замена масла в АКПП ZF 8HP65 (заменой фильтр-поддона)",
+        variants: () => [
+          { label: "1.", items: ["oil_zf8hp_6", "filter_zf_8hp65", "work_part_8hp65"] },
+        ],
+      },
+    },
+    // Audi / Volkswagen — ZF 8HP65A (то же, что 8HP65, фильтр-поддон 1103298119). axles — Торсен G055/G060.
+    "8 ступка ZF 8HP65A": {
+      axles: AXLES_TORSEN,
+      "Аппаратная": {
+        head: "Полная аппаратная замена масла в АКПП ZF 8HP65A",
+        variants: () => [
+          { label: "1.",  items: ["oil_motul_atf6_12", "bardahl", "filter_zf_8hp65a", "work_full_8hp65a_wash"] },
+          { label: "1.1", items: ["oil_zf8hp_12",      "bardahl", "filter_zf_8hp65a", "work_full_8hp65a_wash"] },
+        ],
+      },
+      "Частичная": {
+        head: "Частичная замена масла в АКПП ZF 8HP65A (заменой фильтр-поддона)",
+        variants: () => [
+          { label: "1.", items: ["oil_zf8hp_6", "filter_zf_8hp65a", "work_part_8hp65a"] },
         ],
       },
     },
@@ -1166,6 +1196,35 @@
       title:"8 ступка ZF 8HP65 + мосты и Торсен G060",
       titleAccent:"G060",
       extraTags:["ZF 8HP65", "Motul ATF6 / оригинал ZF", "Мосты", "Торсен"] },
+    { brand:"Audi Volkswagen", box:"8 ступка ZF 8HP65", type:"Частичная", hybrid:false, lock:false, diffs:false,
+      title:"8 ступка ZF 8HP65 · частичная + мосты и Торсен G055",
+      titleAccent:"G055",
+      extraTags:["ZF 8HP65", "оригинал ZF 6л", "Мосты", "Торсен"] },
+    { brand:"Audi Volkswagen", box:"8 ступка ZF 8HP65", type:"Частичная", hybrid:false, lock:false, diffs:false,
+      axles:AXLES_TORSEN_G060,
+      title:"8 ступка ZF 8HP65 · частичная + мосты и Торсен G060",
+      titleAccent:"G060",
+      extraTags:["ZF 8HP65", "оригинал ZF 6л", "Мосты", "Торсен"] },
+
+    // Audi / Volkswagen — ZF 8HP65A: те же 4 варианта (фильтр-поддон 1103298119).
+    { brand:"Audi Volkswagen", box:"8 ступка ZF 8HP65A", type:"Аппаратная", hybrid:false, lock:false, diffs:false,
+      title:"8 ступка ZF 8HP65A + мосты и Торсен G055",
+      titleAccent:"G055",
+      extraTags:["ZF 8HP65A", "Motul ATF6 / оригинал ZF", "Мосты", "Торсен"] },
+    { brand:"Audi Volkswagen", box:"8 ступка ZF 8HP65A", type:"Аппаратная", hybrid:false, lock:false, diffs:false,
+      axles:AXLES_TORSEN_G060,
+      title:"8 ступка ZF 8HP65A + мосты и Торсен G060",
+      titleAccent:"G060",
+      extraTags:["ZF 8HP65A", "Motul ATF6 / оригинал ZF", "Мосты", "Торсен"] },
+    { brand:"Audi Volkswagen", box:"8 ступка ZF 8HP65A", type:"Частичная", hybrid:false, lock:false, diffs:false,
+      title:"8 ступка ZF 8HP65A · частичная + мосты и Торсен G055",
+      titleAccent:"G055",
+      extraTags:["ZF 8HP65A", "оригинал ZF 6л", "Мосты", "Торсен"] },
+    { brand:"Audi Volkswagen", box:"8 ступка ZF 8HP65A", type:"Частичная", hybrid:false, lock:false, diffs:false,
+      axles:AXLES_TORSEN_G060,
+      title:"8 ступка ZF 8HP65A · частичная + мосты и Торсен G060",
+      titleAccent:"G060",
+      extraTags:["ZF 8HP65A", "оригинал ZF 6л", "Мосты", "Торсен"] },
   ];
 
   // Логотипы марок (inline SVG — работает офлайн). Добавляешь марку → добавляешь сюда значок.
@@ -1235,8 +1294,10 @@
         : [...new Set(TEMPLATES.filter(t=>t.brand===activeBrand && t.box).map(t=>t.box))];
       if(!boxes.length){ subtabsBox.hidden = true; subtabsBox.innerHTML = ""; return; }
       subtabsBox.hidden = false;
+      // Код коробки (8HP65 / 8HP65A) подсвечиваем красным, как акцент G05x в заголовках.
+      const subLabel = b => esc(b).replace(/(8HP\d+A?)/, '<span class="tpl-sub-accent">$1</span>');
       subtabsBox.innerHTML = boxes.map(b=>
-        `<button class="tpl-sub ${b===activeBox?"active":""}" data-box="${esc(b)}">${esc(b)}</button>`).join("");
+        `<button class="tpl-sub ${b===activeBox?"active":""}" data-box="${esc(b)}">${subLabel(b)}</button>`).join("");
     }
 
     // Базовый набор (марка+коробка) — из него строим фильтры
