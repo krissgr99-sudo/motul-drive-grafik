@@ -38,7 +38,6 @@
     --receipt:rgba(0,0,0,.32); --code-text:#c2c7d0; --hair:rgba(255,255,255,.06);
     --today-bg:linear-gradient(135deg,rgba(209,31,45,.10),rgba(255,255,255,.02)); --today-border:rgba(255,75,87,.22);
     --tag-bg:rgba(255,255,255,.1); --tag-border:rgba(255,255,255,.14); --tag-text:#fff;
-    --sub-active-bg:rgba(255,255,255,.12); --sub-active-text:#fff;
     --open-border:rgba(255,75,87,.35); --accent-soft:#ff6b75;
     --drawer-bg:#0e1015; --nav-hover:rgba(255,255,255,.05); --drawer-close-hover:rgba(255,255,255,.06);
   }
@@ -63,7 +62,6 @@
     --receipt:#f6f7f9; --code-text:#3a414e; --hair:#e6e8ec;
     --today-bg:#ffffff; --today-border:#f1c4c8;
     --tag-bg:#2e2e2e; --tag-border:#2e2e2e; --tag-text:#fff;
-    --sub-active-bg:#2e2e2e; --sub-active-text:#fff;
     --open-border:rgba(209,31,45,.4); --accent-soft:#d11f2d;
     --drawer-bg:#ffffff; --nav-hover:#f2f4f7; --drawer-close-hover:#f2f4f7;
   }
@@ -160,22 +158,9 @@
     font:inherit;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;transition:.15s}
   .tpl-copyall:hover{border-color:var(--c-red);color:var(--accent-soft);background:rgba(209,31,45,.1)}
   .tpl-copyall.ok{border-color:var(--ok);color:var(--ok)}
-  .tpl-brands{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
-  .tpl-brand{padding:9px 17px;border-radius:999px;border:1px solid var(--line);background:var(--fill);color:var(--text);
-    font:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:.15s}
-  .tpl-brand:hover{border-color:var(--line-strong);background:var(--fill-hover)}
-  .tpl-brand.active{background:var(--brand);color:#fff;border-color:var(--brand);box-shadow:0 0 18px rgba(209,31,45,.45)}
-  .tpl-subtabs{display:flex;gap:8px;flex-wrap:wrap;margin:-8px 0 18px}
-  .tpl-subtabs[hidden]{display:none}
-  .tpl-sub{padding:8px 15px;border-radius:10px;border:1px solid var(--line);background:var(--fill-soft);color:var(--muted);
-    font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;transition:.15s}
-  .tpl-sub:hover{color:var(--text);border-color:var(--line-strong)}
-  .tpl-sub.active{background:var(--sub-active-bg);color:var(--sub-active-text);border-color:var(--sub-active-bg)}
-  .tpl-sub-accent{color:var(--accent-soft)}
-  /* счётчики на вкладках/подвкладках/фильтрах */
+  /* счётчики на вкладках/фильтрах */
   .tpl-count{margin-left:6px;font-size:11px;font-weight:700;color:var(--muted);opacity:.9}
-  .tpl-brand.active .tpl-count,.tpl-chip.active .tpl-count{color:#fff;opacity:.9}
-  .tpl-sub.active .tpl-count{color:var(--sub-active-text);opacity:.85}
+  .tpl-chip.active .tpl-count{color:#fff;opacity:.9}
   /* стартовый экран — плитки семейств коробок */
   .tpl-hint{margin:-2px 2px 14px;font-size:13px;color:var(--muted)}
   .tpl-hint[hidden]{display:none}
@@ -490,7 +475,7 @@
     #gate{display:none !important}
     body.locked #app{filter:none}
     .topbar,.tablecard,.note,.today,.tpl-card,.tpl-facets{box-shadow:none}
-    .today{background:#fff;border-color:#e3a;border:1px solid #eee}
+    .today{background:#fff;border:1px solid #eee}
     .tablecard,.tpl-card,.note,.tpl-facets{border-color:#ddd}
     thead th{color:#fff}
     tbody td{border-color:#e6e6e6}
@@ -517,7 +502,7 @@
   .gate-foot{margin-top:22px;font-size:11px;font-weight:600;letter-spacing:.5px;color:#5b6270}
   .vh{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 </style>
-<script>(function(){try{var t=localStorage.getItem(md_theme);if(t===light||t===dark)document.documentElement.setAttribute(data-theme,t);}catch(e){}})();</script>
+<script>(function(){try{var t=localStorage.getItem('md_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 </head>
 <body class="locked">
 
@@ -530,7 +515,7 @@
     <input class="vh" type="text" name="username" value="motul-drive" autocomplete="username" readonly tabindex="-1" aria-hidden="true">
     <input id="gate-pass" name="password" type="password" placeholder="Пароль" autocomplete="current-password" autofocus>
     <button id="gate-btn" type="submit">Открыть</button>
-    <div class="gate-err" id="gate-err"></div>
+    <div class="gate-err" id="gate-err" role="alert" aria-live="assertive"></div>
     <div class="gate-foot">Доступ только для сотрудников</div>
   </form>
 </div>
@@ -684,10 +669,12 @@
   const MON = { "06":"июн", "07":"июл" };
   const isWeekend = wd => wd === "Сб" || wd === "Вс";
 
-  // Сегодняшняя дата устройства → ключ "ДД.ММ" для сопоставления с графиком
+  // Сегодняшняя дата устройства → ключ "ДД.ММ" для сопоставления с графиком.
+  // SCHEDULE_YEAR страхует от ложного «Сегодня» в следующем году на неактуальном графике.
+  const SCHEDULE_YEAR = 2026;
   const now = new Date();
   const pad = n => String(n).padStart(2, "0");
-  const todayKey = pad(now.getDate()) + "." + pad(now.getMonth() + 1);
+  const todayKey = now.getFullYear() === SCHEDULE_YEAR ? pad(now.getDate()) + "." + pad(now.getMonth() + 1) : "";
   const chips = (arr, cls) => `<div class="${cls}">${arr.map(d=>`<span class="chip">${d}</span>`).join("")}</div>`;
 
   // Полоска людей (видна только на мобильном)
@@ -1642,7 +1629,7 @@
 
     /* ==================== Hyundai / Kia ==================== */
     { brand:"Hyundai / Kia", box:"A6MF1-2/A8LF1", type:"Аппаратная", title:"A6MF1-2 / A8LF1 (Motul / Kia Sp4)",
-      titleAccent:"A6MF1-2/A8LF1", extraTags:["A6MF1", "A6MF2", "A8LF1", "Motul ATF6", "Kia Sp4"] },
+      titleAccent:"A6MF1-2 / A8LF1", extraTags:["A6MF1", "A6MF2", "A8LF1", "Motul ATF6", "Kia Sp4"] },
 
     /* ==================== Mercedes ==================== */
     // 9G-Tronic (725.0). 4 аппаратные + 4 слив-залив, отличаются поддоном (t.filter).
@@ -1983,7 +1970,7 @@
     const MONN = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
     // Хранилище выводов копилки — Google Apps Script (таблица). Заполняется при подключении.
     const WITHDRAW_API   = "https://script.google.com/macros/s/AKfycbwGxC7-EvzNs9Fv47tcR5iDUwCFEUVz_Y3ToWld1tOXR8pip2rHLeCThUm2yL0f5tie/exec"; // веб-приложение Apps Script (таблица выводов)
-    const WITHDRAW_TOKEN = "749ee6f82c31d87dfd00e2d5"; // секрет, совпадает с TOKEN в скрипте таблицы
+    const WITHDRAW_TOKEN = "749ee6f82c31d87dfd00e2d5"; // клиентский фильтр (в статике не секретен) — основную защиту держим на стороне Apps Script
     const OPENING = 17600; // стартовая сумма: касса с промывок до системы (до 01.07). Входит в копилку, спишется первым выводом. 0 = выкл.
     let   wdSeq = 0;
     const saveWdCache = list => { try { localStorage.setItem("md_withdrawals", JSON.stringify(list)); } catch(e){} };
@@ -2036,8 +2023,8 @@
         const orders = d.orders || [];
         return {
           dt: parse(d.date), orders,
-          qty: orders.reduce((s,o)=>s+o[1], 0),
-          sum: orders.reduce((s,o)=>s+o[2], 0),
+          qty: orders.reduce((s,o)=>s+(Number(o[1])||0), 0),
+          sum: orders.reduce((s,o)=>s+(Number(o[2])||0), 0),
         };
       });
       // итоги считаются из данных — руками не дублируем
