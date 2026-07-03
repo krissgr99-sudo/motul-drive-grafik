@@ -172,6 +172,25 @@
   .tpl-sub:hover{color:var(--text);border-color:var(--line-strong)}
   .tpl-sub.active{background:var(--sub-active-bg);color:var(--sub-active-text);border-color:var(--sub-active-bg)}
   .tpl-sub-accent{color:var(--accent-soft)}
+  /* счётчики на вкладках/подвкладках/фильтрах */
+  .tpl-count{margin-left:6px;font-size:11px;font-weight:700;color:var(--muted);opacity:.9}
+  .tpl-brand.active .tpl-count,.tpl-chip.active .tpl-count{color:#fff;opacity:.9}
+  .tpl-sub.active .tpl-count{color:var(--sub-active-text);opacity:.85}
+  /* стартовый экран — плитки семейств коробок */
+  .tpl-landing-hint{grid-column:1/-1;margin:2px 2px 6px;font-size:13px;color:var(--muted)}
+  .tpl-tile{display:flex;flex-direction:column;gap:12px;padding:18px;text-align:left;cursor:pointer;
+    background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);
+    font:inherit;color:inherit;transition:border-color .15s,box-shadow .15s,transform .15s}
+  .tpl-tile:hover{border-color:var(--open-border);box-shadow:var(--shadow),0 0 0 1px var(--open-border);transform:translateY(-2px)}
+  .tpl-tile-top{display:flex;align-items:center;gap:12px}
+  .tpl-tile-logo{width:42px;height:42px;flex:none}
+  .tpl-tile-logo svg{width:100%;height:100%;display:block}
+  .tpl-tile-name{font-family:var(--font-disp);font-weight:700;font-size:17px;line-height:1.1}
+  .tpl-tile-meta{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.3px;margin-top:3px}
+  .tpl-tile-models{display:flex;flex-wrap:wrap;gap:5px}
+  .tpl-tile-chip{font-family:var(--font-mono);font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:6px;
+    background:var(--chip-bg);color:var(--chip-text);border:1px solid var(--line)}
+  .tpl-tile-more{font-size:10.5px;font-weight:700;color:var(--accent-soft);align-self:center}
 
   /* фильтры-фасеты */
   .tpl-facets{display:flex;flex-direction:column;gap:10px;margin:0 0 18px;padding:15px 16px;
@@ -197,7 +216,8 @@
   .tpl-badge.b-part{background:rgba(240,180,41,.12);color:var(--warn);border:1px solid rgba(240,180,41,.3)}
   .tpl-badge.b-hybrid{background:rgba(91,141,255,.12);color:var(--c-blue);border:1px solid rgba(91,141,255,.3)}
   .tpl-badge.b-lock{background:rgba(255,75,87,.12);color:#ff6b75;border:1px solid rgba(255,75,87,.3)}
-  .tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px;align-items:start}
+  .tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,380px));justify-content:center;gap:16px;align-items:start}
+  .tpl-grid.is-landing{grid-template-columns:repeat(auto-fill,minmax(215px,1fr));justify-content:stretch}
   .tpl-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;
     transition:border-color .15s,box-shadow .15s}
   .tpl-card:hover{border-color:var(--line-strong)}
@@ -549,7 +569,7 @@
     <!-- ===== Страница: Шаблоны ===== -->
     <div id="page-shablony" class="page" hidden>
       <div class="tpl-toolbar">
-        <div class="tpl-search"><input id="tpl-search" type="text" placeholder="Поиск: марка, коробка, узел…" autocomplete="off"></div>
+        <div class="tpl-search"><input id="tpl-search" type="text" placeholder="Найти коробку: 8HP65, DQ500, U660, вариатор…" autocomplete="off"></div>
         <button class="tpl-copyall" id="tpl-copyall" type="button">Копировать всё видимое</button>
       </div>
       <div class="tpl-brands" id="tpl-brands"></div>
@@ -1434,7 +1454,8 @@
     const eng = engineOf(t);
     const isHyb = eng !== "Обычная";
     const type = isHyb ? t.type.toLowerCase() : t.type;
-    return (t.prefix ? t.prefix + " · " : "")  // подпись в начале (напр. «Шестиступка»)
+    const lead = t.prefix || t.box;            // код модели в начало авто-заголовка (8HP45-76, 6HP…)
+    return (lead ? lead + " · " : "")
          + (isHyb ? eng + " · " : "") + type + " замена"
          + (t.diffs ? " + мосты и раздатка" : "")
          + (t.lock  ? " (с блокировкой)"   : "");
@@ -1645,6 +1666,8 @@
     let activeBrand = "all", activeBox = "all", query = "";
     const filters = { type:null, engine:null, lock:null, axle:null };
     const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+    const cnt = n => n ? `<span class="tpl-count">${n}</span>` : "";   // бейдж-счётчик у вкладок/фильтров
+    const plural = (n,a,b,c) => { const m=n%100,d=n%10; return n+" "+(m>=11&&m<=14?c:d===1?a:d>=2&&d<=4?b:c); };
 
     // Оси фильтров: get(t) берёт значение прямо из полей карточки (порядок значений фиксирован)
     const FACETS = [
@@ -1655,8 +1678,10 @@
     ];
 
     const brands = [...new Set(TEMPLATES.map(t=>t.brand))];
-    brandsBox.innerHTML = [`<button class="tpl-brand active" data-brand="all">Все</button>`]
-      .concat(brands.map(b=>`<button class="tpl-brand" data-brand="${esc(b)}">${esc(b)}</button>`)).join("");
+    const brandCount = b => TEMPLATES.filter(t=>t.brand===b).length;
+    const boxCount   = (b,box) => TEMPLATES.filter(t=>t.brand===b && t.box===box).length;
+    brandsBox.innerHTML = [`<button class="tpl-brand active" data-brand="all">Все${cnt(TEMPLATES.length)}</button>`]
+      .concat(brands.map(b=>`<button class="tpl-brand" data-brand="${esc(b)}">${esc(b)}${cnt(brandCount(b))}</button>`)).join("");
 
     // Подвкладки коробок — видны только когда выбрана конкретная марка
     function renderSubtabs(){
@@ -1664,9 +1689,9 @@
         : [...new Set(TEMPLATES.filter(t=>t.brand===activeBrand && t.box).map(t=>t.box))];
       if(!boxes.length){ subtabsBox.hidden = true; subtabsBox.innerHTML = ""; return; }
       subtabsBox.hidden = false;
-      // Подвкладки — коды моделей коробок. Красный акцент теперь живёт в заголовках карточек (titleAccent).
+      // Подвкладки — коды моделей коробок со счётчиком карточек. Красный акцент живёт в заголовках (titleAccent).
       subtabsBox.innerHTML = boxes.map(b=>
-        `<button class="tpl-sub ${b===activeBox?"active":""}" data-box="${esc(b)}">${esc(b)}</button>`).join("");
+        `<button class="tpl-sub ${b===activeBox?"active":""}" data-box="${esc(b)}">${esc(b)}${cnt(boxCount(activeBrand,b))}</button>`).join("");
     }
 
     // Базовый набор (марка+коробка) — из него строим фильтры
@@ -1681,8 +1706,10 @@
         const present = new Set(base.map(t=>f.get(t)));
         const vals = f.order.filter(v=>present.has(v));
         if(vals.length < 2) return ""; // выбирать не из чего — ось скрываем
-        const chips = vals.map(v=>
-          `<button class="tpl-chip ${filters[f.key]===v?"active":""}" data-facet="${f.key}" data-val="${esc(v)}">${esc(v)}</button>`).join("");
+        const chips = vals.map(v=>{
+          const n = base.filter(t=> f.get(t)===v && FACETS.every(o=> o.key===f.key || !filters[o.key] || o.get(t)===filters[o.key])).length;
+          return `<button class="tpl-chip ${filters[f.key]===v?"active":""}" data-facet="${f.key}" data-val="${esc(v)}">${esc(v)}${cnt(n)}</button>`;
+        }).join("");
         return `<div class="tpl-facet"><span class="tpl-facet-label">${esc(f.label)}</span>${chips}</div>`;
       }).filter(Boolean);
       if(!rows.length){ facetsBox.hidden = true; facetsBox.innerHTML = ""; return; }
@@ -1719,7 +1746,43 @@
       }
     }
 
+    // Выбор семейства (из вкладки или плитки старта): открываем первую коробку.
+    function selectBrand(b){
+      activeBrand = b;
+      const boxes = b==="all" ? [] : [...new Set(TEMPLATES.filter(t=>t.brand===b && t.box).map(t=>t.box))];
+      activeBox = boxes[0] || "all";
+      resetFilters();
+      brandsBox.querySelectorAll(".tpl-brand").forEach(x=>x.classList.toggle("active", x.dataset.brand===b));
+      renderSubtabs(); renderFacets(); render();
+    }
+
+    // Стартовый экран: плитки семейств вместо стены из всех карточек.
+    function renderLanding(){
+      grid.innerHTML =
+        `<div class="tpl-landing-hint">Выберите семейство коробки или начните вводить модель в поиск — например 8HP65, DQ500, U660.</div>` +
+        brands.map(b=>{
+          const boxes = [...new Set(TEMPLATES.filter(t=>t.brand===b && t.box).map(t=>t.box))];
+          const logo  = BRAND_LOGOS[b] || "";
+          const shown = boxes.slice(0,5).map(x=>`<span class="tpl-tile-chip">${esc(x)}</span>`).join("");
+          const more  = boxes.length>5 ? `<span class="tpl-tile-more">+${boxes.length-5}</span>` : "";
+          return `<button class="tpl-tile" type="button" data-brand="${esc(b)}">
+            <span class="tpl-tile-top">
+              ${logo?`<span class="tpl-tile-logo">${logo}</span>`:""}
+              <span><span class="tpl-tile-name">${esc(b)}</span>
+                <span class="tpl-tile-meta">${plural(boxes.length,"модель","модели","моделей")} · ${plural(brandCount(b),"смета","сметы","смет")}</span></span>
+            </span>
+            <span class="tpl-tile-models">${shown}${more}</span>
+          </button>`;
+        }).join("");
+      grid.querySelectorAll(".tpl-tile").forEach(tile=>
+        tile.addEventListener("click", ()=> selectBrand(tile.dataset.brand)));
+    }
+
     function render(){
+      // По умолчанию (никакая марка не выбрана и пустой поиск) — стартовый экран с плитками.
+      const landing = activeBrand==="all" && !query;
+      grid.classList.toggle("is-landing", landing);
+      if(landing){ renderLanding(); return; }
       const list = visible();
       if(!list.length){ grid.innerHTML = `<div class="tpl-empty">Ничего не найдено</div>`; return; }
       grid.innerHTML = list.map((t,i)=>{
@@ -1790,13 +1853,7 @@
 
     brandsBox.addEventListener("click", e=>{
       const b = e.target.closest(".tpl-brand"); if(!b) return;
-      activeBrand = b.dataset.brand;
-      // при выборе марки сразу открываем первую коробку (чтобы не валить всё в кучу)
-      const boxes = activeBrand==="all" ? [] : [...new Set(TEMPLATES.filter(t=>t.brand===activeBrand && t.box).map(t=>t.box))];
-      activeBox = boxes[0] || "all";
-      resetFilters();
-      brandsBox.querySelectorAll(".tpl-brand").forEach(x=>x.classList.toggle("active", x===b));
-      renderSubtabs(); renderFacets(); render();
+      selectBrand(b.dataset.brand);
     });
     subtabsBox.addEventListener("click", e=>{
       const s = e.target.closest(".tpl-sub"); if(!s) return;
