@@ -761,6 +761,13 @@
     mb_diff_rear:   ["Замена масла в заднем дифференциале", 1000],
     mb_transf_oil:  ["Трансмиссионное масло Mercedes 236.15 A000989270411 0.6л", 1500],
     mb_transf_work: ["Замена масла в раздаточной коробке", 1500],
+    // Mercedes 7G-Tronic (722.9): 2 варианта — «+» на масле MB 236.15, обычный на Motul ATF6.
+    // Фильтр (в сборе с прокладкой) и промывка BARDAHL — общие. Мосты/раздатка — как у 9G (MB9G_AXLES).
+    oil_mb_7g_12:          ["Трансмиссионное масло Mercedes 236.15 A000989270411 12л", 26400],
+    oil_motul_atf6_12:     ["Трансмиссионное масло Motul ATF6 105774 12л", 21600],
+    filter_mb_7g:          ["Фильтр АКПП с прокладкой в комплекте", 7000],
+    work_full_7g_wash:     ["Полная аппаратная замена масла в АКПП 7G-Tronic+ с промывкой системы", 6000],
+    work_full_7g_std_wash: ["Полная аппаратная замена масла в АКПП 7G-Tronic с промывкой системы", 6000],
   };
 
   // 2) Доплата за мосты/раздатку (3 узла). Меняешь только числа.
@@ -887,6 +894,20 @@
         ],
       },
     },
+    // Mercedes 7G-Tronic (722.9): 2 варианта масла по t.filter (plus = MB 236.15, std = Motul ATF6).
+    // diffsBlock — сноска «мосты + раздатка», та же, что у 9G-Tronic (MB9G_AXLES).
+    "7 ступка": {
+      diffsBlock: MB9G_AXLES,
+      "Аппаратная": {
+        head: fk => fk==="std" ? "Полная аппаратная замена масла в АКПП 7G-Tronic"
+                               : "Полная аппаратная замена масла в АКПП 7G-Tronic+",
+        variants: fk => [
+          fk==="std"
+            ? { label: "1.", items: ["oil_motul_atf6_12", "bardahl", "filter_mb_7g", "work_full_7g_std_wash"] }
+            : { label: "1.", items: ["oil_mb_7g_12",      "bardahl", "filter_mb_7g", "work_full_7g_wash"] },
+        ],
+      },
+    },
     // 09S на масле Ravenol (допуск AW2). Мосты и Haldex — те же, что у X1 F48.
     "09S": {
       axles: AXLES_X1,
@@ -964,7 +985,8 @@
     const eng = engineOf(t);
     if(svc[eng]) svc = svc[eng];           // мотор переопределяет услугу (полный гибрид = др. агрегат)
     const filterKey = t.filter || (box.filter ? box.filter[eng] : null); // t.filter — явный выбор поддона (9G-Tronic)
-    const parts = [svc.variants(filterKey).map(v => renderVariant(v, svc.head)).join("\n\n")];
+    const head = typeof svc.head === "function" ? svc.head(filterKey) : svc.head; // head может зависеть от фильтра (7G-Tronic)
+    const parts = [svc.variants(filterKey).map(v => renderVariant(v, head)).join("\n\n")];
     if(t.diffs)         parts.push(renderDiffs(t));  // ZF: мосты + раздатка (зависит от блокировки)
     if(t.diffsDetailed) parts.push(renderDiffsDetailed(DIFFS_DETAILED)); // поузловой расчёт мостов
     if(box.diffsBlock)  parts.push(renderDiffsDetailed(box.diffsBlock)); // сноска мостов на уровне коробки (9G-Tronic)
@@ -1058,6 +1080,14 @@
     { brand:"Mercedes", box:"9 ступка", type:"Слив-залив", filter:"zf",    hybrid:false, lock:false, diffs:false,
       title:"Слив-залив · поддон ZF",
       extraTags:["9G-Tronic", "725.0", "Поддон ZF"] },
+
+    // Mercedes 7G-Tronic (722.9) — аппаратная замена с промывкой. 2 варианта масла по filter.
+    { brand:"Mercedes", box:"7 ступка", type:"Аппаратная", filter:"plus", hybrid:false, lock:false, diffs:false,
+      title:"Аппаратная замена · 7G-Tronic Plus (масло MB 236.15) с промывкой",
+      extraTags:["7G-Tronic Plus", "722.9", "Mercedes 236.15"] },
+    { brand:"Mercedes", box:"7 ступка", type:"Аппаратная", filter:"std", hybrid:false, lock:false, diffs:false,
+      title:"Аппаратная замена · 7G-Tronic (масло Motul ATF6) с промывкой",
+      extraTags:["7G-Tronic", "722.9", "Motul ATF6"] },
   ];
 
   // Логотипы марок (inline SVG — работает офлайн). Добавляешь марку → добавляешь сюда значок.
