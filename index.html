@@ -177,36 +177,45 @@
   .tpl-brand.active .tpl-count,.tpl-chip.active .tpl-count{color:#fff;opacity:.9}
   .tpl-sub.active .tpl-count{color:var(--sub-active-text);opacity:.85}
   /* стартовый экран — плитки семейств коробок */
-  .tpl-landing-hint{grid-column:1/-1;margin:2px 2px 6px;font-size:13px;color:var(--muted)}
-  .tpl-tile{display:flex;flex-direction:column;gap:12px;padding:18px;text-align:left;cursor:pointer;
+  .tpl-hint{margin:-2px 2px 14px;font-size:13px;color:var(--muted)}
+  .tpl-hint[hidden]{display:none}
+  .tpl-landing-hint{grid-column:1/-1;margin:2px 2px 10px;font-size:13px;color:var(--muted)}
+  .tpl-tile{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:14px;padding:18px 18px 16px;text-align:left;cursor:pointer;
     background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);
     font:inherit;color:inherit;transition:border-color .15s,box-shadow .15s,transform .15s}
-  .tpl-tile:hover{border-color:var(--open-border);box-shadow:var(--shadow),0 0 0 1px var(--open-border);transform:translateY(-2px)}
-  .tpl-tile-top{display:flex;align-items:center;gap:12px}
-  .tpl-tile-logo{width:42px;height:42px;flex:none}
+  .tpl-tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brand);opacity:0;transition:opacity .15s}
+  .tpl-tile:hover{border-color:var(--open-border);box-shadow:var(--shadow),0 6px 20px rgba(0,0,0,.10);transform:translateY(-3px)}
+  .tpl-tile:hover::before{opacity:1}
+  .tpl-tile-go{position:absolute;top:15px;right:16px;font-size:17px;line-height:1;color:var(--muted);transition:color .15s,transform .15s}
+  .tpl-tile:hover .tpl-tile-go{color:var(--accent-soft);transform:translateX(3px)}
+  .tpl-tile-top{display:flex;align-items:center;gap:13px;min-width:0}
+  .tpl-tile-logo{width:46px;height:46px;flex:none}
   .tpl-tile-logo svg{width:100%;height:100%;display:block}
-  .tpl-tile-name{font-family:var(--font-disp);font-weight:700;font-size:17px;line-height:1.1}
-  .tpl-tile-meta{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.3px;margin-top:3px}
-  .tpl-tile-models{display:flex;flex-wrap:wrap;gap:5px}
-  .tpl-tile-chip{font-family:var(--font-mono);font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:6px;
+  .tpl-tile-head{display:flex;flex-direction:column;min-width:0}
+  .tpl-tile-name{font-family:var(--font-disp);font-weight:800;font-size:18px;line-height:1.1;letter-spacing:.2px}
+  .tpl-tile-meta{font-family:var(--font-mono);font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:.3px;margin-top:5px;white-space:nowrap}
+  .tpl-tile-models{display:flex;flex-wrap:wrap;gap:6px;padding-top:13px;border-top:1px solid var(--line)}
+  .tpl-tile-chip{font-family:var(--font-mono);font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:6px;
     background:var(--chip-bg);color:var(--chip-text);border:1px solid var(--line)}
   .tpl-tile-more{font-size:10.5px;font-weight:700;color:var(--accent-soft);align-self:center}
   /* двухпанельный каталог: слева дерево семейство→модель, справа сметы */
   .tpl-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:20px;align-items:start}
   .tpl-nav{position:sticky;top:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;
-    box-shadow:var(--shadow);padding:8px;max-height:calc(100vh - 28px);overflow:auto}
-  .tpl-nav-home{margin-bottom:4px;border-bottom:1px solid var(--line);border-radius:10px 10px 0 0}
+    box-shadow:var(--shadow);padding:10px;max-height:calc(100vh - 28px);overflow:auto}
+  .tpl-nav-home{margin-bottom:6px;padding-bottom:11px;border-bottom:1px solid var(--line)}
   .tpl-nav-home.active-home{color:var(--accent-soft)}
-  .tpl-nav-group + .tpl-nav-group{margin-top:2px}
-  .tpl-nav-head{width:100%;display:flex;align-items:center;gap:9px;padding:9px 10px;border:none;background:transparent;
+  .tpl-nav-group + .tpl-nav-group{margin-top:1px}
+  .tpl-nav-head{width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border:none;background:transparent;
     border-radius:10px;font:inherit;font-weight:700;color:var(--text);cursor:pointer;text-align:left;transition:background .12s}
   .tpl-nav-head:hover{background:var(--fill-soft)}
   .tpl-nav-group.active-brand > .tpl-nav-head{color:var(--accent-soft)}
-  .tpl-nav-logo{width:24px;height:24px;flex:none}
+  .tpl-nav-logo{width:26px;height:26px;flex:none}
   .tpl-nav-logo svg{width:100%;height:100%;display:block}
   .tpl-nav-name{flex:1;font-size:13.5px}
-  .tpl-nav-chev{flex:none;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
-    transform:rotate(-45deg);transition:transform .2s;margin-right:3px}
+  .tpl-nav-head .tpl-count{min-width:22px;text-align:right;font-variant-numeric:tabular-nums}
+  .tpl-nav-model .tpl-count{font-variant-numeric:tabular-nums}
+  .tpl-nav-chev{flex:none;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
+    transform:rotate(-45deg);transition:transform .2s;margin-left:9px}
   .tpl-nav-group.open .tpl-nav-chev{transform:rotate(45deg)}
   .tpl-nav-models{display:none;flex-direction:column;gap:2px;padding:2px 4px 8px 30px}
   .tpl-nav-group.open .tpl-nav-models{display:flex}
@@ -601,6 +610,7 @@
         <div class="tpl-search"><input id="tpl-search" type="text" placeholder="Найти коробку: 8HP65, DQ500, U660, вариатор…" autocomplete="off"></div>
         <button class="tpl-copyall" id="tpl-copyall" type="button">Копировать всё видимое</button>
       </div>
+      <div class="tpl-hint" id="tpl-hint" hidden>Выберите семейство коробки слева или начните вводить модель в поиск — например 8HP65, DQ500, U660.</div>
       <div class="tpl-layout">
         <aside class="tpl-nav" id="tpl-nav"></aside>
         <section class="tpl-main">
@@ -1691,6 +1701,7 @@
   (function(){
     const grid       = document.getElementById("tpl-grid");
     const navBox     = document.getElementById("tpl-nav");
+    const hintEl     = document.getElementById("tpl-hint");
     const facetsBox  = document.getElementById("tpl-facets");
     const searchInp  = document.getElementById("tpl-search");
     const copyAllBtn = document.getElementById("tpl-copyall");
@@ -1715,7 +1726,7 @@
 
     // Левая панель — дерево «семейство → модель». Раскрыто семейство expandedBrand; активна модель activeBox.
     function renderNav(){
-      const home = `<button class="tpl-nav-head tpl-nav-home ${activeBrand==="all"?"active-home":""}" data-home="1"><span class="tpl-nav-name">Все коробки</span>${cnt(TEMPLATES.length)}</button>`;
+      const home = `<button class="tpl-nav-head tpl-nav-home ${activeBrand==="all"?"active-home":""}" data-home="1"><span class="tpl-nav-name">Все коробки</span>${cnt(TEMPLATES.length)}<span class="tpl-nav-chev" style="visibility:hidden"></span></button>`;
       navBox.innerHTML = home + brands.map(b=>{
         const open   = b===expandedBrand;
         const isCur  = b===activeBrand;
@@ -1805,17 +1816,19 @@
     // Стартовый экран: плитки семейств вместо стены из всех карточек.
     function renderLanding(){
       grid.innerHTML =
-        `<div class="tpl-landing-hint">Выберите семейство коробки или начните вводить модель в поиск — например 8HP65, DQ500, U660.</div>` +
         brands.map(b=>{
           const boxes = [...new Set(TEMPLATES.filter(t=>t.brand===b && t.box).map(t=>t.box))];
           const logo  = BRAND_LOGOS[b] || "";
           const shown = boxes.slice(0,5).map(x=>`<span class="tpl-tile-chip">${esc(x)}</span>`).join("");
           const more  = boxes.length>5 ? `<span class="tpl-tile-more">+${boxes.length-5}</span>` : "";
           return `<button class="tpl-tile" type="button" data-brand="${esc(b)}">
+            <span class="tpl-tile-go">→</span>
             <span class="tpl-tile-top">
               ${logo?`<span class="tpl-tile-logo">${logo}</span>`:""}
-              <span><span class="tpl-tile-name">${esc(b)}</span>
-                <span class="tpl-tile-meta">${plural(boxes.length,"модель","модели","моделей")} · ${plural(brandCount(b),"смета","сметы","смет")}</span></span>
+              <span class="tpl-tile-head">
+                <span class="tpl-tile-name">${esc(b)}</span>
+                <span class="tpl-tile-meta">${plural(boxes.length,"модель","модели","моделей")} · ${plural(brandCount(b),"смета","сметы","смет")}</span>
+              </span>
             </span>
             <span class="tpl-tile-models">${shown}${more}</span>
           </button>`;
@@ -1828,6 +1841,7 @@
       // По умолчанию (никакая марка не выбрана и пустой поиск) — стартовый экран с плитками.
       const landing = activeBrand==="all" && !query;
       grid.classList.toggle("is-landing", landing);
+      hintEl.hidden = !landing;
       if(landing){ renderLanding(); return; }
       const list = visible();
       if(!list.length){ grid.innerHTML = `<div class="tpl-empty">Ничего не найдено</div>`; return; }
