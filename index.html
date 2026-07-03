@@ -350,6 +350,37 @@
   .sales-qty{font-family:var(--font-disp);font-weight:700;font-size:15px}
   .sales-sum{font-family:var(--font-disp);font-weight:700;font-size:14px}
   .sales-zero{color:var(--muted);opacity:.55;font-weight:600}
+  /* Копилка (к выводу) + метки выводов + помесячно */
+  .kopilka{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;
+    box-shadow:var(--shadow);padding:17px 20px;margin-bottom:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .kopilka::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--brand)}
+  .kopilka-main{display:flex;flex-direction:column;gap:5px;min-width:0}
+  .kopilka-k{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .kopilka-v{font-family:var(--font-disp);font-weight:800;font-size:30px;line-height:1;letter-spacing:.3px;color:var(--accent-soft)}
+  .kopilka.empty .kopilka-v{color:var(--muted)}
+  .kopilka-sub{font-size:12px;color:var(--muted);font-weight:600;line-height:1.5}
+  .kopilka-btn{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:13px;
+    border:1px solid var(--c-red);background:rgba(209,31,45,.1);color:var(--accent-soft);font:inherit;font-weight:700;
+    font-size:13px;cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s;white-space:nowrap}
+  .kopilka-btn:hover{background:rgba(209,31,45,.18)}
+  .kopilka-btn.is-disabled{border-color:var(--line);background:var(--fill-soft);color:var(--muted);opacity:.7;pointer-events:none}
+  tbody tr.withdraw-row td{background:rgba(209,31,45,.06);border-top:1px solid var(--open-border);border-bottom:1px solid var(--open-border)}
+  .withdraw-cell{display:flex;align-items:center;gap:10px;font-weight:700;font-size:13px;color:var(--accent-soft)}
+  .withdraw-cell .wd-amount{font-family:var(--font-disp);font-weight:800}
+  .withdraw-cell .wd-note{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .withdraw-card{background:rgba(209,31,45,.06);border:1px solid var(--open-border);border-radius:14px;padding:13px 15px;
+    display:flex;align-items:center;gap:9px;font-weight:700;font-size:13px;color:var(--accent-soft)}
+  .withdraw-card .wd-note{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .sales-months{margin-top:18px;display:flex;flex-direction:column;gap:10px}
+  .sales-months-h{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .smonth{display:grid;grid-template-columns:1fr auto auto;gap:8px 20px;align-items:baseline;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 16px;box-shadow:var(--shadow)}
+  .smonth-name{font-family:var(--font-disp);font-weight:700;font-size:15px}
+  .smonth-cell{display:flex;flex-direction:column;gap:3px;text-align:right}
+  .smonth-cell .k{font-family:var(--font-mono);font-size:9px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
+  .smonth-cell .v{font-family:var(--font-disp);font-weight:700;font-size:14px}
+  @media(max-width:720px){ .kopilka{gap:12px} .kopilka-v{font-size:26px} .kopilka-btn{margin-left:0;width:100%;justify-content:center}
+    .smonth{grid-template-columns:1fr 1fr;gap:10px 14px} .smonth-name{grid-column:1/-1} .smonth-cell{text-align:left} }
   .sales-wd{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
   tr.weekend .sales-wd{color:var(--accent-soft)}
   /* строка «Итого» в таблице продаж */
@@ -536,6 +567,7 @@
         <div class="sales-prod"><span class="sales-prod-dot"></span><span id="sales-prod-name">—</span></div>
         <div class="sales-upd" id="sales-upd"></div>
       </div>
+      <div class="kopilka" id="kopilka" hidden></div>
       <div class="sales-stats" id="sales-stats"></div>
       <div class="tablecard">
         <table>
@@ -549,6 +581,7 @@
         </table>
       </div>
       <div class="cards" id="sales-cards"></div>
+      <div class="sales-months" id="sales-months"></div>
       <div class="note"><span class="nd"></span><span id="sales-note"></span></div>
     </div>
 
@@ -768,6 +801,11 @@
     filter_mb_7g:          ["Фильтр АКПП с прокладкой в комплекте", 7000],
     work_full_7g_wash:     ["Полная аппаратная замена масла в АКПП 7G-Tronic+ с промывкой системы", 6000],
     work_full_7g_std_wash: ["Полная аппаратная замена масла в АКПП 7G-Tronic с промывкой системы", 6000],
+    // Audi / Volkswagen — ZF 8HP65. 2 варианта масла (Motul ATF6 — есть выше; оригинал ZF8HP).
+    // Фильтр-поддон ZF и работа с промывкой — общие. Мосты/Торсен — блок AXLES_TORSEN.
+    oil_zf8hp_12:          ["Оригинальное трансмиссионное масло ZF8HP S671090312 12л", 26400],
+    filter_zf_8hp65:       ["Оригинальный Фильтр-поддон ZF 1103298006", 13000],
+    work_full_8hp65_wash:  ["Полная аппаратная замена масла в АКПП ZF 8HP65 с промывкой системы", 7000],
   };
 
   // 2) Доплата за мосты/раздатку (3 узла). Меняешь только числа.
@@ -786,6 +824,12 @@
 
   // 2.2) Мосты для переднеприводной платформы (X1 F48) — без раздатки, только Motul.
   const AXLES_X1 = { head: "Передний и задний дифференциал.", motul: 11000 };
+
+  // 2.2.1) Мосты + Торсен (Audi/VW, ZF 8HP65) — вариант Motul или оригинал VAG (см. renderAxles).
+  const AXLES_TORSEN = {
+    head: "Также можем заменить масла в переднем, заднем дифференциале и в ТОРСЕН.",
+    motul: 17500, orig: 33000, origBrand: "Vag", note: "Motul ничем не уступает оригиналу", tail: "с G055",
+  };
 
   // 2.3) Муфта Haldex (X1 F48) — отдельный блок с двумя вариантами. Цены — в PRICE.
   const HALDEX = {
@@ -919,6 +963,18 @@
         ],
       },
     },
+    // Audi / Volkswagen — ZF 8HP65. 2 варианта масла (Motul ATF6 / оригинал ZF8HP) в одной карточке.
+    // axles — блок «мосты + Торсен» (Motul или оригинал VAG).
+    "8 ступка ZF 8HP65": {
+      axles: AXLES_TORSEN,
+      "Аппаратная": {
+        head: "Полная аппаратная замена масла в АКПП ZF 8HP65",
+        variants: () => [
+          { label: "1.",  items: ["oil_motul_atf6_12", "bardahl", "filter_zf_8hp65", "work_full_8hp65_wash"] },
+          { label: "1.1", items: ["oil_zf8hp_12",      "bardahl", "filter_zf_8hp65", "work_full_8hp65_wash"] },
+        ],
+      },
+    },
   };
 
   // ---- генераторы: тексты собираются отсюда, руками не дублируются ----
@@ -956,9 +1012,13 @@
     lines.push(`Итого по мостам и раздатке: ${sum} руб.`);
     return lines.join("\n");
   }
-  // Простые мосты (X1 F48): один блок, только Motul.
+  // Простые мосты (X1 F48): один блок, только Motul. Если заданы orig/note — добавляем строку оригинала и сноску (Audi/VW, Торсен).
   function renderAxles(a){
-    return `${a.head}\nМасло Motul +замена ${a.motul}р`;
+    const lines = [a.head, `Масло Motul +замена ${a.motul}р`];
+    if(a.orig) lines.push(`Оригинал ${a.origBrand||""} +замена ${a.orig}р`.replace(/  +/g," "));
+    if(a.note) lines.push(a.note);
+    if(a.tail) lines.push(a.tail);
+    return lines.join("\n");
   }
   // Муфта Haldex: общий заголовок + варианты с собственным «Итого».
   function renderHaldex(h){
@@ -1088,6 +1148,11 @@
     { brand:"Mercedes", box:"7 ступка", type:"Аппаратная", filter:"std", hybrid:false, lock:false, diffs:false,
       title:"Аппаратная замена · 7G-Tronic (масло Motul ATF6) с промывкой",
       extraTags:["7G-Tronic", "722.9", "Motul ATF6"] },
+
+    // Audi / Volkswagen — ZF 8HP65: аппаратная (2 варианта масла) + мосты и Торсен.
+    { brand:"Audi Volkswagen", box:"8 ступка ZF 8HP65", type:"Аппаратная", hybrid:false, lock:false, diffs:false,
+      title:"8 ступка ZF 8HP65 + мосты и Торсен",
+      extraTags:["ZF 8HP65", "Motul ATF6 / оригинал ZF", "Мосты", "Торсен"] },
   ];
 
   // Логотипы марок (inline SVG — работает офлайн). Добавляешь марку → добавляешь сюда значок.
@@ -1113,6 +1178,18 @@
     <line x1="50" y1="50" x2="79" y2="67"/>
   </g>
   <circle cx="50" cy="50" r="3.6" fill="#c7ccd1"/>
+</svg>`,
+    "Audi Volkswagen":
+`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Audi / Volkswagen">
+  <circle cx="50" cy="50" r="49" fill="#1d1d1d"/>
+  <circle cx="50" cy="50" r="48.5" fill="none" stroke="#e6e8ec" stroke-width=".8"/>
+  <text x="50" y="47" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="34" letter-spacing="1.5" fill="#c7ccd1">VW</text>
+  <g fill="none" stroke="#c7ccd1" stroke-width="2.6">
+    <circle cx="34" cy="72" r="8"/>
+    <circle cx="44.7" cy="72" r="8"/>
+    <circle cx="55.3" cy="72" r="8"/>
+    <circle cx="66" cy="72" r="8"/>
+  </g>
 </svg>`,
   };
 
@@ -1315,6 +1392,10 @@
     ],
   };
 
+  /* Выводы копилки (факт снятия наличных). Живые данные — withdrawals.json (робот
+     дописывает по кнопке «Отметить вывод»). Ниже — запас для офлайна/мгновенного показа. */
+  const WITHDRAWALS = { updated:null, withdrawals:[] };
+
   (function(){
     const MONF = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
     const WD   = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"]; // getDay(): 0 = воскресенье
@@ -1330,13 +1411,22 @@
     const rowsEl = document.getElementById("sales-rows");
     const cardsEl= document.getElementById("sales-cards");
     const noteEl = document.getElementById("sales-note");
+    const kopEl    = document.getElementById("kopilka");
+    const monthsEl = document.getElementById("sales-months");
+    const MONN = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+    const REPO = "krissgr99-sudo/motul-drive-grafik";
+    const withdrawHref = amount => "https://github.com/" + REPO + "/issues/new?labels=withdrawal&title=" +
+      encodeURIComponent("Вывод копилки") + "&body=" + encodeURIComponent(
+        "Отметить вывод всей копилки (баланс «под ноль»).\nДату и сумму робот впишет сам по данным сайта.\n" +
+        "Ориентировочно на момент нажатия: " + money(amount) + ".\n\nmd-withdraw-v1");
 
     // список заказ-нарядов внутри раскрытого дня
     const ordersHtml = orders => `<div class="ord-list">` + orders.map(o =>
       `<div class="ord"><span class="ord-num">Заказ-наряд №${o[0]}</span><span class="ord-qty">${nf.format(o[1])} шт</span><span class="ord-sum">${money(o[2])}</span></div>`
     ).join("") + `</div>`;
 
-    let DATA = SALES; // сначала запасные; ниже подменяем свежими из sales.json
+    let DATA = SALES;         // сначала запасные; ниже подменяем свежими из sales.json
+    let WD_DATA = WITHDRAWALS; // выводы: запас; ниже подменяем свежими из withdrawals.json
 
     function render(){
       nameEl.textContent = DATA.product;
@@ -1370,8 +1460,40 @@
       // по возрастанию даты: раньше — выше
       const sorted = [...days].sort((a,b)=> a.dt - b.dt);
 
+      // ==== копилка и выводы ====
+      const withdrawals = (WD_DATA.withdrawals || [])
+        .filter(w => w && w.date)
+        .map(w => ({ dt: parse(w.date), amount: Number(w.amount) || 0 }))
+        .sort((a,b)=> a.dt - b.dt);
+      const totWithdrawn = withdrawals.reduce((s,w)=> s + w.amount, 0);
+      const pot = Math.max(0, totSum - totWithdrawn);
+      const lastW = withdrawals.length ? withdrawals[withdrawals.length - 1] : null;
+      const sinceQty = (lastW ? days.filter(d => d.dt > lastW.dt) : days).reduce((s,d)=> s + d.qty, 0);
+
+      // карточка «Копилка»
+      const kopSub = lastW
+        ? `С прошлого вывода — ${dateFull(lastW.dt)} (${money(lastW.amount)}). Новых продаж: ${nf.format(sinceQty)} шт.`
+        : (totSum > 0 ? "Выводов ещё не было — вся выручка в копилке." : "Пока нет продаж.");
+      const kopBtn = pot > 0
+        ? `<a class="kopilka-btn" href="${withdrawHref(pot)}" target="_blank" rel="noopener">💸 Отметить вывод</a>`
+        : `<span class="kopilka-btn is-disabled">Копилка пуста</span>`;
+      kopEl.hidden = false;
+      kopEl.className = "kopilka" + (pot > 0 ? "" : " empty");
+      kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">К выводу на сегодня</div><div class="kopilka-v">${money(pot)}</div><div class="kopilka-sub">${kopSub}</div></div>${kopBtn}`;
+
+      // объединённая лента: продажи-дни + метки выводов (вывод — после продаж того же дня)
+      const timeline = [
+        ...sorted.map(d => ({ kind:"day", dt:d.dt, d })),
+        ...withdrawals.map(w => ({ kind:"wd", dt:w.dt, w })),
+      ].sort((a,b)=> (a.dt - b.dt) || (a.kind === "wd" ? 1 : -1));
+
       // таблица (десктоп): строка дня + скрытая строка-деталь с заказами
-      rowsEl.innerHTML = sorted.map(d => {
+      rowsEl.innerHTML = timeline.map(item => {
+        if(item.kind === "wd"){
+          const w = item.w;
+          return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>💸 Вывод — <span class="wd-amount">${money(w.amount)}</span></span><span class="wd-note">${dateFull(w.dt)} · копилка обнулена</span></div></td></tr>`;
+        }
+        const d = item.d;
         const we = weekend(d.dt);
         const has = d.orders.length > 0;
         const qty = has ? `<span class="sales-qty">${nf.format(d.qty)}</span>` : `<span class="sales-zero">0</span>`;
@@ -1392,7 +1514,12 @@
         </tr>`;
 
       // карточки (мобайл): шапка + значения кликабельны, ниже раскрывается список заказов
-      cardsEl.innerHTML = sorted.map(d => {
+      cardsEl.innerHTML = timeline.map(item => {
+        if(item.kind === "wd"){
+          const w = item.w;
+          return `<div class="withdraw-card"><span>💸 Вывод — <b>${money(w.amount)}</b></span><span class="wd-note">${dateFull(w.dt)}</span></div>`;
+        }
+        const d = item.d;
         const we = weekend(d.dt);
         const has = d.orders.length > 0;
         const qty = has ? `${nf.format(d.qty)} шт` : `<span class="sales-zero">0 шт</span>`;
@@ -1405,6 +1532,20 @@
         const body = has ? `<div class="collapse"><div class="collapse-inner">${ordersHtml(d.orders)}</div></div>` : "";
         return `<div class="daycard${we?" weekend":""}${has?" sday":""}">${has?`<button class="sday-btn" type="button">${head}</button>`:head}${body}</div>`;
       }).join("");
+
+      // помесячно: продано и выведено по месяцам
+      const monthOf = dt => dt.getFullYear() * 12 + dt.getMonth();
+      const months = {};
+      days.forEach(d => { const k = monthOf(d.dt); (months[k] = months[k] || {sold:0,wd:0,y:d.dt.getFullYear(),m:d.dt.getMonth()}).sold += d.sum; });
+      withdrawals.forEach(w => { const k = monthOf(w.dt); (months[k] = months[k] || {sold:0,wd:0,y:w.dt.getFullYear(),m:w.dt.getMonth()}).wd += w.amount; });
+      const monthList = Object.keys(months).map(Number).sort((a,b)=> a - b).map(k => months[k]);
+      monthsEl.innerHTML = monthList.length
+        ? `<div class="sales-months-h">По месяцам</div>` + monthList.map(mo =>
+            `<div class="smonth"><div class="smonth-name">${MONN[mo.m]} ${mo.y}</div>` +
+            `<div class="smonth-cell"><span class="k">Продано</span><span class="v">${money(mo.sold)}</span></div>` +
+            `<div class="smonth-cell"><span class="k">Выведено</span><span class="v">${mo.wd ? money(mo.wd) : "—"}</span></div></div>`
+          ).join("")
+        : "";
 
       // подпись: лучший день + когда обновлено
       const upd = DATA.updated ? parse(DATA.updated) : null;
@@ -1434,6 +1575,11 @@
     fetch("sales.json?t=" + Date.now(), { cache:"no-store" })
       .then(r => r.ok ? r.json() : null)
       .then(j => { if(j && Array.isArray(j.days)){ DATA = j; render(); } })
+      .catch(()=>{});
+    // подтягиваем выводы копилки (робот дописывает withdrawals.json по кнопке)
+    fetch("withdrawals.json?t=" + Date.now(), { cache:"no-store" })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if(j && Array.isArray(j.withdrawals)){ WD_DATA = j; render(); } })
       .catch(()=>{});
   })();
 
