@@ -39,6 +39,7 @@
     --today-bg:linear-gradient(135deg,rgba(209,31,45,.10),rgba(255,255,255,.02)); --today-border:rgba(255,75,87,.22);
     --tag-bg:rgba(255,255,255,.1); --tag-border:rgba(255,255,255,.14); --tag-text:#fff;
     --open-border:rgba(255,75,87,.35); --accent-soft:#ff6b75;
+    --ok:#4cc38a; --ok-bg:rgba(76,195,138,.13);
     --drawer-bg:#0e1015; --nav-hover:rgba(255,255,255,.05); --drawer-close-hover:rgba(255,255,255,.06);
   }
 
@@ -63,6 +64,7 @@
     --today-bg:#ffffff; --today-border:#f1c4c8;
     --tag-bg:#2e2e2e; --tag-border:#2e2e2e; --tag-text:#fff;
     --open-border:rgba(209,31,45,.4); --accent-soft:#d11f2d;
+    --ok:#1a7f4b; --ok-bg:rgba(26,127,75,.1);
     --drawer-bg:#ffffff; --nav-hover:#f2f4f7; --drawer-close-hover:#f2f4f7;
   }
   [data-color="red"]{--cc:var(--c-red)}
@@ -468,6 +470,52 @@
   .scard-val .v{font-family:var(--font-disp);font-weight:700;font-size:17px}
   @media(max-width:720px){ .sales-stats{grid-template-columns:1fr 1fr} .sales-upd{margin-left:0} }
 
+  /* ===================== ЗАМЕТКИ (пожелания команды) ===================== */
+  .fb-form{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;
+    box-shadow:var(--shadow);padding:18px 20px 20px;margin-bottom:20px}
+  .fb-form::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--brand)}
+  .fb-h{font-family:var(--font-disp);font-weight:700;font-size:17px}
+  .fb-sub{font-size:12px;color:var(--muted);font-weight:600;margin-top:4px;line-height:1.5}
+  .fb-lbl{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:15px 0 8px}
+  .fb-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .fb-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;border:1px solid var(--line);
+    background:var(--fill);color:var(--text);font:inherit;font-size:13px;font-weight:600;cursor:pointer;min-height:38px;
+    transition:border-color .15s,background .15s}
+  .fb-chip:hover{border-color:var(--line-strong);background:var(--fill-hover)}
+  .fb-chip .fb-dot{width:8px;height:8px;border-radius:50%;background:var(--cc,var(--muted));flex:none}
+  .fb-chip.active{border-color:var(--cc,var(--c-red));background:var(--fill-hover);box-shadow:inset 0 0 0 1px var(--cc,var(--c-red))}
+  #fb-text{width:100%;margin-top:15px;padding:13px 14px;border-radius:13px;border:1px solid var(--line);background:var(--fill);
+    color:var(--text);font:inherit;font-size:14px;line-height:1.5;resize:vertical;min-height:84px;outline:none;transition:border-color .15s}
+  #fb-text::placeholder{color:var(--muted)}
+  #fb-text:focus{border-color:var(--c-red);background:var(--fill-hover)}
+  .fb-actions{display:flex;align-items:center;gap:14px;margin-top:13px;flex-wrap:wrap}
+  .fb-send{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:13px;border:1px solid var(--c-red);
+    background:rgba(209,31,45,.1);color:var(--accent-soft);font:inherit;font-weight:700;font-size:13px;cursor:pointer;
+    transition:background .15s}
+  .fb-send:hover{background:rgba(209,31,45,.18)}
+  .fb-hint{font-size:12px;font-weight:600;color:var(--muted)}
+  .fb-hint.ok{color:var(--ok)}
+  .fb-warn{margin-top:12px;font-size:12px;font-weight:600;color:var(--muted);background:var(--fill-soft);
+    border:1px dashed var(--line-strong);border-radius:11px;padding:10px 13px;line-height:1.5}
+  .fb-list-h{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .fb-list{display:flex;flex-direction:column;gap:10px}
+  .fb-note{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:13px 16px}
+  .fb-note.is-done{opacity:.62}
+  .fb-note-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .fb-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700}
+  .fb-badge.c-bug{background:rgba(209,31,45,.1);color:var(--accent-soft);border:1px solid rgba(209,31,45,.3)}
+  .fb-badge.c-add{background:rgba(91,141,255,.12);color:var(--c-blue);border:1px solid rgba(91,141,255,.3)}
+  .fb-badge.c-del,.fb-badge.c-other{background:var(--fill-soft);color:var(--muted);border:1px solid var(--line-strong)}
+  .fb-who{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13px}
+  .fb-who .fb-dot{width:8px;height:8px;border-radius:50%;background:var(--cc,var(--muted));flex:none}
+  .fb-when{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap}
+  .fb-done{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;
+    background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bg)}
+  .fb-note-text{margin-top:9px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+  .fb-empty{background:var(--card);border:1px dashed var(--line-strong);border-radius:14px;padding:22px;text-align:center;
+    color:var(--muted);font-weight:600;font-size:13px}
+  @media(max-width:720px){ .fb-chip{min-height:44px;padding:9px 16px} .fb-send{width:100%;justify-content:center;min-height:44px} .fb-when{margin-left:0;width:100%} }
+
   /* ===================== ПЕЧАТЬ ===================== */
   @media print{
     html[data-theme]{--text:#111;--muted:#555}
@@ -535,6 +583,7 @@
       <button class="nav-item" data-page="shablony"><span class="ic"></span>Шаблоны</button>
       <button class="nav-item" data-page="tseny"><span class="ic"></span>Цены</button>
       <button class="nav-item" data-page="prodazhi"><span class="ic"></span>Продажи</button>
+      <button class="nav-item" data-page="zametki"><span class="ic"></span>Заметки</button>
     </nav>
   </aside>
 
@@ -632,6 +681,26 @@
       <div class="cards" id="sales-cards"></div>
       <div class="sales-months" id="sales-months"></div>
       <div class="note"><span class="nd"></span><span id="sales-note"></span></div>
+    </div>
+
+    <!-- ===== Страница: Заметки (пожелания команды) ===== -->
+    <div id="page-zametki" class="page" hidden>
+      <div class="fb-form">
+        <div class="fb-h">Оставить заметку</div>
+        <div class="fb-sub">Что-то не работает, чего-то не хватает или что-то лишнее — напиши. Заметку увидят все, кто заходит на портал.</div>
+        <div class="fb-lbl">Кто пишет</div>
+        <div class="fb-chips" id="fb-authors"></div>
+        <div class="fb-lbl">О чём</div>
+        <div class="fb-chips" id="fb-cats"></div>
+        <textarea id="fb-text" maxlength="600" rows="3" placeholder="Например: в шаблонах не находится DQ381 · добавьте цены на Hyundai · уберите старую строку из прайса…"></textarea>
+        <div class="fb-actions">
+          <button class="fb-send" id="fb-send" type="button">✍️ Отправить</button>
+          <span class="fb-hint" id="fb-hint"></span>
+        </div>
+        <div class="fb-warn" id="fb-warn" hidden>⚠️ Скрипт Google-таблицы ещё не обновлён — заметки пока сохраняются только на этом устройстве.</div>
+      </div>
+      <div class="fb-list-h" id="fb-list-h" hidden></div>
+      <div class="fb-list" id="fb-list"></div>
     </div>
 
   </div>
@@ -1946,6 +2015,11 @@
      «Отметить вывод» пишет туда). Ниже — запас для офлайна/мгновенного показа. */
   const WITHDRAWALS = { updated:null, withdrawals:[] };
 
+  /* Google Apps Script — общее хранилище в Google-таблице (одно веб-приложение на всё):
+     лист 1 — выводы копилки, лист «Заметки» — заметки команды. Код — копилка-apps-script.gs */
+  const SHEET_API   = "https://script.google.com/macros/s/AKfycbwGxC7-EvzNs9Fv47tcR5iDUwCFEUVz_Y3ToWld1tOXR8pip2rHLeCThUm2yL0f5tie/exec";
+  const SHEET_TOKEN = "749ee6f82c31d87dfd00e2d5"; // клиентский фильтр (в статике не секретен) — основную защиту держим на стороне Apps Script
+
   (function(){
     const MONF = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
     const WD   = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"]; // getDay(): 0 = воскресенье
@@ -1968,9 +2042,9 @@
     const kopEl    = document.getElementById("kopilka");
     const monthsEl = document.getElementById("sales-months");
     const MONN = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
-    // Хранилище выводов копилки — Google Apps Script (таблица). Заполняется при подключении.
-    const WITHDRAW_API   = "https://script.google.com/macros/s/AKfycbwGxC7-EvzNs9Fv47tcR5iDUwCFEUVz_Y3ToWld1tOXR8pip2rHLeCThUm2yL0f5tie/exec"; // веб-приложение Apps Script (таблица выводов)
-    const WITHDRAW_TOKEN = "749ee6f82c31d87dfd00e2d5"; // клиентский фильтр (в статике не секретен) — основную защиту держим на стороне Apps Script
+    // Хранилище выводов копилки — Google Apps Script (общая таблица, SHEET_API выше).
+    const WITHDRAW_API   = SHEET_API;
+    const WITHDRAW_TOKEN = SHEET_TOKEN;
     const OPENING = 17600; // стартовая сумма: касса с промывок до системы (до 01.07). Входит в копилку, спишется первым выводом. 0 = выкл.
     let   wdSeq = 0;
     const saveWdCache = list => { try { localStorage.setItem("md_withdrawals", JSON.stringify(list)); } catch(e){} };
@@ -2178,12 +2252,155 @@
     loadWithdrawals(); // свежие выводы из Google-таблицы (если копилка подключена)
   })();
 
+  /* ===================== ЗАМЕТКИ (пожелания команды) =====================
+     Общее хранилище — лист «Заметки» той же Google-таблицы (SHEET_API):
+     читаем JSONP (?type=notes), пишем doPost (kind:"note"). Кэш md_notes —
+     мгновенный показ и офлайн. «Сделано» проставляется руками в таблице
+     (колонка status — любой текст, например «готово») и видно всем. */
+  (function(){
+    const CATS = [
+      { id:"bug",   icon:"🛠", label:"Не работает" },
+      { id:"add",   icon:"💡", label:"Добавить" },
+      { id:"del",   icon:"✂️", label:"Убрать" },
+      { id:"other", icon:"💬", label:"Другое" },
+    ];
+    const AUTHORS = [
+      { name:"Бекзод",    color:"red" },
+      { name:"Святослав", color:"graphite" },
+      { name:"Кристиан",  color:"blue" },
+    ];
+    const MONF = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+    const authorsEl = document.getElementById("fb-authors");
+    const catsEl    = document.getElementById("fb-cats");
+    const textEl    = document.getElementById("fb-text");
+    const sendEl    = document.getElementById("fb-send");
+    const hintEl    = document.getElementById("fb-hint");
+    const warnEl    = document.getElementById("fb-warn");
+    const listEl    = document.getElementById("fb-list");
+    const listHEl   = document.getElementById("fb-list-h");
+
+    let notes = [];    // подтверждённые (из таблицы или кэша)
+    let pending = [];  // отправленные, ещё не увиденные в таблице
+    let author = null, cat = null, ntSeq = 0, hintTimer = 0;
+    const saveCache = () => { try { localStorage.setItem("md_notes", JSON.stringify([...pending, ...notes])); } catch(e){} };
+
+    // «2026-07-04 15:20» → «4 июля, 15:20»
+    function when(s){
+      const m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}:\d{2}))?/.exec(String(s || ""));
+      if(!m) return esc(s || "");
+      return `${Number(m[3])} ${MONF[Number(m[2]) - 1]}${m[4] ? ", " + m[4] : ""}`;
+    }
+    const catOf   = label => CATS.find(c => c.label === label) || CATS[CATS.length - 1];
+    const colorOf = name  => (AUTHORS.find(a => a.name === name) || {}).color || "graphite";
+
+    function hint(msg, ok){
+      hintEl.textContent = msg || "";
+      hintEl.classList.toggle("ok", !!ok);
+      clearTimeout(hintTimer);
+      if(msg) hintTimer = setTimeout(() => { hintEl.textContent = ""; }, 4000);
+    }
+
+    // чипы «кто пишет» и «о чём»
+    authorsEl.innerHTML = AUTHORS.map(a =>
+      `<button class="fb-chip" type="button" data-color="${a.color}" data-name="${a.name}"><span class="fb-dot"></span>${a.name}</button>`).join("");
+    catsEl.innerHTML = CATS.map(c =>
+      `<button class="fb-chip" type="button" data-cat="${c.id}">${c.icon} ${c.label}</button>`).join("");
+    function pick(wrap, btn){ wrap.querySelectorAll(".fb-chip").forEach(x => x.classList.toggle("active", x === btn)); }
+    authorsEl.addEventListener("click", e => {
+      const b = e.target.closest(".fb-chip"); if(!b) return;
+      author = AUTHORS.find(a => a.name === b.dataset.name); pick(authorsEl, b);
+      try { localStorage.setItem("md_note_author", author.name); } catch(e2){}
+    });
+    catsEl.addEventListener("click", e => {
+      const b = e.target.closest(".fb-chip"); if(!b) return;
+      cat = CATS.find(c => c.id === b.dataset.cat); pick(catsEl, b);
+    });
+    // автор запоминается — в следующий раз чип уже выбран
+    try {
+      const savedA = localStorage.getItem("md_note_author");
+      const b = savedA && authorsEl.querySelector(`.fb-chip[data-name="${savedA}"]`);
+      if(b){ author = AUTHORS.find(a => a.name === savedA); pick(authorsEl, b); }
+    } catch(e){}
+
+    function render(){
+      const all = [...pending, ...notes].sort((a,b) => String(b.created).localeCompare(String(a.created)));
+      listHEl.hidden = all.length === 0;
+      listHEl.textContent = `Заметки · ${all.length}`;
+      listEl.innerHTML = all.length ? all.map(n => {
+        const c = catOf(n.cat);
+        const done = String(n.status || "").trim();
+        return `<div class="fb-note${done ? " is-done" : ""}">
+          <div class="fb-note-top">
+            <span class="fb-badge c-${c.id}">${c.icon} ${c.label}</span>
+            <span class="fb-who" data-color="${colorOf(n.author)}"><span class="fb-dot"></span>${esc(n.author)}</span>
+            ${done ? `<span class="fb-done">✔ ${esc(done)}</span>` : ""}
+            <span class="fb-when">${when(n.created)}</span>
+          </div>
+          <div class="fb-note-text">${esc(n.text)}</div>
+        </div>`;
+      }).join("") : `<div class="fb-empty">Пока нет заметок — напиши первую 👆</div>`;
+    }
+
+    // читаем заметки из таблицы (JSONP — обходит CORS у Apps Script)
+    function loadNotes(){
+      if(!SHEET_API) return;
+      const cb = "__nt_" + (++ntSeq);
+      const s = document.createElement("script");
+      window[cb] = data => {
+        if(data && Array.isArray(data.notes)){
+          notes = data.notes;
+          // из pending убираем то, что уже долетело до таблицы
+          pending = pending.filter(p => !notes.some(n => n.text === p.text && n.author === p.author));
+          warnEl.hidden = true;
+          saveCache(); render();
+        } else if(data){
+          warnEl.hidden = false; // скрипт таблицы старый — заметок не отдаёт
+        }
+        delete window[cb]; s.remove();
+      };
+      s.onerror = () => { delete window[cb]; s.remove(); };
+      s.src = SHEET_API + "?type=notes&callback=" + cb + "&t=" + Date.now();
+      document.head.appendChild(s);
+    }
+
+    // отправка: сразу показываем в ленте (оптимистично) и шлём в таблицу фоном
+    function send(){
+      const text = textEl.value.trim();
+      if(!author){ hint("Выбери, кто пишет 👆"); return; }
+      if(!cat){ hint("Выбери, о чём заметка 👆"); return; }
+      if(text.length < 3){ hint("Напиши текст заметки."); textEl.focus(); return; }
+      const d = new Date(), p = n => String(n).padStart(2, "0");
+      const created = `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+      pending.unshift({ created, cat: cat.label, author: author.name, text, status:"" });
+      saveCache(); render();
+      textEl.value = "";
+      hint("Заметка сохранена ✔", true);
+      if(SHEET_API){
+        fetch(SHEET_API, { method:"POST", mode:"no-cors",
+          headers:{ "Content-Type":"text/plain;charset=utf-8" },
+          body: JSON.stringify({ token: SHEET_TOKEN, kind:"note", cat: cat.label, author: author.name, text }) })
+          .then(() => { setTimeout(loadNotes, 2500); setTimeout(loadNotes, 9000); })
+          .catch(() => {});
+      }
+    }
+    sendEl.addEventListener("click", send);
+    textEl.addEventListener("keydown", e => { if((e.ctrlKey || e.metaKey) && e.key === "Enter") send(); });
+
+    // сначала кэш (мгновенно и офлайн), затем свежие из таблицы
+    try { const c = JSON.parse(localStorage.getItem("md_notes") || "null"); if(Array.isArray(c)) notes = c; } catch(e){}
+    render();
+    loadNotes();
+  })();
+
   /* ===================== Меню и страницы ===================== */
   const PAGES = {
     grafik:   { t:"График дежурств", r:"28 июня — 27 июля 2026 · 30 дней" },
     shablony: { t:"Шаблоны",         r:"Каталог · выбери марку, копируй и отправляй клиенту" },
     tseny:    { t:"Цены",            r:"Раздел в разработке" },
     prodazhi: { t:"Продажи",         r:"Присадки · выручка и штуки по дням" },
+    zametki:  { t:"Заметки и пожелания", r:"Что починить, что добавить — пиши, увидят все" },
   };
   const titleT = document.querySelector(".title .t");
   const titleR = document.querySelector(".title .r");
