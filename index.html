@@ -281,6 +281,45 @@
   .tpl-copy.ok{background:var(--ok);box-shadow:0 0 16px rgba(63,209,122,.4)}
   .tpl-empty{grid-column:1/-1;padding:56px 24px;text-align:center;color:var(--muted);font-size:14px}
 
+  /* ===================== ЦЕНЫ (прайс запчастей) ===================== */
+  .pr-table thead th:first-child{border-left:none}
+  .pr-table tbody td:first-child{border-left:none}
+  .pr-th-brand{width:106px}
+  .pr-th-art{width:180px}
+  .pr-th-stock{width:104px}
+  .pr-th-price{width:116px}
+  .pr-table thead th.pr-th-name{text-align:left}
+  .pr-table thead th.pr-th-price{text-align:right}
+  td.pr-name{text-align:left;font-size:13px;font-weight:600;line-height:1.45}
+  td.pr-price-cell{text-align:right}
+  tbody tr.pr-group td{background:var(--card2);text-align:left;padding:10px 16px;border-left:none}
+  tbody tr.pr-group:hover td{background:var(--card2)}
+  .pr-group-name{display:inline-flex;align-items:center;gap:10px;font-family:var(--font-disp);font-weight:800;
+    font-size:12px;letter-spacing:1.1px;text-transform:uppercase}
+  .pr-group-name::before{content:"";width:16px;height:3px;border-radius:2px;background:var(--brand);flex:none}
+  .pr-group-cnt{margin-left:9px;font-size:11px;font-weight:700;color:var(--muted)}
+  .pr-art{max-width:100%;font-family:var(--font-mono);font-size:11.5px;font-weight:600;letter-spacing:.3px;color:var(--code-text);
+    background:var(--chip-bg);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;
+    overflow-wrap:anywhere;transition:border-color .15s,color .15s,background .15s}
+  .pr-art:hover{border-color:var(--c-red);color:var(--accent-soft);background:rgba(209,31,45,.08)}
+  .pr-art.ok{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)}
+  .pr-stock{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--ok);white-space:nowrap}
+  .pr-stock::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);flex:none}
+  .pr-price{font-family:var(--font-disp);font-weight:800;font-size:15px;letter-spacing:.2px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .pr-empty{padding:48px 20px;text-align:center;color:var(--muted);font-size:14px}
+  /* карточки (мобайл) */
+  .pr-cards{display:none}
+  .pr-group-h{display:flex;align-items:center;gap:9px;margin:18px 2px 10px;font-family:var(--font-mono);
+    font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .pr-group-h::before{content:"";width:16px;height:3px;border-radius:2px;background:var(--brand);flex:none}
+  .pr-group-h:first-child{margin-top:2px}
+  .pr-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:10px;box-shadow:var(--shadow)}
+  .pr-card-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .pr-card-top .pr-price{margin-left:auto}
+  .pr-card-name{margin-top:10px;font-size:13.5px;font-weight:600;line-height:1.5}
+  .pr-card-foot{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+  @media(max-width:720px){ .pr-cards{display:block} }
+
   /* ===================== БАННЕР «СЕГОДНЯ» ===================== */
   .today{position:relative;background:var(--today-bg);
     border:1px solid var(--today-border);border-radius:18px;padding:20px;margin-bottom:18px;box-shadow:var(--shadow);overflow:hidden}
@@ -656,7 +695,28 @@
 
     <!-- ===== Страница: Цены ===== -->
     <div id="page-tseny" class="page" hidden>
-      <div class="placeholder"><div class="pic">🏷️</div><h2>Цены</h2><p>Раздел в разработке.</p></div>
+      <div class="tpl-toolbar">
+        <div class="tpl-search"><input id="pr-search" type="text" placeholder="Найти: артикул, марка, 8HP, поддон, Motul…" autocomplete="off"></div>
+      </div>
+      <div class="tpl-facets">
+        <div class="tpl-facet" id="pr-cat-row"></div>
+        <div class="tpl-facet" id="pr-brand-row"></div>
+      </div>
+      <div class="tpl-hint" id="pr-count"></div>
+      <div class="tablecard pr-table">
+        <table>
+          <thead><tr>
+            <th class="pr-th-brand">Марка</th>
+            <th class="pr-th-art">Артикул</th>
+            <th class="pr-th-name">Наименование</th>
+            <th class="pr-th-stock">Наличие</th>
+            <th class="pr-th-price">Цена</th>
+          </tr></thead>
+          <tbody id="pr-rows"></tbody>
+        </table>
+      </div>
+      <div class="pr-cards" id="pr-cards"></div>
+      <div class="note"><span class="nd"></span><span>Клик по артикулу копирует его в буфер. Все позиции — в наличии; количество и цены — по прайсу запчастей.</span></div>
     </div>
 
     <!-- ===== Страница: Продажи ===== -->
@@ -1994,6 +2054,232 @@
     renderNav(); renderFacets(); render();
   })();
 
+  /* =========================================================
+     ЦЕНЫ — прайс запчастей и масел (страница «Цены»).
+     PARTS: [марка, артикул, наименование, остаток шт, цена ₽, категория].
+     Таблица, карточки, фильтры и счётчики строятся из PARTS автоматически —
+     новую позицию добавляй строкой сюда, вёрстку не трогай.
+     ========================================================= */
+  const PART_CATS = {
+    pans: "Поддоны и фильтры АКПП",
+    oils: "Масла и жидкости",
+    kits: "Комплекты для замены масла",
+    misc: "Датчики и разное",
+  };
+  const PARTS = [
+    ["ZF", "1087298361", "Фильтр поддон ZF Jeep/Dodge ГЛУБОКИЙ", 20, 11000, "pans"],
+    ["ZF", "1103298006", "ZF8HP65 ОРИГИНАЛ 100%", 38, 13000, "pans"],
+    ["ZF", "1103298007", "ZF8HP65 (комплект с маслом) ОРИГИНАЛ 100%", 38, 28400, "pans"],
+    ["VAG", "0D5398009", "ZF8HP65 ОРИГИНАЛ 100%", 100, 23000, "pans"],
+    ["VAG", "0D5398009C", "ZF8HP65 ОРИГИНАЛ 100%", 100, 23000, "pans"],
+    ["ZF", "1103298092", "ZF8HP65A ОРИГИНАЛ 100%", 100, 19000, "pans"],
+    ["ZF", "1103298112", "Поддон 1103298119 ZF8HP65A ОРИГИНАЛ 100%", 100, 14000, "pans"],
+    ["ZF", "1103298119", "ZF8HP65A ОРИГИНАЛ 100%", 100, 14000, "pans"],
+    ["VAG", "0D5398009B", "ZF8HP65A ОРИГИНАЛ 100%", 100, 26000, "pans"],
+    ["VAG", "0D5398009A", "ZF8HP65A ОРИГИНАЛ 100%", 100, 26000, "pans"],
+    ["PORSCHE", "PAB398009", "ZF8HP65A ОРИГИНАЛ 100%", 100, 26000, "pans"],
+    ["PORSCHE", "PAB39800901", "ZF8HP65A ОРИГИНАЛ 100%", 100, 26000, "pans"],
+    ["ZF", "1104298001", "ZF8HP95 ОРИГИНАЛ 100%", 100, 52000, "pans"],
+    ["ZF", "1104298050", "ZF8HP95 ОРИГИНАЛ 100%", 100, 52000, "pans"],
+    ["VAG", "0D6398359", "ZF8HP95 ОРИГИНАЛ 100%", 100, 43000, "pans"],
+    ["ZF", "1104298021", "ZF8HP95A ОРИГИНАЛ 100%", 100, 52000, "pans"],
+    ["ZF", "1104298052", "ZF8HP95A ОРИГИНАЛ 100%", 100, 24000, "pans"],
+    ["ZF", "1104298054", "ZF8HP95A ОРИГИНАЛ 100%", 100, 24000, "pans"],
+    ["VAG", "0D6398359A", "ZF8HP95A ОРИГИНАЛ 100%", 100, 19000, "pans"],
+    ["PORSCHE", "PAB39804703", "ZF8HP95A ОРИГИНАЛ 100%", 100, 40000, "pans"],
+    ["PORSCHE", "PAB398004", "ZF8HP95A ОРИГИНАЛ 100%", 100, 40000, "pans"],
+    ["ZF", "1102298018", "Оригинальный фильтр поддон ZF", 100, 18500, "pans"],
+    ["BMW", "24118632189", "Оригинальный фильтр поддон", 100, 18500, "pans"],
+    ["BMW", "24007855263", "Комплект для замены масла ZF 8HP", 100, 20000, "kits"],
+    ["ZF", "1087298365", "Комплект деталей для замены масла в АКПП ZF8HP", 100, 24400, "kits"],
+    ["ZF", "1087298437", "Поддон 8HP. ОРИГИНАЛ 100%", 240, 9000, "pans"],
+    ["ZF", "S671090312", "Оригинальное трансмиссионное масло ZF8 AT Оригинал", 9000, 2200, "oils"],
+    ["ZF", "5961308143", "Оригинальное трансмиссионное масло ZF8 AT Оригинал", 4200, 2500, "oils"],
+    ["BMW", "24117631728", "Фильтр-ПОДДОН АКПП. ZF Original Part Germany", 100, 16000, "pans"],
+    ["BMW", "24118632188", "Фильтр-ПОДДОН АКПП. ZF Original Part Germany", 100, 16000, "pans"],
+    ["BMW", "24118743438", "Фильтр-ПОДДОН АКПП. ZF Original Part Germany", 100, 16000, "pans"],
+    ["BMW", "24118743462", "Фильтр-ПОДДОН АКПП. ZF Original Part Germany", 100, 16000, "pans"],
+    ["ZF", "1087298361", "Оригинальный фильтр поддон ZF", 100, 11000, "pans"],
+    ["CHRYSLER", "68225344АА", "Оригинальный фильтр поддон ZF", 100, 28000, "pans"],
+    ["BMW", "83222413511", "Hypoid Axle OIL G2", 12, 5000, "oils"],
+    ["BMW", "83222413512", "Hypoid Axle OIL G3", 12, 5000, "oils"],
+    ["BMW", "83222471487", "Hypoid Axle OIL G5", 12, 5000, "oils"],
+    ["BMW", "83222409710", "BMW DTF1", 12, 5500, "oils"],
+    ["VAG", "G052145S2", "Трансмиссионное масло VAG", 12, 5000, "oils"],
+    ["VAG", "G055145A2", "Трансмиссионное масло VAG ТОРСЕН", 12, 17000, "oils"],
+    ["VAG", "G055190A2", "Трансмиссионное масло VAG", 12, 5000, "oils"],
+    ["Motul", "113092", "Моторное масло Motul 8100 X-Clean+ EFE 0W30 4л ОФИЦИАЛЫ!!!", 10, 9000, "oils"],
+    ["Motul", "106375", "Моторное масло Motul Specific 504/507 5W30 5л ОФИЦИАЛЫ!!!", 10, 11900, "oils"],
+    ["Motul", "111684", "Моторное масло Motul 8100 X-Clean+ 5W30 5л ОФИЦИАЛЫ!!!", 12, 11000, "oils"],
+    ["Motul", "111688", "Моторное масло Motul 8100 X-Clean EFE 5W30 5л ОФИЦИАЛЫ!!!", 20, 11000, "oils"],
+    ["Motul", "111686", "Моторное масло Motul 8100 Eco-nergy 5W30 5л ОФИЦИАЛЫ!!!", 20, 11000, "oils"],
+    ["Motul", "109471", "Моторное масло Motul 8100 X-Clean EFE 5W30 5л ОФИЦИАЛЫ!!!", 20, 11000, "oils"],
+    ["Motul", "109776", "Моторное масло Motul 8100 X-cess GEN2 5W40 5л ОФИЦИАЛЫ!!!", 7, 10000, "oils"],
+    ["Motul", "111858", "Моторное масло Motul 8100 X-cess GEN2 5W40 4л ОФИЦИАЛЫ!!!", 10, 8000, "oils"],
+    ["Motul", "109775", "Моторное масло Motul 8100 X-cess GEN2 5W40 4л ОФИЦИАЛЫ!!!", 10, 8000, "oils"],
+    ["Motul", "104533", "Моторное масло MOTUL 8100 X-MAX 0W40 5л", 3, 11000, "oils"],
+    ["Motul", "102794", "Моторное масло MOTUL 8100 Eco-nergy 0W30 5л", 10, 11000, "oils"],
+    ["Motul", "105777", "Трансмиссионная жидкость MOTUL Gear 300 75W90 1л", 20, 4500, "oils"],
+    ["Motul", "105778", "Трансмиссионная жидкость MOTUL Gear 300 LS 75W90 1л ORIGINAL", 20, 5500, "oils"],
+    ["Motul", "105779", "Трансмиссионная жидкость MOTUL Gear Competition 75W140 1л", 20, 7000, "oils"],
+    ["Motul", "105786", "Трансмиссионная жидкость MOTUL DCTF 1л", 18, 2500, "oils"],
+    ["Mercedes", "A000989590413AVLE", "Трансмиссионное масло Mercedes 236.17 5л", 40, 13000, "oils"],
+    ["Mercedes", "A000989330713FDNR", "Трансмиссионное масло Mercedes 236.17 5л", 40, 13000, "oils"],
+    ["Mercedes", "A002989060311", "Трансмиссионное масло Mercedes 236.17 5л", 40, 13000, "oils"],
+    ["Mercedes", "A000989590413AVLW", "Трансмиссионное масло Mercedes 236.17 5л", 40, 13000, "oils"],
+    ["Mercedes", "A000989280413BVLR", "Трансмиссионное масло Mercedes 236.17 5л", 40, 13000, "oils"],
+    ["Sollo", "34s00060", "Фильтр поддон для 9G-Tronic. Болты и трубки в комплекте. Made in Germany", 40, 14000, "pans"],
+    ["Mercedes", "A7252703707", "Оригинальный фильтр поддон для 9G-Tronic", 12, 22000, "pans"],
+    ["VAG", "4M0614517AABEF", "Блок ABS Audi Q7 4M Б/У Пробег 30.000км 2019г. БЕЗ ACC", 100, 35000, "misc"],
+    ["BMW", "24115A13224", "Поддон АКПП ZF 8HP80", 10, 35000, "pans"],
+    ["Great Wall", "151100057", "Поддон АКПП Great Wall Hycet 9AT", 1, 18000, "pans"],
+    ["Mahle", "HX267D", "Фильтр АКПП с прокладкой 09G", 250, 6000, "pans"],
+    ["Mahle", "HX187KIT", "Фильтр АКПП с прокладкой TR80SD", 250, 5000, "pans"],
+    ["Mahle", "HX137KIT", "Фильтр АКПП с прокладкой 09G", 250, 6000, "pans"],
+    ["ZF", "1102298020", "Фильтр АКПП с прокладкой BMW M-Версия для алюминиевого поддона", 100, 8500, "pans"],
+    ["Mahle", "HX285KIT", "Фильтр АКПП с прокладкой Porsche Panamera PDK", 5, 16000, "pans"],
+    ["Nissan", "23731-JA11B", "Датчик распредвала", 1, 1900, "misc"],
+    ["ERA", "570023A", "Датчик Кислорода", 1, 3200, "misc"],
+    ["BREMBO", "A00247", "Датчик износа тормозных колодок BMW X5 (E70)", 1, 500, "misc"],
+    ["ZF", "1126298001", "Фильтр-поддон АКПП ZF Гибрид", 10, 24000, "pans"],
+    ["ZF", "1126298159", "Фильтр-поддон АКПП ZF Гибрид", 10, 24000, "pans"],
+    ["BMW", "24007855263", "Фильтр АКПП с прокладкой BMW M-Версия для алюминиевого поддона", 10, 10000, "pans"],
+    ["ZF", "1091298081", "Комплект для замены масла в АКПП", 10, 24000, "kits"],
+    ["BMW", "24117588895", "Комплект для замены масла в АКПП", 10, 28000, "kits"],
+    ["ZF", "1104298059", "Фильтр-поддон АКПП", 10, 14000, "pans"],
+    ["ZF", "1104298018", "Фильтр-поддон АКПП гибрид", 10, 16000, "pans"],
+    ["BMW", "24118632189", "Фильтр-поддон АКПП гибрид", 10, 16000, "pans"],
+    ["ZF", "1109298030", "Фильтр-поддон АКПП гибрид ZF Original Part Germany", 10, 12000, "pans"],
+    ["BMW", "24119503407", "BMW M-Версия алюминиевый поддон с фильтром и прокладкой", 10, 30000, "pans"],
+    ["ZF", "671090548", "Масло трансмиссионное ZF Lifeguard Hybrid2 для гибридных авто. ZF Original Part Germany", 36, 4400, "oils"],
+    ["ZF", "1104298060", "Оригинальный фильтр поддон ZF", 10, 19000, "pans"],
+    ["ZF", "1090298126", "Оригинальный фильтр поддон ZF", 10, 7000, "pans"],
+    ["BMW", "24115A13223", "Поддон АКПП ZF 8HP60", 10, 40000, "pans"],
+    ["Bentley", "0D6398359A", "ZF8HP95A ОРИГИНАЛ 100%", 100, 19000, "pans"],
+    ["Lamborgini", "0D6398359A", "ZF8HP95A ОРИГИНАЛ 100%", 100, 19000, "pans"],
+    ["Bentley", "0D6398359", "ZF8HP95A ОРИГИНАЛ 100%", 100, 26000, "pans"],
+    ["Lamborgini", "0D6398359", "ZF8HP95A ОРИГИНАЛ 100%", 100, 26000, "pans"],
+    ["VAG", "0D6398359", "ZF8HP95A ОРИГИНАЛ 100%", 100, 26000, "pans"],
+    ["BMW", "24115A8B427", "Поддон АКПП ZF 8HP80", 10, 36000, "pans"],
+    ["BMW", "83225A28F03", "Масло трансмиссионное ZF Lifeguard Hybrid2 для гибридных авто. ZF Original Part Germany", 36, 4400, "oils"],
+    ["ZF", "1111298031", "Фильтр-поддон АКПП гибрид ZF Original Part Germany", 10, 12000, "pans"],
+    ["ZF", "1087298342", "Фильтр-поддон АКПП гибрид ZF Original Part Germany", 10, 12000, "pans"],
+    ["ZF", "1109298016", "Фильтр-поддон АКПП гибрид ZF Original Part Germany", 10, 12000, "pans"],
+    ["ZF", "1124298116", "Фильтр-поддон АКПП гибрид ZF Original Part Germany", 10, 30000, "pans"],
+    ["ZF", "1124298118", "Фильтр-поддон АКПП гибрид ZF Original Part Germany", 10, 43000, "pans"],
+    ["ZF", "1122298059", "Комплект для АКПП Фильтр + Прокладка + Болты. ZF Original Part Germany", 10, 45000, "kits"],
+    ["ZF", "1126298158", "Фильтр АКПП 8HP80. ZF Original Part Germany", 10, 45000, "pans"],
+    ["ZF", "1122298060", "Комплект для замены масла АКПП. Фильтр + прокладка + болты + 7л масла ZF 8HP Hybrid. ZF Original Part Germany", 10, 80800, "kits"],
+    ["BMW", "24115A86559", "Комплект Фильтр + Прокладка + Болты. ZF Original Part Germany", 10, 45000, "kits"],
+    ["PORSCHE", "0PD115466A", "Фильтр масляный Porsche 911. Оригинал", 10, 7600, "misc"],
+    ["CHRYSLER", "68233701AC", "Поддон АКПП ZF 8HP50 глубокий. ZF Оригинал", 10, 10900, "pans"],
+    ["BMW", "24007855263", "комплект Фильтр + Прокладка + Болты", 10, 12000, "kits"],
+    ["BLUE PRINT", "ADBP220058", "Фильтр воздушный Porsche Panamera 971", 4, 2900, "misc"],
+  ];
+
+  (function(){
+    const rowsEl    = document.getElementById("pr-rows");
+    const cardsEl   = document.getElementById("pr-cards");
+    const catRow    = document.getElementById("pr-cat-row");
+    const brandRow  = document.getElementById("pr-brand-row");
+    const countEl   = document.getElementById("pr-count");
+    const searchInp = document.getElementById("pr-search");
+    let cat = "all", brand = "all", query = "";
+    const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+    const fmt = n => n.toLocaleString("ru-RU");
+    const cnt = n => n ? `<span class="tpl-count">${n}</span>` : "";
+    const plural = (n,a,b,c) => { const m=n%100,d=n%10; return n+" "+(m>=11&&m<=14?c:d===1?a:d>=2&&d<=4?b:c); };
+
+    // марки в порядке «у кого больше позиций», внутри групп строки идут в том же порядке
+    const brands = [...new Set(PARTS.map(p=>p[0]))]
+      .sort((a,b)=> PARTS.filter(p=>p[0]===b).length - PARTS.filter(p=>p[0]===a).length || a.localeCompare(b,"ru"));
+    const brandIdx = Object.fromEntries(brands.map((b,i)=>[b,i]));
+
+    const hay = p => (p[0]+" "+p[1]+" "+p[2]).toLowerCase();
+    // useCat/useBrand=false — счётчики фасета считаются без «своего» фильтра
+    const match = (p, useCat, useBrand) =>
+      (!useCat   || cat==="all"   || p[5]===cat) &&
+      (!useBrand || brand==="all" || p[0]===brand) &&
+      (!query || hay(p).includes(query));
+    const visible = () => PARTS.filter(p=>match(p,true,true));
+
+    const chip = (val,label,n,active) =>
+      `<button class="tpl-chip ${active?"active":""}" data-val="${esc(val)}" type="button">${esc(label)}${cnt(n)}</button>`;
+
+    function renderFacets(){
+      const active = cat!=="all" || brand!=="all" || query;
+      catRow.innerHTML = `<span class="tpl-facet-label">Раздел</span>`
+        + chip("all","Все", PARTS.filter(p=>match(p,false,true)).length, cat==="all")
+        + Object.keys(PART_CATS).map(k=>
+            chip(k, PART_CATS[k], PARTS.filter(p=>p[5]===k && match(p,false,true)).length, cat===k)).join("")
+        + `<button class="tpl-facet-reset" id="pr-reset" type="button" ${active?"":"hidden"}>Сбросить</button>`;
+      brandRow.innerHTML = `<span class="tpl-facet-label">Марка</span>`
+        + chip("all","Все", PARTS.filter(p=>match(p,true,false)).length, brand==="all")
+        + brands.map(b=>
+            chip(b, b, PARTS.filter(p=>p[0]===b && match(p,true,false)).length, brand===b)).join("");
+      catRow.querySelectorAll(".tpl-chip").forEach(c=>
+        c.addEventListener("click", ()=>{ cat = (c.dataset.val===cat) ? "all" : c.dataset.val; update(); }));
+      brandRow.querySelectorAll(".tpl-chip").forEach(c=>
+        c.addEventListener("click", ()=>{ brand = (c.dataset.val===brand) ? "all" : c.dataset.val; update(); }));
+      const reset = document.getElementById("pr-reset");
+      if(reset) reset.addEventListener("click", ()=>{ cat="all"; brand="all"; query=""; searchInp.value=""; update(); });
+    }
+
+    async function copyArt(btn){
+      const t = btn.dataset.art;
+      try { await navigator.clipboard.writeText(t); }
+      catch(e){
+        const ta=document.createElement("textarea"); ta.value=t;
+        ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
+        ta.select(); try{ document.execCommand("copy"); }catch(_){} ta.remove();
+      }
+      const old=btn.textContent; btn.textContent="✓ скопирован"; btn.classList.add("ok");
+      setTimeout(()=>{ btn.textContent=old; btn.classList.remove("ok"); }, 1200);
+    }
+
+    function render(){
+      const list = visible();
+      const groups = Object.keys(PART_CATS)
+        .map(k=>[k, list.filter(p=>p[5]===k).sort((a,b)=> brandIdx[a[0]]-brandIdx[b[0]] || a[2].localeCompare(b[2],"ru") || a[4]-b[4])])
+        .filter(([,l])=>l.length);
+      if(!list.length){
+        const msg = "Ничего не найдено — поменяйте запрос или сбросьте фильтры.";
+        rowsEl.innerHTML  = `<tr><td colspan="5" class="pr-empty">${msg}</td></tr>`;
+        cardsEl.innerHTML = `<div class="pr-empty">${msg}</div>`;
+      } else {
+        rowsEl.innerHTML = groups.map(([k,l])=>
+          `<tr class="pr-group"><td colspan="5"><span class="pr-group-name">${esc(PART_CATS[k])}</span><span class="pr-group-cnt">${l.length}</span></td></tr>`
+          + l.map(p=>`<tr>
+              <td><span class="tpl-brand-tag">${esc(p[0])}</span></td>
+              <td><button class="pr-art" data-art="${esc(p[1])}" type="button" title="Копировать артикул">${esc(p[1])}</button></td>
+              <td class="pr-name">${esc(p[2])}</td>
+              <td><span class="pr-stock">${fmt(p[3])} шт</span></td>
+              <td class="pr-price-cell"><span class="pr-price">${fmt(p[4])} ₽</span></td>
+            </tr>`).join("")).join("");
+        cardsEl.innerHTML = groups.map(([k,l])=>
+          `<div class="pr-group-h">${esc(PART_CATS[k])}<span class="tpl-count">${l.length}</span></div>`
+          + l.map(p=>`<div class="pr-card">
+              <div class="pr-card-top">
+                <span class="tpl-brand-tag">${esc(p[0])}</span>
+                <button class="pr-art" data-art="${esc(p[1])}" type="button" title="Копировать артикул">${esc(p[1])}</button>
+                <span class="pr-price">${fmt(p[4])} ₽</span>
+              </div>
+              <div class="pr-card-name">${esc(p[2])}</div>
+              <div class="pr-card-foot"><span class="pr-stock">В наличии · ${fmt(p[3])} шт</span></div>
+            </div>`).join("")).join("");
+      }
+      countEl.textContent = list.length === PARTS.length
+        ? `${plural(PARTS.length,"позиция","позиции","позиций")} · клик по артикулу копирует его`
+        : `Показано ${plural(list.length,"позиция","позиции","позиций")} из ${PARTS.length}`;
+      [rowsEl, cardsEl].forEach(box=> box.querySelectorAll(".pr-art").forEach(btn=>
+        btn.addEventListener("click", ()=>copyArt(btn))));
+    }
+
+    function update(){ renderFacets(); render(); }
+    searchInp.addEventListener("input", ()=>{ query = searchInp.value.trim().toLowerCase(); update(); });
+    update();
+  })();
+
   /* ===================== ПРОДАЖИ (данные → авто-рендер) =====================
      Живые данные приходят из Google Apps Script (SHEET_API?type=sales): его робот
      каждые 30 минут пересчитывает LiveSklad и держит историю в листе «Продажи»
@@ -2417,7 +2703,7 @@
   const PAGES = {
     grafik:   { t:"График дежурств", r:"28 июня — 27 июля 2026 · 30 дней" },
     shablony: { t:"Шаблоны",         r:"Каталог · выбери марку, копируй и отправляй клиенту" },
-    tseny:    { t:"Цены",            r:"Раздел в разработке" },
+    tseny:    { t:"Цены",            r:"Запчасти и масла · поиск по названию и артикулу" },
     prodazhi: { t:"Продажи",         r:"Присадки · выручка и штуки по дням" },
     zametki:  { t:"Заметки и пожелания", r:"Что починить, что добавить — пиши, увидят все" },
   };
