@@ -1995,19 +1995,21 @@
   })();
 
   /* ===================== ПРОДАЖИ (данные → авто-рендер) =====================
-     Живые данные грузятся из sales.json (его раз в день обновляет робот GitHub Actions
-     из LiveSklad API). SALES ниже — ЗАПАСНЫЕ данные: показываются мгновенно и если
-     sales.json недоступен (например, файл открыт офлайн). Формат одинаковый.
-     Правь данные, не вёрстку: таблица, карточки, плитки и «Итого» считаются сами;
-     день раскрывается в список заказ-нарядов. Штук/сумма дня = сумма его заказов.
+     Живые данные приходят из Google Apps Script (SHEET_API?type=sales): его робот
+     каждые 30 минут пересчитывает LiveSklad и держит историю в листе «Продажи»
+     Google-таблицы. Запасной источник — sales.json (его раз в день обновляет робот
+     GitHub Actions). SALES ниже — последний резерв: показывается мгновенно и офлайн.
+     Формат везде одинаковый. Правь данные, не вёрстку: таблица, карточки, плитки и
+     «Итого» считаются сами; день раскрывается в список заказ-нарядов.
      days[].orders: [номер заказ-наряда, продано(шт), сумма(₽)] */
   const SALES = {
     product: "Промывка двигателя Liqui Moly Engine Flush (0,3л)",
-    updated: "2026-07-03",
+    updated: "2026-07-04",
     days: [
       { date:"2026-07-01", orders:[ ["A024279",1,2200] ] },
       { date:"2026-07-02", orders:[ ["A024302",1,2200] ] },
       { date:"2026-07-03", orders:[ ["A024311",1,2200], ["A024307",1,2200] ] },
+      { date:"2026-07-04", orders:[ ["A024320",1,2200], ["A024332",1,2200] ] },
     ],
   };
 
@@ -2085,9 +2087,9 @@
       `<div class="ord"><span class="ord-num">Заказ-наряд №${o[0]}</span><span class="ord-qty">${nf.format(o[1])} шт</span><span class="ord-sum">${money(o[2])}</span></div>`
     ).join("") + `</div>`;
 
-    let DATA = SALES;         // сначала запасные; ниже подменяем свежими из sales.json
+    let DATA = SALES;         // сначала запасные; ниже подменяем свежими (Apps Script или sales.json)
     let WD_DATA = WITHDRAWALS; // выводы: запас; ниже подменяем кэшем и свежими из таблицы
-    let salesSettled = false;  // true, когда sales.json загрузился (или точно не загрузится) — до этого вывод не отмечаем
+    let salesSettled = false;  // true, когда свежие продажи загрузились (или точно не загрузятся) — до этого вывод не отмечаем
 
     function render(){
       nameEl.textContent = DATA.product;
@@ -2214,7 +2216,7 @@
       const upd = DATA.updated ? parse(DATA.updated) : null;
       updEl.textContent = upd ? `Обновлено ${dateFull(upd)} ${upd.getFullYear()}` : "";
       noteEl.textContent = best && best.sum
-        ? `Лучший день — ${dateFull(best.dt)}: ${nf.format(best.qty)} шт на ${money(best.sum)}. Нажми на день, чтобы увидеть заказ-наряды. Данные обновляются автоматически раз в день.`
+        ? `Лучший день — ${dateFull(best.dt)}: ${nf.format(best.qty)} шт на ${money(best.sum)}. Нажми на день, чтобы увидеть заказ-наряды. Данные обновляются автоматически каждые полчаса.`
         : "Пока нет продаж за период.";
     }
 
@@ -2243,12 +2245,28 @@
     try { const c = JSON.parse(localStorage.getItem("md_withdrawals") || "null"); if(Array.isArray(c)) WD_DATA = { withdrawals: c }; } catch(e){}
 
     render(); // мгновенно рисуем запасные данные (и на случай офлайна)
-    // подтягиваем свежие продажи из sales.json (робот обновляет его раз в день)
+    // Свежие продажи, два источника параллельно. Главный — Apps Script (робот каждые
+    // 30 минут пересчитывает LiveSklad), запасной — sales.json (робот GitHub раз в день).
+    // Что бы ни пришло раньше — применяем, но Apps Script всегда главнее файла.
+    let salesRank = 0; // 0 — встроенный резерв, 1 — sales.json, 2 — Apps Script
+    const applySales = (j, rank) => {
+      if(j && Array.isArray(j.days) && rank >= salesRank){
+        salesRank = rank; DATA = j; salesSettled = true; render();
+      }
+    };
     fetch("sales.json?t=" + Date.now(), { cache:"no-store" })
       .then(r => r.ok ? r.json() : null)
-      .then(j => { if(j && Array.isArray(j.days)){ DATA = j; render(); } })
+      .then(j => applySales(j, 1))
       .catch(()=>{})
       .finally(() => { salesSettled = true; render(); });
+    (function loadSalesApi(){ // JSONP — обходит CORS у Apps Script
+      const cb = "__sales_" + Date.now();
+      const s = document.createElement("script");
+      window[cb] = j => { applySales(j, 2); delete window[cb]; s.remove(); };
+      s.onerror = () => { delete window[cb]; s.remove(); };
+      s.src = SHEET_API + "?type=sales&callback=" + cb + "&t=" + Date.now();
+      document.head.appendChild(s);
+    })();
     loadWithdrawals(); // свежие выводы из Google-таблицы (если копилка подключена)
   })();
 
