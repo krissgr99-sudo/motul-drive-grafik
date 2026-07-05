@@ -605,16 +605,19 @@
   .gate-err{color:#ff6b73;font-size:13px;font-weight:600;margin-top:12px;min-height:16px}
   .gate-foot{margin-top:22px;font-size:11px;font-weight:600;letter-spacing:.5px;color:#5b6270}
   .vh{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
-  /* Кнопка «наверх» — одна на все разделы, появляется при прокрутке вниз */
-  #to-top{position:fixed;right:20px;bottom:20px;z-index:40;width:46px;height:46px;border-radius:50%;
+  /* Кнопка «наверх» — одна на все разделы, появляется при прокрутке вниз.
+     Фирменная красная с подсветкой — заметна сразу в обеих темах. */
+  #to-top{position:fixed;right:22px;bottom:22px;z-index:40;width:52px;height:52px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;cursor:pointer;
-    background:var(--card);border:1px solid var(--line);color:var(--text);box-shadow:var(--shadow);
-    opacity:0;visibility:hidden;transform:translateY(8px);
-    transition:opacity .2s,transform .2s,visibility .2s,border-color .15s,color .15s,background .15s}
+    background:var(--brand);border:1px solid rgba(255,255,255,.22);color:#fff;
+    box-shadow:0 6px 20px rgba(209,31,45,.45),0 2px 6px rgba(0,0,0,.22);
+    opacity:0;visibility:hidden;transform:translateY(10px) scale(.9);
+    transition:opacity .22s ease,transform .22s ease,visibility .22s,box-shadow .18s,background .18s}
   #to-top.show{opacity:1;visibility:visible;transform:none}
-  #to-top:hover{border-color:var(--c-red);color:var(--accent-soft)}
-  #to-top svg{width:20px;height:20px;display:block}
-  @media(max-width:720px){ #to-top{right:14px;bottom:14px;width:44px;height:44px} }
+  #to-top:hover{background:#e6232f;box-shadow:0 10px 26px rgba(209,31,45,.6),0 2px 8px rgba(0,0,0,.28);transform:translateY(-2px)}
+  #to-top:active{transform:scale(.95)}
+  #to-top svg{width:24px;height:24px;display:block}
+  @media(max-width:720px){ #to-top{right:16px;bottom:16px;width:50px;height:50px} }
   @media print{ #to-top{display:none} }
 </style>
 <script>(function(){try{var t=localStorage.getItem('md_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
