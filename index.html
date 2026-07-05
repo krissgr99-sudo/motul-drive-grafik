@@ -161,13 +161,6 @@
     font:inherit;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;transition:.15s}
   .tpl-copyall:hover{border-color:var(--c-red);color:var(--accent-soft);background:rgba(209,31,45,.1)}
   .tpl-copyall.ok{border-color:var(--ok);color:var(--ok)}
-  /* подсказка «машина → коробка» (поиск по BMW) */
-  .tpl-carhint{grid-column:1/-1;padding:11px 14px;margin-bottom:2px;border:1px solid var(--line);
-    border-radius:12px;background:var(--fill);color:var(--muted);font-size:13.5px;line-height:1.5}
-  .tpl-carhint b{color:var(--text)}
-  .tpl-carhint .tpl-carhint-car{color:var(--text)}
-  .tpl-carhint .tpl-carhint-box{color:var(--accent-soft);font-weight:700}
-  .tpl-carhint-warn{display:block;margin-top:5px;color:var(--c-red);font-weight:600;font-size:12.5px}
   /* счётчики на вкладках/фильтрах */
   .tpl-count{margin-left:6px;font-size:11px;font-weight:700;color:var(--muted);opacity:.9}
   .tpl-chip.active .tpl-count{color:#fff;opacity:.9}
@@ -1851,47 +1844,6 @@
       extraTags:["7G-Tronic", "722.9", "Motul ATF6"] },
   ];
 
-  // ==================== Справочник «машина → коробка» (ПИЛОТ: только BMW) ====================
-  //    Единый источник, как PRICE. Поиск в «Шаблоны» понимает язык клиента («BMW X5», «F30»,
-  //    «х5») и показывает нужную коробку. Правь ДАННЫЕ здесь, не вёрстку.
-  //    Поля: brand — марка; model — как показать в подсказке; gen — поколение/годы (подсказка);
-  //          boxes — ключи t.box из TEMPLATES (точное совпадение строки!); match — что может
-  //          набрать менеджер/клиент (латиница; кир «Х» приводится к «x» автоматически);
-  //          draft:true — ЧЕРНОВИК, ждёт сверки Кристиана (red line №2: неверная коробка = неверная цена).
-  //    ⚠️ Тонкое деление 8HP45-76 / 8HP55 / 8HP65 / 8HP65A по конкретным моделям — за Кристианом.
-  //       Пока все современные 8-ступ. BMW сведены к «8HP45-76» (этот ключ и так покрывает 8HP45…76).
-  const CARS = [
-    /* --- BMW · 6-ступ. ZF 6HP (E-кузова, ~2005–2013) --- */
-    { brand:"BMW", model:"1 серии", gen:"E81/E82/E87/E88 · 2004–2013", boxes:["6HP19/21"], draft:true,
-      match:["bmw 1","1 серии","1 серия","e81","e82","e87","e88"] },
-    { brand:"BMW", model:"3 серии", gen:"E90/E91/E92/E93 · 2005–2013", boxes:["6HP19/21"], draft:true,
-      match:["bmw 3","3 серии","3 серия","e90","e91","e92","e93"] },
-    { brand:"BMW", model:"5 серии", gen:"E60/E61 · 2003–2010", boxes:["6HP19/21"], draft:true,
-      match:["bmw 5","5 серии","5 серия","e60","e61"] },
-    { brand:"BMW", model:"7 серии", gen:"E65/E66 · 2001–2008", boxes:["6HP (BMW)"], draft:true,
-      match:["bmw 7","7 серии","7 серия","e65","e66"] },
-    { brand:"BMW", model:"X3", gen:"E83 · 2003–2010", boxes:["6HP (BMW)"], draft:true,
-      match:["x3","bmw x3","e83"] },
-    { brand:"BMW", model:"X5", gen:"E70 · 2006–2013", boxes:["6HP (BMW)"], draft:true,
-      match:["x5","bmw x5","e70"] },
-
-    /* --- BMW · 8-ступ. ZF 8HP (F/G-кузова, 2013+). Деление на 8HP55/65/65A — уточнить! --- */
-    { brand:"BMW", model:"3 серии", gen:"F30/F31/F34 · 2012–2019, G20/G21 · 2019+", boxes:["8HP45-76"], draft:true,
-      match:["bmw 3","3 серии","3 серия","f30","f31","f34","g20","g21"] },
-    { brand:"BMW", model:"5 серии", gen:"F10/F11 · 2010–2017, G30/G31 · 2017+", boxes:["8HP45-76"], draft:true,
-      match:["bmw 5","5 серии","5 серия","f10","f11","g30","g31"] },
-    { brand:"BMW", model:"7 серии", gen:"G11/G12 · 2015+", boxes:["8HP45-76"], draft:true,
-      match:["bmw 7","7 серии","7 серия","g11","g12"] },
-    { brand:"BMW", model:"X3 / X4", gen:"F25/G01 · X3, F26/G02 · X4", boxes:["8HP45-76"], draft:true,
-      match:["x3","bmw x3","f25","g01","x4","bmw x4","f26","g02"] },
-    { brand:"BMW", model:"X5 / X6 / X7", gen:"F15/G05 · X5, F16/G06 · X6, G07 · X7", boxes:["8HP45-76"], draft:true,
-      match:["x5","bmw x5","f15","g05","x6","bmw x6","f16","g06","x7","bmw x7","g07"] },
-
-    /* --- BMW · передний привод / полный через Haldex (Aisin) --- */
-    { brand:"BMW", model:"X1 / X2", gen:"F48 · X1, F39 · X2 (перед. привод / Haldex)", boxes:["8F22"], draft:true,
-      match:["x1","bmw x1","f48","x2","bmw x2","f39"] },
-  ];
-
   // Значки семейств коробок (inline SVG — работает офлайн). Ключ = brand из TEMPLATES.
   //    Единый стиль: тёмный кружок + серебряная монограмма (#c7ccd1). Новое семейство → добавь сюда.
   const logoBadge = (label, text, fontSize, dy=0, ls=1) =>
@@ -1995,31 +1947,16 @@
       facetsBox.innerHTML = html;
     }
 
-    // Кир. буквы, похожие на латиницу → латиница. Чтобы «Х5»=«X5», «Е90»=«E90», «Г05»≈«g05».
-    const foldLat = s => s
-      .replace(/е|ё/g,"e").replace(/х/g,"x").replace(/а/g,"a").replace(/о/g,"o")
-      .replace(/р/g,"p").replace(/с/g,"c").replace(/у/g,"y").replace(/к/g,"k")
-      .replace(/м/g,"m").replace(/т/g,"t").replace(/в/g,"b").replace(/н/g,"h").replace(/г/g,"g");
-    // Поиск по машине: сверяем и «сырой» запрос (кир. слова «серии»/«бмв»), и свёрнутый (коды кузова).
-    const carsForQuery = () => {
-      if(!query) return [];
-      const raw = query, lat = foldLat(query);
-      return CARS.filter(c => c.match.some(m => raw.includes(m) || lat.includes(m)));
-    };
-
-    const visible = () => {
-      const carBoxes = new Set(carsForQuery().flatMap(c=>c.boxes));  // коробки, найденные по машине
-      return TEMPLATES.filter(t=>{
-        if(activeBrand!=="all" && t.brand!==activeBrand) return false;
-        if(activeBox!=="all" && t.box!==activeBox) return false;
-        for(const f of FACETS){ if(filters[f.key] && f.get(t)!==filters[f.key]) return false; }
-        if(query){
-          const hay = (t.brand+" "+(t.box||"")+" "+tplTitle(t)+" "+tplTags(t).join(" ")+" "+tplBody(t)).toLowerCase();
-          if(!hay.includes(query) && !carBoxes.has(t.box)) return false;  // либо текст, либо совпало по машине
-        }
-        return true;
-      });
-    };
+    const visible = () => TEMPLATES.filter(t=>{
+      if(activeBrand!=="all" && t.brand!==activeBrand) return false;
+      if(activeBox!=="all" && t.box!==activeBox) return false;
+      for(const f of FACETS){ if(filters[f.key] && f.get(t)!==filters[f.key]) return false; }
+      if(query){
+        const hay = (t.brand+" "+(t.box||"")+" "+tplTitle(t)+" "+tplTags(t).join(" ")+" "+tplBody(t)).toLowerCase();
+        if(!hay.includes(query)) return false;
+      }
+      return true;
+    });
 
     async function copyText(text, btn){
       try { await navigator.clipboard.writeText(text); }
@@ -2082,19 +2019,8 @@
       hintEl.hidden = !landing;
       if(landing){ renderLanding(); return; }
       const list = visible();
-      // Подсказка «машина → коробка»: почему показаны эти карточки + напоминание проверить VIN.
-      const cars = carsForQuery();
-      const carHint = cars.length ? (
-        `<div class="tpl-carhint">🚗 <b>Найдено по машине:</b><br>` +
-        cars.map(c=>{
-          const boxes = c.boxes.map(b=>`<span class="tpl-carhint-box">${esc(b)}</span>`).join(", ");
-          return `<span class="tpl-carhint-car">${esc(c.brand)} ${esc(c.model)}</span> <span style="opacity:.7">(${esc(c.gen)})</span> → ${boxes}`;
-        }).join("<br>") +
-        (cars.some(c=>c.draft) ? `<span class="tpl-carhint-warn">⚠️ Черновик соответствия «машина → коробка». Проверь по VIN перед отправкой клиенту.</span>` : "") +
-        `</div>`
-      ) : "";
-      if(!list.length){ grid.innerHTML = carHint + `<div class="tpl-empty">Ничего не найдено</div>`; return; }
-      grid.innerHTML = carHint + list.map((t,i)=>{
+      if(!list.length){ grid.innerHTML = `<div class="tpl-empty">Ничего не найдено</div>`; return; }
+      grid.innerHTML = list.map((t,i)=>{
         const tags = tplTags(t).map(x=>`<span class="tpl-tag">${esc(x)}</span>`).join("");
         const logo = BRAND_LOGOS[t.brand] || "";
         const body = tplBody(t);
