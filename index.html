@@ -161,6 +161,13 @@
     font:inherit;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;transition:.15s}
   .tpl-copyall:hover{border-color:var(--c-red);color:var(--accent-soft);background:rgba(209,31,45,.1)}
   .tpl-copyall.ok{border-color:var(--ok);color:var(--ok)}
+  /* подсказка «машина → коробка» (поиск по BMW) */
+  .tpl-carhint{grid-column:1/-1;padding:11px 14px;margin-bottom:2px;border:1px solid var(--line);
+    border-radius:12px;background:var(--fill);color:var(--muted);font-size:13.5px;line-height:1.5}
+  .tpl-carhint b{color:var(--text)}
+  .tpl-carhint .tpl-carhint-car{color:var(--text)}
+  .tpl-carhint .tpl-carhint-box{color:var(--accent-soft);font-weight:700}
+  .tpl-carhint-warn{display:block;margin-top:5px;color:var(--c-red);font-weight:600;font-size:12.5px}
   /* счётчики на вкладках/фильтрах */
   .tpl-count{margin-left:6px;font-size:11px;font-weight:700;color:var(--muted);opacity:.9}
   .tpl-chip.active .tpl-count{color:#fff;opacity:.9}
@@ -427,6 +434,12 @@
   .sales-prod{display:inline-flex;align-items:center;gap:9px;font-family:var(--font-disp);font-weight:700;font-size:15px;
     background:var(--card);border:1px solid var(--line);border-radius:999px;padding:9px 16px;box-shadow:var(--shadow)}
   .sales-prod-dot{width:9px;height:9px;border-radius:50%;background:var(--brand);flex:none;box-shadow:0 0 10px var(--brand)}
+  .sales-month-sel{appearance:none;-webkit-appearance:none;font:inherit;font-family:var(--font-disp);font-weight:700;font-size:14px;
+    color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:9px 38px 9px 16px;
+    box-shadow:var(--shadow);cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 14px center}
+  .sales-month-sel:hover{border-color:var(--line-strong)}
   .sales-upd{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted)}
   .sales-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
   .stat{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:16px;
@@ -439,6 +452,9 @@
   .sales-qty{font-family:var(--font-disp);font-weight:700;font-size:15px}
   .sales-sum{font-family:var(--font-disp);font-weight:700;font-size:14px}
   .sales-zero{color:var(--muted);opacity:.55;font-weight:600}
+  tbody tr.sales-empty td{text-align:center;color:var(--muted);font-weight:600;padding:26px 16px}
+  .sales-empty-card{color:var(--muted);font-weight:600;text-align:center;padding:24px 16px;
+    background:var(--card);border:1px dashed var(--line);border-radius:14px}
   /* Копилка (к выводу) + метки выводов + помесячно */
   .kopilka{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;
     box-shadow:var(--shadow);padding:17px 20px;margin-bottom:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -447,6 +463,7 @@
   .kopilka-k{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
   .kopilka-v{font-family:var(--font-disp);font-weight:800;font-size:30px;line-height:1;letter-spacing:.3px;color:var(--accent-soft)}
   .kopilka.empty .kopilka-v{color:var(--muted)}
+  .kopilka.archive .kopilka-v{color:var(--text)}
   .kopilka-sub{font-size:12px;color:var(--muted);font-weight:600;line-height:1.5}
   .kopilka-btn{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:13px;
     border:1px solid var(--c-red);background:rgba(209,31,45,.1);color:var(--accent-soft);font:inherit;font-weight:700;
@@ -462,8 +479,11 @@
   .withdraw-card .wd-note{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
   .sales-months{margin-top:18px;display:flex;flex-direction:column;gap:10px}
   .sales-months-h{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
-  .smonth{display:grid;grid-template-columns:1fr auto auto;gap:8px 20px;align-items:baseline;
-    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 16px;box-shadow:var(--shadow)}
+  .smonth{display:grid;grid-template-columns:1fr auto auto;gap:8px 20px;align-items:baseline;width:100%;text-align:left;
+    font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 16px;
+    box-shadow:var(--shadow);cursor:pointer;transition:border-color .15s,background .15s}
+  .smonth:hover{border-color:var(--line-strong)}
+  .smonth.active{border-color:var(--c-red);background:var(--accent-soft-bg,rgba(209,31,45,.06))}
   .smonth-name{font-family:var(--font-disp);font-weight:700;font-size:15px}
   .smonth-cell{display:flex;flex-direction:column;gap:3px;text-align:right}
   .smonth-cell .k{font-family:var(--font-mono);font-size:9px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
@@ -510,7 +530,8 @@
   .scard-val:last-child{align-items:flex-end}
   .scard-val .k{font-family:var(--font-mono);font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
   .scard-val .v{font-family:var(--font-disp);font-weight:700;font-size:17px}
-  @media(max-width:720px){ .sales-stats{grid-template-columns:1fr 1fr} .sales-upd{margin-left:0} }
+  @media(max-width:720px){ .sales-stats{grid-template-columns:1fr 1fr} .sales-upd{margin-left:0}
+    .sales-month-sel{min-height:44px} }
 
   /* ===================== ЗАМЕТКИ (пожелания команды) ===================== */
   .fb-form{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;
@@ -591,6 +612,17 @@
   .gate-err{color:#ff6b73;font-size:13px;font-weight:600;margin-top:12px;min-height:16px}
   .gate-foot{margin-top:22px;font-size:11px;font-weight:600;letter-spacing:.5px;color:#5b6270}
   .vh{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  /* Кнопка «наверх» — одна на все разделы, появляется при прокрутке вниз */
+  #to-top{position:fixed;right:20px;bottom:20px;z-index:40;width:46px;height:46px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    background:var(--card);border:1px solid var(--line);color:var(--text);box-shadow:var(--shadow);
+    opacity:0;visibility:hidden;transform:translateY(8px);
+    transition:opacity .2s,transform .2s,visibility .2s,border-color .15s,color .15s,background .15s}
+  #to-top.show{opacity:1;visibility:visible;transform:none}
+  #to-top:hover{border-color:var(--c-red);color:var(--accent-soft)}
+  #to-top svg{width:20px;height:20px;display:block}
+  @media(max-width:720px){ #to-top{right:14px;bottom:14px;width:44px;height:44px} }
+  @media print{ #to-top{display:none} }
 </style>
 <script>(function(){try{var t=localStorage.getItem('md_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 </head>
@@ -726,6 +758,7 @@
     <div id="page-prodazhi" class="page" hidden>
       <div class="sales-head">
         <div class="sales-prod"><span class="sales-prod-dot"></span><span id="sales-prod-name">—</span></div>
+        <select class="sales-month-sel" id="sales-month" aria-label="Месяц" hidden></select>
         <div class="sales-upd" id="sales-upd"></div>
       </div>
       <div class="kopilka" id="kopilka" hidden></div>
@@ -767,6 +800,11 @@
     </div>
 
   </div>
+
+  <!-- Кнопка «наверх» (общая для всех разделов) -->
+  <button id="to-top" type="button" aria-label="Наверх" title="Наверх">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
 </main>
 
 <script>
@@ -1813,6 +1851,47 @@
       extraTags:["7G-Tronic", "722.9", "Motul ATF6"] },
   ];
 
+  // ==================== Справочник «машина → коробка» (ПИЛОТ: только BMW) ====================
+  //    Единый источник, как PRICE. Поиск в «Шаблоны» понимает язык клиента («BMW X5», «F30»,
+  //    «х5») и показывает нужную коробку. Правь ДАННЫЕ здесь, не вёрстку.
+  //    Поля: brand — марка; model — как показать в подсказке; gen — поколение/годы (подсказка);
+  //          boxes — ключи t.box из TEMPLATES (точное совпадение строки!); match — что может
+  //          набрать менеджер/клиент (латиница; кир «Х» приводится к «x» автоматически);
+  //          draft:true — ЧЕРНОВИК, ждёт сверки Кристиана (red line №2: неверная коробка = неверная цена).
+  //    ⚠️ Тонкое деление 8HP45-76 / 8HP55 / 8HP65 / 8HP65A по конкретным моделям — за Кристианом.
+  //       Пока все современные 8-ступ. BMW сведены к «8HP45-76» (этот ключ и так покрывает 8HP45…76).
+  const CARS = [
+    /* --- BMW · 6-ступ. ZF 6HP (E-кузова, ~2005–2013) --- */
+    { brand:"BMW", model:"1 серии", gen:"E81/E82/E87/E88 · 2004–2013", boxes:["6HP19/21"], draft:true,
+      match:["bmw 1","1 серии","1 серия","e81","e82","e87","e88"] },
+    { brand:"BMW", model:"3 серии", gen:"E90/E91/E92/E93 · 2005–2013", boxes:["6HP19/21"], draft:true,
+      match:["bmw 3","3 серии","3 серия","e90","e91","e92","e93"] },
+    { brand:"BMW", model:"5 серии", gen:"E60/E61 · 2003–2010", boxes:["6HP19/21"], draft:true,
+      match:["bmw 5","5 серии","5 серия","e60","e61"] },
+    { brand:"BMW", model:"7 серии", gen:"E65/E66 · 2001–2008", boxes:["6HP (BMW)"], draft:true,
+      match:["bmw 7","7 серии","7 серия","e65","e66"] },
+    { brand:"BMW", model:"X3", gen:"E83 · 2003–2010", boxes:["6HP (BMW)"], draft:true,
+      match:["x3","bmw x3","e83"] },
+    { brand:"BMW", model:"X5", gen:"E70 · 2006–2013", boxes:["6HP (BMW)"], draft:true,
+      match:["x5","bmw x5","e70"] },
+
+    /* --- BMW · 8-ступ. ZF 8HP (F/G-кузова, 2013+). Деление на 8HP55/65/65A — уточнить! --- */
+    { brand:"BMW", model:"3 серии", gen:"F30/F31/F34 · 2012–2019, G20/G21 · 2019+", boxes:["8HP45-76"], draft:true,
+      match:["bmw 3","3 серии","3 серия","f30","f31","f34","g20","g21"] },
+    { brand:"BMW", model:"5 серии", gen:"F10/F11 · 2010–2017, G30/G31 · 2017+", boxes:["8HP45-76"], draft:true,
+      match:["bmw 5","5 серии","5 серия","f10","f11","g30","g31"] },
+    { brand:"BMW", model:"7 серии", gen:"G11/G12 · 2015+", boxes:["8HP45-76"], draft:true,
+      match:["bmw 7","7 серии","7 серия","g11","g12"] },
+    { brand:"BMW", model:"X3 / X4", gen:"F25/G01 · X3, F26/G02 · X4", boxes:["8HP45-76"], draft:true,
+      match:["x3","bmw x3","f25","g01","x4","bmw x4","f26","g02"] },
+    { brand:"BMW", model:"X5 / X6 / X7", gen:"F15/G05 · X5, F16/G06 · X6, G07 · X7", boxes:["8HP45-76"], draft:true,
+      match:["x5","bmw x5","f15","g05","x6","bmw x6","f16","g06","x7","bmw x7","g07"] },
+
+    /* --- BMW · передний привод / полный через Haldex (Aisin) --- */
+    { brand:"BMW", model:"X1 / X2", gen:"F48 · X1, F39 · X2 (перед. привод / Haldex)", boxes:["8F22"], draft:true,
+      match:["x1","bmw x1","f48","x2","bmw x2","f39"] },
+  ];
+
   // Значки семейств коробок (inline SVG — работает офлайн). Ключ = brand из TEMPLATES.
   //    Единый стиль: тёмный кружок + серебряная монограмма (#c7ccd1). Новое семейство → добавь сюда.
   const logoBadge = (label, text, fontSize, dy=0, ls=1) =>
@@ -1916,16 +1995,31 @@
       facetsBox.innerHTML = html;
     }
 
-    const visible = () => TEMPLATES.filter(t=>{
-      if(activeBrand!=="all" && t.brand!==activeBrand) return false;
-      if(activeBox!=="all" && t.box!==activeBox) return false;
-      for(const f of FACETS){ if(filters[f.key] && f.get(t)!==filters[f.key]) return false; }
-      if(query){
-        const hay = (t.brand+" "+(t.box||"")+" "+tplTitle(t)+" "+tplTags(t).join(" ")+" "+tplBody(t)).toLowerCase();
-        if(!hay.includes(query)) return false;
-      }
-      return true;
-    });
+    // Кир. буквы, похожие на латиницу → латиница. Чтобы «Х5»=«X5», «Е90»=«E90», «Г05»≈«g05».
+    const foldLat = s => s
+      .replace(/е|ё/g,"e").replace(/х/g,"x").replace(/а/g,"a").replace(/о/g,"o")
+      .replace(/р/g,"p").replace(/с/g,"c").replace(/у/g,"y").replace(/к/g,"k")
+      .replace(/м/g,"m").replace(/т/g,"t").replace(/в/g,"b").replace(/н/g,"h").replace(/г/g,"g");
+    // Поиск по машине: сверяем и «сырой» запрос (кир. слова «серии»/«бмв»), и свёрнутый (коды кузова).
+    const carsForQuery = () => {
+      if(!query) return [];
+      const raw = query, lat = foldLat(query);
+      return CARS.filter(c => c.match.some(m => raw.includes(m) || lat.includes(m)));
+    };
+
+    const visible = () => {
+      const carBoxes = new Set(carsForQuery().flatMap(c=>c.boxes));  // коробки, найденные по машине
+      return TEMPLATES.filter(t=>{
+        if(activeBrand!=="all" && t.brand!==activeBrand) return false;
+        if(activeBox!=="all" && t.box!==activeBox) return false;
+        for(const f of FACETS){ if(filters[f.key] && f.get(t)!==filters[f.key]) return false; }
+        if(query){
+          const hay = (t.brand+" "+(t.box||"")+" "+tplTitle(t)+" "+tplTags(t).join(" ")+" "+tplBody(t)).toLowerCase();
+          if(!hay.includes(query) && !carBoxes.has(t.box)) return false;  // либо текст, либо совпало по машине
+        }
+        return true;
+      });
+    };
 
     async function copyText(text, btn){
       try { await navigator.clipboard.writeText(text); }
@@ -1988,8 +2082,19 @@
       hintEl.hidden = !landing;
       if(landing){ renderLanding(); return; }
       const list = visible();
-      if(!list.length){ grid.innerHTML = `<div class="tpl-empty">Ничего не найдено</div>`; return; }
-      grid.innerHTML = list.map((t,i)=>{
+      // Подсказка «машина → коробка»: почему показаны эти карточки + напоминание проверить VIN.
+      const cars = carsForQuery();
+      const carHint = cars.length ? (
+        `<div class="tpl-carhint">🚗 <b>Найдено по машине:</b><br>` +
+        cars.map(c=>{
+          const boxes = c.boxes.map(b=>`<span class="tpl-carhint-box">${esc(b)}</span>`).join(", ");
+          return `<span class="tpl-carhint-car">${esc(c.brand)} ${esc(c.model)}</span> <span style="opacity:.7">(${esc(c.gen)})</span> → ${boxes}`;
+        }).join("<br>") +
+        (cars.some(c=>c.draft) ? `<span class="tpl-carhint-warn">⚠️ Черновик соответствия «машина → коробка». Проверь по VIN перед отправкой клиенту.</span>` : "") +
+        `</div>`
+      ) : "";
+      if(!list.length){ grid.innerHTML = carHint + `<div class="tpl-empty">Ничего не найдено</div>`; return; }
+      grid.innerHTML = carHint + list.map((t,i)=>{
         const tags = tplTags(t).map(x=>`<span class="tpl-tag">${esc(x)}</span>`).join("");
         const logo = BRAND_LOGOS[t.brand] || "";
         const body = tplBody(t);
@@ -2349,6 +2454,7 @@
     };
     const weekend = dt => dt.getDay()===0 || dt.getDay()===6;
     const dateFull = dt => `${dt.getDate()} ${MONF[dt.getMonth()]}`;
+    const monthKey = dt => dt.getFullYear()*12 + dt.getMonth(); // year*12+month — сортируемый ключ месяца
 
     const nameEl = document.getElementById("sales-prod-name");
     const updEl  = document.getElementById("sales-upd");
@@ -2358,6 +2464,7 @@
     const noteEl = document.getElementById("sales-note");
     const kopEl    = document.getElementById("kopilka");
     const monthsEl = document.getElementById("sales-months");
+    const monthSel = document.getElementById("sales-month");
     const MONN = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
     // Хранилище выводов копилки — Google Apps Script (общая таблица, SHEET_API выше).
     const WITHDRAW_API   = SHEET_API;
@@ -2405,29 +2512,66 @@
     let DATA = SALES;         // сначала запасные; ниже подменяем свежими (Apps Script или sales.json)
     let WD_DATA = WITHDRAWALS; // выводы: запас; ниже подменяем кэшем и свежими из таблицы
     let salesSettled = false;  // true, когда свежие продажи загрузились (или точно не загрузятся) — до этого вывод не отмечаем
+    let selectedMonth = null;  // ключ выбранного месяца (year*12+month); null → при первом render берём самый свежий
 
     function render(){
       nameEl.textContent = DATA.product;
 
-      // из каждого дня считаем штуки/сумму как сумму его заказов
-      const days = DATA.days.map(d => {
+      // все дни: штуки/сумма как сумма заказов дня
+      const allDays = DATA.days.map(d => {
         const orders = d.orders || [];
         return {
           dt: parse(d.date), orders,
           qty: orders.reduce((s,o)=>s+(Number(o[1])||0), 0),
           sum: orders.reduce((s,o)=>s+(Number(o[2])||0), 0),
         };
-      });
-      // итоги считаются из данных — руками не дублируем
+      }).filter(d => !isNaN(d.dt.getTime()));
+
+      // все выводы копилки (за всё время)
+      const allWithdrawals = (WD_DATA.withdrawals || [])
+        .filter(w => w && w.date)
+        .map(w => ({ dt: parse(w.date), amount: Number(w.amount) || 0, time: w.time || "" }))
+        .filter(w => !isNaN(w.dt.getTime()))
+        .sort((a,b)=> a.dt - b.dt);
+
+      // ==== копилка сквозная: считается по всем месяцам, не по выбранному ====
+      const grandSum = allDays.reduce((s,d)=>s+d.sum, 0);
+      const totWithdrawn = allWithdrawals.reduce((s,w)=> s + w.amount, 0);
+      const pot = Math.max(0, OPENING + grandSum - totWithdrawn);
+      const lastW = allWithdrawals.length ? allWithdrawals[allWithdrawals.length - 1] : null;
+
+      // ==== список месяцев: из продаж + выводов + текущий календарный ====
+      const monthMap = {}; // ключ → {y,m}
+      const mark = dt => { monthMap[monthKey(dt)] = { y:dt.getFullYear(), m:dt.getMonth() }; };
+      allDays.forEach(d => mark(d.dt));
+      allWithdrawals.forEach(w => mark(w.dt));
+      mark(new Date()); // текущий месяц есть всегда, даже если продаж ещё нет
+      const monthKeys = Object.keys(monthMap).map(Number).sort((a,b)=> b - a); // новые сверху
+      const liveMonth = monthKeys[0]; // самый свежий месяц — живой (копилка + кнопка вывода)
+      if(selectedMonth == null || !monthMap[selectedMonth]) selectedMonth = liveMonth;
+      const selMo = monthMap[selectedMonth];
+
+      // выпадающий список месяцев
+      monthSel.hidden = false;
+      monthSel.innerHTML = monthKeys.map(k =>
+        `<option value="${k}"${k===selectedMonth?" selected":""}>${MONN[monthMap[k].m]} ${monthMap[k].y}</option>`
+      ).join("");
+
+      // ==== срез по выбранному месяцу ====
+      const inSel = dt => monthKey(dt) === selectedMonth;
+      const days = allDays.filter(d => inSel(d.dt));
+      const withdrawals = allWithdrawals.filter(w => inSel(w.dt));
+
+      // итоги выбранного месяца — из данных, руками не дублируем
       const totQty = days.reduce((s,d)=>s+d.qty, 0);
       const totSum = days.reduce((s,d)=>s+d.sum, 0);
       const avgDay   = days.length ? Math.round(totSum / days.length) : 0;
       const avgCheck = totQty ? Math.round(totSum / totQty) : 0;
       const best = days.reduce((b,d)=> (!b || d.sum>b.sum) ? d : b, null);
 
-      // плитки-итоги
+      // плитки-итоги (за выбранный месяц)
       statsEl.innerHTML = [
-        ["Выручка за период", money(totSum), "accent"],
+        ["Выручка за месяц", money(totSum), "accent"],
         ["Продано", nf.format(totQty), "", "шт"],
         ["Средний чек", money(avgCheck)],
         ["В среднем в день", money(avgDay)],
@@ -2435,31 +2579,29 @@
         `<div class="stat ${cls||""}"><div class="k">${k}</div><div class="v">${v}${u?`<span class="u">${u}</span>`:""}</div></div>`
       ).join("");
 
+      // ==== копилка: живой месяц — с кнопкой; архивный — read-only итог ====
+      const isLive = selectedMonth === liveMonth;
+      kopEl.hidden = false;
+      if(isLive){
+        const lastWhen = lastW ? dateFull(lastW.dt) + (lastW.time ? ", " + lastW.time : "") : "";
+        const kopSub = lastW
+          ? `Прошлый вывод: ${lastWhen} — ${money(lastW.amount)}.`
+          : (OPENING > 0
+              ? `Выводов ещё не было. В копилке: ${money(grandSum)} продаж + ${money(OPENING)} с прошлого периода.`
+              : (grandSum > 0 ? "Выводов ещё не было — вся выручка в копилке." : "Пока нет продаж."));
+        const kopBtn = pot > 0
+          ? `<button class="kopilka-btn" type="button" data-pot="${pot}">💸 Отметить вывод</button>`
+          : `<span class="kopilka-btn is-disabled">Копилка пуста</span>`;
+        kopEl.className = "kopilka" + (pot > 0 ? "" : " empty");
+        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">К выводу на сегодня</div><div class="kopilka-v">${money(pot)}</div><div class="kopilka-sub">${kopSub}</div></div>${kopBtn}`;
+      } else {
+        const moWd = withdrawals.reduce((s,w)=> s + w.amount, 0);
+        kopEl.className = "kopilka archive" + (totSum > 0 ? "" : " empty");
+        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">Архив · ${MONN[selMo.m]} ${selMo.y}</div><div class="kopilka-v">${money(totSum)}</div><div class="kopilka-sub">Продано за месяц. Выведено за месяц: ${moWd ? money(moWd) : "—"}. Только просмотр — вывод отмечается в текущем месяце.</div></div>`;
+      }
+
       // по возрастанию даты: раньше — выше
       const sorted = [...days].sort((a,b)=> a.dt - b.dt);
-
-      // ==== копилка и выводы ====
-      const withdrawals = (WD_DATA.withdrawals || [])
-        .filter(w => w && w.date)
-        .map(w => ({ dt: parse(w.date), amount: Number(w.amount) || 0, time: w.time || "" }))
-        .sort((a,b)=> a.dt - b.dt);
-      const totWithdrawn = withdrawals.reduce((s,w)=> s + w.amount, 0);
-      const pot = Math.max(0, OPENING + totSum - totWithdrawn);
-      const lastW = withdrawals.length ? withdrawals[withdrawals.length - 1] : null;
-
-      // карточка «Копилка»
-      const lastWhen = lastW ? dateFull(lastW.dt) + (lastW.time ? ", " + lastW.time : "") : "";
-      const kopSub = lastW
-        ? `Прошлый вывод: ${lastWhen} — ${money(lastW.amount)}.`
-        : (OPENING > 0
-            ? `Выводов ещё не было. В копилке: ${money(totSum)} продаж + ${money(OPENING)} с прошлого периода.`
-            : (totSum > 0 ? "Выводов ещё не было — вся выручка в копилке." : "Пока нет продаж."));
-      const kopBtn = pot > 0
-        ? `<button class="kopilka-btn" type="button" data-pot="${pot}">💸 Отметить вывод</button>`
-        : `<span class="kopilka-btn is-disabled">Копилка пуста</span>`;
-      kopEl.hidden = false;
-      kopEl.className = "kopilka" + (pot > 0 ? "" : " empty");
-      kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">К выводу на сегодня</div><div class="kopilka-v">${money(pot)}</div><div class="kopilka-sub">${kopSub}</div></div>${kopBtn}`;
 
       // объединённая лента: продажи-дни + метки выводов (вывод — после продаж того же дня)
       const timeline = [
@@ -2467,72 +2609,76 @@
         ...withdrawals.map(w => ({ kind:"wd", dt:w.dt, w })),
       ].sort((a,b)=> (a.dt - b.dt) || (a.kind === "wd" ? 1 : -1));
 
-      // таблица (десктоп): строка дня + скрытая строка-деталь с заказами
-      rowsEl.innerHTML = timeline.map(item => {
-        if(item.kind === "wd"){
-          const w = item.w;
-          return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>💸 Вывод — <span class="wd-amount">${money(w.amount)}</span></span><span class="wd-note">${dateFull(w.dt)}${w.time ? ", " + w.time : ""} · копилка обнулена</span></div></td></tr>`;
-        }
-        const d = item.d;
-        const we = weekend(d.dt);
-        const has = d.orders.length > 0;
-        const qty = has ? `<span class="sales-qty">${nf.format(d.qty)}</span>` : `<span class="sales-zero">0</span>`;
-        const sum = has ? `<span class="sales-sum">${money(d.sum)}</span>` : `<span class="sales-zero">—</span>`;
-        const dayRow = `<tr class="sales-day${we?" weekend":""}${has?"":" no-orders"}">
-          <td class="date-cell"><span class="dcell-wrap">${has?`<span class="chev"></span>`:`<span class="chev-sp"></span>`}<span><span class="dnum">${d.dt.getDate()}</span><span class="dmon">${MONF[d.dt.getMonth()]}</span></span></span></td>
-          <td><span class="sales-wd">${WD[d.dt.getDay()]}</span></td>
-          <td>${qty}</td>
-          <td>${sum}</td>
-        </tr>`;
-        const detailRow = has ? `<tr class="sales-detail"><td colspan="4"><div class="collapse"><div class="collapse-inner">${ordersHtml(d.orders)}</div></div></td></tr>` : "";
-        return dayRow + detailRow;
-      }).join("") +
-        `<tr class="sales-total">
-          <td class="date-cell" colspan="2">Итого за период</td>
-          <td><span class="sales-qty">${nf.format(totQty)} шт</span></td>
-          <td><span class="sales-sum">${money(totSum)}</span></td>
-        </tr>`;
+      if(!timeline.length){
+        rowsEl.innerHTML = `<tr class="sales-empty"><td colspan="4">Нет продаж в этом месяце.</td></tr>`;
+        cardsEl.innerHTML = `<div class="sales-empty-card">Нет продаж в этом месяце.</div>`;
+      } else {
+        // таблица (десктоп): строка дня + скрытая строка-деталь с заказами
+        rowsEl.innerHTML = timeline.map(item => {
+          if(item.kind === "wd"){
+            const w = item.w;
+            return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>💸 Вывод — <span class="wd-amount">${money(w.amount)}</span></span><span class="wd-note">${dateFull(w.dt)}${w.time ? ", " + w.time : ""} · копилка обнулена</span></div></td></tr>`;
+          }
+          const d = item.d;
+          const we = weekend(d.dt);
+          const has = d.orders.length > 0;
+          const qty = has ? `<span class="sales-qty">${nf.format(d.qty)}</span>` : `<span class="sales-zero">0</span>`;
+          const sum = has ? `<span class="sales-sum">${money(d.sum)}</span>` : `<span class="sales-zero">—</span>`;
+          const dayRow = `<tr class="sales-day${we?" weekend":""}${has?"":" no-orders"}">
+            <td class="date-cell"><span class="dcell-wrap">${has?`<span class="chev"></span>`:`<span class="chev-sp"></span>`}<span><span class="dnum">${d.dt.getDate()}</span><span class="dmon">${MONF[d.dt.getMonth()]}</span></span></span></td>
+            <td><span class="sales-wd">${WD[d.dt.getDay()]}</span></td>
+            <td>${qty}</td>
+            <td>${sum}</td>
+          </tr>`;
+          const detailRow = has ? `<tr class="sales-detail"><td colspan="4"><div class="collapse"><div class="collapse-inner">${ordersHtml(d.orders)}</div></div></td></tr>` : "";
+          return dayRow + detailRow;
+        }).join("") +
+          `<tr class="sales-total">
+            <td class="date-cell" colspan="2">Итого за месяц</td>
+            <td><span class="sales-qty">${nf.format(totQty)} шт</span></td>
+            <td><span class="sales-sum">${money(totSum)}</span></td>
+          </tr>`;
 
-      // карточки (мобайл): шапка + значения кликабельны, ниже раскрывается список заказов
-      cardsEl.innerHTML = timeline.map(item => {
-        if(item.kind === "wd"){
-          const w = item.w;
-          return `<div class="withdraw-card"><span>💸 Вывод — <b>${money(w.amount)}</b></span><span class="wd-note">${dateFull(w.dt)}${w.time ? ", " + w.time : ""}</span></div>`;
-        }
-        const d = item.d;
-        const we = weekend(d.dt);
-        const has = d.orders.length > 0;
-        const qty = has ? `${nf.format(d.qty)} шт` : `<span class="sales-zero">0 шт</span>`;
-        const sum = has ? money(d.sum) : `<span class="sales-zero">—</span>`;
-        const head = `<div class="dhead"><span class="dnum">${d.dt.getDate()}</span><span class="dmon">${MONF[d.dt.getMonth()]}</span><span class="dbadge">${WD[d.dt.getDay()]}</span>${has?`<span class="chev"></span>`:""}</div>
-          <div class="scard-vals">
-            <div class="scard-val"><span class="k">Продано</span><span class="v">${qty}</span></div>
-            <div class="scard-val"><span class="k">Сумма</span><span class="v">${sum}</span></div>
-          </div>`;
-        const body = has ? `<div class="collapse"><div class="collapse-inner">${ordersHtml(d.orders)}</div></div>` : "";
-        return `<div class="daycard${we?" weekend":""}${has?" sday":""}">${has?`<button class="sday-btn" type="button">${head}</button>`:head}${body}</div>`;
-      }).join("");
+        // карточки (мобайл): шапка + значения кликабельны, ниже раскрывается список заказов
+        cardsEl.innerHTML = timeline.map(item => {
+          if(item.kind === "wd"){
+            const w = item.w;
+            return `<div class="withdraw-card"><span>💸 Вывод — <b>${money(w.amount)}</b></span><span class="wd-note">${dateFull(w.dt)}${w.time ? ", " + w.time : ""}</span></div>`;
+          }
+          const d = item.d;
+          const we = weekend(d.dt);
+          const has = d.orders.length > 0;
+          const qty = has ? `${nf.format(d.qty)} шт` : `<span class="sales-zero">0 шт</span>`;
+          const sum = has ? money(d.sum) : `<span class="sales-zero">—</span>`;
+          const head = `<div class="dhead"><span class="dnum">${d.dt.getDate()}</span><span class="dmon">${MONF[d.dt.getMonth()]}</span><span class="dbadge">${WD[d.dt.getDay()]}</span>${has?`<span class="chev"></span>`:""}</div>
+            <div class="scard-vals">
+              <div class="scard-val"><span class="k">Продано</span><span class="v">${qty}</span></div>
+              <div class="scard-val"><span class="k">Сумма</span><span class="v">${sum}</span></div>
+            </div>`;
+          const body = has ? `<div class="collapse"><div class="collapse-inner">${ordersHtml(d.orders)}</div></div>` : "";
+          return `<div class="daycard${we?" weekend":""}${has?" sday":""}">${has?`<button class="sday-btn" type="button">${head}</button>`:head}${body}</div>`;
+        }).join("");
+      }
 
-      // помесячно: продано и выведено по месяцам
-      const monthOf = dt => dt.getFullYear() * 12 + dt.getMonth();
+      // помесячно (все месяцы, новые сверху): клик по строке → выбрать месяц
       const months = {};
-      days.forEach(d => { const k = monthOf(d.dt); (months[k] = months[k] || {sold:0,wd:0,y:d.dt.getFullYear(),m:d.dt.getMonth()}).sold += d.sum; });
-      withdrawals.forEach(w => { const k = monthOf(w.dt); (months[k] = months[k] || {sold:0,wd:0,y:w.dt.getFullYear(),m:w.dt.getMonth()}).wd += w.amount; });
-      const monthList = Object.keys(months).map(Number).sort((a,b)=> a - b).map(k => months[k]);
+      allDays.forEach(d => { const k = monthKey(d.dt); (months[k] = months[k] || {sold:0,wd:0,y:d.dt.getFullYear(),m:d.dt.getMonth(),k}).sold += d.sum; });
+      allWithdrawals.forEach(w => { const k = monthKey(w.dt); (months[k] = months[k] || {sold:0,wd:0,y:w.dt.getFullYear(),m:w.dt.getMonth(),k}).wd += w.amount; });
+      const monthList = Object.keys(months).map(Number).sort((a,b)=> b - a).map(k => months[k]);
       monthsEl.innerHTML = monthList.length
         ? `<div class="sales-months-h">По месяцам</div>` + monthList.map(mo =>
-            `<div class="smonth"><div class="smonth-name">${MONN[mo.m]} ${mo.y}</div>` +
+            `<button type="button" class="smonth${mo.k===selectedMonth?" active":""}" data-mk="${mo.k}"><div class="smonth-name">${MONN[mo.m]} ${mo.y}</div>` +
             `<div class="smonth-cell"><span class="k">Продано</span><span class="v">${money(mo.sold)}</span></div>` +
-            `<div class="smonth-cell"><span class="k">Выведено</span><span class="v">${mo.wd ? money(mo.wd) : "—"}</span></div></div>`
+            `<div class="smonth-cell"><span class="k">Выведено</span><span class="v">${mo.wd ? money(mo.wd) : "—"}</span></div></button>`
           ).join("")
         : "";
 
-      // подпись: лучший день + когда обновлено
+      // подпись: когда обновлено + лучший день выбранного месяца
       const upd = DATA.updated ? parse(DATA.updated) : null;
       updEl.textContent = upd ? `Обновлено ${dateFull(upd)} ${upd.getFullYear()}` : "";
       noteEl.textContent = best && best.sum
-        ? `Лучший день — ${dateFull(best.dt)}: ${nf.format(best.qty)} шт на ${money(best.sum)}. Нажми на день, чтобы увидеть заказ-наряды. Данные обновляются автоматически каждые полчаса.`
-        : "Пока нет продаж за период.";
+        ? `Лучший день месяца — ${dateFull(best.dt)}: ${nf.format(best.qty)} шт на ${money(best.sum)}. Нажми на день, чтобы увидеть заказ-наряды. Данные обновляются автоматически каждые полчаса.`
+        : "Пока нет продаж в этом месяце.";
     }
 
     // раскрытие дня — десктоп (строка-деталь = следующий tr)
@@ -2554,6 +2700,15 @@
       const b = e.target.closest(".kopilka-btn");
       if(!b || b.classList.contains("is-disabled")) return;
       doWithdraw(Number(b.dataset.pot) || 0);
+    });
+    // выбор месяца из выпадающего списка
+    monthSel.addEventListener("change", () => { selectedMonth = Number(monthSel.value); render(); });
+    // клик по строке «По месяцам» — открыть этот месяц и подняться к началу раздела
+    monthsEl.addEventListener("click", e => {
+      const b = e.target.closest(".smonth");
+      if(!b) return;
+      selectedMonth = Number(b.dataset.mk); render();
+      document.getElementById("page-prodazhi").scrollIntoView({ behavior:"smooth", block:"start" });
     });
 
     // выводы: сначала из локального кэша (мгновенно и офлайн), затем свежие из таблицы
@@ -2757,6 +2912,16 @@
   let startPage = "grafik";
   try { const saved = localStorage.getItem("md_page"); if(saved && PAGES[saved]) startPage = saved; } catch(e){}
   showPage(startPage);
+
+  /* ===================== Кнопка «наверх» ===================== */
+  (function(){
+    const btn = document.getElementById("to-top");
+    if(!btn) return;
+    const toggle = () => btn.classList.toggle("show", window.scrollY > 400);
+    window.addEventListener("scroll", toggle, { passive:true });
+    btn.addEventListener("click", () => window.scrollTo({ top:0, behavior:"smooth" }));
+    toggle(); // на случай, если страница уже прокручена (перезагрузка)
+  })();
 
   /* ===================== Переключатель темы (светлая/тёмная) ===================== */
   (function(){
