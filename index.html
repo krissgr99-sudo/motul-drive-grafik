@@ -161,6 +161,14 @@
     font:inherit;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;transition:.15s}
   .tpl-copyall:hover{border-color:var(--c-red);color:var(--accent-soft);background:rgba(209,31,45,.1)}
   .tpl-copyall.ok{border-color:var(--ok);color:var(--ok)}
+  /* подсказка «машина → коробка» (поиск по BMW) */
+  .tpl-carhint{grid-column:1/-1;padding:11px 14px;margin-bottom:2px;border:1px solid var(--line);
+    border-radius:12px;background:var(--fill);color:var(--muted);font-size:13.5px;line-height:1.5}
+  .tpl-carhint b{color:var(--text)}
+  .tpl-carhint .tpl-carhint-car{color:var(--text)}
+  .tpl-carhint .tpl-carhint-box{color:var(--accent-soft);font-weight:700}
+  .tpl-carhint-note{display:block;margin-top:5px;color:var(--muted);font-size:12.5px}
+  .tpl-carhint-warn{display:block;margin-top:5px;color:var(--c-red);font-weight:600;font-size:12.5px}
   /* счётчики на вкладках/фильтрах */
   .tpl-count{margin-left:6px;font-size:11px;font-weight:700;color:var(--muted);opacity:.9}
   .tpl-chip.active .tpl-count{color:#fff;opacity:.9}
@@ -242,6 +250,7 @@
   .tpl-badge.b-part{background:rgba(240,180,41,.12);color:var(--warn);border:1px solid rgba(240,180,41,.3)}
   .tpl-badge.b-hybrid{background:rgba(91,141,255,.12);color:var(--c-blue);border:1px solid rgba(91,141,255,.3)}
   .tpl-badge.b-lock{background:rgba(255,75,87,.12);color:#ff6b75;border:1px solid rgba(255,75,87,.3)}
+  .tpl-badge.b-check{background:rgba(240,180,41,.14);color:var(--warn);border:1px solid rgba(240,180,41,.42)} /* «Проверить цены» — мягкий флаг свежести (правило 7) */
   .tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,380px));justify-content:center;gap:16px;align-items:start}
   .tpl-grid.is-landing{grid-template-columns:repeat(auto-fill,minmax(215px,1fr));justify-content:stretch}
   .tpl-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;
@@ -1144,6 +1153,59 @@
     work_full_cvt_jf016:   ["Полная замена масла в вариаторе JF016E/JF017E с промывкой системы", 7000],
   };
 
+  /* ---- Свежесть Уровня 0: дата последней сверки цены (fail-closed, правило 7). ----
+     Засеяно из git-истории публикаций (deploy); масла — по БОЛЕЕ СТАРШЕЙ из даты цены и
+     даты её ставки RATES. Нет ключа здесь ИЛИ старше FRESH_DAYS дней → смета покажет
+     «уточню» вместо числа, а карточка — бейдж «Проверить цены» (не молча уверенное число).
+     Пересверил цену — перенеси ключ на сегодняшнюю дату; сменил ставку RATES — перенеси и её масла. */
+  const FRESH_DAYS = 30;                 // порог свежести, дней (стартовое значение, правит владелец)
+  const CHECKED_ON = {   // "дата сверки": [ключи]
+    "2026-06-28": [
+      "bardahl", "filter_std", "filter_mild", "work_full", "work_partial",
+    ],
+    "2026-06-29": [
+      "filter_bmw_60", "work_full_60", "work_part_60", "filter_6hp", "work_full_6hp", "work_part_6hp",
+      "diff_work_front", "diff_work_transf", "diff_work_rear3", "work_full_aisin", "work_full_09s", "oil_haldex",
+      "haldex_ring", "work_haldex_cut", "work_haldex_full",
+    ],
+    "2026-07-02": [
+      "filter_mb_9g", "bolt_mb_9g", "drain_mb_9g", "filter_sollo_9g", "filter_mahle_9g_a", "filter_mahle_9g_f",
+      "filter_zf_9g_a", "filter_zf_9g_f", "work_full_9g_wash", "work_full_9g", "work_fill_9g", "mb_diff_front",
+      "mb_diff_rear", "mb_transf_work",
+    ],
+    "2026-07-03": [
+      "filter_mb_7g", "work_full_7g_wash", "work_full_7g_std_wash", "filter_zf_8hp65", "work_full_8hp65_wash", "work_part_8hp65",
+      "filter_zf_8hp65a", "work_full_8hp65a_wash", "work_part_8hp65a", "filter_mahle_hx189", "filter_mahle_hx187", "filter_mahle_hx160",
+      "filter_mahle_hx139", "filter_mahle_hx132", "filter_tf60", "filter_tf60_alt", "filter_tf62", "filter_u660",
+      "filter_a750", "filter_r4a51", "filter_ab60", "filter_u340", "filter_fw6el", "filter_6hp19_mahle",
+      "filter_zf_6hp2", "filter_gm_6l45", "filter_dl501_coarse", "filter_dl501_fine", "filter_dl501_coarse_lynx", "filter_dl501_fine2",
+      "filter_dq724_fine", "filter_dq724_coarse", "cvt_gasket_3jx0a", "cvt_ring_3jx3a", "cvt_filter_28x0a", "cvt_gasket_1xf0d",
+      "cvt_ring_3vx0a", "cvt_filter_fine", "cvt_filter_coarse", "re7_gasket_1xj0a", "work_drainfill_2000", "work_full_8hp55",
+      "work_part_8hp55", "work_full_9hp48", "work_full_6hp19", "work_full_6hp21", "work_full_tr80", "work_full_tr60",
+      "work_full_tf60", "work_full_tf62", "work_full_u660", "work_full_a750", "work_full_r4a51", "work_full_ab60",
+      "work_full_re7", "work_full_u340", "work_full_fw6el", "work_full_gm6l45", "work_full_a6mf1", "work_full_dq724",
+      "work_full_dq500", "work_part_dq500", "work_full_dq250", "work_part_dq250", "work_full_dl501", "work_dl501_mech",
+      "work_dl382_hydro", "work_dl382_mech", "work_dq200", "work_full_cvt_re0f11a", "work_full_cvt_jf016",
+    ],
+    "2026-07-05": [
+      "motul_atf6", "motul_multiatf", "zf8hp", "zf6hp", "zf_hybrid2", "toyota_ws",
+      "motul_dctf", "motul_ht_dctf", "gear300", "gear300_ls", "motul_cvtf", "motul_hf",
+      "kia_sp4", "ravenol_ulv", "mb_236_17", "mb_236_15", "oil_motul_12", "oil_zf_12",
+      "oil_zf_5", "oil_zf_hyb2_12", "oil_zf_hyb2_5", "oil_motul_13", "oil_zf6_13", "oil_zf6_6",
+      "diff_oil_front", "diff_oil_transf", "diff_oil_rear", "oil_motul_11", "oil_ravenol_11", "oil_mb_9g_13",
+      "oil_mb_9g_10", "mb_diff_oil", "mb_transf_oil", "oil_mb_7g_12", "oil_motul_atf6_12", "oil_zf8hp_12",
+      "oil_zf8hp_6", "oil_motul_10", "oil_motul_15", "oil_motul_16", "oil_zf_4", "oil_zf_10",
+      "oil_multiatf_11", "oil_multiatf_15", "oil_multiatf_16", "oil_toyota_16", "oil_toyota_11", "oil_dctf_9",
+      "oil_dctf_5", "oil_dctf_35", "oil_dctf_2", "oil_httdctf_9", "oil_gear300_4", "oil_gear300_38",
+      "oil_cvtf_12", "oil_hf_1", "oil_kia_sp4_11",
+    ],
+  };
+  // плоская карта ключ→дата (строится один раз из CHECKED_ON)
+  const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
+  // свежесть ключа: нет даты / дата в будущем / старше порога → false (fail-closed)
+  const isFresh = key => { const iso = CHECKED[key]; if(!iso) return false;
+    const days = (new Date() - new Date(iso)) / 864e5; return days >= 0 && days <= FRESH_DAYS; };
+
   // 2) Доплата за мосты/раздатку (3 узла). Меняешь только числа.
   const DIFFS = {
     head: "Также можем заменить масла в переднем, заднем дифференциале и раздаточной коробке.",
@@ -1600,9 +1662,9 @@
     let sum = 0;
     for(const key of v.items){
       const item = PRICE[key];
-      if(!item) continue;                 // неизвестная позиция — пропускаем, не падаем
-      lines.push(`${item[0]} ${item[1]} руб.`);
-      sum += item[1];
+      if(!item){ console.warn("PRICE: нет ключа", key); lines.push(`⚠ уточню: ${key}`); continue; } // пропуск ВИДЕН в смете, «Итого» не занижается молча (правило 2)
+      if(isFresh(key)){ lines.push(`${item[0]} ${item[1]} руб.`); sum += item[1]; }
+      else            { lines.push(`${item[0]} — уточню`); }   // цена протухла/без даты → без числа (правило 7)
     }
     lines.push(`Итого: ${sum} руб.`);     // «Итого» = сумма позиций, считается само
     return lines.join("\n");
@@ -1618,9 +1680,9 @@
     let sum = 0;
     for(const key of d.items){
       const item = PRICE[key];
-      if(!item) continue;
-      lines.push(`${item[0]} ${item[1]} руб.`);
-      sum += item[1];
+      if(!item){ console.warn("PRICE: нет ключа", key); lines.push(`⚠ уточню: ${key}`); continue; } // пропуск ВИДЕН (правило 2)
+      if(isFresh(key)){ lines.push(`${item[0]} ${item[1]} руб.`); sum += item[1]; }
+      else            { lines.push(`${item[0]} — уточню`); }   // протухло → без числа (правило 7)
     }
     lines.push(`Итого по мостам и раздатке: ${sum} руб.`);
     return lines.join("\n");
@@ -1640,9 +1702,9 @@
       let sum = 0;
       for(const key of v.items){
         const item = PRICE[key];
-        if(!item) continue;
-        lines.push(`${item[0]} ${item[1]} руб.`);
-        sum += item[1];
+        if(!item){ console.warn("PRICE: нет ключа", key); lines.push(`⚠ уточню: ${key}`); continue; } // пропуск ВИДЕН (правило 2)
+        if(isFresh(key)){ lines.push(`${item[0]} ${item[1]} руб.`); sum += item[1]; }
+        else            { lines.push(`${item[0]} — уточню`); }   // протухло → без числа (правило 7)
       }
       lines.push(`Итого: ${sum} руб.`);
       return lines.join("\n");
@@ -1847,6 +1909,228 @@
       extraTags:["7G-Tronic", "722.9", "Motul ATF6"] },
   ];
 
+  // ==================== Справочник «машина → коробка» (BMW · все кузова 2007+) ====================
+  //    Единый источник, как PRICE. Поиск в «Шаблоны» понимает язык клиента («BMW X5», «F30»,
+  //    «х5») и показывает нужную коробку. Правь ДАННЫЕ здесь, не вёрстку.
+  //    Поля: brand — марка; model — как показать в подсказке; gen — поколение/годы (подсказка);
+  //          boxes — ключи t.box из TEMPLATES (точное совпадение строки!); match — что может
+  //          набрать менеджер/клиент (латиница; кир «Х» приводится к «x» автоматически);
+  //          draft:true — ЧЕРНОВИК, ждёт сверки Кристиана (red line №2: неверная коробка = неверная цена);
+  //          allow — какие ВАРИАНТЫ карточек коробки показывать этой машине (чтобы не вываливать все 12):
+  //              base(всегда) / mild(48V мягкий гибрид) / phev(engine:"Гибрид") / lock(блокировка диффа) /
+  //              transfer(diffsDetailed — мосты+раздатка). Нет флага = не показывать этот тип. Фильтр — в visible().
+  //              Мейнстрим F/G BMW = только base (гибрид/блокировки у них нет); X5 E70 + transfer (раздатка).
+  //    ⚙️ Карта выверена мульти-агентным аудитом (ETK/ZF/пресс-релизы) + состязательная
+  //       перепроверка + решения Кристиана. draft:true — там, где коробка зависит от мотора/версии.
+  //       Покрыты все кузова 1-8 серий и X1-X7/Z4 с 2007. До 2007 не заводим (редкие).
+  //       noservice:true — коробка не наша (робот DCT/EV/8HP90+); PHEV — на отдельной гибридной 8HP.
+  //       Точный ответ = ввод КОДА КУЗОВА (e90, f15, g20); модель+кузов покажет все поколения с мотором.
+  const CARS = [
+    // Поля: boxes — ключи t.box из TEMPLATES (точное совпадение), ПУСТОЙ [] = коробка вне ассортимента;
+    //   noservice:true — коробка не наша (робот DCT / EV / 8HP90+ / GM 2ML70) -> показываем «не обслуживается»;
+    //   draft:true — коробка зависит от мотора/версии/года -> плашка «сверь по VIN»; note — короткая развилка;
+    //   allow — какие ВАРИАНТЫ карточек: base / mild(48V) / phev(engine:"Гибрид") / lock(блокировка) / transfer.
+    // ВНИМАНИЕ: почти ВСЕ PHEV BMW идут на ОТДЕЛЬНОЙ гибридной коробке (GA8P75HZ/GA8P70H) — НЕ обычная 8HP,
+    //   масло/объём иные -> phev:false, вынесено в note. Карта выверена мульти-агентным аудитом (ETK/ZF/
+    //   пресс-релизы + состязательная проверка), 2026-07. До 2007 не заводим (редкие, считаются вручную).
+
+    /* ==================== 1 серия ==================== */
+    { brand:"BMW", model:"1 серия", gen:"E81/E82/E87/E88 · 2007-2013 · RWD", boxes:["6L45R/E","6HP (BMW)"], draft:true,
+      match:["e81","e82","e87","e88","1 серия","1 серии","1er","bmw 1","116i","118i","120i","125i","128i","130i","135i","116d","118d","120d","123d"],
+      allow:{base:true}, note:"Атмо-бензин 116i-130i -> GM 6L45; турбо 135i N54 + все дизели -> ZF 6HP. 135i N55 (2010+) = робот DCT, не наш. Сверять по поддону." },
+    { brand:"BMW", model:"1 серия", gen:"F20/F21 · 2012-2019 · RWD/xDrive · ZF 8HP", boxes:["8HP45-76"],
+      match:["f20","f21","1 серия","1 серии","1er","bmw 1","116i","118i","120i","125i","m135i","m140i","116d","118d","120d","125d"],
+      allow:{base:true}, note:"Все автоматы ZF 8HP (M140i = 8HP50). Заводского LSD нет (M Performance LSD — дилерский ретрофит)." },
+    { brand:"BMW", model:"1 серия", gen:"F40 · 2019-2024 · переднеприводный (UKL2)", boxes:["09S/8G45"], draft:true,
+      match:["f40","1 серия","1 серии","1er","bmw 1","116i","118i","120i","128ti","m135i","116d","118d","120d"],
+      allow:{base:true, mild:true}, note:"Aisin 8G45 у 128ti/M135i/118d/120d; младшие 116i/118i/120i/116d — робот 7DCT300 (не наш). Torsen — на передней оси, не блокировка зада. Сверять по мотору." },
+
+    /* ==================== 2 серия ==================== */
+    { brand:"BMW", model:"2 серия", gen:"F22/F23 · 2014-2021 · купе/кабрио RWD/xDrive · ZF 8HP", boxes:["8HP45-76"],
+      match:["f22","f23","2 серия","2 серии","2er","bmw 2","218i","220i","228i","230i","m235i","m240i","218d","220d","225d"],
+      allow:{base:true}, note:"Продольные ZF 8HP (M235i/M240i = 8HP50). LSD зада нет (M Performance LSD — дилерская опция). M2 F87 = DCT, не наш." },
+    { brand:"BMW", model:"2 серия", gen:"G42 · 2021+ · купе RWD/xDrive", boxes:["8HP45-76"], draft:true,
+      match:["g42","2 серия","2 серии","2er","bmw 2","218i","220i","230i","m240i","220d"],
+      allow:{base:true, mild:true, lock:true}, note:"4-цил 8HP51, M240i (B58) 8HP76. 48V — дизель 220d. M240i xDrive — M Sport Diff. Сверять по VIN." },
+    { brand:"BMW", model:"2 серия", gen:"F44 GC / F45·F46 Active·Gran Tourer · 2014-2025 · поперечные", boxes:["8F22"], draft:true,
+      match:["f44","f45","f46","2 серия","2 серии","2er","gran coupe","active tourer","gran tourer","216i","218i","220i","225i","228i","m235i","216d","218d","220d","225xe"],
+      allow:{base:true, lock:true}, note:"Топ 4-цил (228i/220d/M235i) = Aisin 8F22; база, 7DCT300 (после 2018) и PHEV 225xe — не наши. M235i xDrive — Torsen на передней оси. Сверять по VIN." },
+    { brand:"BMW", model:"2 серия", gen:"U06 Active Tourer · 2021+ · только 7DCT300", boxes:[], noservice:true,
+      match:["u06","2 серия","2 серии","2er","active tourer","218i","220i","223i","220d","223d","225xe","230e"],
+      allow:{base:false, mild:true}, note:"Всё поколение на роботе 7DCT300 — не обслуживаем. PHEV 225xe/230e — гибридный DCT." },
+
+    /* ==================== 3 серия ==================== */
+    { brand:"BMW", model:"3 серия", gen:"E90/E91/E92/E93 · 2007-2013 · RWD/xDrive", boxes:["6L45R/E","6HP (BMW)"], draft:true,
+      match:["e90","e91","e92","e93","3 серия","3 серии","3er","bmw 3","318i","320i","323i","325i","328i","330i","335i","318d","320d","325d","330d","335d"],
+      allow:{base:true}, note:"Турбо-бензин (335i) + все дизели -> ZF 6HP; атмо-бензин (320/325/328/330i) -> GM 6L45 или ZF 6HP19 (сверять по поддону). M3 = DCT, не наш." },
+    { brand:"BMW", model:"3 серия", gen:"F30/F31/F34 · 2012-2019 · ZF 8HP", boxes:["8HP45-76"],
+      match:["f30","f31","f34","3 серия","3 серии","3er","bmw 3","gran turismo","320i","328i","330i","335i","340i","318d","320d","330d","335d","330e"],
+      allow:{base:true}, note:"Все ZF 8HP (340i/335i = 8HP50). 330e и ActiveHybrid 3 — на ОТДЕЛЬНОЙ гибридной коробке (GA8P75HZ/GA8P70H), сверять. 48V не было." },
+    { brand:"BMW", model:"3 серия", gen:"G20/G21 · 2019+ · RWD/xDrive", boxes:["8HP45-76"], draft:true,
+      match:["g20","g21","3 серия","3 серии","3er","bmw 3","320i","330i","318i","m340i","320d","330d","m340d","330e","320e"],
+      allow:{base:true, mild:true, lock:true}, note:"48V: дизели 320d/330d/M340d с 2020, M340i с LCI 2022, бензин 320i/330i лишь с 2024. Блокировка (M Sport Diff) — на M340i/M340d. PHEV 330e/320e — отдельная коробка GA8P75HZ." },
+
+    /* ==================== 4 серия ==================== */
+    { brand:"BMW", model:"4 серия", gen:"F32/F33/F36 · 2013-2020 · ZF 8HP", boxes:["8HP45-76"],
+      match:["f32","f33","f36","4 серия","4 серии","4er","bmw 4","420i","428i","430i","435i","440i","418d","420d","425d","430d","435d"],
+      allow:{base:true}, note:"Все ZF 8HP (430d/435d = 8HP70). PHEV/48V нет. M4 F82 = DCT, не наш." },
+    { brand:"BMW", model:"4 серия", gen:"G22/G23/G26 · 2020+ · RWD/xDrive", boxes:["8HP45-76"], draft:true,
+      match:["g22","g23","g26","4 серия","4 серии","4er","bmw 4","420i","430i","m440i","420d","430d","m440d"],
+      allow:{base:true, mild:true, lock:true}, note:"8HP51/8HP76. 48V: дизели+M440i с 2020, бензин с 2024. M440i/M440d — M Sport Diff. i4 (G26) = EV, не наш." },
+
+    /* ==================== 5 серия ==================== */
+    { brand:"BMW", model:"5 серия", gen:"E60/E61 LCI · 2007-2010 · ZF 6HP", boxes:["6HP (BMW)"],
+      match:["e60","e61","5 серия","5 серии","5er","bmw 5","523i","525i","528i","530i","535i","540i","550i","525d","530d","535d"],
+      allow:{base:true}, note:"Все автоматы ZF 6HP (V8/535i/6-цил дизели = 6HP26/28). M5 (V10) = SMG III, не наш. Редкие атмо-N52 на части рынков — GM 6L45." },
+    { brand:"BMW", model:"5 серия", gen:"F10/F11/F07 GT · 2010-2017 · ZF 8HP", boxes:["8HP45-76"],
+      match:["f10","f11","f07","5 серия","5 серии","5er","bmw 5","gran turismo","520i","523i","528i","530i","535i","550i","518d","520d","525d","530d","535d","m550d"],
+      allow:{base:true}, note:"С запуска ZF 8HP (6HP не применялся). V8/6-цил дизели = 8HP70. M5 F10 = DCT, ActiveHybrid 5 = отдельный гибрид — не наши." },
+    { brand:"BMW", model:"5 серия", gen:"G30/G31 · 2017-2023 · RWD/xDrive", boxes:["8HP45-76"], draft:true,
+      match:["g30","g31","5 серия","5 серии","5er","bmw 5","520i","530i","540i","m550i","520d","525d","530d","540d","m550d","520e","530e","545e"],
+      allow:{base:true, mild:true, lock:true}, note:"48V: 520d с 2019, с LCI 2020 у всех кроме PHEV и M550i. M550i — M Sport Diff. PHEV 520e/530e/545e — отдельная коробка GA8P75HZ. M5 F90 — отдельно." },
+    { brand:"BMW", model:"5 серия", gen:"G60/G61 · 2023+ · RWD/xDrive", boxes:["8HP45-76"],
+      match:["g60","g61","5 серия","5 серии","5er","bmw 5","520i","520d","530i","540i","530e","550e"],
+      allow:{base:true, mild:true}, note:"Все ДВС — 48V штатно, ZF 8HP (540i = 8HP76). PHEV 530e/550e — отдельная гибридная коробка. i5 = EV, не наш." },
+
+    /* ==================== 6 серия ==================== */
+    { brand:"BMW", model:"6 серия", gen:"E63/E64 LCI · 2007-2010 · купе/кабрио RWD · ZF 6HP", boxes:["6HP (BMW)"],
+      match:["e63","e64","6 серия","6 серии","6er","bmw 6","630i","645i","650i","635d"],
+      allow:{base:true}, note:"630i = 6HP19; 650i (V8)/635d = 6HP26/28. Только RWD. M6 (V10) = SMG III, не наш." },
+    { brand:"BMW", model:"6 серия", gen:"F06/F12/F13 · 2011-2018 · ZF 8HP", boxes:["8HP45-76"],
+      match:["f06","f12","f13","6 серия","6 серии","6er","bmw 6","gran coupe","640i","650i","640d"],
+      allow:{base:true}, note:"640i = 8HP45; 650i (V8)/640d = 8HP70. M6 = DCT, не наш." },
+    { brand:"BMW", model:"6 серия GT", gen:"G32 · 2017-2023 · лифтбек RWD/xDrive", boxes:["8HP45-76"],
+      match:["g32","6 серия","6 серии","6er","6 gt","gran turismo","620d","630i","640i","630d","640d"],
+      allow:{base:true, mild:true}, note:"Бензин 630i/640i = 8HP50, дизели = 8HP75. 48V у всех с LCI 2020. PHEV нет." },
+
+    /* ==================== 7 серия ==================== */
+    { brand:"BMW", model:"7 серия", gen:"F01/F02 · 2008-2015 · RWD/xDrive", boxes:["6HP (BMW)","8HP45-76"], draft:true,
+      match:["f01","f02","7 серия","7 серии","7er","bmw 7","730i","740i","740li","750i","750li","760i","760li","730d","740d","750d","activehybrid 7"],
+      allow:{base:true}, note:"Дорест (2008-12) = ZF 6HP; LCI (2012+) = 8HP70. НО 750i-LCI/760i (V12)/750d = ZF 8HP90 — не наш (крупнее). ActiveHybrid 7 — отдельный гибрид. Сверять по VIN." },
+    { brand:"BMW", model:"7 серия", gen:"G11/G12 · 2015-2022 · RWD/xDrive", boxes:["8HP45-76"], draft:true,
+      match:["g11","g12","7 серия","7 серии","7er","bmw 7","730i","740i","750i","730d","740d","730ld","740ld","740e","745e","m760li"],
+      allow:{base:true, mild:true}, note:"8HP50/75. 48V только у дизелей 730d/740d с 2020. PHEV 740e/745e — отдельная коробка GA8P75HZ. M760Li (V12) = 8HP95, не наш." },
+    { brand:"BMW", model:"7 серия", gen:"G70 · 2022+ · RWD/xDrive", boxes:["8HP45-76"],
+      match:["g70","7 серия","7 серии","7er","bmw 7","735i","740i","740d","760i","750e","m760e"],
+      allow:{base:true, mild:true}, note:"735i/740i/740d/760i (V8) + 48V штатно (8HP76). PHEV 750e/M760e — гибридная 8HP, сверять. i7 = EV, не наш." },
+
+    /* ==================== 8 серия ==================== */
+    { brand:"BMW", model:"8 серия", gen:"G14/G15/G16 · 2018+ · кабрио/купе/Gran Coupe", boxes:["8HP45-76"], draft:true,
+      match:["g14","g15","g16","8 серия","8 серии","8er","bmw 8","gran coupe","840i","840d","m850i"],
+      allow:{base:true, mild:true, lock:true}, note:"840i = 8HP51, 840d/M850i (V8) = 8HP76. 48V на 840d с 11.2020. M850i — M Sport Diff. M8 F9x — отдельно." },
+
+    /* ==================== X1 / X2 ==================== */
+    { brand:"BMW", model:"X1", gen:"E84 · 2009-2015 · продольный RWD/xDrive", boxes:["6HP (BMW)","8HP45-76"], draft:true,
+      match:["e84","x1","bmw x1","sdrive18i","sdrive20i","sdrive28i","xdrive28i","xdrive25i","xdrive35i","sdrive18d","sdrive20d","xdrive20d","xdrive23d","xdrive25d"],
+      allow:{base:true}, note:"Продольный ZF. База/дизели/6-цил (35i N55, 25i/28i N52) = 6HP; 4-цил N20 (20i/28i, 20d с ~2012) = 8HP45. Много переходов — сверять по VIN. Механика — не наша." },
+    { brand:"BMW", model:"X1", gen:"F48 · 2015-2022 · поперечный (UKL2)", boxes:["8F22"], draft:true,
+      match:["f48","x1","bmw x1","sdrive18i","sdrive20i","xdrive20i","xdrive25i","xdrive28i","sdrive18d","xdrive18d","xdrive20d","xdrive25d","xdrive25e"],
+      allow:{base:true}, note:"Топ 4-цил (25i/28i/18d/20d/25d) = Aisin 8F22; база 3-цил и 7DCT300 (с 2018) — не наши. PHEV 25e — не наш. LSD зада нет." },
+    { brand:"BMW", model:"X1", gen:"U11 (+iX1) · 2022+ · только 7DCT300", boxes:[], noservice:true,
+      match:["u11","x1","bmw x1","ix1","xdrive23i","xdrive28i","xdrive23d","xdrive25e","xdrive30e"],
+      allow:{base:false, mild:true}, note:"Все ДВС на роботе 7DCT300 — не обслуживаем. iX1 = EV. Aisin 8-ст здесь уже не ставят." },
+    { brand:"BMW", model:"X2", gen:"F39 · 2018-2023 · поперечный (кузов F48)", boxes:["8F22","09S/8G45"], draft:true,
+      match:["f39","x2","bmw x2","sdrive18i","sdrive20i","xdrive20i","xdrive25i","xdrive20d","xdrive25d","x2 m35i","xdrive25e"],
+      allow:{base:true, lock:true}, note:"Топ 4-цил (25i/20d/25d) = Aisin 8F22; X2 M35i = Aisin 8G45 + передний M Sport LSD. База/7DCT300 и PHEV 25e — не наши." },
+    { brand:"BMW", model:"X2", gen:"U10 (+iX2) · 2023+ · только 7DCT300", boxes:[], noservice:true,
+      match:["u10","x2","bmw x2","ix2","x2 m35i"],
+      allow:{base:false, mild:true}, note:"Как X1 U11: все ДВС на 7DCT300 — не обслуживаем. iX2 = EV." },
+
+    /* ==================== X3 / X4 ==================== */
+    { brand:"BMW", model:"X3", gen:"E83 · 2004-2010 · старый X3 (вне 5 семейств)", boxes:[], noservice:true, draft:true,
+      match:["e83"],
+      allow:{base:false}, note:"Старый X3 (до 2007) — коробка GM/ZF вне наших карточек. Сверять по VIN отдельно." },
+    { brand:"BMW", model:"X3", gen:"F25 · 2010-2017 · продольный · ZF 8HP", boxes:["8HP45-76"],
+      match:["f25","x3","bmw x3","sdrive18d","sdrive20i","xdrive20i","xdrive20d","xdrive28i","xdrive28d","xdrive35i","xdrive30d","xdrive35d"],
+      allow:{base:true}, note:"Все автоматы ZF 8HP (30d/35d = 8HP70). Механика — не наша. Гибридов/LSD нет. Мост обычный." },
+    { brand:"BMW", model:"X3", gen:"G01 · 2017-2024 · RWD/xDrive", boxes:["8HP45-76"], draft:true,
+      match:["g01","x3","bmw x3","xdrive20i","xdrive30i","xdrive20d","xdrive30d","x3 m40i","x3 m40d","xdrive30e","ix3"],
+      allow:{base:true, mild:true, lock:true}, note:"ZF 8HP. 48V с LCI 2021. M40i/M40d — M Sport Diff. PHEV 30e — отдельная коробка GA8P75HZ. iX3 = EV. X3M F97 — отдельно. Сверять по VIN." },
+    { brand:"BMW", model:"X4", gen:"F26 · 2014-2018 · продольный xDrive · ZF 8HP", boxes:["8HP45-76"],
+      match:["f26","x4","bmw x4","xdrive20i","xdrive20d","xdrive28i","xdrive35i","x4 m40i","xdrive30d","xdrive35d"],
+      allow:{base:true}, note:"База F25, только xDrive. M40i = 8HP50, 30d/35d = 8HP70. Механика — не наша. X4M F98 — отдельно." },
+    { brand:"BMW", model:"X4", gen:"G02 · 2018-2024 · xDrive", boxes:["8HP45-76"], draft:true,
+      match:["g02","x4","bmw x4","xdrive20i","xdrive30i","xdrive20d","xdrive30d","x4 m40i","x4 m40d"],
+      allow:{base:true, mild:true, lock:true}, note:"Как X3 G01: 8HP, 48V с LCI 2021, M40i/M40d — M Sport Diff. PHEV не было. X4M F98 — отдельно." },
+
+    /* ==================== X5 / X6 / X7 ==================== */
+    { brand:"BMW", model:"X5", gen:"E70 · 2007-2013 · xDrive · трёхсекционный мост", boxes:["6HP (BMW)","8HP45-76"], draft:true,
+      match:["e70","x5 e70","x5","bmw x5","xdrive30i","xdrive35i","xdrive48i","xdrive50i","xdrive30d","xdrive35d","xdrive40d","x5 m50d"],
+      allow:{base:true, transfer:true}, note:"Бензин: дорест = 6HP26, LCI 35i = 8HP45 / 50i = 8HP70. ВСЕ дизели остались на 6HP. X5M = 6HP26, блокировки нет (DPC — вектор тяги). Задний мост трёхсекционный." },
+    { brand:"BMW", model:"X5", gen:"F15 · 2013-2018 · xDrive · ZF 8HP", boxes:["8HP45-76"],
+      match:["f15","x5","bmw x5","sdrive25d","xdrive25d","xdrive30d","xdrive35i","xdrive40d","xdrive50i","x5 m50d","xdrive40e"],
+      allow:{base:true}, note:"Все ZF 8HP. Мост обычный. PHEV 40e — отдельная коробка GA8P75HZ. X5M F85 — отдельно." },
+    { brand:"BMW", model:"X5", gen:"G05 · 2018+ · xDrive", boxes:["8HP45-76"], draft:true,
+      match:["g05","x5","bmw x5","xdrive40i","xdrive30d","xdrive40d","x5 m50i","x5 m50d","x5 m60i","xdrive45e","xdrive50e"],
+      allow:{base:true, mild:true, lock:true}, note:"ZF 8HP. 48V: дизели с 2020, все с LCI 2023. M50i/M50d/M60i — M Sport Diff. PHEV 45e/50e — отдельная коробка. X5M F95 — отдельно." },
+    { brand:"BMW", model:"X6", gen:"E71 (+ActiveHybrid X6 E72) · 2008-2014 · трёхсекц. мост", boxes:["6HP (BMW)","8HP45-76"], draft:true,
+      match:["e71","e72","x6","bmw x6","xdrive35i","xdrive50i","xdrive30d","xdrive35d","xdrive40d","x6 m50d","activehybrid x6"],
+      allow:{base:true, transfer:true}, note:"Как E70: бензин дорест 6HP -> LCI 8HP; дизели на 6HP. X6M = 6HP26, DPC (не локер). ActiveHybrid X6 (E72) = GM 2ML70, не наш. Мост трёхсекционный." },
+    { brand:"BMW", model:"X6", gen:"F16 · 2014-2019 · xDrive · ZF 8HP", boxes:["8HP45-76"],
+      match:["f16","x6","bmw x6","xdrive30d","xdrive35i","xdrive40d","xdrive50i","x6 m50d"],
+      allow:{base:true}, note:"Все ZF 8HP. Мост обычный. PHEV у X6 не было. X6M F86 — отдельно." },
+    { brand:"BMW", model:"X6", gen:"G06 · 2019+ · xDrive", boxes:["8HP45-76"], draft:true,
+      match:["g06","x6","bmw x6","xdrive40i","xdrive30d","xdrive40d","x6 m50i","x6 m50d","x6 m60i"],
+      allow:{base:true, mild:true, lock:true}, note:"Как X5 G05: 8HP, 48V с 2020/LCI 2023. M50i/M50d/M60i — M Sport Diff. PHEV нет. X6M F96 — отдельно." },
+    { brand:"BMW", model:"X7", gen:"G07 · 2019+ · xDrive", boxes:["8HP45-76"], draft:true,
+      match:["g07","x7","bmw x7","xdrive40i","xdrive40d","x7 m50i","x7 m50d","x7 m60i"],
+      allow:{base:true, mild:true, lock:true}, note:"ZF 8HP. 48V с 2020, все с LCI 2022. M50i/M50d/M60i — M Sport Diff. X7 никогда не PHEV." },
+
+    /* ==================== Z4 ==================== */
+    { brand:"BMW", model:"Z4", gen:"E89 · 2009-2016 · родстер RWD", boxes:["6HP (BMW)","8HP45-76"], draft:true,
+      match:["e89","z4","bmw z4","sdrive18i","sdrive20i","sdrive23i","sdrive28i","sdrive30i","sdrive35i","sdrive35is"],
+      allow:{base:true}, note:"6-цил атмо N52 (23i/30i) = ZF 6HP19; 4-цил турбо N20 (18i/20i/28i, 2011+) = 8HP45. 35i/35is = DCT, не наш. Сверять по мотору." },
+    { brand:"BMW", model:"Z4", gen:"G29 · 2018+ · родстер RWD · ZF 8HP", boxes:["8HP45-76"],
+      match:["g29","z4","bmw z4","sdrive20i","sdrive30i","z4 m40i"],
+      allow:{base:true, lock:true}, note:"Все ZF 8HP51 (родня Toyota Supra). M40i — M Sport Diff. 48V/PHEV нет. Механика — не наша." },
+
+    /* ==================== M-модели на 8HP (наши) ==================== */
+    { brand:"BMW", model:"M2", gen:"G87 · 2023+ · S58 · ZF 8HP76", boxes:["8HP45-76"],
+      match:["g87","m2 g87","m2 competition","m2 cs"],
+      allow:{base:true, lock:true}, note:"Автомат = ZF 8HP76, Active M Diff, RWD. Базовая 6MT — не наша." },
+    { brand:"BMW", model:"M3", gen:"G80/G81 · 2021+ · S58 · ZF 8HP76 (Competition)", boxes:["8HP45-76"],
+      match:["g80","g81","m3 g80","m3 g81","m3 competition","m3 touring"],
+      allow:{base:true, lock:true}, note:"Автомат (Competition, RWD/xDrive) = ZF 8HP76, Active M Diff. Базовая 6MT — не наша." },
+    { brand:"BMW", model:"M4", gen:"G82/G83 · 2021+ · S58 · ZF 8HP76 (Competition)", boxes:["8HP45-76"],
+      match:["g82","g83","m4 g82","m4 g83","m4 competition","m4 cabrio","m4 csl","m4 cs"],
+      allow:{base:true, lock:true}, note:"Автомат (Competition/CSL/CS) = ZF 8HP76, Active M Diff. Базовая 6MT — не наша." },
+    { brand:"BMW", model:"M5", gen:"F90 · 2017-2023 · S63 · ZF 8HP «M Steptronic»", boxes:["8HP45-76"],
+      match:["f90","m5 f90","m5 competition"],
+      allow:{base:true, lock:true}, note:"ZF 8HP75/76 M Steptronic (гидромех., не DCT). Active M Diff стандарт." },
+    { brand:"BMW", model:"M5", gen:"G90/G99 · 2024+ · S68 PHEV · 8HP", boxes:["8HP45-76"], draft:true,
+      match:["g90","g99","m5 g90","m5 touring"],
+      allow:{base:true, lock:true}, note:"PHEV: V8 + э-мотор в корпусе 8HP «M Steptronic». Гибридное исполнение — объём/процедура иные, сверять. Active M Diff." },
+    { brand:"BMW", model:"M8", gen:"F91/F92/F93 · 2019-2025 · S63 · ZF 8HP76", boxes:["8HP45-76"],
+      match:["f91","f92","f93","m8 f9","m8 competition","m8 gran coupe"],
+      allow:{base:true, lock:true}, note:"ZF 8HP76 M Steptronic (не DCT). Active M Diff стандарт. xDrive с режимом RWD." },
+    { brand:"BMW", model:"X3 M / X4 M", gen:"F97/F98 · 2019-2024 · S58 · ZF 8HP76", boxes:["8HP45-76"],
+      match:["f97","f98","x3 m","x4 m","x3m","x4m"],
+      allow:{base:true, lock:true}, note:"ZF 8HP76. Active M Diff стандарт. Только M xDrive." },
+    { brand:"BMW", model:"X5 M / X6 M", gen:"F85/F86 · 2015-2019 · S63 · ZF 8HP75", boxes:["8HP45-76"],
+      match:["f85","f86","x5 m f85","x6 m f86","x5m f85","x6m f86"],
+      allow:{base:true, lock:true}, note:"ZF 8HP75. Active M Diff стандарт. Только xDrive." },
+    { brand:"BMW", model:"X5 M / X6 M", gen:"F95/F96 · 2020-2023 · S63 · ZF 8HP76", boxes:["8HP45-76"],
+      match:["f95","f96","x5 m f95","x6 m f96","x5m f95","x6m f96"],
+      allow:{base:true, lock:true}, note:"ZF 8HP76. Active M Diff стандарт. Только xDrive." },
+
+    /* ==================== M-модели вне ассортимента (робот DCT / SMG) ==================== */
+    { brand:"BMW", model:"M3 (E9x)", gen:"E90/E92/E93 · 2007-2013 · S65 V8 · DCT/МКПП", boxes:[], noservice:true,
+      match:["e90 m3","e92 m3","e93 m3","m3 e90","m3 e92","m3 e93"],
+      allow:{base:false}, note:"S65 V8 — 7-ст. DCT (GS7D36SG) или МКПП. Гидроавтомата не было — не наш." },
+    { brand:"BMW", model:"M5/M6 (E60/E63)", gen:"E60 M5 / E63·E64 M6 · 2007-2010 · V10 · SMG III", boxes:[], noservice:true,
+      match:["e60 m5","e63 m6","e64 m6","m5 e60","m6 e63","m6 e64"],
+      allow:{base:false}, note:"V10 — 7-ст. SMG III (робот с 1 сцеплением, не автомат). Не наш." },
+    { brand:"BMW", model:"M5/M6 (F-серия)", gen:"F10 M5 / F06·F12·F13 M6 · 2011-2018 · S63 · M DCT", boxes:[], noservice:true,
+      match:["f10 m5","f06 m6","f12 m6","f13 m6","m5 f10","m6 f12","m6 f13"],
+      allow:{base:false}, note:"S63 — 7-ст. M DCT (двойное сцепление). Не наш." },
+    { brand:"BMW", model:"M3/M4 (F8x)", gen:"F80 M3 / F82·F83 M4 · 2014-2020 · S55 · M DCT/МКПП", boxes:[], noservice:true,
+      match:["f80","f82","f83","m3 f80","m4 f82","m4 f83"],
+      allow:{base:false}, note:"S55 — 7-ст. M DCT или МКПП. Гидромех. 8HP только с G80/G82. Не наш." },
+    { brand:"BMW", model:"M2 (F87)", gen:"F87 · 2016-2021 · N55/S55 · M DCT/МКПП", boxes:[], noservice:true,
+      match:["f87","m2 f87"],
+      allow:{base:false}, note:"M2/Competition/CS (F87) — 7-ст. M DCT или МКПП. Гидромех. автомат у M2 только с G87. Не наш." },
+  ];
+
   // Значки семейств коробок (inline SVG — работает офлайн). Ключ = brand из TEMPLATES.
   //    Единый стиль: тёмный кружок + серебряная монограмма (#c7ccd1). Новое семейство → добавь сюда.
   const logoBadge = (label, text, fontSize, dy=0, ls=1) =>
@@ -1950,16 +2234,50 @@
       facetsBox.innerHTML = html;
     }
 
-    const visible = () => TEMPLATES.filter(t=>{
-      if(activeBrand!=="all" && t.brand!==activeBrand) return false;
-      if(activeBox!=="all" && t.box!==activeBox) return false;
-      for(const f of FACETS){ if(filters[f.key] && f.get(t)!==filters[f.key]) return false; }
-      if(query){
-        const hay = (t.brand+" "+(t.box||"")+" "+tplTitle(t)+" "+tplTags(t).join(" ")+" "+tplBody(t)).toLowerCase();
-        if(!hay.includes(query)) return false;
-      }
-      return true;
-    });
+    // Кир. буквы, похожие на латиницу → латиница. Чтобы «Х5»=«X5», «Е90»=«E90», «Г05»≈«g05».
+    const foldLat = s => s
+      .replace(/е|ё/g,"e").replace(/х/g,"x").replace(/а/g,"a").replace(/о/g,"o")
+      .replace(/р/g,"p").replace(/с/g,"c").replace(/у/g,"y").replace(/к/g,"k")
+      .replace(/м/g,"m").replace(/т/g,"t").replace(/в/g,"b").replace(/н/g,"h").replace(/г/g,"g");
+    // Поиск по машине: сверяем и «сырой» запрос (кир. слова «серии»/«бмв»), и свёрнутый (коды кузова).
+    const carsForQuery = () => {
+      if(!query) return [];
+      const raw = query, lat = foldLat(query);
+      return CARS.filter(c => c.match.some(m => raw.includes(m) || lat.includes(m)));
+    };
+
+    // Какие ВАРИАНТЫ карточек коробки уместны конкретной машине (c.allow). База — всегда; гибрид/
+    // блокировку/раздатку показываем, только если машина их разрешает. Нет c.allow → старое поведение (всё).
+    const cardAllowed = (t, c) => {
+      if(!c.allow) return true;
+      if(t.diffsDetailed && !c.allow.transfer) return false;   // мосты+раздатка
+      if(t.engine === "Гибрид" && !c.allow.phev) return false; // полный гибрид (PHEV)
+      if(t.hybrid && !c.allow.mild) return false;              // мягкий гибрид (48V)
+      if(t.lock && !c.allow.lock) return false;                // блокировка дифференциала
+      return true;                                             // базовые оси всегда ок
+    };
+
+    const visible = () => {
+      const cars = carsForQuery();  // машины, совпавшие с запросом
+      return TEMPLATES.filter(t=>{
+        if(activeBrand!=="all" && t.brand!==activeBrand) return false;
+        if(activeBox!=="all" && t.box!==activeBox) return false;
+        for(const f of FACETS){ if(filters[f.key] && f.get(t)!==filters[f.key]) return false; }
+        if(query){
+          if(cars.length){
+            // Запрос распознан как МАШИНА → показываем только её подходящие карточки
+            // (её коробка == t.box И вариант карточки разрешён). Текстовый поиск не подмешиваем,
+            // иначе коды фильтров вроде «HX189KIT» ловят «x1» и т.п.
+            if(!cars.some(c => c.boxes.includes(t.box) && cardAllowed(t, c))) return false;
+          } else {
+            // Обычный текстовый поиск по коробке/тегам/телу карточки.
+            const hay = (t.brand+" "+(t.box||"")+" "+tplTitle(t)+" "+tplTags(t).join(" ")+" "+tplBody(t)).toLowerCase();
+            if(!hay.includes(query)) return false;
+          }
+        }
+        return true;
+      });
+    };
 
     async function copyText(text, btn){
       try { await navigator.clipboard.writeText(text); }
@@ -2022,8 +2340,32 @@
       hintEl.hidden = !landing;
       if(landing){ renderLanding(); return; }
       const list = visible();
-      if(!list.length){ grid.innerHTML = `<div class="tpl-empty">Ничего не найдено</div>`; return; }
-      grid.innerHTML = list.map((t,i)=>{
+      // Подсказка «машина → коробка»: почему показаны эти карточки + напоминание проверить VIN.
+      const cars = carsForQuery();
+      const carHint = cars.length ? (
+        `<div class="tpl-carhint">🚗 <b>Найдено по машине:</b><br>` +
+        cars.map(c=>{
+          // noservice / пустой boxes → коробка вне ассортимента (робот DCT, EV-редуктор, крупный 8HP90+ и т.п.)
+          const target = (c.noservice || !c.boxes || !c.boxes.length)
+            ? `<span class="tpl-carhint-box" style="color:var(--c-red)">не обслуживается</span>`
+            : c.boxes.map(b=>`<span class="tpl-carhint-box">${esc(b)}</span>`).join(", ");
+          const note = c.note ? `<span class="tpl-carhint-note">${esc(c.note)}</span>` : "";
+          return `<span class="tpl-carhint-car">${esc(c.brand)} ${esc(c.model)}</span> <span style="opacity:.7">(${esc(c.gen)})</span> → ${target}${note}`;
+        }).join("<br>") +
+        `<span class="tpl-carhint-note">🔎 Ориентир по кузову — редкие модификации бывают на другой коробке. Сверяйте по VIN/мотору.</span>` +
+        (cars.some(c=>c.draft) ? `<span class="tpl-carhint-warn">⚠️ Требует проверки: точная коробка зависит от мотора/версии. Обязательно сверьте по VIN перед отправкой клиенту.</span>` : "") +
+        `</div>`
+      ) : "";
+      if(!list.length){
+        // если совпавшие машины все «не наши» — честно говорим об этом, а не «ничего не найдено»
+        const onlyNoservice = cars.length && cars.every(c=>c.noservice || !c.boxes || !c.boxes.length);
+        const msg = onlyNoservice
+          ? "Эту коробку у нас не обслуживают (робот DCT / электро / крупный автомат вне ассортимента)."
+          : "Ничего не найдено";
+        grid.innerHTML = carHint + `<div class="tpl-empty">${msg}</div>`;
+        return;
+      }
+      grid.innerHTML = carHint + list.map((t,i)=>{
         const tags = tplTags(t).map(x=>`<span class="tpl-tag">${esc(x)}</span>`).join("");
         const logo = BRAND_LOGOS[t.brand] || "";
         const body = tplBody(t);
@@ -2032,6 +2374,7 @@
         const eng = engineOf(t);
         if(eng !== "Обычная") badges.push(`<span class="tpl-badge b-hybrid">⚡ ${esc(eng)}</span>`);
         if(t.lock)   badges.push(`<span class="tpl-badge b-lock">🔒 Блокировка</span>`);
+        if(body.includes("уточню")) badges.push(`<span class="tpl-badge b-check">⚠ Проверить цены</span>`); // Н2/Н1: смета содержит «уточню» → мягкий флаг «проверить» (правило 7)
         return `<div class="tpl-card ${placeholder?"is-todo":""}">
           <button class="tpl-card-head" type="button" aria-expanded="false">
             <span class="tpl-brand-block">
