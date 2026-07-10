@@ -96,57 +96,42 @@
   body.locked #app{filter:blur(8px);pointer-events:none;user-select:none}
   body.locked{overflow:hidden}
 
-  /* ===================== ШАПКА ===================== */
-  .topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:26px}
-  .logo{display:flex;align-items:center;gap:14px}
+  /* ===================== ВЕРХНЕЕ МЕНЮ (липкая панель) ===================== */
+  .logo{display:flex;align-items:center;gap:13px;min-width:0}
   .badge{
-    position:relative;width:48px;height:48px;border-radius:50%;flex:none;
+    position:relative;width:46px;height:46px;border-radius:50%;flex:none;
     background:linear-gradient(125deg,#d11f2d 0 49.5%, #141414 50.5% 100%);
     display:flex;align-items:center;justify-content:center;
     box-shadow:0 6px 20px rgba(209,31,45,.35), inset 0 0 0 1px rgba(255,255,255,.14);
   }
-  .badge span{font-weight:800;font-size:17px;letter-spacing:.5px;color:#fff;font-family:var(--font-disp)}
-  .brand{font-family:var(--font-disp);font-weight:700;font-size:18px;letter-spacing:.6px;line-height:1}
-  .sub{font-weight:700;font-size:10px;letter-spacing:.26em;color:var(--muted);margin-top:5px}
-  .topright{display:flex;align-items:center;gap:16px}
-  .title{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
-  .title .t{display:flex;align-items:center;gap:10px;font-family:var(--font-disp);font-weight:700;font-size:18px;letter-spacing:.3px}
-  .title .t::before{content:"";width:22px;height:3px;border-radius:2px;background:var(--c-red);display:inline-block;box-shadow:0 0 10px var(--c-red)}
-  .title .r{font-weight:600;font-size:12px;color:var(--muted)}
+  .badge span{font-weight:800;font-size:16px;letter-spacing:.5px;color:#fff;font-family:var(--font-disp)}
+  .brand{font-family:var(--font-disp);font-weight:700;font-size:18px;letter-spacing:.6px;line-height:1.05}
+  .sub{font-weight:700;font-size:9.5px;letter-spacing:.24em;color:var(--muted);margin-top:4px;white-space:nowrap}
 
-  /* ===================== МЕНЮ / ШТОРКА / СТРАНИЦЫ ===================== */
-  .topleft{display:flex;align-items:center;gap:14px}
-  .menu-btn,.theme-btn{width:42px;height:42px;border-radius:13px;border:1px solid var(--line);
+  /* липкая панель: логотип слева, пункты справа, переключатель темы с краю */
+  .topnav{position:sticky;top:0;z-index:30;margin:-30px -16px 26px;padding:0 16px;
+    background:color-mix(in srgb, var(--bg) 86%, transparent);border-bottom:1px solid var(--line);
+    -webkit-backdrop-filter:saturate(1.3) blur(9px);backdrop-filter:saturate(1.3) blur(9px)}
+  .topnav-inner{display:flex;align-items:center;gap:16px;min-height:66px}
+  .mainnav{display:flex;align-items:center;gap:4px;margin-left:auto}
+  .theme-btn{width:42px;height:42px;border-radius:13px;border:1px solid var(--line);
     background:var(--fill);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;
     transition:border-color .15s,background .15s}
-  .menu-btn:hover,.theme-btn:hover{border-color:var(--line-strong);background:var(--fill-hover)}
+  .theme-btn:hover{border-color:var(--line-strong);background:var(--fill-hover)}
   .theme-btn svg{width:19px;height:19px;display:block}
-  .menu-btn span,.menu-btn span::before,.menu-btn span::after{display:block;width:18px;height:2px;background:currentColor;border-radius:2px;transition:.2s}
-  .menu-btn span{position:relative}
-  .menu-btn span::before,.menu-btn span::after{content:"";position:absolute;left:0}
-  .menu-btn span::before{top:-6px}
-  .menu-btn span::after{top:6px}
-
-  #drawer-overlay{position:fixed;inset:0;background:rgba(5,6,9,.6);backdrop-filter:blur(2px);opacity:0;visibility:hidden;transition:opacity .2s;z-index:60}
-  body.menu-open #drawer-overlay{opacity:1;visibility:visible}
-  #drawer{position:fixed;top:0;left:0;bottom:0;width:270px;max-width:82vw;background:var(--drawer-bg);
-    border-right:1px solid var(--line);z-index:61;transform:translateX(-100%);transition:transform .22s ease;
-    display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6)}
-  body.menu-open #drawer{transform:none}
-  .drawer-head{display:flex;align-items:center;gap:12px;padding:18px;border-bottom:1px solid var(--line)}
-  .drawer-head .badge{width:40px;height:40px}
-  .drawer-head .badge span{font-size:15px}
-  .drawer-brand{font-family:var(--font-disp);font-weight:700;font-size:15px;letter-spacing:.5px}
-  .drawer-close{margin-left:auto;width:34px;height:34px;border:none;background:transparent;color:var(--muted);
-    font-size:22px;line-height:1;cursor:pointer;border-radius:8px}
-  .drawer-close:hover{background:var(--drawer-close-hover);color:var(--text)}
-  .drawer-nav{padding:12px;display:flex;flex-direction:column;gap:4px}
-  .nav-item{display:flex;align-items:center;gap:13px;padding:13px 14px;border:none;background:transparent;color:var(--text);
-    font-family:inherit;font-size:15px;font-weight:700;text-align:left;border-radius:12px;cursor:pointer;transition:background .15s}
-  .nav-item:hover{background:var(--nav-hover)}
+  .nav-item{position:relative;display:inline-flex;align-items:center;padding:9px 14px;border:none;background:transparent;
+    color:var(--muted);font-family:inherit;font-size:14px;font-weight:700;letter-spacing:.2px;white-space:nowrap;
+    border-radius:10px;cursor:pointer;transition:color .15s,background .15s,box-shadow .15s}
+  .nav-item .ic{display:none}
+  .nav-item:hover{background:var(--nav-hover);color:var(--text)}
   .nav-item.active{background:rgba(209,31,45,.16);color:var(--accent-soft);box-shadow:inset 0 0 0 1px rgba(209,31,45,.28)}
-  .nav-item .ic{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.55;flex:none;transition:.15s}
-  .nav-item.active .ic{opacity:1;box-shadow:0 0 8px currentColor}
+
+  /* шапка страницы: заголовок раздела + подзаголовок */
+  .pagehead{margin:0 0 22px}
+  .title{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+  .title .t{display:flex;align-items:center;gap:10px;font-family:var(--font-disp);font-weight:700;font-size:20px;letter-spacing:.3px}
+  .title .t::before{content:"";width:22px;height:3px;border-radius:2px;background:var(--c-red);display:inline-block;box-shadow:0 0 10px var(--c-red)}
+  .title .r{font-weight:600;font-size:13px;color:var(--muted)}
 
   .page[hidden]{display:none}
   .placeholder{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
@@ -430,10 +415,6 @@
     .ps-name{font-family:var(--font-disp);font-weight:600;font-size:15px;flex:1}
     .ps-mode{font-size:11px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap;
       background:color-mix(in srgb, var(--cc) 18%, transparent);color:var(--cc);border:1px solid color-mix(in srgb, var(--cc) 38%, transparent)}
-    .topbar{flex-direction:column;align-items:flex-start;gap:16px}
-    .topright{width:100%;justify-content:space-between}
-    .title{align-items:flex-start}
-    .drawer-close{width:44px;height:44px}          /* хит ≥44 на телефоне */
     .tpl-nav-head{min-height:44px}                 /* строки дерева — хит ≥44 */
   }
 
@@ -593,7 +574,8 @@
     body{background:#fff;color:#111;padding:0;background-image:none}
     #gate{display:none !important}
     body.locked #app{filter:none}
-    .topbar,.tablecard,.note,.today,.tpl-card,.tpl-facets{box-shadow:none}
+    .topnav{position:static;border:none;backdrop-filter:none;margin:0 0 16px}
+    .topnav,.tablecard,.note,.today,.tpl-card,.tpl-facets{box-shadow:none}
     .today{background:#fff;border:1px solid #eee}
     .tablecard,.tpl-card,.note,.tpl-facets{border-color:#ddd}
     thead th{color:#fff}
@@ -634,6 +616,19 @@
   #to-top svg{width:24px;height:24px;display:block}
   @media(max-width:720px){ #to-top{right:16px;bottom:16px;width:50px;height:50px} }
   @media print{ #to-top{display:none} }
+
+  /* мобильное верхнее меню: пункты во вторую строку, горизонтальный скролл */
+  @media(max-width:720px){
+    .topnav{margin:-18px -12px 18px;padding:0 12px}
+    .topnav-inner{flex-wrap:wrap;min-height:0;gap:10px;padding:10px 0}
+    .logo{margin-right:auto}
+    .theme-btn{order:1}
+    .mainnav{order:2;width:100%;margin:0;gap:6px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;
+      scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .mainnav::-webkit-scrollbar{display:none}
+    .mainnav .nav-item{flex:none;min-height:40px}
+    .title .t{font-size:18px}
+  }
 </style>
 <script>(function(){try{var t=localStorage.getItem('md_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 </head>
@@ -655,43 +650,34 @@
 
 <main id="app">
 
-  <!-- Боковое меню -->
-  <div id="drawer-overlay"></div>
-  <aside id="drawer">
-    <div class="drawer-head">
-      <div class="badge"><span>MD</span></div>
-      <div class="drawer-brand">MOTUL-DRIVE</div>
-      <button class="drawer-close" id="drawer-close" type="button" aria-label="Закрыть">×</button>
+  <!-- Верхнее меню (липкая панель) -->
+  <header class="topnav">
+    <div class="wrap topnav-inner">
+      <div class="logo">
+        <div class="badge"><span>MD</span></div>
+        <div>
+          <div class="brand">MOTUL-DRIVE</div>
+          <div class="sub">ЦЕНТР ЗАМЕНЫ МАСЛА</div>
+        </div>
+      </div>
+      <nav class="mainnav" id="mainnav" aria-label="Разделы">
+        <button class="nav-item" data-page="grafik">График</button>
+        <button class="nav-item" data-page="shablony">Шаблоны</button>
+        <button class="nav-item" data-page="tseny">Цены</button>
+        <button class="nav-item" data-page="prodazhi">Продажи</button>
+        <button class="nav-item" data-page="zametki">Заметки</button>
+      </nav>
+      <button class="theme-btn" id="theme-btn" type="button" aria-label="Сменить тему"></button>
     </div>
-    <nav class="drawer-nav">
-      <button class="nav-item" data-page="grafik"><span class="ic"></span>График</button>
-      <button class="nav-item" data-page="shablony"><span class="ic"></span>Шаблоны</button>
-      <button class="nav-item" data-page="tseny"><span class="ic"></span>Цены</button>
-      <button class="nav-item" data-page="prodazhi"><span class="ic"></span>Продажи</button>
-      <button class="nav-item" data-page="zametki"><span class="ic"></span>Заметки</button>
-    </nav>
-  </aside>
+  </header>
 
   <div class="wrap">
 
-    <!-- Шапка -->
-    <div class="topbar">
-      <div class="topleft">
-        <button class="menu-btn" id="menu-btn" type="button" aria-label="Меню"><span></span></button>
-        <div class="logo">
-          <div class="badge"><span>MD</span></div>
-          <div>
-            <div class="brand">MOTUL-DRIVE</div>
-            <div class="sub">ЦЕНТР ЗАМЕНЫ МАСЛА</div>
-          </div>
-        </div>
-      </div>
-      <div class="topright">
-        <button class="theme-btn" id="theme-btn" type="button" aria-label="Сменить тему"></button>
-        <div class="title">
-          <div class="t">График дежурств</div>
-          <div class="r">28 июня — 27 июля 2026 · 30 дней</div>
-        </div>
+    <!-- Шапка страницы -->
+    <div class="pagehead">
+      <div class="title">
+        <div class="t">График дежурств</div>
+        <div class="r">28 июня — 27 июля 2026 · 30 дней</div>
       </div>
     </div>
 
@@ -3250,9 +3236,6 @@
     closeMenu();
     window.scrollTo(0, 0);
   }
-  document.getElementById("menu-btn").addEventListener("click", () => document.body.classList.add("menu-open"));
-  document.getElementById("drawer-overlay").addEventListener("click", closeMenu);
-  document.getElementById("drawer-close").addEventListener("click", closeMenu);
   document.querySelectorAll(".nav-item").forEach(n => n.addEventListener("click", () => showPage(n.dataset.page)));
   document.addEventListener("keydown", e => { if(e.key === "Escape") closeMenu(); });
   // при загрузке открываем последнюю просмотренную вкладку (если её нет — график)
