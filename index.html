@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MOTUL-DRIVE · Портал</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='9%25' y1='21%25' x2='91%25' y2='79%25'><stop offset='50%25' stop-color='%23d11f2d'/><stop offset='50%25' stop-color='%23141414'/></linearGradient></defs><circle cx='32' cy='32' r='31' fill='url(%23g)'/><text x='32' y='34' font-family='Arial,Helvetica,sans-serif' font-size='26' font-weight='800' fill='%23fff' text-anchor='middle' dominant-baseline='central' letter-spacing='0.5'>MD</text></svg>">
+<!-- PWA (Н4): ярлык на домашний экран + офлайн-оболочка через service worker (регистрация в конце body).
+     manifest.webmanifest и sw.js — same-origin соседи рядом с index.html (как sales.json), внешних доменов нет (КЛ3). -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#d11f2d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MOTUL-DRIVE">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -2331,7 +2337,7 @@
       });
     };
 
-    async function copyText(text, btn){
+    async function copyText(text, btn, okLabel){
       try { await navigator.clipboard.writeText(text); }
       catch(e){
         const ta=document.createElement("textarea"); ta.value=text;
@@ -2339,8 +2345,13 @@
         ta.select(); try{ document.execCommand("copy"); }catch(_){} ta.remove();
       }
       if(btn){
-        const old=btn.textContent; btn.textContent="✓ Скопировано"; btn.classList.add("ok");
-        setTimeout(()=>{ btn.textContent=old; btn.classList.remove("ok"); }, 1500);
+        // okLabel — мостик к следующему шагу (Н5): после копирования сметы подсказываем «пришлите в WhatsApp».
+        // Исходный лейбл берём один раз (не транзиентный) и гасим прежний таймер — иначе быстрый повторный
+        // клик «залипил» бы временную подпись вместо «📋 Копировать».
+        if(!btn.classList.contains("ok")) btn.dataset.copyLabel = btn.textContent;
+        btn.textContent = okLabel || "✓ Скопировано"; btn.classList.add("ok");
+        clearTimeout(btn._copyT);
+        btn._copyT = setTimeout(()=>{ btn.textContent = btn.dataset.copyLabel; btn.classList.remove("ok"); }, 1600);
       }
     }
 
@@ -2458,7 +2469,7 @@
         });
       });
       grid.querySelectorAll(".tpl-copy").forEach(btn=>{
-        btn.addEventListener("click", e=>{ e.stopPropagation(); copyText(tplBody(list[+btn.dataset.i]), btn); });
+        btn.addEventListener("click", e=>{ e.stopPropagation(); copyText(tplBody(list[+btn.dataset.i]), btn, "✓ Вставьте в WhatsApp"); });
       });
       equalizeHeads();
     }
@@ -2795,6 +2806,13 @@
     const WITHDRAW_TOKEN = SHEET_TOKEN;
     const OPENING = 17600; // стартовая сумма: касса с промывок до системы (до 01.07). Входит в копилку, спишется первым выводом. 0 = выкл.
     let   wdSeq = 0;
+    let   wdBusy = false;                    // вывод уже отправляется → защита от повторного клика/гонки (Р5.1)
+    // Уникальный ключ события вывода: приёмник дедуплицирует по нему, поэтому date+amount (не уникальны:
+    // два законных вывода равной суммы в один день) больше не схлопываются в одну строку (Р5.1).
+    const newWithdrawalId = () => {
+      try { if(self.crypto && crypto.randomUUID) return crypto.randomUUID(); } catch(e){}
+      return "wd-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+    };
     const saveWdCache = list => { try { localStorage.setItem("md_withdrawals", JSON.stringify(list)); } catch(e){} };
     // читаем выводы из таблицы (JSONP — обходит CORS у Apps Script)
     function loadWithdrawals(){
@@ -2812,20 +2830,25 @@
     // отмечаем вывод: сразу показываем ноль (оптимистично) и шлём в таблицу фоном
     function doWithdraw(pot){
       if(pot <= 0) return;
+      if(wdBusy) return;                     // вывод уже отправляется → повторный клик/гонку игнорируем (Р5.1)
       if(!salesSettled){ alert("Секунду — подгружаю свежие продажи. Нажми «Отметить вывод» ещё раз через пару секунд."); return; }
       if(!WITHDRAW_API){ alert("Копилка ещё не подключена к таблице."); return; }
       if(!confirm("Отметить вывод всей копилки — " + money(pot) + "?\nКопилка обнулится.")) return;
+      wdBusy = true;                         // с этого момента до реконсиляции повторный вывод заблокирован
       const d = new Date(), p = n => String(n).padStart(2, "0");
       const today = d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate());
       const nowTime = p(d.getHours()) + ":" + p(d.getMinutes());
-      (WD_DATA.withdrawals = WD_DATA.withdrawals || []).push({ date: today, amount: pot, time: nowTime });
+      const withdrawalId = newWithdrawalId();
+      (WD_DATA.withdrawals = WD_DATA.withdrawals || []).push({ id: withdrawalId, date: today, amount: pot, time: nowTime });
       saveWdCache(WD_DATA.withdrawals);
       render();
+      // no-cors сохраняем (ответ Apps Script непрозрачен, CORS-заголовков не отдаёт); подтверждение — перечиткой loadWithdrawals.
       fetch(WITHDRAW_API, { method:"POST", mode:"no-cors",
         headers:{ "Content-Type":"text/plain;charset=utf-8" },
-        body: JSON.stringify({ token: WITHDRAW_TOKEN, date: today, amount: pot }) })
+        body: JSON.stringify({ token: WITHDRAW_TOKEN, withdrawalId: withdrawalId, date: today, amount: pot }) })
         .then(() => setTimeout(loadWithdrawals, 1500))
-        .catch(() => alert("Не удалось сохранить вывод — проверь интернет и обнови страницу."));
+        .catch(() => alert("Не удалось сохранить вывод — проверь интернет и обнови страницу."))
+        .finally(() => setTimeout(() => { wdBusy = false; }, 1600)); // окно debounce: гасит двойной клик, затем снова можно
     }
 
     // список заказ-нарядов внутри раскрытого дня
@@ -3295,6 +3318,17 @@
   try { authed = sessionStorage.getItem("md_auth") === "1"; } catch(e){}
   if(isLocal || authed){ unlock(); }
   else { inp.focus(); form.addEventListener("submit", e => { e.preventDefault(); tryUnlock(); }); }
+</script>
+<script>
+  /* PWA-оболочка (Н4): регистрируем service worker для офлайна — чистая вкладка открывает инструмент
+     из кэша при недоступности Pages. Только на http(s): на file:// (двойной клик) SW недоступен,
+     регистрацию пропускаем. Путь относительный ("sw.js", scope "./") — сайт живёт в подпапке Pages
+     (/motul-drive-grafik/), абсолютный "/sw.js" был бы не туда. SW внешних доменов не трогает (КЛ3). */
+  if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(function(){});
+    });
+  }
 </script>
 </body>
 </html>
