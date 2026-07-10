@@ -1012,6 +1012,21 @@
     diff_work_transf: ["Замена масла в раздаточной коробке", 1000],
     diff_oil_rear:    ["Трансмиссионное масло Motul Gear 300 LS 75W90 синтетическое 105778 1.1л", perL(RATES.gear300_ls, 1.1)],
     diff_work_rear3:  ["Замена масла в заднем дифференциале (трёхсекционный)", 3000],
+    // Агрегатные «мосты/раздатка/Торсен» — Motul и Оригинал АЛЬТЕРНАТИВЫ (не слагаемые), «Итого» нет.
+    // Блоки DIFFS (renderDiffs) и AXLES_* (renderAxles) ссылаются на эти ключи; цены живут только здесь.
+    diffs_motul_nolock:     ["Масло Motul +замена", 11550],
+    diffs_orig_nolock:      ["Оригинал BMW +замена", 28500],
+    diffs_motul_lock:       ["Масло Motul +замена", 12450],
+    diffs_orig_lock:        ["Оригинал BMW +замена", 31500],
+    axles_x1_motul:         ["Масло Motul +замена", 11000],
+    axles_torsen_motul:     ["Масло Motul +замена", 17500],
+    axles_torsen_orig_g055: ["Оригинал Vag +замена", 33000],
+    axles_torsen_orig_g060: ["Оригинал Vag +замена", 39800],
+    // Раздатка BMW xDrive (отдельная услуга, блок TRANSFER). Правило «считаем литр»: заправка 0.6 л,
+    // но берём за целый литр, остаток клиенту. Цены плоские (не по ставке RATES).
+    transfer_oil_motul: ["Трансмиссионное масло Motul Multi DCTF 105786 1л", 3000],  // не по ставке: считаем литр, 3000/л
+    transfer_oil_dtf1:  ["Оригинальное трансмиссионное масло BMW DTF-1 1л", 5500],   // не по ставке: оригинал, 5500/л
+    transfer_work:      ["Замена масла в раздаточной коробке", 1000],
     // Aisin 8F22 (BMW X1 F48)
     oil_motul_11:    ["Трансмиссионное масло Motul ATF6 105774 11л", perL(RATES.motul_atf6, 11)],
     work_full_aisin: ["Полная аппаратная замена масла в АКПП Aisin 8F22 с промывкой системы", 5000],
@@ -1153,11 +1168,14 @@
     work_full_cvt_jf016:   ["Полная замена масла в вариаторе JF016E/JF017E с промывкой системы", 7000],
   };
 
-  /* ---- Свежесть Уровня 0: дата последней сверки цены (fail-closed, правило 7). ----
-     Засеяно из git-истории публикаций (deploy); масла — по БОЛЕЕ СТАРШЕЙ из даты цены и
-     даты её ставки RATES. Нет ключа здесь ИЛИ старше FRESH_DAYS дней → смета покажет
-     «уточню» вместо числа, а карточка — бейдж «Проверить цены» (не молча уверенное число).
-     Пересверил цену — перенеси ключ на сегодняшнюю дату; сменил ставку RATES — перенеси и её масла. */
+  /* ---- Свежесть Уровня 0: дата сверки цены с прайсом поставщика (fail-closed, правило 7). ----
+     Дата-ключ в CHECKED_ON (checkedAt) = день, когда ВЛАДЕЛЕЦ лично подтвердил цену против
+     актуального источника поставщика. Это НЕ дата правки файла, НЕ дата публикации/деплоя,
+     НЕ git-blame и НЕ «сегодня» автоматом. Нет подтверждённой владельцем даты → ключ НЕ вносится
+     в CHECKED_ON; нет ключа ИЛИ старше FRESH_DAYS дней → смета покажет «уточню» вместо числа,
+     а карточка — бейдж «Проверить цены» (fail-closed, не молча уверенное число).
+     Пересверил цену с поставщиком — перенеси ключ на дату сверки; масла берут БОЛЕЕ СТАРШУЮ из
+     даты цены и даты её ставки RATES (сменил ставку RATES — перенеси и её масла). */
   const FRESH_DAYS = 30;                 // порог свежести, дней (стартовое значение, правит владелец)
   const CHECKED_ON = {   // "дата сверки": [ключи]
     "2026-06-28": [
@@ -1199,6 +1217,13 @@
       "oil_dctf_5", "oil_dctf_35", "oil_dctf_2", "oil_httdctf_9", "oil_gear300_4", "oil_gear300_38",
       "oil_cvtf_12", "oil_hf_1", "oil_kia_sp4_11",
     ],
+    "2026-07-09": [
+      "transfer_oil_motul", "transfer_oil_dtf1", "transfer_work",
+    ],
+    "2026-07-10": [
+      "diffs_motul_nolock", "diffs_orig_nolock", "diffs_motul_lock", "diffs_orig_lock",
+      "axles_x1_motul", "axles_torsen_motul", "axles_torsen_orig_g055", "axles_torsen_orig_g060",
+    ],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -1210,8 +1235,8 @@
   const DIFFS = {
     head: "Также можем заменить масла в переднем, заднем дифференциале и раздаточной коробке.",
     note: "Motul ничем не уступает оригиналу",
-    "Без блокировки": { motul: 11550, orig: 28500 },
-    "С блокировкой":  { motul: 12450, orig: 31500 },
+    "Без блокировки": { motulKey: "diffs_motul_nolock", origKey: "diffs_orig_nolock" },
+    "С блокировкой":  { motulKey: "diffs_motul_lock",   origKey: "diffs_orig_lock" },
   };
 
   // 2.1) Детальные мосты/раздатка — поузловой расчёт, задний мост трёхсекционный. Цены в PRICE.
@@ -1221,17 +1246,17 @@
   };
 
   // 2.2) Мосты для переднеприводной платформы (X1 F48) — без раздатки, только Motul.
-  const AXLES_X1 = { head: "Передний и задний дифференциал.", motul: 11000 };
+  const AXLES_X1 = { head: "Передний и задний дифференциал.", motulKey: "axles_x1_motul" };
 
   // 2.2.1) Мосты + Торсен (Audi/VW, ZF 8HP65) — вариант Motul или оригинал VAG (см. renderAxles).
   //    G055 и G060 — два спека оригинального масла VAG, отличаются ценой оригинала (33000 / 39800).
   const AXLES_TORSEN = {
     head: "Также можем заменить масла в переднем, заднем дифференциале и в ТОРСЕН.",
-    motul: 17500, orig: 33000, origBrand: "Vag", note: "Motul ничем не уступает оригиналу",
+    motulKey: "axles_torsen_motul", origKey: "axles_torsen_orig_g055", origBrand: "Vag", note: "Motul ничем не уступает оригиналу",
   };
   const AXLES_TORSEN_G060 = {
     head: "Также можем заменить масла в переднем, заднем дифференциале и в ТОРСЕН.",
-    motul: 17500, orig: 39800, origBrand: "Vag", note: "Motul ничем не уступает оригиналу",
+    motulKey: "axles_torsen_motul", origKey: "axles_torsen_orig_g060", origBrand: "Vag", note: "Motul ничем не уступает оригиналу",
   };
 
   // 2.3) Муфта Haldex (X1 F48) — отдельный блок с двумя вариантами. Цены — в PRICE.
@@ -1241,6 +1266,19 @@
     variants: [
       { label: "1)", items: ["oil_haldex", "work_haldex_cut"] },
       { label: "2)", items: ["oil_haldex", "haldex_ring", "work_haldex_full"] },
+    ],
+  };
+
+  // 2.4) Раздатка BMW xDrive — отдельная услуга (не путать с раздаткой внутри DIFFS_DETAILED
+  //      блока X5 E70). Два варианта масла: Motul Multi DCTF (3000) или оригинал BMW DTF-1 (5500),
+  //      «считаем литр». Форма как у HALDEX → рендерится тем же renderHaldex. Цены — в PRICE.
+  //      Пока не привязан к карточкам (данные заведены, привязка к машинам — следующим шагом).
+  const TRANSFER = {
+    head:  "Замена масла в раздаточной коробке (BMW xDrive)",
+    intro: "2 варианта масла (заправка 0,6 л — считаем целый литр, остаток ваш):",
+    variants: [
+      { label: "1)", items: ["transfer_oil_motul", "transfer_work"] },
+      { label: "2)", items: ["transfer_oil_dtf1",  "transfer_work"] },
     ],
   };
 
@@ -1672,7 +1710,15 @@
   function renderDiffs(t){
     const d = DIFFS[lockOf(t)];
     if(!d) return "";
-    return [DIFFS.head, `Масло Motul +замена ${d.motul}р`, `Оригинал BMW +замена ${d.orig}р`, DIFFS.note].join("\n");
+    const lines = [DIFFS.head];
+    for(const key of [d.motulKey, d.origKey]){        // Motul и Оригинал — АЛЬТЕРНАТИВЫ, «Итого» нет
+      const item = PRICE[key];
+      if(!item){ console.warn("PRICE: нет ключа", key); lines.push(`⚠ уточню: ${key}`); continue; } // пропуск ВИДЕН (правило 2)
+      if(isFresh(key)){ lines.push(`${item[0]} ${item[1]}р`); }
+      else            { lines.push(`${item[0]} — уточню`); }   // протухло/без даты → без числа (правило 7)
+    }
+    lines.push(DIFFS.note);
+    return lines.join("\n");
   }
   // Детальные мосты/раздатка: поузловой список с собственным «Итого».
   function renderDiffsDetailed(d){
@@ -1689,8 +1735,14 @@
   }
   // Простые мосты (X1 F48): один блок, только Motul. Если заданы orig/note — добавляем строку оригинала и сноску (Audi/VW, Торсен).
   function renderAxles(a){
-    const lines = [a.head, `Масло Motul +замена ${a.motul}р`];
-    if(a.orig) lines.push(`Оригинал ${a.origBrand||""} +замена ${a.orig}р`.replace(/  +/g," "));
+    const lines = [a.head];
+    for(const key of [a.motulKey, a.origKey]){        // Motul и Оригинал — АЛЬТЕРНАТИВЫ (у X1 origKey нет), «Итого» нет
+      if(!key) continue;
+      const item = PRICE[key];
+      if(!item){ console.warn("PRICE: нет ключа", key); lines.push(`⚠ уточню: ${key}`); continue; } // пропуск ВИДЕН (правило 2)
+      if(isFresh(key)){ lines.push(`${item[0]} ${item[1]}р`); }
+      else            { lines.push(`${item[0]} — уточню`); }   // протухло/без даты → без числа (правило 7)
+    }
     if(a.note) lines.push(a.note);
     if(a.tail) lines.push(a.tail);
     return lines.join("\n");
