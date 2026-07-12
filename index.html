@@ -97,7 +97,10 @@
   body.locked{overflow:hidden}
 
   /* ===================== ВЕРХНЕЕ МЕНЮ (липкая панель) ===================== */
-  .logo{display:flex;align-items:center;gap:13px;min-width:0}
+  .logo{display:flex;align-items:center;gap:13px;min-width:0;
+    background:none;border:none;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer;transition:opacity .15s}
+  .logo:hover{opacity:.85}
+  .logo:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:12px}
   .badge{
     position:relative;width:46px;height:46px;border-radius:50%;flex:none;
     background:linear-gradient(125deg,#d11f2d 0 49.5%, #141414 50.5% 100%);
@@ -114,6 +117,7 @@
     -webkit-backdrop-filter:saturate(1.3) blur(9px);backdrop-filter:saturate(1.3) blur(9px)}
   .topnav-inner{display:flex;align-items:center;gap:16px;min-height:66px}
   .mainnav{display:flex;align-items:center;gap:4px;margin-left:auto}
+  .mainnav[hidden]{display:none}   /* на Главной меню скрыто — навигация плитками Рабочего стола */
   .theme-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);
     background:var(--fill);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;
     transition:border-color .15s,background .15s}
@@ -132,6 +136,70 @@
   .title .t{display:flex;align-items:center;gap:10px;font-family:var(--font-disp);font-weight:700;font-size:20px;letter-spacing:.3px}
   .title .t::before{content:"";width:22px;height:3px;border-radius:2px;background:var(--c-red);display:inline-block;box-shadow:0 0 10px var(--c-red)}
   .title .r{font-weight:600;font-size:13px;color:var(--muted)}
+  .pagehead[hidden]{display:none}
+
+  /* ===================== ГЛАВНАЯ (первый экран — рабочий стол менеджера) =====================
+     Не лендинг: инструмент. Главное действие — быстрый поиск цены замены, ниже — вход в разделы.
+     Красное — только на действии (кнопка/фокус/ховер плитки), не заливкой (§0: один акцент). */
+  .home{max-width:760px;margin:0 auto;padding:clamp(18px,5vh,56px) 4px 28px;text-align:center;
+    display:flex;flex-direction:column;align-items:center}
+  /* строка «сегодня на смене» — живой контекст рабочего дня (данные из графика) */
+  .home-shift{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px 12px;
+    max-width:100%;margin:0 auto 18px;padding:10px 16px;border:1px solid var(--line);border-radius:14px;
+    background:var(--card);box-shadow:var(--shadow)}
+  .home-shift-tag{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .home-shift-date{font-weight:700;font-size:13px;color:var(--text)}
+  .home-shift-sep{width:3px;height:3px;border-radius:50%;background:var(--line-strong);flex:none}
+  .home-shift-label{font-size:12.5px;font-weight:600;color:var(--muted)}
+  .home-shift-people{display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .home-shift-p{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13px;color:var(--text)}
+  .home-shift-dot{width:8px;height:8px;border-radius:50%;background:var(--cc,var(--muted));box-shadow:0 0 8px var(--cc);flex:none}
+  .home-shift-off{font-size:12.5px;font-weight:600;color:var(--muted)}
+  .home-title{font-family:var(--font-disp);font-weight:800;font-size:clamp(24px,3.2vw,30px);line-height:1.12;
+    letter-spacing:-.2px;margin:0 auto 12px}
+  .home-sub{font-size:clamp(14px,1.9vw,16px);line-height:1.55;color:var(--muted);max-width:48ch;margin:0 auto 26px}
+  .home-sub b{color:var(--text);font-weight:700}
+  /* строка «узнать цену» — идиома .tpl-search, крупнее; ведёт в Шаблоны с запросом */
+  .home-ask{display:flex;gap:10px;width:100%;max-width:580px;margin:0 auto}
+  .home-ask-field{position:relative;flex:1;min-width:0}
+  .home-ask-ico{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--muted);display:flex;pointer-events:none}
+  .home-ask-ico svg{width:18px;height:18px}
+  .home-ask-field input{width:100%;padding:15px 14px 15px 44px;border-radius:12px;border:1px solid var(--line);
+    background:var(--fill);color:var(--text);font:inherit;font-size:15px;outline:none;transition:border-color .15s,background .15s}
+  .home-ask-field input::placeholder{color:var(--muted)}
+  .home-ask-field input:focus{border-color:var(--c-red);background:var(--fill-hover)}
+  .home-ask-go{display:inline-flex;align-items:center;gap:8px;padding:15px 20px;border:none;border-radius:12px;
+    background:var(--brand);color:#fff;font:inherit;font-weight:700;font-size:14px;letter-spacing:.2px;cursor:pointer;white-space:nowrap;
+    box-shadow:0 0 16px rgba(209,31,45,.35);transition:background .15s,box-shadow .15s,transform .15s}
+  .home-ask-go:hover{background:#e6232f;box-shadow:0 0 22px rgba(209,31,45,.5)}
+  .home-ask-go:active{transform:scale(.95);box-shadow:none}
+  .home-ask-go:focus-visible{outline:none;box-shadow:0 0 16px rgba(209,31,45,.35),0 0 0 3px rgba(209,31,45,.28)}
+  .home-ask-go svg{width:16px;height:16px;flex:none}
+  /* плитки-лаунчер разделов — идиома .tpl-tile (красная левая полоса и стрелка на ховере) */
+  .home-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:12px;width:100%;margin-top:26px;text-align:left}
+  .home-tile{position:relative;overflow:hidden;display:flex;align-items:center;gap:13px;padding:15px 16px;cursor:pointer;text-align:left;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);font:inherit;color:inherit;
+    transition:border-color .15s,box-shadow .15s,transform .15s}
+  .home-tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brand);opacity:0;transition:opacity .15s}
+  .home-tile:hover{border-color:var(--open-border);transform:translateY(-3px);box-shadow:var(--shadow),0 6px 20px rgba(0,0,0,.10)}
+  .home-tile:hover::before{opacity:1}
+  .home-tile:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(209,31,45,.28)}
+  .home-tile-ic{width:38px;height:38px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:10px;
+    background:var(--fill-soft);border:1px solid var(--line);color:var(--text)}
+  .home-tile-ic svg{width:18px;height:18px}
+  .home-tile-tx{display:flex;flex-direction:column;min-width:0}
+  .home-tile-name{font-family:var(--font-disp);font-weight:700;font-size:15px;letter-spacing:.2px}
+  .home-tile-hint{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+  .home-tile-go{margin-left:auto;flex:none;color:var(--muted);display:flex;transition:color .15s,transform .15s}
+  .home-tile-go svg{width:16px;height:16px}
+  .home-tile:hover .home-tile-go{color:var(--accent-soft);transform:translateX(3px)}
+  @media(max-width:720px){
+    .home{padding:10px 2px 22px}
+    .home-ask{flex-direction:column;max-width:none}
+    .home-ask-go{justify-content:center;min-height:48px}
+    .home-tiles{grid-template-columns:1fr}
+    .home-shift-sep{display:none}
+  }
 
   .page[hidden]{display:none}
   .placeholder{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
@@ -833,14 +901,15 @@
   <!-- Верхнее меню (липкая панель) -->
   <header class="topnav">
     <div class="wrap topnav-inner">
-      <div class="logo">
+      <button class="logo" id="home-logo" type="button" aria-label="На главную">
         <div class="badge"><span>MD</span></div>
         <div>
           <div class="brand">MOTUL-DRIVE</div>
           <div class="sub">ЦЕНТР ЗАМЕНЫ МАСЛА</div>
         </div>
-      </div>
+      </button>
       <nav class="mainnav" id="mainnav" aria-label="Разделы">
+        <button class="nav-item" data-page="glavnaya">Главная</button>
         <button class="nav-item" data-page="grafik">График</button>
         <button class="nav-item" data-page="shablony">Шаблоны</button>
         <button class="nav-item" data-page="tseny">Цены</button>
@@ -860,6 +929,9 @@
         <div class="r">28 июня — 27 июля 2026 · 30 дней</div>
       </div>
     </div>
+
+    <!-- ===== Страница: Главная (первый экран) — рендерится из HOME в renderHome() ===== -->
+    <div id="page-glavnaya" class="page"></div>
 
     <!-- ===== Страница: График ===== -->
     <div id="page-grafik" class="page">
@@ -989,7 +1061,7 @@
      ИКОНКИ — inline-SVG в currentColor вместо эмодзи (дизайн-система §6 п.2).
      Монохром, наследуют цвет текста, одинаково рендерятся на всех ОС.
      ========================================================= */
-  const _ic = (p, o="") => `<svg class="mi" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"${o?" "+o:""}>${p}</svg>`;
+  const _ic = (p, o="") => `<svg class="mi" aria-hidden="true" focusable="false" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"${o?" "+o:""}>${p}</svg>`;
   const ICO = {
     send:   _ic('<path d="M14.4 1.6 7 9"/><path d="M14.4 1.6 9.8 14.4 7 9 1.6 6.2 14.4 1.6Z"/>'),
     warn:   _ic('<path d="M8 2 1.5 13.5h13L8 2Z"/><path d="M8 6.3v3.2"/><path d="M8 11.6h.01"/>'),
@@ -1007,6 +1079,8 @@
     chat:   _ic('<path d="M2.2 4.4A1.5 1.5 0 0 1 3.7 3h8.6a1.5 1.5 0 0 1 1.5 1.4v4.8a1.5 1.5 0 0 1-1.5 1.5H6.2L3 13.2v-2.5H3.7A1.5 1.5 0 0 1 2.2 9.2Z"/>'),
     close:  _ic('<path d="m4.2 4.2 7.6 7.6M11.8 4.2 4.2 11.8"/>'),
     arrow:  _ic('<path d="M2.6 8h10.4M9.4 4.2 13.2 8l-3.8 3.8"/>'),
+    calendar: _ic('<rect x="2.2" y="3.2" width="11.6" height="10.6" rx="1.6"/><path d="M2.2 6.2h11.6M5.2 1.8v2.4M10.8 1.8v2.4"/>'),
+    chart:  _ic('<path d="M2.4 13.4h11.2"/><path d="M4.4 11.4V8.2M8 11.4V5M11.6 11.4V9.2"/>'),
   };
 
   /* =========================================================
@@ -3560,6 +3634,96 @@
     requestAnimationFrame(tick);
   }
 
+  /* ===================== ГЛАВНАЯ (первый экран — рабочий стол) =====================
+     Инструмент, не лендинг. Данные экрана — единственный источник (правь здесь, не вёрстку).
+     Главное действие — поиск цены замены (ведёт в Шаблоны); ниже — плитки-вход в разделы. */
+  const HOME = {
+    title:   "Что подобрать клиенту?",
+    sub:     "Коробка, марка или модель — найдём готовый чек-шаблон с ценой замены.",
+    askPlaceholder: "8HP, DQ500, U660, вариатор, BMW…",
+    askGo:   "Найти цену",
+    // плитки-лаунчер: страница · иконка · название · назначение (что делает раздел)
+    tiles: [
+      { page:"shablony", ico:"car",      name:"Шаблоны", hint:"Цена замены по коробке" },
+      { page:"grafik",   ico:"calendar", name:"График",  hint:"Кто на смене и обязанности" },
+      { page:"tseny",    ico:"cash",     name:"Цены",    hint:"Прайс: запчасти и масла" },
+      { page:"prodazhi", ico:"chart",    name:"Продажи", hint:"Выручка и штуки по дням" },
+      { page:"zametki",  ico:"chat",     name:"Заметки", hint:"Пожелания команды" },
+    ],
+  };
+  function renderHome(){
+    const root = document.getElementById("page-glavnaya");
+    if(!root) return;
+    const tiles = HOME.tiles.map(t =>
+      `<button class="home-tile" type="button" data-goto="${t.page}">
+        <span class="home-tile-ic">${ICO[t.ico]||""}</span>
+        <span class="home-tile-tx">
+          <span class="home-tile-name">${t.name}</span>
+          <span class="home-tile-hint">${t.hint}</span>
+        </span>
+        <span class="home-tile-go">${ICO.arrow}</span>
+      </button>`).join("");
+    // «сегодня на смене» — переиспользуем ROWS/todayKey/now из блока графика (данные → авто-рендер)
+    let shift = "";
+    try {
+      const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+      const dateText = cap(now.toLocaleDateString("ru-RU", { weekday:"long", day:"numeric", month:"long" }));
+      const tr = ROWS.find(r => r.key === todayKey);
+      if(tr){
+        const on = tr.cells.filter(c => c.working);
+        const people = on.map(c => `<span class="home-shift-p" data-color="${c.color}"><span class="home-shift-dot"></span>${c.name}</span>`).join("");
+        shift =
+          `<div class="home-shift" data-hero>
+            <span class="home-shift-tag">Сегодня</span>
+            <span class="home-shift-date">${dateText}</span>
+            <span class="home-shift-sep"></span>
+            <span class="home-shift-label">${on.length === 1 ? "На смене один — все обязанности" : "На смене"}</span>
+            <span class="home-shift-people">${people}</span>
+          </div>`;
+      } else {
+        shift =
+          `<div class="home-shift" data-hero>
+            <span class="home-shift-tag">Сегодня</span>
+            <span class="home-shift-date">${dateText}</span>
+            <span class="home-shift-sep"></span>
+            <span class="home-shift-off">вне текущего графика</span>
+          </div>`;
+      }
+    } catch(e){ shift = ""; }
+    root.innerHTML =
+      `<section class="home" aria-labelledby="home-title">
+        ${shift}
+        <h1 class="home-title" id="home-title" data-hero>${HOME.title}</h1>
+        <p class="home-sub" data-hero>${HOME.sub}</p>
+        <form class="home-ask" id="home-ask" data-hero role="search">
+          <div class="home-ask-field">
+            <span class="home-ask-ico">${ICO.search}</span>
+            <input id="home-ask-input" type="text" autocomplete="off" placeholder="${HOME.askPlaceholder}" aria-label="Коробка, марка или модель клиента">
+          </div>
+          <button class="home-ask-go" type="submit">${HOME.askGo} ${ICO.arrow}</button>
+        </form>
+        <div class="home-tiles">${tiles}</div>
+      </section>`;
+    // поиск цены → раздел Шаблоны с этим запросом (переиспользуем существующий #tpl-search)
+    const ask = root.querySelector("#home-ask");
+    const askInput = root.querySelector("#home-ask-input");
+    if(ask) ask.addEventListener("submit", e => {
+      e.preventDefault();
+      showPage("shablony");
+      const ts = document.getElementById("tpl-search");
+      if(ts){ ts.value = askInput.value.trim(); ts.dispatchEvent(new Event("input", { bubbles:true })); ts.focus(); }
+    });
+    root.querySelectorAll(".home-tile").forEach(b =>
+      b.addEventListener("click", () => showPage(b.dataset.goto)));
+  }
+  // Одноразовое появление Главной: blur-fade шапки/поиска + каскад плиток — одна согласованная сцена (§5, дозировка).
+  function homeReveal(){
+    const root = document.getElementById("page-glavnaya");
+    if(!root) return;
+    root.querySelectorAll("[data-hero]").forEach((el,i) => mdBlurIn(el, i*60));
+    root.querySelectorAll(".home-tile").forEach((el,i) => mdBlurIn(el, 240 + Math.min(i,8)*45));
+  }
+
   /* ===================== Меню и страницы ===================== */
   const PAGES = {
     grafik:   { t:"График дежурств", r:"28 июня — 27 июля 2026 · 30 дней" },
@@ -3571,11 +3735,21 @@
   const titleT = document.querySelector(".title .t");
   const titleR = document.querySelector(".title .r");
   const closeMenu = () => document.body.classList.remove("menu-open");
+  const pageheadEl = document.querySelector(".pagehead");
+  const mainnavEl = document.getElementById("mainnav");
+  const homeLogo = document.getElementById("home-logo");
   function showPage(id){
+    const isHome = (id === "glavnaya");
     document.querySelectorAll(".page").forEach(p => { p.hidden = (p.id !== "page-" + id); });
     document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.page === id));
-    if(PAGES[id]){ titleT.textContent = PAGES[id].t; titleR.textContent = PAGES[id].r; }
-    mdBlurIn(titleT, 0); mdBlurIn(titleR, 60);   // ① hero-появление шапки раздела (BlurFade)
+    if(mainnavEl) mainnavEl.hidden = isHome;     // вариант B: на Главной меню скрыто, навигация плитками
+    if(pageheadEl) pageheadEl.hidden = isHome;   // на Главной свой hero — шапку раздела прячем
+    if(isHome){
+      homeReveal();
+    } else if(PAGES[id]){
+      titleT.textContent = PAGES[id].t; titleR.textContent = PAGES[id].r;
+      mdBlurIn(titleT, 0); mdBlurIn(titleR, 60);   // ① hero-появление шапки раздела (BlurFade)
+    }
     // вкладка стала видимой — выровнять высоту карточек шаблонов (на скрытой вкладке высота = 0)
     if(id === "shablony" && window.equalizeTplHeads) window.equalizeTplHeads();
     if(id === "shablony" && window.tplRevealCards) window.tplRevealCards(); // ③ каскад карточек
@@ -3585,10 +3759,12 @@
     window.scrollTo(0, 0);
   }
   document.querySelectorAll(".nav-item").forEach(n => n.addEventListener("click", () => showPage(n.dataset.page)));
+  if(homeLogo) homeLogo.addEventListener("click", () => showPage("glavnaya"));
   document.addEventListener("keydown", e => { if(e.key === "Escape") closeMenu(); });
-  // при загрузке открываем последнюю просмотренную вкладку (если её нет — график)
-  let startPage = "grafik";
-  try { const saved = localStorage.getItem("md_page"); if(saved && PAGES[saved]) startPage = saved; } catch(e){}
+  // Главная — первый экран по умолчанию; память вкладки (md_page) при этом сохраняется (must-keep #4)
+  renderHome();
+  let startPage = "glavnaya";
+  try { const saved = localStorage.getItem("md_page"); if(saved && (saved === "glavnaya" || PAGES[saved])) startPage = saved; } catch(e){}
   showPage(startPage);
 
   /* ===================== Кнопка «наверх» ===================== */
