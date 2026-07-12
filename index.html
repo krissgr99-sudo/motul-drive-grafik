@@ -114,7 +114,7 @@
     -webkit-backdrop-filter:saturate(1.3) blur(9px);backdrop-filter:saturate(1.3) blur(9px)}
   .topnav-inner{display:flex;align-items:center;gap:16px;min-height:66px}
   .mainnav{display:flex;align-items:center;gap:4px;margin-left:auto}
-  .theme-btn{width:42px;height:42px;border-radius:13px;border:1px solid var(--line);
+  .theme-btn{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);
     background:var(--fill);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;
     transition:border-color .15s,background .15s}
   .theme-btn:hover{border-color:var(--line-strong);background:var(--fill-hover)}
@@ -143,12 +143,12 @@
   /* ===================== ШАБЛОНЫ ===================== */
   .tpl-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
   .tpl-search{flex:1;min-width:220px;position:relative}
-  .tpl-search input{width:100%;padding:13px 14px 13px 42px;border-radius:13px;border:1px solid var(--line);
+  .tpl-search input{width:100%;padding:13px 14px 13px 42px;border-radius:12px;border:1px solid var(--line);
     background:var(--fill);color:var(--text);font:inherit;font-size:14px;outline:none;transition:border-color .15s,background .15s}
   .tpl-search input::placeholder{color:var(--muted)}
   .tpl-search input:focus{border-color:var(--c-red);background:var(--fill-hover)}
   .tpl-search::before{content:"⌕";position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:19px;color:var(--muted)}
-  .tpl-copyall{padding:13px 16px;border-radius:13px;border:1px solid var(--line);background:var(--fill);color:var(--text);
+  .tpl-copyall{padding:13px 16px;border-radius:12px;border:1px solid var(--line);background:var(--fill);color:var(--text);
     font:inherit;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;transition:.15s}
   .tpl-copyall:hover{border-color:var(--c-red);color:var(--accent-soft);background:rgba(209,31,45,.1)}
   .tpl-copyall.ok{border-color:var(--ok);color:var(--ok)}
@@ -235,12 +235,12 @@
   /* бейджи на карточке */
   .tpl-head-main{flex:1;display:flex;flex-direction:column;gap:7px;min-width:0}
   .tpl-badges{display:flex;flex-wrap:wrap;gap:5px}
-  .tpl-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:3px 9px;border-radius:7px;
+  .tpl-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:3px 9px;border-radius:6px;
     line-height:1.3;white-space:nowrap}
   .tpl-badge.b-app{background:rgba(76,195,138,.12);color:var(--ok);border:1px solid rgba(76,195,138,.3)}
   .tpl-badge.b-part{background:rgba(240,180,41,.12);color:var(--warn);border:1px solid rgba(240,180,41,.3)}
-  .tpl-badge.b-hybrid{background:rgba(91,141,255,.12);color:var(--c-blue);border:1px solid rgba(91,141,255,.3)}
-  .tpl-badge.b-lock{background:rgba(255,75,87,.12);color:#ff6b75;border:1px solid rgba(255,75,87,.3)}
+  .tpl-badge.b-hybrid{background:var(--fill-soft);color:var(--muted);border:1px solid var(--line-strong)}
+  .tpl-badge.b-lock{background:rgba(209,31,45,.1);color:var(--accent-soft);border:1px solid rgba(209,31,45,.3)}
   .tpl-badge.b-check{background:rgba(240,180,41,.14);color:var(--warn);border:1px solid rgba(240,180,41,.42)} /* «Проверить цены» — мягкий флаг свежести (правило 7) */
   .tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,380px));justify-content:center;gap:16px;align-items:start}
   .tpl-grid.is-landing{grid-template-columns:repeat(auto-fill,minmax(215px,1fr));justify-content:stretch}
@@ -276,13 +276,13 @@
   .tpl-todo-note{margin:13px 16px;padding:22px 16px;text-align:center;color:var(--muted);font-size:13px;line-height:1.5;
     background:var(--fill-soft);border:1px dashed var(--line-strong);border-radius:12px}
   .tpl-actions{padding:0 16px 16px;display:flex;gap:10px}
-  .tpl-copy{flex:1;padding:12px;border:none;border-radius:11px;background:var(--brand);color:#fff;font:inherit;font-weight:700;
+  .tpl-copy{flex:1;padding:12px;border:none;border-radius:12px;background:var(--brand);color:#fff;font:inherit;font-weight:700;
     font-size:13px;cursor:pointer;transition:background .15s,box-shadow .15s;box-shadow:0 0 16px rgba(209,31,45,.35)}
   .tpl-copy:hover{background:#e6232f;box-shadow:0 0 22px rgba(209,31,45,.5)}
   .tpl-copy.ok{background:var(--ok);box-shadow:0 0 16px rgba(76,195,138,.4)}
   .tpl-empty{grid-column:1/-1;padding:56px 24px;text-align:center;color:var(--muted);font-size:14px}
   .tpl-notfound{grid-column:1/-1;margin:-16px auto 8px;max-width:520px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.5}
-  .tpl-notfound-btn{display:block;margin:12px auto 0;padding:11px 18px;border:1px solid var(--line-strong);border-radius:11px;
+  .tpl-notfound-btn{display:block;margin:12px auto 0;padding:11px 18px;border:1px solid var(--line-strong);border-radius:12px;
     background:var(--fill);color:var(--text);font:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
   .tpl-notfound-btn:hover{background:var(--fill-hover);border-color:var(--brand)}
   .tpl-notfound-btn:disabled{opacity:.75;cursor:default;border-color:var(--ok);color:var(--ok)}
@@ -335,7 +335,7 @@
     background:var(--brand);padding:5px 12px;border-radius:999px;box-shadow:0 0 0 4px rgba(209,31,45,.18)}
   .t-date{font-family:var(--font-disp);font-weight:600;font-size:17px}
   .t-body{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  .t-person{position:relative;background:var(--fill-soft);border:1px solid var(--line);border-radius:13px;padding:14px}
+  .t-person{position:relative;background:var(--fill-soft);border:1px solid var(--line);border-radius:12px;padding:14px}
   .t-person.is-off{opacity:.5}
   .t-row{display:flex;align-items:center;gap:8px}
   .t-dot{width:9px;height:9px;border-radius:50%;background:var(--cc);flex:none;box-shadow:0 0 10px var(--cc)}
@@ -348,7 +348,7 @@
 
   /* подсветка «сегодня» */
   .dbadge.is-today{background:var(--brand) !important;color:#fff !important;box-shadow:0 0 10px rgba(209,31,45,.5)}
-  .daycard.today-card{border-color:rgba(255,75,87,.4);box-shadow:0 0 0 1px rgba(255,75,87,.3), var(--shadow)}
+  .daycard.today-card{border-color:var(--open-border);box-shadow:0 0 0 1px var(--open-border), var(--shadow)}
 
   /* ===================== ШАПКА-КАРТОЧКА (имена людей) ===================== */
   thead th.person-head{
@@ -459,7 +459,7 @@
   .kopilka.empty .kopilka-v{color:var(--muted)}
   .kopilka.archive .kopilka-v{color:var(--text)}
   .kopilka-sub{font-size:12px;color:var(--muted);font-weight:600;line-height:1.5}
-  .kopilka-btn{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:13px;
+  .kopilka-btn{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:12px;
     border:1px solid var(--c-red);background:rgba(209,31,45,.1);color:var(--accent-soft);font:inherit;font-weight:700;
     font-size:13px;cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s;white-space:nowrap}
   .kopilka-btn:hover{background:rgba(209,31,45,.18)}
@@ -507,7 +507,7 @@
   /* список заказ-нарядов внутри раскрытого дня */
   .ord-list{padding:2px 16px 16px}
   .ord{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;margin-top:8px;
-    padding:11px 14px;background:var(--receipt);border:1px solid var(--line);border-radius:11px;
+    padding:11px 14px;background:var(--receipt);border:1px solid var(--line);border-radius:12px;
     font-family:var(--font-mono);font-size:12.5px}
   .ord-num{font-weight:600;color:var(--code-text);min-width:0}
   .ord-qty{color:var(--muted);font-weight:600;text-align:right;white-space:nowrap}
@@ -541,19 +541,19 @@
   .fb-chip:hover{border-color:var(--line-strong);background:var(--fill-hover)}
   .fb-chip .fb-dot{width:8px;height:8px;border-radius:50%;background:var(--cc,var(--muted));flex:none}
   .fb-chip.active{border-color:var(--cc,var(--c-red));background:var(--fill-hover);box-shadow:inset 0 0 0 1px var(--cc,var(--c-red))}
-  #fb-text{width:100%;margin-top:15px;padding:13px 14px;border-radius:13px;border:1px solid var(--line);background:var(--fill);
+  #fb-text{width:100%;margin-top:15px;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--fill);
     color:var(--text);font:inherit;font-size:14px;line-height:1.5;resize:vertical;min-height:84px;outline:none;transition:border-color .15s}
   #fb-text::placeholder{color:var(--muted)}
   #fb-text:focus{border-color:var(--c-red);background:var(--fill-hover)}
   .fb-actions{display:flex;align-items:center;gap:14px;margin-top:13px;flex-wrap:wrap}
-  .fb-send{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:13px;border:1px solid var(--c-red);
+  .fb-send{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:12px;border:1px solid var(--c-red);
     background:rgba(209,31,45,.1);color:var(--accent-soft);font:inherit;font-weight:700;font-size:13px;cursor:pointer;
     transition:background .15s}
   .fb-send:hover{background:rgba(209,31,45,.18)}
   .fb-hint{font-size:12px;font-weight:600;color:var(--muted)}
   .fb-hint.ok{color:var(--ok)}
   .fb-warn{margin-top:12px;font-size:12px;font-weight:600;color:var(--muted);background:var(--fill-soft);
-    border:1px dashed var(--line-strong);border-radius:11px;padding:10px 13px;line-height:1.5}
+    border:1px dashed var(--line-strong);border-radius:12px;padding:10px 13px;line-height:1.5}
   .fb-list-h{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
   .fb-list{display:flex;flex-direction:column;gap:10px}
   .fb-note{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:13px 16px}
@@ -561,8 +561,7 @@
   .fb-note-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .fb-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700}
   .fb-badge.c-bug{background:rgba(209,31,45,.1);color:var(--accent-soft);border:1px solid rgba(209,31,45,.3)}
-  .fb-badge.c-add{background:rgba(91,141,255,.12);color:var(--c-blue);border:1px solid rgba(91,141,255,.3)}
-  .fb-badge.c-del,.fb-badge.c-other{background:var(--fill-soft);color:var(--muted);border:1px solid var(--line-strong)}
+  .fb-badge.c-add,.fb-badge.c-del,.fb-badge.c-other{background:var(--fill-soft);color:var(--muted);border:1px solid var(--line-strong)}
   .fb-who{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13px}
   .fb-who .fb-dot{width:8px;height:8px;border-radius:50%;background:var(--cc,var(--muted));flex:none}
   .fb-when{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap}
@@ -785,6 +784,12 @@
     .ui-dialog[open],.ui-menu.is-open .ui-menu__list,.ui-btn.is-loading::after{animation:none}
     .ui-btn:active,.ui-card--interactive:hover{transform:none}
   }
+  /* ── Иконки: inline-SVG в currentColor вместо эмодзи (дизайн-система §6 п.2) ── */
+  .mi{width:1em;height:1em;flex:none;display:inline-block;vertical-align:-.14em}
+  /* Нажатие action-кнопок — тактильный отклик scale(.95) (идиома проекта, §4): убирает «мёртвое» состояние нажатия. */
+  .theme-btn:active,.tpl-copy:active,.tpl-copyall:active,.tpl-notfound-btn:active,
+  .kopilka-btn:active,.fb-send:active,.tpl-facet-reset:active{transform:scale(.95)}
+  .tpl-copy:active{box-shadow:none}
 </style>
 <script>(function(){try{var t=localStorage.getItem('md_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 </head>
@@ -943,10 +948,10 @@
         <div class="fb-chips" id="fb-cats"></div>
         <textarea id="fb-text" maxlength="600" rows="3" placeholder="Например: в шаблонах не находится DQ381 · добавьте цены на Hyundai · уберите старую строку из прайса…"></textarea>
         <div class="fb-actions">
-          <button class="fb-send" id="fb-send" type="button">✍️ Отправить</button>
+          <button class="fb-send" id="fb-send" type="button">Отправить</button>
           <span class="fb-hint" id="fb-hint"></span>
         </div>
-        <div class="fb-warn" id="fb-warn" hidden>⚠️ Скрипт Google-таблицы ещё не обновлён — заметки пока сохраняются только на этом устройстве.</div>
+        <div class="fb-warn" id="fb-warn" hidden>Скрипт Google-таблицы ещё не обновлён — заметки пока сохраняются только на этом устройстве.</div>
       </div>
       <div class="fb-list-h" id="fb-list-h" hidden></div>
       <div class="fb-list" id="fb-list"></div>
@@ -961,6 +966,30 @@
 </main>
 
 <script>
+  /* =========================================================
+     ИКОНКИ — inline-SVG в currentColor вместо эмодзи (дизайн-система §6 п.2).
+     Монохром, наследуют цвет текста, одинаково рендерятся на всех ОС.
+     ========================================================= */
+  const _ic = (p, o="") => `<svg class="mi" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"${o?" "+o:""}>${p}</svg>`;
+  const ICO = {
+    send:   _ic('<path d="M14.4 1.6 7 9"/><path d="M14.4 1.6 9.8 14.4 7 9 1.6 6.2 14.4 1.6Z"/>'),
+    warn:   _ic('<path d="M8 2 1.5 13.5h13L8 2Z"/><path d="M8 6.3v3.2"/><path d="M8 11.6h.01"/>'),
+    car:    _ic('<path d="M2.6 10.6V8.4l1.3-3.1A1.6 1.6 0 0 1 5.4 4.3h5.2a1.6 1.6 0 0 1 1.5 1L13.4 8.4v2.2"/><path d="M2.6 8.6h10.8"/><path d="M4.7 10.9h.01M11.3 10.9h.01"/>', 'stroke-width="1.4"'),
+    search: _ic('<circle cx="7" cy="7" r="4.3"/><path d="m10.3 10.3 3.2 3.2"/>'),
+    inbox:  _ic('<rect x="1.9" y="3.6" width="12.2" height="8.8" rx="1.5"/><path d="m2.4 4.4 5.6 4 5.6-4"/>'),
+    bolt:   _ic('<path d="M8.8 1.5 3.4 8.6h3.5l-.7 5.9 5.4-7.1H8.1l.7-5.9Z" fill="currentColor" stroke="none"/>'),
+    lock:   _ic('<rect x="3.3" y="7" width="9.4" height="7.1" rx="1.5"/><path d="M5.4 7V5.1a2.6 2.6 0 0 1 5.2 0V7"/>'),
+    copy:   _ic('<rect x="5.4" y="5.4" width="8.2" height="9.1" rx="1.6"/><path d="M10.6 5.4V3.4A1.4 1.4 0 0 0 9.2 2H3.9A1.4 1.4 0 0 0 2.5 3.4v7.3A1.4 1.4 0 0 0 3.9 12h1.5"/>'),
+    check:  _ic('<path d="M2.9 8.4 6.2 11.7l7-7.5"/>'),
+    cash:   _ic('<rect x="1.8" y="4" width="12.4" height="8" rx="1.6"/><circle cx="8" cy="8" r="1.9"/><path d="M4.4 5.7h.01M11.6 10.3h.01"/>'),
+    wrench: _ic('<path d="M11.2 2.4a3.3 3.3 0 0 0-4 4.2L2.8 11a1.4 1.4 0 0 0 2 2l4.4-4.4a3.3 3.3 0 0 0 4.2-4l-2 2-1.8-.5-.5-1.8 2-1.9Z"/>'),
+    bulb:   _ic('<path d="M5.4 9.4A4.2 4.2 0 1 1 10.6 9.4a3 3 0 0 0-1 1.8v.3H6.4v-.3a3 3 0 0 0-1-1.8Z"/><path d="M6.4 13.2h3.2M7 14.5h2"/>'),
+    trash:  _ic('<path d="M2.8 4.4h10.4"/><path d="M6 4.4V3.2A1.2 1.2 0 0 1 7.2 2h1.6A1.2 1.2 0 0 1 10 3.2v1.2"/><path d="m4.3 4.4.6 8.3A1.3 1.3 0 0 0 6.2 14h3.6a1.3 1.3 0 0 0 1.3-1.3l.6-8.3"/>'),
+    chat:   _ic('<path d="M2.2 4.4A1.5 1.5 0 0 1 3.7 3h8.6a1.5 1.5 0 0 1 1.5 1.4v4.8a1.5 1.5 0 0 1-1.5 1.5H6.2L3 13.2v-2.5H3.7A1.5 1.5 0 0 1 2.2 9.2Z"/>'),
+    close:  _ic('<path d="m4.2 4.2 7.6 7.6M11.8 4.2 4.2 11.8"/>'),
+    arrow:  _ic('<path d="M2.6 8h10.4M9.4 4.2 13.2 8l-3.8 3.8"/>'),
+  };
+
   /* =========================================================
      ДАННЫЕ — единственное место правок (люди, обязанности, график)
      ========================================================= */
@@ -2430,7 +2459,7 @@
       let html = rows.join("");
       if(FACETS.some(f=>filters[f.key])){
         // кнопку сброса вставляем в конец первой строки фасета (уйдёт вправо)
-        html = html.replace("</div>", `<button class="tpl-facet-reset" data-reset>Сбросить ✕</button></div>`);
+        html = html.replace("</div>", `<button class="tpl-facet-reset" data-reset>Сбросить ${ICO.close}</button></div>`);
       }
       facetsBox.hidden = false;
       facetsBox.innerHTML = html;
@@ -2492,10 +2521,10 @@
         // okLabel — мостик к следующему шагу (Н5): после копирования сметы подсказываем «пришлите в WhatsApp».
         // Исходный лейбл берём один раз (не транзиентный) и гасим прежний таймер — иначе быстрый повторный
         // клик «залипил» бы временную подпись вместо «📋 Копировать».
-        if(!btn.classList.contains("ok")) btn.dataset.copyLabel = btn.textContent;
-        btn.textContent = okLabel || "✓ Скопировано"; btn.classList.add("ok");
+        if(!btn.classList.contains("ok")) btn.dataset.copyLabel = btn.innerHTML;
+        btn.innerHTML = okLabel || (ICO.check + " Скопировано"); btn.classList.add("ok");
         clearTimeout(btn._copyT);
-        btn._copyT = setTimeout(()=>{ btn.textContent = btn.dataset.copyLabel; btn.classList.remove("ok"); }, 1600);
+        btn._copyT = setTimeout(()=>{ btn.innerHTML = btn.dataset.copyLabel; btn.classList.remove("ok"); }, 1600);
       }
     }
 
@@ -2531,7 +2560,7 @@
           const shown = boxes.slice(0,5).map(x=>`<span class="tpl-tile-chip">${esc(x)}</span>`).join("");
           const more  = boxes.length>5 ? `<span class="tpl-tile-more">+${boxes.length-5}</span>` : "";
           return `<button class="tpl-tile" type="button" data-brand="${esc(b)}">
-            <span class="tpl-tile-go">→</span>
+            <span class="tpl-tile-go">${ICO.arrow}</span>
             <span class="tpl-tile-top">
               ${logo?`<span class="tpl-tile-logo">${logo}</span>`:""}
               <span class="tpl-tile-head">
@@ -2556,7 +2585,7 @@
       // Подсказка «машина → коробка»: почему показаны эти карточки + напоминание проверить VIN.
       const cars = carsForQuery();
       const carHint = cars.length ? (
-        `<div class="tpl-carhint">🚗 <b>Найдено по машине:</b><br>` +
+        `<div class="tpl-carhint">${ICO.car} <b>Найдено по машине:</b><br>` +
         cars.map(c=>{
           // noservice / пустой boxes → коробка вне ассортимента (робот DCT, EV-редуктор, крупный 8HP90+ и т.п.)
           const target = (c.noservice || !c.boxes || !c.boxes.length)
@@ -2565,8 +2594,8 @@
           const note = c.note ? `<span class="tpl-carhint-note">${esc(c.note)}</span>` : "";
           return `<span class="tpl-carhint-car">${esc(c.brand)} ${esc(c.model)}</span> <span style="opacity:.7">(${esc(c.gen)})</span> → ${target}${note}`;
         }).join("<br>") +
-        `<span class="tpl-carhint-note">🔎 Ориентир по кузову — редкие модификации бывают на другой коробке. Сверяйте по VIN/мотору.</span>` +
-        (cars.some(c=>c.draft) ? `<span class="tpl-carhint-warn">⚠️ Требует проверки: точная коробка зависит от мотора/версии. Обязательно сверьте по VIN перед отправкой клиенту.</span>` : "") +
+        `<span class="tpl-carhint-note">${ICO.search} Ориентир по кузову — редкие модификации бывают на другой коробке. Сверяйте по VIN/мотору.</span>` +
+        (cars.some(c=>c.draft) ? `<span class="tpl-carhint-warn">${ICO.warn} Требует проверки: точная коробка зависит от мотора/версии. Обязательно сверьте по VIN перед отправкой клиенту.</span>` : "") +
         `</div>`
       ) : "";
       if(!list.length){
@@ -2578,13 +2607,13 @@
         const q = searchInp.value.trim();
         // А4: искал и не нашёл → предложить зафиксировать пробел покрытия (DemandLog found=false).
         const notFound = q
-          ? `<div class="tpl-notfound">Не нашли нужную машину или узел? Отметьте — добавим в каталог.<button class="tpl-notfound-btn" type="button">📩 Сообщить, что не нашёл</button></div>`
+          ? `<div class="tpl-notfound">Не нашли нужную машину или узел? Отметьте — добавим в каталог.<button class="tpl-notfound-btn" type="button">${ICO.inbox} Сообщить, что не нашёл</button></div>`
           : "";
         grid.innerHTML = carHint + `<div class="tpl-empty">${msg}</div>` + notFound;
         const nfBtn = grid.querySelector(".tpl-notfound-btn");
         if(nfBtn) nfBtn.addEventListener("click", ()=>{
           if(window.MDLOG) window.MDLOG.demand(q);
-          nfBtn.textContent = "✓ Спасибо, записали"; nfBtn.disabled = true;
+          nfBtn.innerHTML = ICO.check + " Спасибо, записали"; nfBtn.disabled = true;
         });
         return;
       }
@@ -2595,9 +2624,9 @@
         const placeholder = t.todo || !body;   // нет данных по услуге → показываем как заготовку
         const badges = [`<span class="tpl-badge ${t.type==="Частичная"?"b-part":"b-app"}">${esc(t.type)}</span>`];
         const eng = engineOf(t);
-        if(eng !== "Обычная") badges.push(`<span class="tpl-badge b-hybrid">⚡ ${esc(eng)}</span>`);
-        if(t.lock)   badges.push(`<span class="tpl-badge b-lock">🔒 Блокировка</span>`);
-        if(body.includes("уточню")) badges.push(`<span class="tpl-badge b-check">⚠ Проверить цены</span>`); // Н2/Н1: смета содержит «уточню» → мягкий флаг «проверить» (правило 7)
+        if(eng !== "Обычная") badges.push(`<span class="tpl-badge b-hybrid">${ICO.bolt} ${esc(eng)}</span>`);
+        if(t.lock)   badges.push(`<span class="tpl-badge b-lock">${ICO.lock} Блокировка</span>`);
+        if(body.includes("уточню")) badges.push(`<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>`); // Н2/Н1: смета содержит «уточню» → мягкий флаг «проверить» (правило 7)
         return `<div class="tpl-card ${placeholder?"is-todo":""}">
           <button class="tpl-card-head" type="button" aria-expanded="false">
             <span class="tpl-brand-block">
@@ -2617,7 +2646,7 @@
             ${placeholder
               ? `<div class="tpl-todo-note">Шаблон ещё не заполнен — пришли цифры, и он появится здесь.</div>`
               : `<div class="tpl-body">${esc(body)}</div>
-                 <div class="tpl-actions"><button class="tpl-copy" type="button" data-i="${i}">📋 Копировать</button></div>`}
+                 <div class="tpl-actions"><button class="tpl-copy" type="button" data-i="${i}">${ICO.copy} Копировать</button></div>`}
           </div></div>
         </div>`;
       }).join("");
@@ -2632,7 +2661,7 @@
         btn.addEventListener("click", e=>{
           e.stopPropagation();
           const t = list[+btn.dataset.i];
-          copyText(tplBody(t), btn, "✓ Вставьте в WhatsApp");
+          copyText(tplBody(t), btn, ICO.check + " Вставьте в WhatsApp");
           if(window.MDLOG) window.MDLOG.copy(tplCode(t));   // А3: лог нажатия «Копировать» (буфер не трогаем, КЛ2)
         });
       });
@@ -2866,8 +2895,8 @@
         ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
         ta.select(); try{ document.execCommand("copy"); }catch(_){} ta.remove();
       }
-      const old=btn.textContent; btn.textContent="✓ скопирован"; btn.classList.add("ok");
-      setTimeout(()=>{ btn.textContent=old; btn.classList.remove("ok"); }, 1200);
+      const old=btn.innerHTML; btn.innerHTML=ICO.check+" скопирован"; btn.classList.add("ok");
+      setTimeout(()=>{ btn.innerHTML=old; btn.classList.remove("ok"); }, 1200);
     }
 
     function render(){
@@ -3178,7 +3207,7 @@
               ? `Выводов ещё не было. В копилке: ${money(grandSum)} продаж + ${money(OPENING)} с прошлого периода.`
               : (grandSum > 0 ? "Выводов ещё не было — вся выручка в копилке." : "Пока нет продаж."));
         const kopBtn = pot > 0
-          ? `<button class="kopilka-btn" type="button" data-pot="${pot}">💸 Отметить вывод</button>`
+          ? `<button class="kopilka-btn" type="button" data-pot="${pot}">${ICO.cash} Отметить вывод</button>`
           : `<span class="kopilka-btn is-disabled">Копилка пуста</span>`;
         kopEl.className = "kopilka" + (pot > 0 ? "" : " empty");
         kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">К выводу на сегодня</div><div class="kopilka-v"><span class="num" data-to="${pot}" data-fmt="money">${money(pot)}</span></div><div class="kopilka-sub">${kopSub}</div></div>${kopBtn}`;
@@ -3205,7 +3234,7 @@
         rowsEl.innerHTML = timeline.map(item => {
           if(item.kind === "wd"){
             const w = item.w;
-            return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>💸 Вывод — <span class="wd-amount">${money(w.amount)}</span></span><span class="wd-note">${dateFull(w.dt)}${w.time ? ", " + w.time : ""} · копилка обнулена</span></div></td></tr>`;
+            return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>${ICO.cash} Вывод — <span class="wd-amount">${money(w.amount)}</span></span><span class="wd-note">${dateFull(w.dt)}${w.time ? ", " + w.time : ""} · копилка обнулена</span></div></td></tr>`;
           }
           const d = item.d;
           const we = weekend(d.dt);
@@ -3231,7 +3260,7 @@
         cardsEl.innerHTML = timeline.map(item => {
           if(item.kind === "wd"){
             const w = item.w;
-            return `<div class="withdraw-card"><span>💸 Вывод — <b>${money(w.amount)}</b></span><span class="wd-note">${dateFull(w.dt)}${w.time ? ", " + w.time : ""}</span></div>`;
+            return `<div class="withdraw-card"><span>${ICO.cash} Вывод — <b>${money(w.amount)}</b></span><span class="wd-note">${dateFull(w.dt)}${w.time ? ", " + w.time : ""}</span></div>`;
           }
           const d = item.d;
           const we = weekend(d.dt);
@@ -3335,10 +3364,10 @@
      (колонка status — любой текст, например «готово») и видно всем. */
   (function(){
     const CATS = [
-      { id:"bug",   icon:"🛠", label:"Не работает" },
-      { id:"add",   icon:"💡", label:"Добавить" },
-      { id:"del",   icon:"✂️", label:"Убрать" },
-      { id:"other", icon:"💬", label:"Другое" },
+      { id:"bug",   icon:ICO.wrench, label:"Не работает" },
+      { id:"add",   icon:ICO.bulb, label:"Добавить" },
+      { id:"del",   icon:ICO.trash, label:"Убрать" },
+      { id:"other", icon:ICO.chat, label:"Другое" },
     ];
     const AUTHORS = [
       { name:"Бекзод",    color:"red" },
@@ -3356,6 +3385,9 @@
     const warnEl    = document.getElementById("fb-warn");
     const listEl    = document.getElementById("fb-list");
     const listHEl   = document.getElementById("fb-list-h");
+    // Иконки статичных кнопок формы (эмодзи → inline-SVG, §6 п.2): prepend, текст в разметке
+    sendEl.insertAdjacentHTML("afterbegin", ICO.send + " ");
+    warnEl.insertAdjacentHTML("afterbegin", ICO.warn + " ");
 
     let notes = [];    // подтверждённые (из таблицы или кэша)
     let pending = [];  // отправленные, ещё не увиденные в таблице
@@ -3411,12 +3443,12 @@
           <div class="fb-note-top">
             <span class="fb-badge c-${c.id}">${c.icon} ${c.label}</span>
             <span class="fb-who" data-color="${colorOf(n.author)}"><span class="fb-dot"></span>${esc(n.author)}</span>
-            ${done ? `<span class="fb-done">✔ ${esc(done)}</span>` : ""}
+            ${done ? `<span class="fb-done">${ICO.check} ${esc(done)}</span>` : ""}
             <span class="fb-when">${when(n.created)}</span>
           </div>
           <div class="fb-note-text">${esc(n.text)}</div>
         </div>`;
-      }).join("") : `<div class="fb-empty">Пока нет заметок — напиши первую 👆</div>`;
+      }).join("") : `<div class="fb-empty">Пока нет заметок — напиши первую</div>`;
     }
 
     // читаем заметки из таблицы (JSONP — обходит CORS у Apps Script)
@@ -3444,15 +3476,15 @@
     // отправка: сразу показываем в ленте (оптимистично) и шлём в таблицу фоном
     function send(){
       const text = textEl.value.trim();
-      if(!author){ hint("Выбери, кто пишет 👆"); return; }
-      if(!cat){ hint("Выбери, о чём заметка 👆"); return; }
+      if(!author){ hint("Выбери, кто пишет"); return; }
+      if(!cat){ hint("Выбери, о чём заметка"); return; }
       if(text.length < 3){ hint("Напиши текст заметки."); textEl.focus(); return; }
       const d = new Date(), p = n => String(n).padStart(2, "0");
       const created = `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
       pending.unshift({ created, cat: cat.label, author: author.name, text, status:"" });
       saveCache(); render();
       textEl.value = "";
-      hint("Заметка сохранена ✔", true);
+      hint("Заметка сохранена", true);
       if(SHEET_API){
         fetch(SHEET_API, { method:"POST", mode:"no-cors",
           headers:{ "Content-Type":"text/plain;charset=utf-8" },
