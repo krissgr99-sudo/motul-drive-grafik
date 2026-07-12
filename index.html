@@ -2499,21 +2499,27 @@
       }
     }
 
+    // ③ Каскад проявления карточек/плиток (перенос Magic UI BlurFade со stagger).
+    // Дёргается при навигации (выбор марки/коробки/домой) и при входе в раздел из showPage,
+    // но НЕ на ввод в поиск — иначе каскад моргал бы на каждой букве.
+    function revealCards(){ mdBlurStagger(grid.querySelectorAll(".tpl-card, .tpl-tile")); }
+    window.tplRevealCards = revealCards;
+
     // Выбор семейства (клик по заголовку в дереве / по плитке старта): раскрываем и открываем первую коробку.
     function selectBrand(b){
       const boxes = boxesOf(b);
       activeBrand = b; activeBox = boxes[0] || "all"; expandedBrand = b;
-      resetFilters(); renderNav(); renderFacets(); render();
+      resetFilters(); renderNav(); renderFacets(); render(); revealCards();
     }
     // Выбор конкретной модели коробки в дереве.
     function selectBox(b, box){
       activeBrand = b; activeBox = box; expandedBrand = b;
-      resetFilters(); renderNav(); renderFacets(); render();
+      resetFilters(); renderNav(); renderFacets(); render(); revealCards();
     }
     // Сброс к стартовому экрану (плитки).
     function goHome(){
       activeBrand = "all"; activeBox = "all"; expandedBrand = null;
-      resetFilters(); renderNav(); renderFacets(); render();
+      resetFilters(); renderNav(); renderFacets(); render(); revealCards();
     }
 
     // Стартовый экран: плитки семейств вместо стены из всех карточек.
@@ -3020,6 +3026,22 @@
     const monthsEl = document.getElementById("sales-months");
     const monthSel = document.getElementById("sales-month");
     const MONN = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+    // ② Счётчик денег (перенос Magic UI NumberTicker): анимируем .num[data-to] 0→значение,
+    // формат сохраняем (money / шт). Триггер — вход в раздел (showPage → window.salesReveal),
+    // а не render(): фоновые обновления/вывод копилки не должны перезапускать счётчик.
+    const SALES_FMT = { money: money, int: n => nf.format(n) };
+    function runSalesTickers(){
+      const nodes = [].concat(
+        Array.from(statsEl.querySelectorAll(".num[data-to]")),
+        Array.from(kopEl.querySelectorAll(".num[data-to]"))
+      );
+      nodes.forEach((el,i)=>{
+        const to = +el.dataset.to;
+        if(!isFinite(to)) return;
+        mdTicker(el, to, SALES_FMT[el.dataset.fmt] || SALES_FMT.money, i*70);
+      });
+    }
+    window.salesReveal = runSalesTickers;
     // Хранилище выводов копилки — Google Apps Script (общая таблица, SHEET_API выше).
     const WITHDRAW_API   = SHEET_API;
     const WITHDRAW_TOKEN = SHEET_TOKEN;
@@ -3137,12 +3159,12 @@
 
       // плитки-итоги (за выбранный месяц)
       statsEl.innerHTML = [
-        ["Выручка за месяц", money(totSum), "accent"],
-        ["Продано", nf.format(totQty), "", "шт"],
-        ["Средний чек", money(avgCheck)],
-        ["В среднем в день", money(avgDay)],
-      ].map(([k,v,cls,u]) =>
-        `<div class="stat ${cls||""}"><div class="k">${k}</div><div class="v">${v}${u?`<span class="u">${u}</span>`:""}</div></div>`
+        ["Выручка за месяц", totSum,   "money", "accent"],
+        ["Продано",          totQty,   "int",   "",      "шт"],
+        ["Средний чек",      avgCheck, "money"],
+        ["В среднем в день", avgDay,   "money"],
+      ].map(([k,raw,fmt,cls,u]) =>
+        `<div class="stat ${cls||""}"><div class="k">${k}</div><div class="v"><span class="num" data-to="${raw}" data-fmt="${fmt}">${SALES_FMT[fmt](raw)}</span>${u?`<span class="u">${u}</span>`:""}</div></div>`
       ).join("");
 
       // ==== копилка: живой месяц — с кнопкой; архивный — read-only итог ====
@@ -3159,11 +3181,11 @@
           ? `<button class="kopilka-btn" type="button" data-pot="${pot}">💸 Отметить вывод</button>`
           : `<span class="kopilka-btn is-disabled">Копилка пуста</span>`;
         kopEl.className = "kopilka" + (pot > 0 ? "" : " empty");
-        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">К выводу на сегодня</div><div class="kopilka-v">${money(pot)}</div><div class="kopilka-sub">${kopSub}</div></div>${kopBtn}`;
+        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">К выводу на сегодня</div><div class="kopilka-v"><span class="num" data-to="${pot}" data-fmt="money">${money(pot)}</span></div><div class="kopilka-sub">${kopSub}</div></div>${kopBtn}`;
       } else {
         const moWd = withdrawals.reduce((s,w)=> s + w.amount, 0);
         kopEl.className = "kopilka archive" + (totSum > 0 ? "" : " empty");
-        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">Архив · ${MONN[selMo.m]} ${selMo.y}</div><div class="kopilka-v">${money(totSum)}</div><div class="kopilka-sub">Продано за месяц. Выведено за месяц: ${moWd ? money(moWd) : "—"}. Только просмотр — вывод отмечается в текущем месяце.</div></div>`;
+        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">Архив · ${MONN[selMo.m]} ${selMo.y}</div><div class="kopilka-v"><span class="num" data-to="${totSum}" data-fmt="money">${money(totSum)}</span></div><div class="kopilka-sub">Продано за месяц. Выведено за месяц: ${moWd ? money(moWd) : "—"}. Только просмотр — вывод отмечается в текущем месяце.</div></div>`;
       }
 
       // по возрастанию даты: раньше — выше
@@ -3448,6 +3470,45 @@
     loadNotes();
   })();
 
+  /* ===================== Анимации появления =====================
+     Перенос Magic UI BlurFade + NumberTicker в ваниль (design-system §5):
+     одноразовые, ease-out, покрашены токенами, гаснут при prefers-reduced-motion.
+     Потолок «2–3 живых анимации на экран» соблюдён; бесконечных циклов нет. */
+  function reduceMotion(){ return matchMedia("(prefers-reduced-motion: reduce)").matches; }
+
+  // BlurFade: мягкое проявление узла (opacity 0→1, blur 6px→0, сдвиг вверх), один раз.
+  function mdBlurIn(el, delay){
+    if(!el || reduceMotion() || !el.animate) return;
+    el.animate(
+      [{ opacity:0, filter:"blur(6px)", transform:"translateY(6px)" },
+       { opacity:1, filter:"blur(0)",   transform:"none" }],
+      { duration:360, delay:delay||0, easing:"ease-out", fill:"backwards" }
+    );
+  }
+  // Стаггер-проявление списка карточек. Каскад ограничен (первые cap с задержкой,
+  // остальные — сразу), чтобы не превращаться в «загрузочную» ленту.
+  function mdBlurStagger(nodes, step, cap){
+    if(reduceMotion() || !nodes) return;
+    step = step || 45; cap = cap || 8;
+    nodes.forEach(function(el,i){ mdBlurIn(el, Math.min(i,cap)*step); });
+  }
+  // NumberTicker: счётчик 0→to с ease-out; формат сохраняем через fmt (money/шт/разряды).
+  function mdTicker(el, to, fmt, delay){
+    if(!el) return;
+    if(reduceMotion() || typeof performance==="undefined"){ el.textContent = fmt(to); return; }
+    el.textContent = fmt(0);                               // старт с 0 сразу (как NumberTicker), без вспышки финала
+    var dur = 1200, t0 = performance.now() + (delay||0);   // пружина 60/100 ≈ 1.6с → берём 1.2с
+    function tick(now){
+      var p = (now - t0) / dur;
+      if(p < 0){ requestAnimationFrame(tick); return; }     // ждём delay
+      if(p > 1) p = 1;
+      var eased = 1 - Math.pow(1 - p, 3);                    // ease-out cubic, без overshoot
+      el.textContent = fmt(Math.round(to * eased));
+      if(p < 1) requestAnimationFrame(tick); else el.textContent = fmt(to);
+    }
+    requestAnimationFrame(tick);
+  }
+
   /* ===================== Меню и страницы ===================== */
   const PAGES = {
     grafik:   { t:"График дежурств", r:"28 июня — 27 июля 2026 · 30 дней" },
@@ -3463,8 +3524,11 @@
     document.querySelectorAll(".page").forEach(p => { p.hidden = (p.id !== "page-" + id); });
     document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.page === id));
     if(PAGES[id]){ titleT.textContent = PAGES[id].t; titleR.textContent = PAGES[id].r; }
+    mdBlurIn(titleT, 0); mdBlurIn(titleR, 60);   // ① hero-появление шапки раздела (BlurFade)
     // вкладка стала видимой — выровнять высоту карточек шаблонов (на скрытой вкладке высота = 0)
     if(id === "shablony" && window.equalizeTplHeads) window.equalizeTplHeads();
+    if(id === "shablony" && window.tplRevealCards) window.tplRevealCards(); // ③ каскад карточек
+    if(id === "prodazhi" && window.salesReveal)    window.salesReveal();    // ② счётчик денег
     try { localStorage.setItem("md_page", id); } catch(e){}  // запомнить вкладку для следующей загрузки
     closeMenu();
     window.scrollTo(0, 0);
