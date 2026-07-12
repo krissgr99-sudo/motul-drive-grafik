@@ -281,6 +281,11 @@
   .tpl-copy:hover{background:#e6232f;box-shadow:0 0 22px rgba(209,31,45,.5)}
   .tpl-copy.ok{background:var(--ok);box-shadow:0 0 16px rgba(76,195,138,.4)}
   .tpl-empty{grid-column:1/-1;padding:56px 24px;text-align:center;color:var(--muted);font-size:14px}
+  .tpl-notfound{grid-column:1/-1;margin:-16px auto 8px;max-width:520px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.5}
+  .tpl-notfound-btn{display:block;margin:12px auto 0;padding:11px 18px;border:1px solid var(--line-strong);border-radius:11px;
+    background:var(--fill);color:var(--text);font:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+  .tpl-notfound-btn:hover{background:var(--fill-hover);border-color:var(--brand)}
+  .tpl-notfound-btn:disabled{opacity:.75;cursor:default;border-color:var(--ok);color:var(--ok)}
 
   /* ===================== ЦЕНЫ (прайс запчастей) ===================== */
   .pr-table thead th:first-child{border-left:none}
@@ -1686,6 +1691,8 @@
   // Мотор: "Обычная" | "Мягкий гибрид" | "Гибрид". Старый флаг hybrid:true = мягкий гибрид.
   const engineOf = t => t.engine ? t.engine : (t.hybrid ? "Мягкий гибрид" : "Обычная");
   const lockOf   = t => t.lock   ? "С блокировкой" : "Без блокировки";
+  // Стабильный код карточки для лога А3 (ключ дедупа устройство+карточка+минута) и метрики «какие шаблоны в ходу».
+  const tplCode  = t => [t.brand, t.box, t.type, engineOf(t), t.lock?"lock":"nolock"].filter(Boolean).join("·");
 
   function renderVariant(v, head){
     const lines = [`${v.label} ${head}`];
@@ -2411,7 +2418,17 @@
         const msg = onlyNoservice
           ? "Эту коробку у нас не обслуживают (робот DCT / электро / крупный автомат вне ассортимента)."
           : "Ничего не найдено";
-        grid.innerHTML = carHint + `<div class="tpl-empty">${msg}</div>`;
+        const q = searchInp.value.trim();
+        // А4: искал и не нашёл → предложить зафиксировать пробел покрытия (DemandLog found=false).
+        const notFound = q
+          ? `<div class="tpl-notfound">Не нашли нужную машину или узел? Отметьте — добавим в каталог.<button class="tpl-notfound-btn" type="button">📩 Сообщить, что не нашёл</button></div>`
+          : "";
+        grid.innerHTML = carHint + `<div class="tpl-empty">${msg}</div>` + notFound;
+        const nfBtn = grid.querySelector(".tpl-notfound-btn");
+        if(nfBtn) nfBtn.addEventListener("click", ()=>{
+          if(window.MDLOG) window.MDLOG.demand(q);
+          nfBtn.textContent = "✓ Спасибо, записали"; nfBtn.disabled = true;
+        });
         return;
       }
       grid.innerHTML = carHint + list.map((t,i)=>{
@@ -2455,7 +2472,12 @@
         });
       });
       grid.querySelectorAll(".tpl-copy").forEach(btn=>{
-        btn.addEventListener("click", e=>{ e.stopPropagation(); copyText(tplBody(list[+btn.dataset.i]), btn, "✓ Вставьте в WhatsApp"); });
+        btn.addEventListener("click", e=>{
+          e.stopPropagation();
+          const t = list[+btn.dataset.i];
+          copyText(tplBody(t), btn, "✓ Вставьте в WhatsApp");
+          if(window.MDLOG) window.MDLOG.copy(tplCode(t));   // А3: лог нажатия «Копировать» (буфер не трогаем, КЛ2)
+        });
       });
       equalizeHeads();
     }
@@ -2762,6 +2784,66 @@
      лист 1 — выводы копилки, лист «Заметки» — заметки команды. Код — копилка-apps-script.gs */
   const SHEET_API   = "https://script.google.com/macros/s/AKfycbwGxC7-EvzNs9Fv47tcR5iDUwCFEUVz_Y3ToWld1tOXR8pip2rHLeCThUm2yL0f5tie/exec";
   const SHEET_TOKEN = "749ee6f82c31d87dfd00e2d5"; // клиентский фильтр (в статике не секретен) — основную защиту держим на стороне Apps Script
+
+  /* ===== Лёгкий лог событий (А3 «Копировать» + А4 «не нашёл») — та же Google-таблица (SHEET_API).
+     Мерит ИНСТРУМЕНТ, не человека: метка устройства анонимна (случайный md_device, без ПДн).
+     fire-and-forget (не тормозит копирование); офлайн-буфер в localStorage с досылом при реконнекте;
+     дедуп по естественному ключу устройство+карточка+минута (minuteKey). Приёмник Apps Script должен
+     маршрутизировать kind:"copy"/"demand" (LockService + дедуп по minuteKey) — БЭКЕНД-часть, отдельно;
+     до неё события уходят, но приёмником пока не сохраняются. Внешних доменов не добавляем (КЛ3, тот же SHEET_API). */
+  window.MDLOG = (function(){
+    if(!SHEET_API) return null;
+    const QKEY = "md_events", DKEY = "md_device", SKEY = "md_sent_minkeys";
+    const MAXQ = 200, MAXSENT = 400;
+    const load = (k, def) => { try { const v = JSON.parse(localStorage.getItem(k)); return v==null ? def : v; } catch(e){ return def; } };
+    const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
+    // анонимная метка устройства (НЕ ПДн) — один раз на браузер; по ней считаем «нажатий/день на устройство»
+    let device = load(DKEY, null);
+    if(!device){
+      device = "dev-" + (self.crypto && crypto.randomUUID ? crypto.randomUUID().slice(0,8) : Date.now().toString(36)+Math.random().toString(36).slice(2,6));
+      save(DKEY, device);
+    }
+    const minuteStamp = () => { const d=new Date(), p=n=>String(n).padStart(2,"0");
+      return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes()); };
+    let queue = load(QKEY, []);
+    let sentKeys = load(SKEY, []);
+    const remember = mk => { sentKeys.push(mk); if(sentKeys.length>MAXSENT) sentKeys = sentKeys.slice(-MAXSENT); save(SKEY, sentKeys); };
+    let flushing = false;
+    function flush(){
+      if(flushing || !queue.length) return;
+      flushing = true;
+      fetch(SHEET_API, { method:"POST", mode:"no-cors",
+        headers:{ "Content-Type":"text/plain;charset=utf-8" },
+        body: JSON.stringify(queue[0]) })
+        .then(() => { queue.shift(); save(QKEY, queue); flushing=false; if(queue.length) flush(); })  // ушло (opaque) → снять с очереди, дальше
+        .catch(() => { flushing=false; });                                                            // офлайн → оставить в очереди, повтор при online/load
+    }
+    function enqueue(ev){
+      // клиентский дедуп по minuteKey (два быстрых клика / повторный визит той же минуты → одна запись)
+      if(ev.minuteKey && sentKeys.indexOf(ev.minuteKey) !== -1) return;
+      if(ev.minuteKey) remember(ev.minuteKey);
+      queue.push(ev); if(queue.length>MAXQ) queue = queue.slice(-MAXQ);
+      save(QKEY, queue);
+      flush();
+    }
+    window.addEventListener("online", flush);
+    flush(); // досыл хвостов, накопленных офлайн в прошлые сессии
+    return {
+      // А3: нажатие «Копировать» смету. cardCode — стабильный код карточки (tplCode).
+      copy(cardCode){
+        enqueue({ token: SHEET_TOKEN, kind:"copy", templateCode: cardCode||null,
+          appUserHandle: device, minuteKey: device+"·"+(cardCode||"?")+"·"+minuteStamp(),
+          ts: new Date().toISOString() });
+      },
+      // А4: «не нашёл» — пробел покрытия (found=false). queryText — что искали.
+      demand(queryText, unitAsked, carKey){
+        const q = (queryText||"").trim().slice(0,120);
+        enqueue({ token: SHEET_TOKEN, kind:"demand", queryText: q, unitAsked: unitAsked||null,
+          found:false, carKey: carKey||null, appUserHandle: device,
+          minuteKey: device+"·demand·"+q+"·"+minuteStamp(), ts: new Date().toISOString() });
+      }
+    };
+  })();
 
   (function(){
     const MONF = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
