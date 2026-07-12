@@ -634,6 +634,157 @@
     .mainnav .nav-item{flex:none;min-height:40px}
     .title .t{font-size:18px}
   }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     UI-KIT — переиспользуемые компоненты (аналог shadcn/ui без React).
+     Красятся ТОЛЬКО через токены темы. Спека и «закон» — design/design-system.md §4.
+     Namespace .ui-* — существующую вёрстку не трогает. Новых цветов/шрифтов/радиусов
+     мимо системы не вводить. Витрина всех состояний — design-preview.html (dev, не деплоится).
+     ⚠ Этот блок зеркалится в design-preview.html — правишь тут, синхронь там.
+     ═══════════════════════════════════════════════════════════════════════ */
+  :where(.ui-btn,.ui-input,.ui-textarea,.ui-select,.ui-switch input,.ui-check input,.ui-menu__item,.ui-card--interactive){--ui-ring:0 0 0 3px rgba(209,31,45,.28)}
+
+  /* ── Кнопка ─────────────────────────────────────────────── */
+  .ui-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:11px 18px;border-radius:12px;border:1px solid transparent;
+    font-family:inherit;font-weight:700;font-size:14px;line-height:1;
+    color:var(--text);background:var(--fill);cursor:pointer;user-select:none;
+    white-space:nowrap;text-decoration:none;position:relative;
+    transition:background .15s ease,border-color .15s ease,color .15s ease,box-shadow .15s ease,transform .15s ease}
+  .ui-btn svg{width:17px;height:17px;flex:none}
+  .ui-btn:focus-visible{outline:none;box-shadow:var(--ui-ring)}
+  .ui-btn:active{transform:scale(.95)}
+  /* .is-disabled — для элементов без атрибута disabled (напр. <a> под кнопку): в разметке добавляй
+     aria-disabled="true" и tabindex="-1", иначе контрол остаётся фокусируемым/активируемым с клавиатуры */
+  .ui-btn[disabled],.ui-btn.is-disabled{opacity:.5;cursor:not-allowed;pointer-events:none;box-shadow:none;transform:none}
+  .ui-btn--primary{background:var(--brand);color:#fff;box-shadow:0 0 16px rgba(209,31,45,.35)}
+  .ui-btn--primary:hover{background:#e6232f;box-shadow:0 0 22px rgba(209,31,45,.5)}
+  .ui-btn--primary:active{box-shadow:none}
+  .ui-btn--primary:focus-visible{box-shadow:0 0 16px rgba(209,31,45,.35),var(--ui-ring)}
+  .ui-btn--secondary{background:var(--fill);border-color:var(--line);color:var(--text)}
+  .ui-btn--secondary:hover{border-color:#d11f2d;color:var(--accent-soft);background:rgba(209,31,45,.1)}
+  .ui-btn--ghost{background:transparent;border-color:transparent;color:var(--muted)}
+  .ui-btn--ghost:hover{background:var(--nav-hover);color:var(--text)}
+  .ui-btn--sm{padding:8px 13px;font-size:13px;border-radius:10px}
+  .ui-btn--sm svg{width:15px;height:15px}
+  .ui-btn--icon{padding:0;width:42px;height:42px}
+  .ui-btn--icon.ui-btn--sm{width:34px;height:34px}
+  .ui-btn--block{display:flex;width:100%}
+  .ui-btn.is-loading{color:transparent!important;pointer-events:none}
+  .ui-btn.is-loading::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;
+    border:2px solid var(--muted);border-top-color:transparent;animation:ui-spin .6s linear infinite}
+  .ui-btn--primary.is-loading::after{border-color:#fff;border-top-color:transparent}
+  .ui-btn--secondary.is-loading::after{border-color:var(--accent-soft);border-top-color:transparent}
+  @keyframes ui-spin{to{transform:rotate(360deg)}}
+
+  /* ── Поле формы ─────────────────────────────────────────── */
+  .ui-field{display:grid;gap:6px}
+  .ui-label{font-family:inherit;font-weight:600;font-size:13px;color:var(--text)}
+  .ui-label .ui-req{color:var(--accent-soft);margin-left:2px}
+  .ui-input,.ui-textarea,.ui-select{width:100%;padding:12px 14px;border-radius:12px;
+    border:1px solid var(--line);background:var(--fill);color:var(--text);font:inherit;font-size:14px;
+    line-height:1.4;outline:none;transition:border-color .15s ease,background .15s ease,box-shadow .15s ease}
+  .ui-input::placeholder,.ui-textarea::placeholder{color:var(--muted)}
+  .ui-input:hover,.ui-textarea:hover,.ui-select:hover{border-color:var(--line-strong)}
+  .ui-input:focus,.ui-textarea:focus,.ui-select:focus{border-color:#d11f2d;background:var(--fill-hover)}
+  .ui-input:focus-visible,.ui-textarea:focus-visible,.ui-select:focus-visible{box-shadow:var(--ui-ring)}
+  .ui-textarea{resize:vertical;min-height:84px}
+  .ui-input[disabled],.ui-textarea[disabled],.ui-select[disabled]{opacity:.55;cursor:not-allowed;background:var(--fill-soft)}
+  .ui-select-wrap{position:relative}
+  .ui-select-wrap::after{content:"";position:absolute;right:15px;top:50%;width:7px;height:7px;
+    border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
+    transform:translateY(-70%) rotate(45deg);pointer-events:none}
+  .ui-select{appearance:none;-webkit-appearance:none;padding-right:36px;cursor:pointer}
+  .ui-hint{font-size:12.5px;color:var(--muted);line-height:1.45}
+  .ui-field--error .ui-input,.ui-field--error .ui-textarea,.ui-field--error .ui-select{border-color:var(--brand)}
+  .ui-field--error .ui-hint{color:var(--accent-soft)}
+  .ui-field--ok .ui-input,.ui-field--ok .ui-select{border-color:var(--ok)}
+  .ui-check{display:inline-flex;align-items:center;gap:9px;cursor:pointer;font-size:14px;color:var(--text);user-select:none}
+  .ui-check input{width:18px;height:18px;accent-color:var(--brand);cursor:pointer;flex:none}
+  .ui-check input:disabled{cursor:not-allowed}
+  .ui-check input:focus-visible{outline:none;box-shadow:var(--ui-ring)}
+  .ui-check:has(input:disabled){opacity:.55;cursor:not-allowed}
+  .ui-switch{position:relative;display:inline-block;width:42px;height:24px;flex:none}
+  .ui-switch input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+  .ui-switch__track{position:absolute;inset:0;border-radius:999px;background:var(--fill-soft);
+    border:1px solid var(--line-strong);transition:background .15s ease,border-color .15s ease}
+  .ui-switch__track::before{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:var(--muted);transition:transform .15s ease,background .15s ease}
+  .ui-switch input:checked+.ui-switch__track{background:var(--brand);border-color:var(--brand)}
+  .ui-switch input:checked+.ui-switch__track::before{transform:translateX(18px);background:#fff}
+  .ui-switch input:focus-visible+.ui-switch__track{box-shadow:var(--ui-ring)}
+  .ui-switch input:disabled+.ui-switch__track{opacity:.5}
+
+  /* ── Карточка ───────────────────────────────────────────── */
+  .ui-card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);padding:20px;overflow:hidden}
+  .ui-card__title{font-family:var(--font-disp);font-weight:800;font-size:18px;line-height:1.15;letter-spacing:.2px;color:var(--text)}
+  .ui-card__desc{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.5}
+  .ui-card__body{margin-top:14px;font-size:14px;color:var(--text);line-height:1.55}
+  .ui-card__footer{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+  .ui-card--interactive{cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease}
+  .ui-card--interactive::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brand);opacity:0;transition:opacity .15s ease}
+  .ui-card--interactive:hover{border-color:var(--open-border);transform:translateY(-3px);box-shadow:var(--shadow),0 6px 20px rgba(0,0,0,.10)}
+  .ui-card--interactive:hover::before,.ui-card--interactive.is-active::before{opacity:1}
+  .ui-card--interactive.is-active{border-color:var(--open-border)}
+  .ui-card--interactive:focus-visible{outline:none;box-shadow:var(--ui-ring)}
+
+  /* ── Таблица ────────────────────────────────────────────── */
+  .ui-table-wrap{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:auto}
+  table.ui-table{width:100%;border-collapse:collapse;font-size:14px}
+  .ui-table thead th{background:var(--card2);color:var(--muted);font-family:var(--font-mono);font-size:11px;
+    font-weight:600;letter-spacing:.5px;text-transform:uppercase;text-align:left;
+    padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .ui-table tbody td{padding:12px 14px;border-bottom:1px solid var(--line);color:var(--text)}
+  .ui-table tbody tr{transition:background .12s ease}
+  .ui-table tbody tr:hover{background:var(--rowhover)}
+  .ui-table tbody tr.is-active{background:rgba(209,31,45,.08)}
+  .ui-table tbody tr.is-active td:first-child{box-shadow:inset 3px 0 0 var(--brand)}
+  .ui-table tbody tr:last-child td{border-bottom:none}
+  .ui-table .ui-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+  .ui-table tfoot td{padding:12px 14px;background:var(--card2);font-family:var(--font-mono);font-weight:600;color:var(--text);border-top:1px solid var(--line-strong)}
+
+  /* ── Диалог (нативный <dialog>) ─────────────────────────── */
+  .ui-dialog{border:1px solid var(--line);border-radius:20px;background:var(--card);color:var(--text);
+    box-shadow:var(--shadow);padding:0;max-width:460px;width:calc(100% - 32px)}
+  .ui-dialog::backdrop{background:rgba(10,11,14,.55);backdrop-filter:blur(2px)}
+  .ui-dialog[open]{animation:ui-dialog-in .15s ease}
+  @keyframes ui-dialog-in{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+  .ui-dialog__head{padding:22px 22px 0;position:relative}
+  .ui-dialog__title{font-family:var(--font-disp);font-weight:700;font-size:20px;letter-spacing:.3px;color:var(--text);padding-right:34px}
+  .ui-dialog__desc{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .ui-dialog__body{padding:16px 22px 0}
+  .ui-dialog__foot{padding:22px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+  .ui-dialog__x{position:absolute;top:14px;right:14px}
+
+  /* ── Выпадающее меню ────────────────────────────────────── */
+  .ui-menu{position:relative;display:inline-block}
+  .ui-menu__list{position:absolute;top:calc(100% + 6px);left:0;min-width:210px;z-index:50;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
+    padding:6px;display:none}
+  .ui-menu__list--right{left:auto;right:0}
+  .ui-menu.is-open .ui-menu__list{display:block;animation:ui-menu-in .15s ease}
+  @keyframes ui-menu-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .ui-menu__label{padding:7px 12px 5px;font-family:var(--font-mono);font-size:10px;font-weight:600;
+    letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .ui-menu__item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+    padding:9px 12px;border:none;background:transparent;border-radius:8px;
+    font:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;
+    transition:background .12s ease,color .12s ease}
+  .ui-menu__item .ui-menu__ic{width:15px;height:15px;flex:none;color:var(--muted)}
+  .ui-menu__item:hover{background:var(--nav-hover);color:var(--text)}
+  .ui-menu__item:focus-visible{outline:none;background:var(--nav-hover);color:var(--text);box-shadow:var(--ui-ring)}
+  .ui-menu__item--danger{color:var(--accent-soft)}
+  .ui-menu__item--danger:hover{background:rgba(209,31,45,.1);color:var(--accent-soft)}
+  .ui-menu__item--danger .ui-menu__ic{color:var(--accent-soft)}
+  .ui-menu__item[disabled]{opacity:.45;cursor:not-allowed;pointer-events:none}
+  .ui-menu__sep{height:1px;background:var(--line);margin:6px 4px;border:none}
+
+  @media (prefers-reduced-motion: reduce){
+    .ui-btn,.ui-card--interactive,.ui-input,.ui-textarea,.ui-select,.ui-switch__track,.ui-switch__track::before{transition-duration:.01ms}
+    .ui-dialog[open],.ui-menu.is-open .ui-menu__list,.ui-btn.is-loading::after{animation:none}
+    .ui-btn:active,.ui-card--interactive:hover{transform:none}
+  }
 </style>
 <script>(function(){try{var t=localStorage.getItem('md_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 </head>
@@ -3383,6 +3534,61 @@
   try { authed = sessionStorage.getItem("md_auth") === "1"; } catch(e){}
   if(isLocal || authed){ unlock(); }
   else { inp.focus(); form.addEventListener("submit", e => { e.preventDefault(); tryUnlock(); }); }
+</script>
+<script>
+  /* ═══ UI-KIT: поведение диалогов и меню (без зависимостей) ═══
+     Диалог: [data-ui-open="dialogId"] открывает, [data-ui-close] закрывает, клик по подложке и Esc — тоже.
+     Меню: клик по .ui-menu__trigger переключает; клик вне, выбор пункта и Esc — закрывают. */
+  (function(){
+    // ── Диалоги (всё делегировано на document → работает и для авто-рендеренных <dialog>) ──
+    document.addEventListener("click", function(e){
+      var opener = e.target.closest("[data-ui-open]");
+      if(opener){
+        var dlg = document.getElementById(opener.getAttribute("data-ui-open"));
+        if(dlg && typeof dlg.showModal === "function"){ e.preventDefault(); dlg.showModal(); }
+        return;
+      }
+      var closer = e.target.closest("[data-ui-close]");
+      if(closer){ var d = closer.closest("dialog"); if(d){ e.preventDefault(); d.close(); } return; }
+      // клик по подложке: e.target === сам <dialog> (содержимое перекрывает его целиком)
+      if(e.target.matches && e.target.matches("dialog.ui-dialog")){ e.target.close(); }
+    });
+
+    // ── Меню ──
+    function closeMenu(m){
+      m.classList.remove("is-open");
+      var t = m.querySelector(".ui-menu__trigger"); if(t) t.setAttribute("aria-expanded","false");
+    }
+    function closeMenus(except){
+      document.querySelectorAll(".ui-menu.is-open").forEach(function(m){ if(m !== except) closeMenu(m); });
+    }
+    document.addEventListener("click", function(e){
+      var trig = e.target.closest(".ui-menu__trigger");
+      if(trig){
+        e.preventDefault();
+        var menu = trig.closest(".ui-menu"), open = !menu.classList.contains("is-open");
+        closeMenus(menu);
+        menu.classList.toggle("is-open", open);
+        trig.setAttribute("aria-expanded", open ? "true" : "false");
+        return;
+      }
+      if(e.target.closest(".ui-menu__item")){ closeMenus(); return; }  // выбрал пункт — закрыть
+      if(!e.target.closest(".ui-menu")) closeMenus();                  // клик вне — закрыть
+    });
+    // фокус ушёл за пределы меню (Tab) — закрыть, чтобы не «осиротело» открытым
+    document.addEventListener("focusout", function(e){
+      var menu = e.target.closest && e.target.closest(".ui-menu");
+      if(menu && menu.classList.contains("is-open") && !menu.contains(e.relatedTarget)) closeMenu(menu);
+    });
+    document.addEventListener("keydown", function(e){ if(e.key === "Escape") closeMenus(); });
+
+    // ── Кликабельная карточка: активация с клавиатуры (Enter/Space), как у кнопки ──
+    document.addEventListener("keydown", function(e){
+      if((e.key === "Enter" || e.key === " ") && e.target.classList && e.target.classList.contains("ui-card--interactive")){
+        e.preventDefault(); e.target.click();
+      }
+    });
+  })();
 </script>
 <script>
   /* PWA-оболочка (Н4): регистрируем service worker для офлайна — чистая вкладка открывает инструмент
