@@ -3226,8 +3226,10 @@
     }
 
     // список заказ-нарядов внутри раскрытого дня
+    // номер заказа приходит из LiveSklad/таблицы — экранируем перед вставкой в разметку (defense-in-depth)
+    const escOrd = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
     const ordersHtml = orders => `<div class="ord-list">` + orders.map(o =>
-      `<div class="ord"><span class="ord-num">Заказ-наряд №${o[0]}</span><span class="ord-qty">${nf.format(o[1])} шт</span><span class="ord-sum">${money(o[2])}</span></div>`
+      `<div class="ord"><span class="ord-num">Заказ-наряд №${escOrd(o[0])}</span><span class="ord-qty">${nf.format(o[1])} шт</span><span class="ord-sum">${money(o[2])}</span></div>`
     ).join("") + `</div>`;
 
     let DATA = SALES;         // сначала запасные; ниже подменяем свежими (Apps Script или sales.json)
