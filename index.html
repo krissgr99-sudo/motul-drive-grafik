@@ -594,7 +594,10 @@
   .ord{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;margin-top:8px;
     padding:11px 14px;background:var(--receipt);border:1px solid var(--line);border-radius:12px;
     font-family:var(--font-mono);font-size:12.5px}
+  .ord-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 7px;min-width:0}
   .ord-num{font-weight:600;color:var(--code-text);min-width:0}
+  .ord-time{color:var(--muted);font-weight:600;white-space:nowrap;flex:none}
+  .ord-time::before{content:"·";margin-right:7px;opacity:.55}
   .ord-qty{color:var(--muted);font-weight:600;text-align:right;white-space:nowrap}
   .ord-sum{font-weight:700;color:var(--text);text-align:right;white-space:nowrap;min-width:78px}
   /* мобильные карточки продаж */
@@ -3095,7 +3098,9 @@
      SALES ниже — последний резерв: показывается мгновенно и офлайн.
      Формат везде одинаковый. Правь данные, не вёрстку: таблица, карточки, плитки и
      «Итого» считаются сами; день раскрывается в список заказ-нарядов.
-     days[].orders: [номер заказ-наряда, продано(шт), сумма(₽)] */
+     days[].orders: [номер заказ-наряда, продано(шт), сумма(₽), время(HH:mm)]
+     Время — момент создания заказ-наряда в LiveSklad; необязательное (старые записи
+     без него показываются просто без времени). Даёт его робот Apps Script. */
   const SALES = {
     product: "Промывка двигателя Liqui Moly Engine Flush (0,3л)",
     updated: "2026-07-04",
@@ -3269,9 +3274,10 @@
     // список заказ-нарядов внутри раскрытого дня
     // номер заказа приходит из LiveSklad/таблицы — экранируем перед вставкой в разметку (defense-in-depth)
     const escOrd = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-    const ordersHtml = orders => `<div class="ord-list">` + orders.map(o =>
-      `<div class="ord"><span class="ord-num">Заказ-наряд №${escOrd(o[0])}</span><span class="ord-qty">${nf.format(o[1])} шт</span><span class="ord-sum">${money(o[2])}</span></div>`
-    ).join("") + `</div>`;
+    const ordersHtml = orders => `<div class="ord-list">` + orders.map(o => {
+      const t = o[3] ? `<span class="ord-time">${escOrd(o[3])}</span>` : "";
+      return `<div class="ord"><span class="ord-head"><span class="ord-num">Заказ-наряд №${escOrd(o[0])}</span>${t}</span><span class="ord-qty">${nf.format(o[1])} шт</span><span class="ord-sum">${money(o[2])}</span></div>`;
+    }).join("") + `</div>`;
 
     let DATA = SALES;         // сначала запасные; ниже подменяем свежими (Apps Script или sales.json)
     let WD_DATA = WITHDRAWALS; // выводы: запас; ниже подменяем кэшем и свежими из таблицы
