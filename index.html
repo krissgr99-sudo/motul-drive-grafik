@@ -644,6 +644,17 @@
   .fb-note{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:13px 16px}
   .fb-note.is-done{opacity:.62}
   .fb-note-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .fb-note-foot{margin-top:11px;display:flex;justify-content:flex-end}
+  .fb-mark{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:12px;border:1px solid var(--line);
+    background:var(--fill);color:var(--text);font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;
+    transition:border-color .15s,background .15s,color .15s,transform .15s}
+  .fb-mark:hover{border-color:var(--c-red);color:var(--accent-soft);background:rgba(209,31,45,.1)}
+  .fb-mark:active{transform:scale(.95)}
+  .fb-undo{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:12px;border:1px solid transparent;
+    background:transparent;color:var(--muted);font:inherit;font-weight:600;font-size:12.5px;cursor:pointer;
+    transition:color .15s,background .15s,transform .15s}
+  .fb-undo:hover{color:var(--text);background:var(--fill-soft)}
+  .fb-undo:active{transform:scale(.95)}
   .fb-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700}
   .fb-badge.c-bug{background:rgba(209,31,45,.1);color:var(--accent-soft);border:1px solid rgba(209,31,45,.3)}
   .fb-badge.c-add,.fb-badge.c-del,.fb-badge.c-other{background:var(--fill-soft);color:var(--muted);border:1px solid var(--line-strong)}
@@ -655,7 +666,7 @@
   .fb-note-text{margin-top:9px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
   .fb-empty{background:var(--card);border:1px dashed var(--line-strong);border-radius:14px;padding:22px;text-align:center;
     color:var(--muted);font-weight:600;font-size:13px}
-  @media(max-width:720px){ .fb-chip{min-height:44px;padding:9px 16px} .fb-send{width:100%;justify-content:center;min-height:44px} .fb-when{margin-left:0;width:100%} }
+  @media(max-width:720px){ .fb-chip{min-height:44px;padding:9px 16px} .fb-send{width:100%;justify-content:center;min-height:44px} .fb-when{margin-left:0;width:100%} .fb-mark,.fb-undo{min-height:44px} }
 
   /* ===================== ПЕЧАТЬ ===================== */
   @media print{
@@ -3453,8 +3464,11 @@
   /* ===================== ЗАМЕТКИ (пожелания команды) =====================
      Общее хранилище — лист «Заметки» той же Google-таблицы (SHEET_API):
      читаем JSONP (?type=notes), пишем doPost (kind:"note"). Кэш md_notes —
-     мгновенный показ и офлайн. «Сделано» проставляется руками в таблице
-     (колонка status — любой текст, например «готово») и видно всем. */
+     мгновенный показ и офлайн.
+     «Отработано»: кнопка на карточке ставит status="готово" (doPost kind:"note-status")
+     — карточка гаснет и получает зелёную метку ✔, видно всем. Отметка кладётся
+     и локально (md_notes_done) — срабатывает сразу и офлайн, а после ответа таблицы
+     сверяется с ней и очищается. Руками в колонке status тоже можно (напр. «не будем»). */
   (function(){
     const CATS = [
       { id:"bug",   icon:ICO.wrench, label:"Не работает" },
@@ -3486,6 +3500,14 @@
     let pending = [];  // отправленные, ещё не увиденные в таблице
     let author = null, cat = null, ntSeq = 0, hintTimer = 0;
     const saveCache = () => { try { localStorage.setItem("md_notes", JSON.stringify([...pending, ...notes])); } catch(e){} };
+
+    // локальные отметки «отработано» (key → "готово" | ""): показываем сразу и офлайн,
+    // до подтверждения таблицей; key = created + author + text.
+    let override = {}, rendered = [];
+    try { const o = JSON.parse(localStorage.getItem("md_notes_done") || "null"); if(o && typeof o === "object") override = o; } catch(e){}
+    const saveOverride = () => { try { localStorage.setItem("md_notes_done", JSON.stringify(override)); } catch(e){} };
+    const keyOf    = n => `${n.created}${n.author}${n.text}`;
+    const statusOf = n => { const k = keyOf(n); return (k in override) ? override[k] : String(n.status || ""); };
 
     // «2026-07-04 15:20» → «4 июля, 15:20»
     function when(s){
@@ -3527,11 +3549,12 @@
 
     function render(){
       const all = [...pending, ...notes].sort((a,b) => String(b.created).localeCompare(String(a.created)));
+      rendered = all;
       listHEl.hidden = all.length === 0;
       listHEl.textContent = `Заметки · ${all.length}`;
-      listEl.innerHTML = all.length ? all.map(n => {
+      listEl.innerHTML = all.length ? all.map((n, i) => {
         const c = catOf(n.cat);
-        const done = String(n.status || "").trim();
+        const done = statusOf(n).trim();
         return `<div class="fb-note${done ? " is-done" : ""}">
           <div class="fb-note-top">
             <span class="fb-badge c-${c.id}">${c.icon} ${c.label}</span>
@@ -3540,6 +3563,9 @@
             <span class="fb-when">${when(n.created)}</span>
           </div>
           <div class="fb-note-text">${esc(n.text)}</div>
+          <div class="fb-note-foot">${done
+            ? `<button class="fb-undo" type="button" data-note="${i}" data-done="0">Вернуть в работу</button>`
+            : `<button class="fb-mark" type="button" data-note="${i}" data-done="1">${ICO.check} Отработано</button>`}</div>
         </div>`;
       }).join("") : `<div class="fb-empty">Пока нет заметок — напиши первую</div>`;
     }
@@ -3554,6 +3580,10 @@
           notes = data.notes;
           // из pending убираем то, что уже долетело до таблицы
           pending = pending.filter(p => !notes.some(n => n.text === p.text && n.author === p.author));
+          // локальную отметку «отработано» гасим, когда таблица догнала её (или статус сменили руками)
+          for(const n of notes){ const k = keyOf(n);
+            if(k in override && (override[k].trim() !== "") === (String(n.status || "").trim() !== "")) delete override[k]; }
+          saveOverride();
           warnEl.hidden = true;
           saveCache(); render();
         } else if(data){
@@ -3588,6 +3618,25 @@
     }
     sendEl.addEventListener("click", send);
     textEl.addEventListener("keydown", e => { if((e.ctrlKey || e.metaKey) && e.key === "Enter") send(); });
+
+    // «Отработано» / «Вернуть в работу» — по кнопке на карточке
+    listEl.addEventListener("click", e => {
+      const b = e.target.closest("[data-note]"); if(!b) return;
+      const n = rendered[+b.dataset.note]; if(!n) return;
+      setDone(n, b.dataset.done === "1");
+    });
+    function setDone(n, done){
+      override[keyOf(n)] = done ? "готово" : "";   // оптимистично: карточка гаснет/оживает сразу
+      saveOverride(); render();
+      if(SHEET_API){
+        fetch(SHEET_API, { method:"POST", mode:"no-cors",
+          headers:{ "Content-Type":"text/plain;charset=utf-8" },
+          body: JSON.stringify({ token: SHEET_TOKEN, kind:"note-status",
+            created: n.created, author: n.author, text: n.text, status: done ? "готово" : "" }) })
+          .then(() => { setTimeout(loadNotes, 2500); setTimeout(loadNotes, 9000); })
+          .catch(() => {});
+      }
+    }
 
     // сначала кэш (мгновенно и офлайн), затем свежие из таблицы
     try { const c = JSON.parse(localStorage.getItem("md_notes") || "null"); if(Array.isArray(c)) notes = c; } catch(e){}
