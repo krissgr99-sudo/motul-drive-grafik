@@ -366,6 +366,26 @@
   .tpl-notfound-btn:hover{background:var(--fill-hover);border-color:var(--brand)}
   .tpl-notfound-btn:disabled{opacity:.75;cursor:default;border-color:var(--ok);color:var(--ok)}
 
+  /* ===================== КОМПЛЕКТЫ (наборы на продажу) ===================== */
+  /* Переиспользуем каркас карточки шаблона (.tpl-card / .tpl-collapse / .tpl-copy);
+     kit-* — только специфика: цена в шапке и список состава. Всё на токенах — обе темы. */
+  .kit-price{flex:none;font-family:var(--font-mono);font-weight:600;font-size:14px;color:var(--text);
+    font-variant-numeric:tabular-nums;white-space:nowrap}
+  .kit-sub{padding:2px 16px 0;color:var(--muted);font-size:13px;line-height:1.5}
+  .kit-lbl{padding:12px 16px 0;font-weight:700;font-size:12px;letter-spacing:.2px;color:var(--muted)}
+  .kit-var-lbl{padding:10px 16px 0;font-family:var(--font-disp);font-weight:700;font-size:13px;color:var(--text)}
+  .kit-list{margin:6px 16px 0;padding:6px 4px;background:var(--receipt);border:1px solid var(--line);border-radius:12px}
+  .kit-list:last-of-type{margin-bottom:2px}
+  .kit-list .kit-row.kit-total{border-top:1px solid var(--line-strong);margin-top:2px}
+  .kit-row.kit-total .kit-row-n{font-weight:700;color:var(--text)}
+  .kit-row.kit-total .kit-row-p{font-weight:700;color:var(--text)}
+  .kit-row{display:flex;align-items:baseline;gap:10px;padding:6px 11px}
+  .kit-row + .kit-row{border-top:1px solid var(--line)}
+  .kit-row-n{flex:1;font-size:13px;line-height:1.45;color:var(--text);word-break:break-word}
+  .kit-row-p{flex:none;font-family:var(--font-mono);font-weight:600;font-size:12.5px;color:var(--muted);
+    font-variant-numeric:tabular-nums;white-space:nowrap}
+  .kit-note{margin:0 16px 4px;padding:2px 2px 0;color:var(--muted);font-size:12.5px;line-height:1.5}
+
   /* ===================== ЦЕНЫ (прайс запчастей) ===================== */
   .pr-table thead th:first-child{border-left:none}
   .pr-table tbody td:first-child{border-left:none}
@@ -735,6 +755,20 @@
     .tpl-search input,#fb-text,.sales-month-sel{font-size:16px}
   }
 
+  /* планшетная полоса (721–900px, вкл. iPad-портрет 768px): все пункты меню в одну строку
+     уже не влезают между логотипом и кнопкой темы → переносим меню во вторую строку с
+     горизонтальным скроллом (как на телефоне), но БЕЗ телефонной типографики/отступов.
+     Без этого 7-й пункт давал горизонтальный скролл страницы / наложение значка на «Главную». */
+  @media(min-width:721px) and (max-width:900px){
+    .topnav-inner{flex-wrap:wrap}
+    .logo{margin-right:auto}
+    .theme-btn{order:1}
+    .mainnav{order:2;width:100%;margin:0;gap:6px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;
+      scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .mainnav::-webkit-scrollbar{display:none}
+    .mainnav .nav-item{flex:none}
+  }
+
   /* ═══════════════════════════════════════════════════════════════════════
      UI-KIT — переиспользуемые компоненты (аналог shadcn/ui без React).
      Красятся ТОЛЬКО через токены темы. Спека и «закон» — design/design-system.md §4.
@@ -927,6 +961,7 @@
         <button class="nav-item" data-page="grafik">График</button>
         <button class="nav-item" data-page="shablony">Шаблоны</button>
         <button class="nav-item" data-page="tseny">Цены</button>
+        <button class="nav-item" data-page="komplekty">Комплекты</button>
         <button class="nav-item" data-page="prodazhi">Продажи</button>
         <button class="nav-item" data-page="zametki">Заметки</button>
       </nav>
@@ -1017,6 +1052,9 @@
       <div class="note"><span class="nd"></span><span>Клик по артикулу копирует его в буфер. Все позиции — в наличии; количество и цены — по прайсу запчастей.</span></div>
     </div>
 
+    <!-- ===== Страница: Комплекты (наборы на продажу — рендерится из KITS в renderKits()) ===== -->
+    <div id="page-komplekty" class="page" hidden></div>
+
     <!-- ===== Страница: Продажи ===== -->
     <div id="page-prodazhi" class="page" hidden>
       <div class="sales-head">
@@ -1095,6 +1133,7 @@
     arrow:  _ic('<path d="M2.6 8h10.4M9.4 4.2 13.2 8l-3.8 3.8"/>'),
     calendar: _ic('<rect x="2.2" y="3.2" width="11.6" height="10.6" rx="1.6"/><path d="M2.2 6.2h11.6M5.2 1.8v2.4M10.8 1.8v2.4"/>'),
     chart:  _ic('<path d="M2.4 13.4h11.2"/><path d="M4.4 11.4V8.2M8 11.4V5M11.6 11.4V9.2"/>'),
+    box:    _ic('<path d="M8 2 2.6 5v6L8 14l5.4-3V5L8 2Z"/><path d="M2.6 5 8 8l5.4-3"/><path d="M8 8v6"/>'),
   };
 
   /* =========================================================
@@ -1330,15 +1369,24 @@
     work_full_6hp:["Полная аппаратная замена масла в АКПП ZF 6HP с промывкой системы", 6000],
     oil_zf6_6:    ["Оригинальное трансмиссионное масло ZF6HP S671090255 6л", perL(RATES.zf6hp, 6)],
     work_part_6hp:["Частичная замена масла в АКПП ZF 6HP с заменой фильтр-поддона", 3000],
-    // Детальные мосты/раздатка (задний мост трёхсекционный) — цены со скрина
+    // Мосты/раздатка ПОУЗЛОВО (renderDiffsMulti в «Шаблонах»). Motul: передний+задний диф на одной канистре
+    //   Gear 300, раздатка на Multi DCTF. Оригинал BMW: по 1 л G OIL в каждый диф + BMW DTF-1 в раздатку.
+    //   Задний мост «обычный» (diff_work_rear) или «трёхсекционный» (diff_oil_rear на Gear 300 LS + diff_work_rear3).
     diff_oil_front:   ["Трансмиссионное масло Motul Gear 300 75W90 105777 1.5л", perL(RATES.gear300, 1.5)],
     diff_work_front:  ["Замена масла в переднем дифференциале", 1000],
+    diff_work_rear:   ["Замена масла в заднем дифференциале", 1000],
     diff_oil_transf:  ["Трансмиссионное масло Motul Multi DCTF 105786 0.6л", 1800],  // не по ставке: мелкий объём 3000/л
     diff_work_transf: ["Замена масла в раздаточной коробке", 1000],
     diff_oil_rear:    ["Трансмиссионное масло Motul Gear 300 LS 75W90 синтетическое 105778 1.1л", perL(RATES.gear300_ls, 1.1)],
     diff_work_rear3:  ["Замена масла в заднем дифференциале (трёхсекционный)", 3000],
+    bmw_g_oil:        ["Оригинальное трансмиссионное масло BMW G OIL 1л", 10000],   // оригинал в мост (перёд/зад), по 1 л
+    diff_lock_motul:  ["Доплата за блокировку дифференциала", 900],    // Motul: доп. за LSD-масло зада (11550→12450)
+    diff_lock_orig:   ["Доплата за блокировку дифференциала", 3000],   // оригинал: доп. за LSD-масло зада (28500→31500)
+    // Комплект (запчасти без работ) для мостов/раздатки — апсел в «Комплектах» (блок DIFFS_KIT). Раздатка — transfer_oil_*.
+    kit_diff_motul:   ["Трансмиссионное масло Motul Gear 300 75W90 105777 2л (в мосты)", perL(RATES.gear300, 2)],  // 9000
+    kit_diff_orig:    ["Оригинальное трансмиссионное масло BMW G OIL (в мосты, 4 шт)", 20000],                     // оригинал в мосты, набором
     // Агрегатные «мосты/раздатка/Торсен» — Motul и Оригинал АЛЬТЕРНАТИВЫ (не слагаемые), «Итого» нет.
-    // Блоки DIFFS (renderDiffs) и AXLES_* (renderAxles) ссылаются на эти ключи; цены живут только здесь.
+    // diffs_* = сумма поузловых (нужны «Комплектам»/addons, KITS); AXLES_* — X1/Торсен (renderAxles). Цены здесь.
     diffs_motul_nolock:     ["Масло Motul +замена", 11550],
     diffs_orig_nolock:      ["Оригинал BMW +замена", 28500],
     diffs_motul_lock:       ["Масло Motul +замена", 12450],
@@ -1549,6 +1597,10 @@
       "diffs_motul_nolock", "diffs_orig_nolock", "diffs_motul_lock", "diffs_orig_lock",
       "axles_x1_motul", "axles_torsen_motul", "axles_torsen_orig_g055", "axles_torsen_orig_g060",
     ],
+    "2026-07-19": [   // поузловые мосты/раздатка — состав сверен владельцем (скрин: обычный мост + оригинал по 1 л)
+      "diff_work_rear", "bmw_g_oil", "diff_lock_motul", "diff_lock_orig",
+      "kit_diff_motul", "kit_diff_orig",   // комплект (запчасти) для мостов/раздатки — DIFFS_KIT
+    ],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -1556,12 +1608,29 @@
   const isFresh = key => { const iso = CHECKED[key]; if(!iso) return false;
     const days = (new Date() - new Date(iso)) / 864e5; return days >= 0 && days <= FRESH_DAYS; };
 
-  // 2) Доплата за мосты/раздатку (3 узла). Меняешь только числа.
-  const DIFFS = {
-    head: "Также можем заменить масла в переднем, заднем дифференциале и раздаточной коробке.",
-    note: "Motul ничем не уступает оригиналу",
-    "Без блокировки": { motulKey: "diffs_motul_nolock", origKey: "diffs_orig_nolock" },
-    "С блокировкой":  { motulKey: "diffs_motul_lock",   origKey: "diffs_orig_lock" },
+  // 2) Мосты + раздатка ПОУЗЛОВО (renderDiffsMulti): 2 варианта (Motul / оригинал BMW), у каждого своё «Итого».
+  //    Обычный задний мост — Итого Motul 11550 / оригинал 28500. lockItem → доплата за блокировку (LSD-масло зада):
+  //    Motul 12450 / оригинал 31500. Меняешь только числа/состав в PRICE — тексты и «Итого» соберутся сами.
+  const DIFFS_REGULAR = {
+    head:  "Также можем заменить масла в переднем, заднем дифференциале и раздаточной коробке.",
+    intro: "2 варианта:",
+    note:  "Motul ничем не уступает оригиналу",
+    variants: [
+      { label: "Motul:",        items: ["diff_oil_front", "diff_oil_transf", "diff_work_front", "diff_work_rear", "diff_work_transf"], lockItem: "diff_lock_motul" },
+      { label: "Оригинал BMW:", items: ["bmw_g_oil", "bmw_g_oil", "transfer_oil_dtf1", "diff_work_front", "diff_work_rear", "diff_work_transf"], lockItem: "diff_lock_orig" },
+    ],
+  };
+
+  // 2.0) КОМПЛЕКТ (запчасти без работ) для мостов и раздатки — апсел в «Комплектах» (renderDiffsMulti / addonBlockHtml).
+  //      Не путать с DIFFS_REGULAR (это УСЛУГА с работами). Итого: Motul 12000 / оригинал BMW 25500. Цены — в PRICE.
+  const DIFFS_KIT = {
+    head:  "Так же можем предложить комплект для мостов и раздатки.",
+    intro: "2 варианта:",
+    note:  "Motul ничем не уступает оригиналу.",
+    variants: [
+      { label: "Комплект Motul",        items: ["kit_diff_motul", "transfer_oil_motul"] },
+      { label: "Комплект оригинал BMW", items: ["kit_diff_orig",  "transfer_oil_dtf1"] },
+    ],
   };
 
   // 2.1) Детальные мосты/раздатка — поузловой расчёт, задний мост трёхсекционный. Цены в PRICE.
@@ -2034,18 +2103,24 @@
     lines.push(`Итого: ${sum} руб.`);     // «Итого» = сумма позиций, считается само
     return lines.join("\n");
   }
-  function renderDiffs(t){
-    const d = DIFFS[lockOf(t)];
-    if(!d) return "";
-    const lines = [DIFFS.head];
-    for(const key of [d.motulKey, d.origKey]){        // Motul и Оригинал — АЛЬТЕРНАТИВЫ, «Итого» нет
-      const item = PRICE[key];
-      if(!item){ console.warn("PRICE: нет ключа", key); lines.push(`⚠ уточню: ${key}`); continue; } // пропуск ВИДЕН (правило 2)
-      if(isFresh(key)){ lines.push(`${item[0]} ${item[1]}р`); }
-      else            { lines.push(`${item[0]} — уточню`); }   // протухло/без даты → без числа (правило 7)
-    }
-    lines.push(DIFFS.note);
-    return lines.join("\n");
+  // Мосты + раздатка ПОУЗЛОВО: у каждого варианта (Motul / оригинал) свой «Итого». lock=true → строка доплаты за блокировку.
+  function renderDiffsMulti(block, lock){
+    const blocks = block.variants.map(v=>{
+      const items = (lock && v.lockItem) ? [...v.items, v.lockItem] : v.items;
+      const lines = [v.label];
+      let sum = 0;
+      for(const key of items){
+        const item = PRICE[key];
+        if(!item){ console.warn("PRICE: нет ключа", key); lines.push(`⚠ уточню: ${key}`); continue; } // пропуск ВИДЕН (правило 2)
+        if(isFresh(key)){ lines.push(`${item[0]} ${item[1]} руб.`); sum += item[1]; }
+        else            { lines.push(`${item[0]} — уточню`); }   // протухло → без числа (правило 7)
+      }
+      lines.push(`Итого: ${sum} руб.`);
+      return lines.join("\n");
+    });
+    let out = `${block.head}\n${block.intro}\n\n${blocks.join("\n\n")}`;
+    if(block.note) out += `\n\n${block.note}`;
+    return out;
   }
   // Детальные мосты/раздатка: поузловой список с собственным «Итого».
   function renderDiffsDetailed(d){
@@ -2101,7 +2176,7 @@
     const filterKey = t.filter || (box.filter ? box.filter[eng] : null); // t.filter — явный выбор поддона (9G-Tronic)
     const head = typeof svc.head === "function" ? svc.head(filterKey) : svc.head; // head может зависеть от фильтра (7G-Tronic)
     const parts = [svc.variants(filterKey).map(v => renderVariant(v, head)).join("\n\n")];
-    if(t.diffs)         parts.push(renderDiffs(t));  // ZF: мосты + раздатка (зависит от блокировки)
+    if(t.diffs)         parts.push(renderDiffsMulti(DIFFS_REGULAR, t.lock));  // ZF: мосты + раздатка поузлово (Motul/оригинал), блокировка = доплата
     if(t.diffsDetailed) parts.push(renderDiffsDetailed(DIFFS_DETAILED)); // поузловой расчёт мостов
     if(box.diffsBlock)  parts.push(renderDiffsDetailed(box.diffsBlock)); // сноска мостов на уровне коробки (9G-Tronic)
     const axles = t.axles || box.axles;                // t.axles — переопределение блока мостов на карточке (Торсен G055/G060)
@@ -3745,6 +3820,7 @@
       { page:"shablony", ico:"car",      name:"Шаблоны", hint:"Цена замены по коробке" },
       { page:"grafik",   ico:"calendar", name:"График",  hint:"Кто на смене и обязанности" },
       { page:"tseny",    ico:"cash",     name:"Цены",    hint:"Прайс: запчасти и масла" },
+      { page:"komplekty",ico:"box",      name:"Комплекты", hint:"Наборы на продажу — отправка и вживую" },
       { page:"prodazhi", ico:"chart",    name:"Продажи", hint:"Выручка и штуки по дням" },
       { page:"zametki",  ico:"chat",     name:"Заметки", hint:"Пожелания команды" },
     ],
@@ -3822,11 +3898,175 @@
     root.querySelectorAll(".home-tile").forEach((el,i) => mdBlurIn(el, 240 + Math.min(i,8)*45));
   }
 
+  /* ===================== КОМПЛЕКТЫ (наборы на продажу) =====================
+     Наборы, которые собираем и продаём — отправкой или вживую. Данные → авто-рендер:
+     правь массив KITS, карточки/бейджи/состав/копи-текст строятся сами.
+     Поле price — ПРОДАЖНАЯ цена комплекта (её ставит владелец), null → «уточню».
+     Позиция состава (items[]) — одно из трёх:
+       • "Название"            — просто строка, без цены;
+       • ["Название", 1500]    — имя + цена позиции (розница);
+       • { ref:"ключ_PRICE" }  — тянет имя+цену из единого прайса PRICE (свежесть honored:
+                                 протухла/без даты сверки → «уточню» + бейдж «Проверить цены»).
+     format[] — как продаём: "отправка" | "вживую" (любой набор) → бейджи.
+     addons   — необязательный апсел «также можем предложить», НЕ входит в цену комплекта. Два вида:
+                • { head, items:[…], note }        — плоский список позиций-альтернатив (три вида, без «Итого»);
+                • { block: DIFFS_KIT }             — готовый поузловой блок (варианты с «Итого»), тот же рендер
+                                                     (renderDiffsMulti), что в Шаблонах. DIFFS_KIT — запчасти комплекта. */
+  const KITS = [
+    {
+      name:  "ZF 8HP · масло 5 л + фильтр-поддон",
+      sub:   "Оригинальное масло ZF 8HP (5 л) и оригинальный фильтр-поддон ZF 1087298437.",
+      price: 20000,
+      format:["вживую","отправка"],
+      items: [
+        { ref:"oil_zf_5" },      // Оригинальное масло ZF8HP 5л (11 000 ₽)
+        { ref:"filter_std" },    // Оригинальный фильтр-поддон ZF 1087298437 (9 000 ₽)
+      ],
+      // Апсел «комплект для мостов и раздатки» — запчасти без работ (Motul 12 000 / оригинал BMW 25 500),
+      // блок DIFFS_KIT. Это КОМПЛЕКТ (только масла), не услуга DIFFS_REGULAR с работами. Цены — из PRICE.
+      addons: { block: DIFFS_KIT },
+    },
+    // Формат заполнения нового комплекта (скопируй объект выше и правь; addons — по желанию):
+    // {
+    //   name:  "Название комплекта",
+    //   sub:   "Короткое описание.",
+    //   price: 18500,
+    //   format:["отправка","вживую"],
+    //   items: [ { ref:"filter_std" }, "Motul ATF6 105774 — 8 л", ["Промывочная присадка BARDAHL", 2200] ],
+    //   note:  "Примечание.",
+    // },
+  ];
+  const KIT_FORMAT_ICO = { "отправка": ICO.inbox, "вживую": ICO.wrench };
+
+  // Позиция состава → { name, price|null, stale? } (единая обработка трёх форматов).
+  function kitLine(it){
+    if(typeof it === "string") return { name:it, price:null };
+    if(Array.isArray(it))      return { name:it[0], price:(it[1] ?? null) };
+    if(it && it.ref){
+      const p = PRICE[it.ref];
+      if(!p)              return { name:`⚠ уточню: ${it.ref}`, price:null, stale:true }; // нет ключа (опечатка) → тоже флаг «Проверить цены», fail-closed (правила 2,7)
+      if(isFresh(it.ref)) return { name:p[0], price:p[1] };
+      return { name:p[0], price:null, stale:true };                          // цена протухла → без числа (правило 7)
+    }
+    return { name:String(it), price:null };
+  }
+  const kitRub = n => Number(n).toLocaleString("ru-RU") + " ₽";
+  // Текст для клиента (ровно тело комплекта: состав + цена), без интерфейсных подписей (правило 9).
+  function kitBodyText(k){
+    const lines = [k.name];
+    if(k.sub) lines.push(k.sub);
+    lines.push("", "Состав:");
+    for(const it of (k.items || [])){
+      const l = kitLine(it);
+      lines.push(l.price != null ? `• ${l.name} — ${l.price} руб.` : `• ${l.name}`);
+    }
+    lines.push("");
+    lines.push(k.price != null ? `Цена комплекта: ${k.price} руб.` : "Цена комплекта: уточню");
+    if(k.addons){                                       // доп. предложение (апсел) — отдельным блоком, не в цене комплекта
+      if(k.addons.block){                               // блок «мосты/раздатка» поузлово — тот же рендер, что в Шаблонах (единый источник)
+        lines.push("", renderDiffsMulti(k.addons.block));
+      } else {                                          // плоский список позиций-альтернатив
+        lines.push("", k.addons.head || "Дополнительно:");
+        for(const it of (k.addons.items || [])){
+          const l = kitLine(it);
+          lines.push(l.price != null ? `• ${l.name} — ${l.price} руб.` : `• ${l.name}`);
+        }
+        if(k.addons.note) lines.push(k.addons.note);
+      }
+    }
+    if(k.note) lines.push("", k.note);
+    return lines.join("\n");
+  }
+
+  function renderKits(){
+    const root = document.getElementById("page-komplekty");
+    if(!root) return;
+    const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+    if(!KITS.length){
+      root.innerHTML =
+        `<div class="tpl-grid"><div class="tpl-empty">
+          Пока нет комплектов. Добавьте первый в структуре <b>KITS</b> —
+          карточка с составом, ценой и кнопкой «Копировать» появится сама.
+        </div></div>`;
+      return;
+    }
+    const listHtml = arr => arr.map(l =>
+      `<div class="kit-row"><span class="kit-row-n">${esc(l.name)}</span>${
+        l.price != null ? `<span class="kit-row-p">${esc(kitRub(l.price))}</span>` : ""}</div>`).join("");
+    // Апсел-блок «мосты/раздатка» (варианты Motul/оригинал, у каждого своё «Итого») — тот же состав, что в Шаблонах.
+    const addonBlockHtml = block => block.variants.map(v => {
+      const lns = v.items.map(key => kitLine({ ref:key }));   // items блока — это ключи PRICE (как в renderDiffsMulti)
+      const anyStale = lns.some(l => l.stale);
+      const sum = lns.reduce((a,l) => a + (l.price || 0), 0);
+      return `<div class="kit-var-lbl">${esc(v.label)}</div>
+        <div class="kit-list">${listHtml(lns)}<div class="kit-row kit-total"><span class="kit-row-n">Итого</span>
+          <span class="kit-row-p">${anyStale ? "уточню" : esc(kitRub(sum))}</span></div></div>`;
+    }).join("");
+    const cards = KITS.map((k,i) => {
+      const items = (k.items || []).map(kitLine);
+      const ad = k.addons || null;
+      const adLines = !ad ? [] : ad.block ? ad.block.variants.flatMap(v => v.items.map(key => kitLine({ ref:key }))) : (ad.items || []).map(kitLine);
+      const stale = items.concat(adLines).some(l => l.stale); // свежесть учитывает и доп-позиции
+      const badges = (k.format || []).map(f =>
+        `<span class="tpl-badge b-hybrid">${KIT_FORMAT_ICO[f] || ""} ${esc(f)}</span>`);
+      if(stale) badges.push(`<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>`); // свежесть (правило 7)
+      const priceTxt = k.price != null ? kitRub(k.price) : "уточню";
+      const list = listHtml(items);
+      return `<div class="tpl-card">
+        <button class="tpl-card-head" type="button" aria-expanded="false">
+          <span class="tpl-head-main">
+            <span class="tpl-title">${esc(k.name)}</span>
+            ${badges.length ? `<span class="tpl-badges">${badges.join("")}</span>` : ""}
+          </span>
+          <span class="kit-price">${esc(priceTxt)}</span>
+          <span class="tpl-chevron"></span>
+        </button>
+        <div class="tpl-collapse"><div class="tpl-collapse-inner">
+          ${k.sub ? `<div class="kit-sub">${esc(k.sub)}</div>` : ""}
+          ${list ? `<div class="kit-lbl">Состав</div><div class="kit-list">${list}</div>` : ""}
+          ${!ad ? "" : ad.block
+            ? `<div class="kit-lbl">${esc(ad.block.head)}</div>${addonBlockHtml(ad.block)}${ad.block.note ? `<div class="kit-note">${esc(ad.block.note)}</div>` : ""}`
+            : `<div class="kit-lbl">${esc(ad.head || "Дополнительно")}</div><div class="kit-list">${listHtml((ad.items || []).map(kitLine))}</div>${ad.note ? `<div class="kit-note">${esc(ad.note)}</div>` : ""}`}
+          ${k.note ? `<div class="kit-note">${esc(k.note)}</div>` : ""}
+          <div class="tpl-actions"><button class="tpl-copy" type="button" data-i="${i}">${ICO.copy} Копировать</button></div>
+        </div></div>
+      </div>`;
+    }).join("");
+    root.innerHTML = `<div class="tpl-grid" id="kit-grid">${cards}</div>`;
+
+    root.querySelectorAll(".tpl-card-head").forEach(head =>
+      head.addEventListener("click", () => {
+        const card = head.closest(".tpl-card");
+        const open = card.classList.toggle("open");
+        head.setAttribute("aria-expanded", open ? "true" : "false");
+      }));
+
+    root.querySelectorAll(".tpl-copy").forEach(btn =>
+      btn.addEventListener("click", async e => {
+        e.stopPropagation();
+        const text = kitBodyText(KITS[+btn.dataset.i]);
+        try { await navigator.clipboard.writeText(text); }
+        catch(_){ const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed";
+          ta.style.opacity="0"; document.body.appendChild(ta); ta.select();
+          try{ document.execCommand("copy"); }catch(__){} ta.remove(); }
+        if(!btn.classList.contains("ok")) btn.dataset.copyLabel = btn.innerHTML;
+        btn.innerHTML = ICO.check + " Вставьте в WhatsApp"; btn.classList.add("ok"); // мостик к следующему шагу (как в Шаблонах)
+        clearTimeout(btn._copyT);
+        btn._copyT = setTimeout(() => { btn.innerHTML = btn.dataset.copyLabel; btn.classList.remove("ok"); }, 1600);
+      }));
+  }
+  // Каскад проявления карточек комплектов при входе в раздел (перенос BlurFade со stagger).
+  window.kitsReveal = function(){
+    const root = document.getElementById("page-komplekty");
+    if(root) mdBlurStagger(root.querySelectorAll(".tpl-card"));
+  };
+
   /* ===================== Меню и страницы ===================== */
   const PAGES = {
     grafik:   { t:"График дежурств", r:"28 июня — 27 июля 2026 · 30 дней" },
     shablony: { t:"Шаблоны",         r:"Каталог · выбери марку, копируй и отправляй клиенту" },
     tseny:    { t:"Цены",            r:"Запчасти и масла · поиск по названию и артикулу" },
+    komplekty:{ t:"Комплекты",       r:"Наборы на продажу — собираем, отправляем и продаём вживую" },
     prodazhi: { t:"Продажи",         r:"Присадки · выручка и штуки по дням" },
     zametki:  { t:"Заметки и пожелания", r:"Что починить, что добавить — пиши, увидят все" },
   };
@@ -3851,6 +4091,7 @@
     // вкладка стала видимой — выровнять высоту карточек шаблонов (на скрытой вкладке высота = 0)
     if(id === "shablony" && window.equalizeTplHeads) window.equalizeTplHeads();
     if(id === "shablony" && window.tplRevealCards) window.tplRevealCards(); // ③ каскад карточек
+    if(id === "komplekty" && window.kitsReveal)    window.kitsReveal();     // каскад карточек комплектов
     if(id === "prodazhi" && window.salesReveal)    window.salesReveal();    // ② счётчик денег
     try { localStorage.setItem("md_page", id); } catch(e){}  // запомнить вкладку для следующей загрузки
     closeMenu();
@@ -3861,6 +4102,7 @@
   document.addEventListener("keydown", e => { if(e.key === "Escape") closeMenu(); });
   // Главная — первый экран по умолчанию; память вкладки (md_page) при этом сохраняется (must-keep #4)
   renderHome();
+  renderKits();
   let startPage = "glavnaya";
   try { const saved = localStorage.getItem("md_page"); if(saved && (saved === "glavnaya" || PAGES[saved])) startPage = saved; } catch(e){}
   showPage(startPage);
