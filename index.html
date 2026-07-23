@@ -385,6 +385,12 @@
   .kit-row-p{flex:none;font-family:var(--font-mono);font-weight:600;font-size:12.5px;color:var(--muted);
     font-variant-numeric:tabular-nums;white-space:nowrap}
   .kit-note{margin:0 16px 4px;padding:2px 2px 0;color:var(--muted);font-size:12.5px;line-height:1.5}
+  /* сводка «Итого»: коробка + каждый вариант комплекта мостов/раздатки — главные цифры карточки */
+  .kit-sum{margin:12px 16px 0;padding:12px 14px;background:var(--fill-soft);border:1px solid var(--line-strong);border-radius:12px}
+  .kit-sum-h{font-family:var(--font-disp);font-weight:700;font-size:13px;color:var(--text);margin-bottom:6px}
+  .kit-sum-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:4px 0}
+  .kit-sum-n{font-size:13px;font-weight:600;color:var(--muted)}
+  .kit-sum-v{font-family:var(--font-mono);font-weight:600;font-size:15px;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap}
 
   /* ===================== ЦЕНЫ (прайс запчастей) ===================== */
   .pr-table thead th:first-child{border-left:none}
@@ -691,6 +697,58 @@
     color:var(--muted);font-weight:600;font-size:13px}
   @media(max-width:720px){ .fb-chip{min-height:44px;padding:9px 16px} .fb-send{width:100%;justify-content:center;min-height:44px} .fb-when{margin-left:0;width:100%} .fb-mark,.fb-undo{min-height:44px} }
 
+  /* ===================== ТО (двигатель → смета) =====================
+     Обучаемый конструктор: чипы сохранённых двигателей + карточка-смета + форма заведения.
+     Кнопки/поля — UI-KIT (.ui-*), бейджи свежести — .tpl-badge.b-check; всё токенами (обе темы). */
+  .to-wrap{display:flex;flex-direction:column;gap:14px;max-width:860px}
+  .to-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .to-bar .ui-input{flex:1;min-width:200px}
+  .to-list{display:flex;flex-wrap:wrap;gap:8px}
+  .to-eng{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:12px;cursor:pointer;
+    border:1px solid var(--line);background:var(--fill);color:var(--text);font:inherit;font-weight:600;font-size:13.5px;
+    transition:border-color .15s,background .15s,color .15s,transform .15s}
+  .to-eng:hover{border-color:var(--line-strong);background:var(--fill-hover)}
+  .to-eng:active{transform:scale(.95)}
+  .to-eng.active{border-color:#d11f2d;background:rgba(209,31,45,.1);color:var(--accent-soft)}
+  .to-eng .f{font-family:var(--font-mono);font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:.3px}
+  .to-eng.active .f{color:inherit;opacity:.75}
+  .to-empty{background:var(--card);border:1px dashed var(--line-strong);border-radius:14px;padding:22px;text-align:center;
+    color:var(--muted);font-weight:600;font-size:13px;line-height:1.5}
+  .to-card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px;
+    display:flex;flex-direction:column;gap:12px}
+  .to-card-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .to-card-title{font-family:var(--font-disp);font-weight:700;font-size:16.5px;letter-spacing:.2px;margin-right:auto}
+  .to-card-title .f{color:var(--muted);font-size:13px;font-weight:600}
+  .to-rows{display:flex;flex-direction:column}
+  .to-row{display:flex;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+  .to-row:last-child{border-bottom:none}
+  .to-row .n{min-width:0}
+  .to-row .p{margin-left:auto;font-family:var(--font-mono);font-weight:700;white-space:nowrap}
+  .to-row .p.ask{color:var(--warn);font-family:inherit;font-weight:700}
+  .to-litres{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);font-weight:600;flex-wrap:wrap}
+  .to-litres input{width:80px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--fill);
+    color:var(--text);font:inherit;font-weight:700}
+  .to-litres input:focus{border-color:#d11f2d;outline:none}
+  .to-slots{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .to-slot-form{display:grid;grid-template-columns:1fr 130px auto auto;gap:8px;align-items:center}
+  .to-total{display:flex;align-items:baseline;gap:10px;padding-top:10px;border-top:1px solid var(--line-strong);
+    font-weight:800;font-size:15px}
+  .to-total .p{margin-left:auto;font-family:var(--font-mono)}
+  .to-total .p.ask{color:var(--warn);font-family:inherit}
+  .to-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .to-form{background:var(--card);border:1px solid var(--line-strong);border-radius:14px;padding:16px 18px;display:grid;gap:12px}
+  .to-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .to-form-title{font-family:var(--font-disp);font-weight:700;font-size:15px}
+  .to-fuel{display:flex;gap:8px}
+  .to-note{font-size:12px;color:var(--muted);line-height:1.45}
+  @media(max-width:720px){
+    .to-eng{min-height:44px}
+    .to-form-grid{grid-template-columns:1fr}
+    .to-slot-form{grid-template-columns:1fr 110px auto auto}
+    .to-actions .ui-btn{flex:1;min-height:44px}
+    .to-litres input{min-height:44px}
+  }
+
   /* ===================== ПЕЧАТЬ ===================== */
   @media print{
     html[data-theme]{--text:#111;--muted:#555}
@@ -960,6 +1018,7 @@
         <button class="nav-item" data-page="glavnaya">Главная</button>
         <button class="nav-item" data-page="grafik">График</button>
         <button class="nav-item" data-page="shablony">Шаблоны</button>
+        <button class="nav-item" data-page="to">ТО</button>
         <button class="nav-item" data-page="tseny">Цены</button>
         <button class="nav-item" data-page="komplekty">Комплекты</button>
         <button class="nav-item" data-page="prodazhi">Продажи</button>
@@ -1025,6 +1084,9 @@
         </section>
       </div>
     </div>
+
+    <!-- ===== Страница: ТО (двигатель → масло, фильтры, работы) — рендерится из данных ===== -->
+    <div id="page-to" class="page" hidden></div>
 
     <!-- ===== Страница: Цены ===== -->
     <div id="page-tseny" class="page" hidden>
@@ -1341,6 +1403,8 @@
     ravenol_ulv:   3200,  // Ravenol ATF T-ULV
     mb_236_17:     2600,  // Mercedes 236.17 A000989590411 (9G)
     mb_236_15:     2200,  // Mercedes 236.15 A000989270411 (7G)
+    motor_0w:      2200,  // моторные Motul 0W30/0W40 (8100 X-Clean+ EFE, X-Max, Eco-nergy)
+    motor_5w:      2000,  // моторные Motul 5W30/5W40 (8100, Specific 504/507)
   };
   // цена строки-масла = ставка × объём, округлённая до рубля
   const perL = (rate, litres) => Math.round(rate * litres);
@@ -1385,6 +1449,10 @@
     // Комплект (запчасти без работ) для мостов/раздатки — апсел в «Комплектах» (блок DIFFS_KIT). Раздатка — transfer_oil_*.
     kit_diff_motul:   ["Трансмиссионное масло Motul Gear 300 75W90 105777 2л (в мосты)", perL(RATES.gear300, 2)],  // 9000
     kit_diff_orig:    ["Оригинальное трансмиссионное масло BMW G OIL (в мосты, 4 шт)", 20000],                     // оригинал в мосты, набором
+    // Комплект С БЛОКИРОВКОЙ (LSD): задний мост на Gear 300 LS 105778, оригинал — 4 шт (2×6500 LSD + 2×5000). Блок DIFFS_KIT_LOCK.
+    kit_diff_motul_ls:  ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 1л (в мосты)", perL(RATES.gear300_ls, 1)], // 5500
+    kit_diff_motul_reg: ["Трансмиссионное масло Motul Gear 300 75W90 105777 1л (в мосты)",    perL(RATES.gear300, 1)],    // 4500
+    kit_diff_orig_lock: ["Оригинальное трансмиссионное масло BMW G OIL (в мосты, 4 шт)", 23000],                          // блокировка: 2×6500 (LSD) + 2×5000
     // Агрегатные «мосты/раздатка/Торсен» — Motul и Оригинал АЛЬТЕРНАТИВЫ (не слагаемые), «Итого» нет.
     // diffs_* = сумма поузловых (нужны «Комплектам»/addons, KITS); AXLES_* — X1/Торсен (renderAxles). Цены здесь.
     diffs_motul_nolock:     ["Масло Motul +замена", 11550],
@@ -1539,7 +1607,29 @@
     work_dq200:       ["Замена масла в DSG DQ-200", 4000],
     work_full_cvt_re0f11a: ["Полная замена масла в вариаторе RE0F11A JF015 с промывкой системы", 7000],
     work_full_cvt_jf016:   ["Полная замена масла в вариаторе JF016E/JF017E с промывкой системы", 7000],
+    // ТО двигателя (раздел «ТО»): работы — расценки владельца. Фильтры кузова (возд./салон./топл.)
+    // клиент-специфичны и вводятся в разделе по месту; строка работы подтягивается при заполнении слота.
+    to_work_oil:   ["Замена масла в моторе", 1500],
+    to_work_air:   ["Замена воздушного фильтра", 500],
+    to_work_cabin: ["Замена салонного фильтра", 500],
+    to_work_fuel:  ["Замена топливного фильтра", 1000],
   };
+
+  /* ---- ТО: моторные масла. Цена строки масла = perL(RATES[rate], паспортный литраж двигателя);
+     литраж живёт в записи двигателя (лист «Двигатели», раздел «ТО»). Ставки ₽/л — motor_0w/motor_5w
+     в RATES (единственное место с ценами; ими же считается каталог PARTS), свежесть — эти же ключи
+     в CHECKED_ON (fail-closed). Новое масло — строка здесь (+ при необходимости новая ставка в RATES). */
+  const TO_OILS = [
+    { key:"moto_xclean_plus_5w30", rate:"motor_5w", name:"Моторное масло Motul 8100 X-Clean+ 5W30" },
+    { key:"moto_xclean_efe_5w30",  rate:"motor_5w", name:"Моторное масло Motul 8100 X-Clean EFE 5W30" },
+    { key:"moto_xclean_efe_0w30",  rate:"motor_0w", name:"Моторное масло Motul 8100 X-Clean+ EFE 0W30" },
+    { key:"moto_specific_504_5w30",rate:"motor_5w", name:"Моторное масло Motul Specific 504/507 5W30" },
+    { key:"moto_xcess_5w40",       rate:"motor_5w", name:"Моторное масло Motul 8100 X-cess GEN2 5W40" },
+    { key:"moto_xmax_0w40",        rate:"motor_0w", name:"Моторное масло Motul 8100 X-MAX 0W40" },
+    { key:"moto_econergy_5w30",    rate:"motor_5w", name:"Моторное масло Motul 8100 Eco-nergy 5W30" },
+    { key:"moto_econergy_0w30",    rate:"motor_0w", name:"Моторное масло Motul 8100 Eco-nergy 0W30" },
+  ];
+  const TO_OIL = Object.fromEntries(TO_OILS.map(o => [o.key, o]));
 
   /* ---- Свежесть Уровня 0: дата сверки цены с прайсом поставщика (fail-closed, правило 7). ----
      Дата-ключ в CHECKED_ON (checkedAt) = день, когда ВЛАДЕЛЕЦ лично подтвердил цену против
@@ -1589,6 +1679,7 @@
       "oil_multiatf_11", "oil_multiatf_15", "oil_multiatf_16", "oil_toyota_16", "oil_toyota_11", "oil_dctf_9",
       "oil_dctf_5", "oil_dctf_35", "oil_dctf_2", "oil_httdctf_9", "oil_gear300_4", "oil_gear300_38",
       "oil_cvtf_12", "oil_hf_1", "oil_kia_sp4_11",
+      "kit_diff_motul_ls", "kit_diff_motul_reg",   // масла комплекта-с-блокировкой — по ставкам gear300_ls/gear300 (эта дата)
     ],
     "2026-07-09": [
       "transfer_oil_motul", "transfer_oil_dtf1", "transfer_work",
@@ -1600,6 +1691,11 @@
     "2026-07-19": [   // поузловые мосты/раздатка — состав сверен владельцем (скрин: обычный мост + оригинал по 1 л)
       "diff_work_rear", "bmw_g_oil", "diff_lock_motul", "diff_lock_orig",
       "kit_diff_motul", "kit_diff_orig",   // комплект (запчасти) для мостов/раздатки — DIFFS_KIT
+    ],
+    "2026-07-22": [   // комплект С БЛОКИРОВКОЙ — оригинал 4 шт = 2×6500 (LSD) + 2×5000 = 23000, сверено владельцем (DIFFS_KIT_LOCK)
+      "kit_diff_orig_lock",
+      "motor_0w", "motor_5w",   // ставки моторных масел (страница «Цены») — подтверждены владельцем
+      "to_work_oil", "to_work_air", "to_work_cabin", "to_work_fuel",   // работы ТО — расценки продиктованы владельцем
     ],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
@@ -1630,6 +1726,17 @@
     variants: [
       { label: "Комплект Motul",        items: ["kit_diff_motul", "transfer_oil_motul"] },
       { label: "Комплект оригинал BMW", items: ["kit_diff_orig",  "transfer_oil_dtf1"] },
+    ],
+  };
+  // 2.0.1) КОМПЛЕКТ С БЛОКИРОВКОЙ (LSD): задний мост на Gear 300 LS (Motul) / оригинал 4 шт (2×6500 LSD + 2×5000 = 23000) — блокировка
+  //        уже в масле, отдельной «доплаты» нет. Итого: Motul 13000 / оригинал BMW 28500. Цены — в PRICE.
+  const DIFFS_KIT_LOCK = {
+    head:  "Так же можем предложить комплект для мостов и раздатки — с блокировкой дифференциала.",
+    intro: "2 варианта:",
+    note:  "Motul ничем не уступает оригиналу.",
+    variants: [
+      { label: "Комплект Motul",        items: ["kit_diff_motul_ls", "kit_diff_motul_reg", "transfer_oil_motul"] },
+      { label: "Комплект оригинал BMW", items: ["kit_diff_orig_lock", "transfer_oil_dtf1"] },
     ],
   };
 
@@ -2993,17 +3100,17 @@
     ["VAG", "G052145S2", "Трансмиссионное масло VAG", 12, 5000, "oils"],
     ["VAG", "G055145A2", "Трансмиссионное масло VAG ТОРСЕН", 12, 17000, "oils"],
     ["VAG", "G055190A2", "Трансмиссионное масло VAG", 12, 5000, "oils"],
-    ["Motul", "113092", "Моторное масло Motul 8100 X-Clean+ EFE 0W30 4л ОФИЦИАЛЫ!!!", 10, 9000, "oils"],
-    ["Motul", "106375", "Моторное масло Motul Specific 504/507 5W30 5л ОФИЦИАЛЫ!!!", 10, 11900, "oils"],
-    ["Motul", "111684", "Моторное масло Motul 8100 X-Clean+ 5W30 5л ОФИЦИАЛЫ!!!", 12, 11000, "oils"],
-    ["Motul", "111688", "Моторное масло Motul 8100 X-Clean EFE 5W30 5л ОФИЦИАЛЫ!!!", 20, 11000, "oils"],
-    ["Motul", "111686", "Моторное масло Motul 8100 Eco-nergy 5W30 5л ОФИЦИАЛЫ!!!", 20, 11000, "oils"],
-    ["Motul", "109471", "Моторное масло Motul 8100 X-Clean EFE 5W30 5л ОФИЦИАЛЫ!!!", 20, 11000, "oils"],
-    ["Motul", "109776", "Моторное масло Motul 8100 X-cess GEN2 5W40 5л ОФИЦИАЛЫ!!!", 7, 10000, "oils"],
-    ["Motul", "111858", "Моторное масло Motul 8100 X-cess GEN2 5W40 4л ОФИЦИАЛЫ!!!", 10, 8000, "oils"],
-    ["Motul", "109775", "Моторное масло Motul 8100 X-cess GEN2 5W40 4л ОФИЦИАЛЫ!!!", 10, 8000, "oils"],
-    ["Motul", "104533", "Моторное масло MOTUL 8100 X-MAX 0W40 5л", 3, 11000, "oils"],
-    ["Motul", "102794", "Моторное масло MOTUL 8100 Eco-nergy 0W30 5л", 10, 11000, "oils"],
+    ["Motul", "113092", "Моторное масло Motul 8100 X-Clean+ EFE 0W30 4л ОФИЦИАЛЫ!!!", 10, perL(RATES.motor_0w, 4), "oils"],  // цена из RATES (4л)
+    ["Motul", "106375", "Моторное масло Motul Specific 504/507 5W30 5л ОФИЦИАЛЫ!!!", 10, perL(RATES.motor_5w, 5), "oils"],  // цена из RATES (5л)
+    ["Motul", "111684", "Моторное масло Motul 8100 X-Clean+ 5W30 5л ОФИЦИАЛЫ!!!", 12, perL(RATES.motor_5w, 5), "oils"],  // цена из RATES (5л)
+    ["Motul", "111688", "Моторное масло Motul 8100 X-Clean EFE 5W30 5л ОФИЦИАЛЫ!!!", 20, perL(RATES.motor_5w, 5), "oils"],  // цена из RATES (5л)
+    ["Motul", "111686", "Моторное масло Motul 8100 Eco-nergy 5W30 5л ОФИЦИАЛЫ!!!", 20, perL(RATES.motor_5w, 5), "oils"],  // цена из RATES (5л)
+    ["Motul", "109471", "Моторное масло Motul 8100 X-Clean EFE 5W30 5л ОФИЦИАЛЫ!!!", 20, perL(RATES.motor_5w, 5), "oils"],  // цена из RATES (5л)
+    ["Motul", "109776", "Моторное масло Motul 8100 X-cess GEN2 5W40 5л ОФИЦИАЛЫ!!!", 7, perL(RATES.motor_5w, 5), "oils"],  // цена из RATES (5л)
+    ["Motul", "111858", "Моторное масло Motul 8100 X-cess GEN2 5W40 4л ОФИЦИАЛЫ!!!", 10, perL(RATES.motor_5w, 4), "oils"],  // цена из RATES (4л)
+    ["Motul", "109775", "Моторное масло Motul 8100 X-cess GEN2 5W40 4л ОФИЦИАЛЫ!!!", 10, perL(RATES.motor_5w, 4), "oils"],  // цена из RATES (4л)
+    ["Motul", "104533", "Моторное масло MOTUL 8100 X-MAX 0W40 5л", 3, perL(RATES.motor_0w, 5), "oils"],  // цена из RATES (5л)
+    ["Motul", "102794", "Моторное масло MOTUL 8100 Eco-nergy 0W30 5л", 10, perL(RATES.motor_0w, 5), "oils"],  // цена из RATES (5л)
     ["Motul", "105777", "Трансмиссионная жидкость MOTUL Gear 300 75W90 1л", 20, RATES.gear300, "oils"],  // цена из RATES
     ["Motul", "105778", "Трансмиссионная жидкость MOTUL Gear 300 LS 75W90 1л ORIGINAL", 20, RATES.gear300_ls, "oils"],  // цена из RATES
     ["Motul", "105779", "Трансмиссионная жидкость MOTUL Gear Competition 75W140 1л", 20, 7000, "oils"],
@@ -3818,6 +3925,7 @@
     // плитки-лаунчер: страница · иконка · название · назначение (что делает раздел)
     tiles: [
       { page:"shablony", ico:"car",      name:"Шаблоны", hint:"Цена замены по коробке" },
+      { page:"to",       ico:"wrench",   name:"ТО",      hint:"Масло и фильтры по двигателю" },
       { page:"grafik",   ico:"calendar", name:"График",  hint:"Кто на смене и обязанности" },
       { page:"tseny",    ico:"cash",     name:"Цены",    hint:"Прайс: запчасти и масла" },
       { page:"komplekty",ico:"box",      name:"Комплекты", hint:"Наборы на продажу — отправка и вживую" },
@@ -3907,24 +4015,59 @@
        • ["Название", 1500]    — имя + цена позиции (розница);
        • { ref:"ключ_PRICE" }  — тянет имя+цену из единого прайса PRICE (свежесть honored:
                                  протухла/без даты сверки → «уточню» + бейдж «Проверить цены»).
-     format[] — как продаём: "отправка" | "вживую" (любой набор) → бейджи.
+     format[] — как продаём: "отправка" | "вживую" (любой набор) → бейджи. hybrid:true → бейдж «Мягкий гибрид».
      addons   — необязательный апсел «также можем предложить», НЕ входит в цену комплекта. Два вида:
                 • { head, items:[…], note }        — плоский список позиций-альтернатив (три вида, без «Итого»);
-                • { block: DIFFS_KIT }             — готовый поузловой блок (варианты с «Итого»), тот же рендер
-                                                     (renderDiffsMulti), что в Шаблонах. DIFFS_KIT — запчасти комплекта. */
+                • { block: DIFFS_KIT }             — готовый поузловой блок (варианты с «Итого»). Карточку, сводку
+                                                     и копи-текст считает ОДИН расчёт kitAddonVariants (fail-closed).
+     При addons.block + price автоматически строится сводка «Итого» (kitAddonTotals):
+     коробка + каждый вариант блока — в карточке (.kit-sum) и в копи-тексте. */
   const KITS = [
+    // Пара «обычный мотор»: коробка = масло 5л + штатный поддон 437 (11000+9000=20000).
+    // Апсел — комплект запчастей для мостов/раздатки: DIFFS_KIT (Motul 12000 / оригинал 25500)
+    // или DIFFS_KIT_LOCK с блокировкой (LSD-масло в составе, Motul 13000 / оригинал 28500).
     {
-      name:  "ZF 8HP · масло 5 л + фильтр-поддон",
-      sub:   "Оригинальное масло ZF 8HP (5 л) и оригинальный фильтр-поддон ZF 1087298437.",
+      name:  "ZF 8HP · масло 5 л · мосты и раздатка без блокировки",
       price: 20000,
       format:["вживую","отправка"],
       items: [
         { ref:"oil_zf_5" },      // Оригинальное масло ZF8HP 5л (11 000 ₽)
         { ref:"filter_std" },    // Оригинальный фильтр-поддон ZF 1087298437 (9 000 ₽)
       ],
-      // Апсел «комплект для мостов и раздатки» — запчасти без работ (Motul 12 000 / оригинал BMW 25 500),
-      // блок DIFFS_KIT. Это КОМПЛЕКТ (только масла), не услуга DIFFS_REGULAR с работами. Цены — из PRICE.
       addons: { block: DIFFS_KIT },
+    },
+    {
+      name:  "ZF 8HP · масло 5 л · мосты и раздатка с блокировкой",
+      price: 20000,
+      format:["вживую","отправка"],
+      items: [
+        { ref:"oil_zf_5" },      // Оригинальное масло ZF8HP 5л (11 000 ₽)
+        { ref:"filter_std" },    // Оригинальный фильтр-поддон ZF 1087298437 (9 000 ₽)
+      ],
+      addons: { block: DIFFS_KIT_LOCK, lock: true },   // lock:true → бейдж «Блокировка» (доплаты нет — LSD уже в масле)
+    },
+    // Пара «мягкий гибрид»: тот же расклад, но поддон мягкого гибрида (filter_mild 19000) → коробка 30000.
+    {
+      name:  "ZF 8HP · мягкий гибрид · масло 5 л · мосты и раздатка без блокировки",
+      hybrid:true,
+      price: 30000,
+      format:["вживую","отправка"],
+      items: [
+        { ref:"oil_zf_5" },      // Оригинальное масло ZF8HP 5л (11 000 ₽)
+        { ref:"filter_mild" },   // Оригинальный фильтр-поддон ZF мягкого гибрида (19 000 ₽)
+      ],
+      addons: { block: DIFFS_KIT },
+    },
+    {
+      name:  "ZF 8HP · мягкий гибрид · масло 5 л · мосты и раздатка с блокировкой",
+      hybrid:true,
+      price: 30000,
+      format:["вживую","отправка"],
+      items: [
+        { ref:"oil_zf_5" },      // Оригинальное масло ZF8HP 5л (11 000 ₽)
+        { ref:"filter_mild" },   // Оригинальный фильтр-поддон ZF мягкого гибрида (19 000 ₽)
+      ],
+      addons: { block: DIFFS_KIT_LOCK, lock: true },
     },
     // Формат заполнения нового комплекта (скопируй объект выше и правь; addons — по желанию):
     // {
@@ -3945,12 +4088,36 @@
     if(it && it.ref){
       const p = PRICE[it.ref];
       if(!p)              return { name:`⚠ уточню: ${it.ref}`, price:null, stale:true }; // нет ключа (опечатка) → тоже флаг «Проверить цены», fail-closed (правила 2,7)
-      if(isFresh(it.ref)) return { name:p[0], price:p[1] };
+      if(isFresh(it.ref)) return typeof p[1] === "number"
+        ? { name:p[0], price:p[1] }
+        : { name:p[0], price:null, stale:true };                             // битая цена (не число) → тоже «уточню», не молча 0 (правило 2)
       return { name:p[0], price:null, stale:true };                          // цена протухла → без числа (правило 7)
     }
     return { name:String(it), price:null };
   }
   const kitRub = n => Number(n).toLocaleString("ru-RU") + " ₽";
+  const kitLc  = s => s.charAt(0).toLowerCase() + s.slice(1);   // «Комплект Motul» → «комплект Motul» (для строк сводки)
+  // ЕДИНЫЙ расчёт вариантов апсел-блока — карточка, сводка и копи-текст считают ОДНО и то же
+  // (иначе рассинхрон: частичное «Итого» в одном месте и «уточню» в другом).
+  // Вариант: { label, lines:[kitLine…], sum, stale }; stale → «Итого: уточню» везде (fail-closed, правило 7).
+  function kitAddonVariants(ad){
+    if(!ad || !ad.block) return null;
+    return (ad.block.variants || []).map(v => {
+      const keys = (ad.lock && v.lockItem) ? [...v.items, v.lockItem] : v.items;
+      const lines = keys.map(key => kitLine({ ref:key }));
+      return { label: v.label, lines,
+               sum:   lines.reduce((a,l) => a + (l.price || 0), 0),
+               stale: lines.some(l => l.stale) };
+    });
+  }
+  // Сводка «Итого»: коробка (price) + каждый вариант апсел-блока. total:null = «уточню» в варианте
+  // ИЛИ в составе коробки → сумму не показываем (fail-closed, правило 7 — без уверенных цифр рядом с «уточню»).
+  function kitAddonTotals(k){
+    const vars = kitAddonVariants(k.addons);
+    if(!vars || k.price == null) return null;
+    const itemsStale = (k.items || []).map(kitLine).some(l => l.stale);
+    return vars.map(v => ({ label: v.label, total: (v.stale || itemsStale) ? null : k.price + v.sum }));
+  }
   // Текст для клиента (ровно тело комплекта: состав + цена), без интерфейсных подписей (правило 9).
   function kitBodyText(k){
     const lines = [k.name];
@@ -3963,8 +4130,17 @@
     lines.push("");
     lines.push(k.price != null ? `Цена комплекта: ${k.price} руб.` : "Цена комплекта: уточню");
     if(k.addons){                                       // доп. предложение (апсел) — отдельным блоком, не в цене комплекта
-      if(k.addons.block){                               // блок «мосты/раздатка» поузлово — тот же рендер, что в Шаблонах (единый источник)
-        lines.push("", renderDiffsMulti(k.addons.block));
+      const vars = kitAddonVariants(k.addons);
+      if(vars){                                         // блок-варианты: ТОТ ЖЕ расчёт, что карточка и сводка (fail-closed «Итого»)
+        const b = k.addons.block;
+        lines.push("", b.head);
+        if(b.intro) lines.push(b.intro);
+        for(const v of vars){
+          lines.push("", v.label);
+          for(const l of v.lines) lines.push(l.price != null ? `${l.name} ${l.price} руб.` : `${l.name} — уточню`);
+          lines.push(v.stale ? "Итого: уточню" : `Итого: ${v.sum} руб.`);   // без уверенной частичной суммы рядом с «уточню»
+        }
+        if(b.note) lines.push("", b.note);
       } else {                                          // плоский список позиций-альтернатив
         lines.push("", k.addons.head || "Дополнительно:");
         for(const it of (k.addons.items || [])){
@@ -3973,6 +4149,12 @@
         }
         if(k.addons.note) lines.push(k.addons.note);
       }
+    }
+    const totals = kitAddonTotals(k);                   // сводка: коробка + каждый вариант мостов/раздатки
+    if(totals){
+      lines.push("", "Итого:");
+      for(const t of totals)
+        lines.push(`Коробка + ${kitLc(t.label)} — ${t.total != null ? t.total + " руб." : "уточню"}`);
     }
     if(k.note) lines.push("", k.note);
     return lines.join("\n");
@@ -3993,22 +4175,22 @@
     const listHtml = arr => arr.map(l =>
       `<div class="kit-row"><span class="kit-row-n">${esc(l.name)}</span>${
         l.price != null ? `<span class="kit-row-p">${esc(kitRub(l.price))}</span>` : ""}</div>`).join("");
-    // Апсел-блок «мосты/раздатка» (варианты Motul/оригинал, у каждого своё «Итого») — тот же состав, что в Шаблонах.
-    const addonBlockHtml = block => block.variants.map(v => {
-      const lns = v.items.map(key => kitLine({ ref:key }));   // items блока — это ключи PRICE (как в renderDiffsMulti)
-      const anyStale = lns.some(l => l.stale);
-      const sum = lns.reduce((a,l) => a + (l.price || 0), 0);
-      return `<div class="kit-var-lbl">${esc(v.label)}</div>
-        <div class="kit-list">${listHtml(lns)}<div class="kit-row kit-total"><span class="kit-row-n">Итого</span>
-          <span class="kit-row-p">${anyStale ? "уточню" : esc(kitRub(sum))}</span></div></div>`;
-    }).join("");
+    // Апсел-блок «мосты/раздатка»: варианты уже посчитаны в kitAddonVariants — здесь только разметка.
+    const addonBlockHtml = vars => vars.map(v =>
+      `<div class="kit-var-lbl">${esc(v.label)}</div>
+        <div class="kit-list">${listHtml(v.lines)}<div class="kit-row kit-total"><span class="kit-row-n">Итого</span>
+          <span class="kit-row-p">${v.stale ? "уточню" : esc(kitRub(v.sum))}</span></div></div>`).join("");
     const cards = KITS.map((k,i) => {
       const items = (k.items || []).map(kitLine);
       const ad = k.addons || null;
-      const adLines = !ad ? [] : ad.block ? ad.block.variants.flatMap(v => v.items.map(key => kitLine({ ref:key }))) : (ad.items || []).map(kitLine);
+      const adVars = kitAddonVariants(ad);               // единый расчёт — тот же, что сводка и копи-текст
+      const adLines = !ad ? [] : adVars ? adVars.flatMap(v => v.lines) : (ad.items || []).map(kitLine);
       const stale = items.concat(adLines).some(l => l.stale); // свежесть учитывает и доп-позиции
-      const badges = (k.format || []).map(f =>
-        `<span class="tpl-badge b-hybrid">${KIT_FORMAT_ICO[f] || ""} ${esc(f)}</span>`);
+      const badges = [];
+      if(k.hybrid) badges.push(`<span class="tpl-badge b-hybrid">${ICO.bolt} Мягкий гибрид</span>`); // как в Шаблонах
+      if(ad && ad.lock) badges.push(`<span class="tpl-badge b-lock">${ICO.lock} Блокировка</span>`); // мосты/раздатка с блокировкой диф.
+      (k.format || []).forEach(f =>
+        badges.push(`<span class="tpl-badge b-hybrid">${KIT_FORMAT_ICO[f] || ""} ${esc(f)}</span>`));
       if(stale) badges.push(`<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>`); // свежесть (правило 7)
       const priceTxt = k.price != null ? kitRub(k.price) : "уточню";
       const list = listHtml(items);
@@ -4024,9 +4206,12 @@
         <div class="tpl-collapse"><div class="tpl-collapse-inner">
           ${k.sub ? `<div class="kit-sub">${esc(k.sub)}</div>` : ""}
           ${list ? `<div class="kit-lbl">Состав</div><div class="kit-list">${list}</div>` : ""}
-          ${!ad ? "" : ad.block
-            ? `<div class="kit-lbl">${esc(ad.block.head)}</div>${addonBlockHtml(ad.block)}${ad.block.note ? `<div class="kit-note">${esc(ad.block.note)}</div>` : ""}`
+          ${!ad ? "" : adVars
+            ? `<div class="kit-lbl">${esc(ad.block.head)}</div>${addonBlockHtml(adVars)}${ad.block.note ? `<div class="kit-note">${esc(ad.block.note)}</div>` : ""}`
             : `<div class="kit-lbl">${esc(ad.head || "Дополнительно")}</div><div class="kit-list">${listHtml((ad.items || []).map(kitLine))}</div>${ad.note ? `<div class="kit-note">${esc(ad.note)}</div>` : ""}`}
+          ${(() => { const totals = kitAddonTotals(k); return !totals ? "" :
+            `<div class="kit-sum"><div class="kit-sum-h">Итого</div>${totals.map(t =>
+              `<div class="kit-sum-row"><span class="kit-sum-n">Коробка + ${esc(kitLc(t.label))}</span><span class="kit-sum-v">${t.total != null ? esc(kitRub(t.total)) : "уточню"}</span></div>`).join("")}</div>`; })()}
           ${k.note ? `<div class="kit-note">${esc(k.note)}</div>` : ""}
           <div class="tpl-actions"><button class="tpl-copy" type="button" data-i="${i}">${ICO.copy} Копировать</button></div>
         </div></div>
@@ -4054,17 +4239,396 @@
         clearTimeout(btn._copyT);
         btn._copyT = setTimeout(() => { btn.innerHTML = btn.dataset.copyLabel; btn.classList.remove("ok"); }, 1600);
       }));
+
+    // Все свёрнутые карточки — одной высоты (как в Шаблонах): длинные названия не рвут сетку 2×2.
+    function kitEqualize(){
+      const heads = root.querySelectorAll(".tpl-card-head");
+      if(!heads.length) return;
+      heads.forEach(h => h.style.minHeight = "");        // сброс перед замером натуральной высоты
+      let max = 0;
+      heads.forEach(h => { if(h.offsetHeight > max) max = h.offsetHeight; });
+      if(!max) return;                                   // вкладка скрыта (высота 0) — пересчитается при показе (kitsReveal)
+      heads.forEach(h => h.style.minHeight = max + "px");
+    }
+    kitEqualize();
+    window.kitEqualize = kitEqualize;
   }
   // Каскад проявления карточек комплектов при входе в раздел (перенос BlurFade со stagger).
   window.kitsReveal = function(){
     const root = document.getElementById("page-komplekty");
-    if(root) mdBlurStagger(root.querySelectorAll(".tpl-card"));
+    if(!root) return;
+    if(window.kitEqualize) window.kitEqualize();   // вкладка уже видима (showPage снял hidden) — выровнять шапки сразу
+    mdBlurStagger(root.querySelectorAll(".tpl-card"));
   };
+  // при изменении ширины окна названия переносятся иначе — пересчитываем (rAF-дебаунс, как в Шаблонах)
+  let kitEqRaf;
+  window.addEventListener("resize", () => {
+    cancelAnimationFrame(kitEqRaf);
+    kitEqRaf = requestAnimationFrame(() => { if(window.kitEqualize) window.kitEqualize(); });
+  });
+
+  /* ===================== ТО (двигатель → масло, фильтры, работы) =====================
+     Обучаемый конструктор: двигатели заводятся ПРЯМО В ИНТЕРФЕЙСЕ (клиент спросил → забили раз —
+     дальше находится поиском) и шарятся между устройствами через Google-таблицу (лист «Двигатели»,
+     SHEET_API, kind:"engine" — механика Заметок: оптимистично локально → POST → перечитка JSONP).
+     Локальный кэш md_to_engines — мгновенный показ и офлайн. Upsert: каждая правка — новая строка
+     листа, при чтении выигрывает последняя по id; удаление — status:"del".
+     Цены: масло = perL(RATES[ставка масла], паспортный литраж записи), работы — ключи PRICE
+     (to_work_*); свежесть fail-closed (правило 7): протухло → «уточню», «Итого: уточню» + бейдж.
+     Цена масляного фильтра записи стареет по дате updated: старше FRESH_DAYS → «уточню» +
+     кнопка «Цена верна» (пересохраняет запись с сегодняшней датой — свежесть подтверждена).
+     Слоты воздушный/салонный/топливный зависят от КУЗОВА → вводятся по месту и НЕ сохраняются
+     (эфемерны; врать каталогом нельзя). Копирование — ровно тело сметы (правило 9), формат
+     строк как в renderVariant. Весь ручной ввод (и данные с листа) — через esc() при рендере. */
+  (function(){
+    const root = document.getElementById("page-to");
+    if(!root) return;
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    const rub = n => Number(n).toLocaleString("ru-RU") + " ₽";
+    const fmtL = l => String(Math.round(Number(l) * 10) / 10);
+    const todayISO = () => { const d = new Date(), p = n => String(n).padStart(2, "0");
+      return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); };
+    // свежесть даты записи (yyyy-mm-dd): нет/в будущем/старше порога → false (тот же fail-closed, что isFresh)
+    const freshISO = iso => { if(!iso) return false;
+      const days = (new Date() - new Date(String(iso).slice(0, 10) + "T00:00")) / 864e5;
+      return days >= 0 && days <= FRESH_DAYS; };
+
+    const CKEY = "md_to_engines";
+    const SLOTS = [
+      { id:"air",   label:"Воздушный фильтр", work:"to_work_air" },
+      { id:"cabin", label:"Салонный фильтр",  work:"to_work_cabin" },
+      { id:"fuel",  label:"Топливный фильтр", work:"to_work_fuel" },
+    ];
+    let engines = [];                                  // записи, подтверждённые таблицей
+    let pending = [];                                  // отправленные, ещё не увиденные в таблице
+    let warnOld = false;                               // скрипт таблицы старый — engines не отдаёт
+    let selId = null;                                  // выбранный двигатель
+    let query = "";
+    let slots = { air:null, cabin:null, fuel:null };   // эфемерные слоты {name, price}
+    let slotOpen = { air:false, cabin:false, fuel:false };
+    let litresOverride = null;                         // эфемерная правка литража (не сохраняется)
+
+    function saveCache(){ try { localStorage.setItem(CKEY, JSON.stringify({ engines, pending })); } catch(e){} }
+    (function loadCache(){ try { const c = JSON.parse(localStorage.getItem(CKEY) || "null");
+      if(c){ engines = Array.isArray(c.engines) ? c.engines : []; pending = Array.isArray(c.pending) ? c.pending : []; } } catch(e){} })();
+
+    // вид каталога: таблица + локальные поверх (локальное новее), без удалённых, по алфавиту
+    function view(){
+      const m = new Map();
+      for(const e of engines) if(e && e.id) m.set(e.id, e);
+      for(const p of pending) if(p && p.id) m.set(p.id, p);
+      return [...m.values()].filter(e => e.status !== "del")
+        .sort((a, b) => String(a.name).localeCompare(String(b.name), "ru"));
+    }
+    const byId = id => view().find(e => e.id === id) || null;
+
+    // читаем двигатели из таблицы (JSONP — обходит CORS у Apps Script, как Заметки)
+    let seq = 0;
+    function loadEngines(){
+      if(!SHEET_API) return;
+      const cb = "__toe_" + (++seq);
+      const s = document.createElement("script");
+      window[cb] = data => {
+        if(data && Array.isArray(data.engines)){
+          engines = data.engines;
+          pending = pending.filter(p => !engines.some(n => n.id === p.id && n.updated === p.updated));
+          warnOld = false;
+          saveCache(); updateAll();
+        } else if(data){ warnOld = true; updateAll(); }   // старый скрипт — записи живут локально
+        delete window[cb]; s.remove();
+      };
+      s.onerror = () => { delete window[cb]; s.remove(); };
+      s.src = SHEET_API + "?type=engines&callback=" + cb + "&t=" + Date.now();
+      document.head.appendChild(s);
+    }
+
+    // upsert записи: оптимистично локально + POST в таблицу (no-cors), затем перечитка
+    function upsert(rec){
+      pending = pending.filter(p => p.id !== rec.id);
+      pending.push(rec);
+      saveCache(); updateAll();
+      if(SHEET_API){
+        fetch(SHEET_API, { method:"POST", mode:"no-cors",
+          headers:{ "Content-Type":"text/plain;charset=utf-8" },
+          body: JSON.stringify({ token: SHEET_TOKEN, kind:"engine", id: rec.id, name: rec.name,
+            fuel: rec.fuel, oilKey: rec.oilKey, litres: rec.litres, filterName: rec.filterName,
+            filterPrice: rec.filterPrice, status: rec.status || "", updated: rec.updated }) })
+          .then(() => { setTimeout(loadEngines, 2500); setTimeout(loadEngines, 9000); })
+          .catch(() => {});
+      }
+    }
+
+    /* ---- смета: единый расчёт для карточки И копи-текста (расходиться им не из чего) ---- */
+    function smeta(e){
+      const rows = []; let sum = 0, stale = false;
+      const push = (n, p, extra) => { rows.push(Object.assign({ n, p }, extra || {}));
+        if(p != null) sum += p; else stale = true; };
+      const pushKey = key => {                          // позиция из PRICE — как в renderVariant
+        const item = PRICE[key];
+        if(!item){ push("⚠ уточню: " + key, null); return; }
+        push(item[0], isFresh(key) ? item[1] : null);
+      };
+      const oil = TO_OIL[e.oilKey];
+      const litres = litresOverride != null ? litresOverride : (Number(e.litres) || 0);
+      if(oil && litres > 0) push(oil.name + " " + fmtL(litres) + "л", isFresh(oil.rate) ? perL(RATES[oil.rate], litres) : null);
+      else push("⚠ уточню: масло", null);
+      if(e.filterName){                                 // масляный фильтр записи — свежесть по дате updated
+        const p = Number(e.filterPrice) || 0;
+        const ok = p > 0 && freshISO(e.updated);
+        push("Масляный фильтр " + e.filterName, ok ? p : null, ok ? null : { confirm: p > 0 ? p : null });
+      } else push("Масляный фильтр — уточню", null);
+      pushKey("to_work_oil");
+      for(const s of SLOTS){
+        const v = slots[s.id];
+        if(!v) continue;
+        push(s.label + " " + v.name, v.price, { slot: s.id });  // ввод «сейчас» = свежий
+        pushKey(s.work);
+      }
+      return { rows, sum, stale, litres };
+    }
+    // текст клиенту: ровно тело сметы (правило 9); есть «уточню» → «Итого: уточню» (fail-closed целиком)
+    function bodyText(e){
+      const s = smeta(e);
+      const lines = ["Техническое обслуживание " + e.name + (e.fuel ? " (" + e.fuel + ")" : ""), ""];
+      for(const r of s.rows) lines.push(r.p != null ? r.n + " " + r.p + " руб." : r.n.replace(/ — уточню$/, "") + " — уточню");
+      lines.push("Итого: " + (s.stale ? "уточню" : s.sum + " руб."));
+      return lines.join("\n");
+    }
+    async function copyTo(text, btn){
+      try { await navigator.clipboard.writeText(text); }
+      catch(e){
+        const ta = document.createElement("textarea"); ta.value = text;
+        ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta);
+        ta.select(); try { document.execCommand("copy"); } catch(_){} ta.remove();
+      }
+      if(btn){
+        if(!btn.classList.contains("ok")) btn.dataset.copyLabel = btn.innerHTML;
+        btn.innerHTML = ICO.check + " Вставьте в WhatsApp"; btn.classList.add("ok");
+        clearTimeout(btn._copyT);
+        btn._copyT = setTimeout(() => { btn.innerHTML = btn.dataset.copyLabel; btn.classList.remove("ok"); }, 2200);
+      }
+    }
+
+    /* ---- каркас рендерится один раз; список/карточку/форму обновляем по частям (фокус не теряем) ---- */
+    root.innerHTML =
+      `<div class="to-wrap">
+        <div class="to-bar">
+          <input class="ui-input" id="to-search" type="text" autocomplete="off"
+            placeholder="Найти двигатель: B47, N55, OM651…" aria-label="Поиск двигателя">
+          <button class="ui-btn ui-btn--primary" id="to-add" type="button">+ Двигатель</button>
+        </div>
+        <div id="to-warn" hidden></div>
+        <div id="to-formwrap" hidden></div>
+        <div id="to-list"></div>
+        <div id="to-body"></div>
+      </div>`;
+    const searchEl = root.querySelector("#to-search");
+    const addBtn   = root.querySelector("#to-add");
+    const warnEl   = root.querySelector("#to-warn");
+    const formWrap = root.querySelector("#to-formwrap");
+    const listEl   = root.querySelector("#to-list");
+    const bodyEl   = root.querySelector("#to-body");
+
+    function updateWarn(){
+      warnEl.hidden = !warnOld;
+      if(warnOld) warnEl.innerHTML =
+        `<div class="to-empty">${ICO.warn} Хранилище таблицы ещё не обновлено под «Двигатели» —
+         записи пока живут только на этом устройстве. Попроси обновить скрипт таблицы (kind:"engine").</div>`;
+    }
+    function updateList(){
+      const q = query.trim().toLowerCase();
+      const all = view();
+      const list = q ? all.filter(e => (e.name + " " + (e.fuel || "")).toLowerCase().includes(q)) : all;
+      if(!all.length){
+        listEl.innerHTML =
+          `<div class="to-empty">Пока нет двигателей. Клиент спросил → нажми «+ Двигатель»,
+           забей масло, литраж и масляный фильтр — запись останется в каталоге навсегда.</div>`;
+        return;
+      }
+      listEl.innerHTML =
+        `<div class="to-list">${list.map(e =>
+          `<button class="to-eng${e.id === selId ? " active" : ""}" type="button" data-id="${esc(e.id)}">
+            ${esc(e.name)}${e.fuel ? `<span class="f">${esc(e.fuel)}</span>` : ""}
+          </button>`).join("")}${
+          q && !list.length ? `<span class="to-note">Не нашёл «${esc(query.trim())}» — добавь двигатель.</span>` : ""}
+        </div>`;
+    }
+    function updateCard(){
+      const e = selId && byId(selId);
+      if(!e){ bodyEl.innerHTML = ""; return; }
+      const s = smeta(e);
+      const rowsHtml = s.rows.map(r => {
+        const del = r.slot ? ` <button class="ui-btn ui-btn--ghost ui-btn--sm ui-btn--icon" type="button"
+          data-act="slot-del" data-slot="${r.slot}" aria-label="Убрать">${ICO.close}</button>` : "";
+        const conf = r.confirm != null ? ` <button class="ui-btn ui-btn--secondary ui-btn--sm" type="button"
+          data-act="fresh">${ICO.check} Цена верна — ${esc(String(r.confirm))} ₽</button>` : "";
+        return `<div class="to-row"><span class="n">${esc(r.n)}</span>${conf}
+          <span class="p${r.p == null ? " ask" : ""}">${r.p == null ? "уточню" : rub(r.p)}</span>${del}</div>`;
+      }).join("");
+      const slotsHtml = SLOTS.map(sl => {
+        if(slots[sl.id]) return "";
+        if(!slotOpen[sl.id])
+          return `<button class="ui-btn ui-btn--secondary ui-btn--sm" type="button"
+            data-act="slot-open" data-slot="${sl.id}">+ ${sl.label.replace(" фильтр","")}</button>`;
+        return `<div class="to-slot-form" data-slot="${sl.id}">
+          <input class="ui-input" type="text" data-slot-name placeholder="${sl.label}: фирма (MANN…)" aria-label="Фирма фильтра">
+          <input class="ui-input" type="number" inputmode="numeric" min="1" max="200000" step="1" data-slot-price
+            placeholder="Цена ₽" aria-label="Цена фильтра">
+          <button class="ui-btn ui-btn--primary ui-btn--sm" type="button" data-act="slot-add" data-slot="${sl.id}">${ICO.check}</button>
+          <button class="ui-btn ui-btn--ghost ui-btn--sm ui-btn--icon" type="button" data-act="slot-close" data-slot="${sl.id}"
+            aria-label="Закрыть">${ICO.close}</button>
+        </div>`;
+      }).join("");
+      bodyEl.innerHTML =
+        `<div class="to-card">
+          <div class="to-card-top">
+            <div class="to-card-title">${esc(e.name)}${e.fuel ? ` <span class="f">· ${esc(e.fuel)}</span>` : ""}</div>
+            ${s.stale ? `<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>` : ""}
+            <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" data-act="edit">Изменить</button>
+          </div>
+          <div class="to-litres">Объём масла:
+            <input type="number" step="0.1" min="0.5" max="30" value="${fmtL(s.litres)}" data-act="litres" aria-label="Объём масла, л"> л
+            ${litresOverride != null ? `<button class="ui-btn ui-btn--ghost ui-btn--sm" type="button"
+              data-act="litres-reset">вернуть ${fmtL(e.litres)} л</button>` : ""}
+          </div>
+          <div class="to-rows">${rowsHtml}</div>
+          <div class="to-slots">${slotsHtml}</div>
+          <div class="to-total">Итого <span class="p${s.stale ? " ask" : ""}">${s.stale ? "уточню" : rub(s.sum)}</span></div>
+          <div class="to-actions">
+            <button class="ui-btn ui-btn--primary" type="button" data-act="copy">${ICO.copy} Копировать</button>
+          </div>
+        </div>`;
+    }
+    function updateForm(editId){
+      if(editId === undefined){ formWrap.hidden = true; formWrap.innerHTML = ""; return; }
+      const e = editId ? byId(editId) : null;
+      const oilOpts = TO_OILS.map(o =>
+        `<option value="${o.key}"${e && e.oilKey === o.key ? " selected" : ""}>${esc(o.name.replace("Моторное масло ",""))} · ${rub(RATES[o.rate])}/л</option>`).join("");
+      formWrap.hidden = false;
+      formWrap.innerHTML =
+        `<form class="to-form" data-edit="${e ? esc(e.id) : ""}">
+          <div class="to-form-title">${e ? "Изменить двигатель" : "Новый двигатель"}</div>
+          <div class="to-form-grid">
+            <label class="ui-field"><span class="to-note">Двигатель (как ответишь клиенту)</span>
+              <input class="ui-input" name="engName" type="text" maxlength="80" required
+                placeholder="BMW B47 2.0d" value="${e ? esc(e.name) : ""}"></label>
+            <label class="ui-field"><span class="to-note">Топливо</span>
+              <select class="ui-select" name="fuel">
+                <option value=""${!e || !e.fuel ? " selected" : ""}>—</option>
+                <option value="бензин"${e && e.fuel === "бензин" ? " selected" : ""}>бензин</option>
+                <option value="дизель"${e && e.fuel === "дизель" ? " selected" : ""}>дизель</option>
+              </select></label>
+            <label class="ui-field"><span class="to-note">Масло (наше, цена за литр — из прайса)</span>
+              <select class="ui-select" name="oilKey">${oilOpts}</select></label>
+            <label class="ui-field"><span class="to-note">Паспортный литраж, л</span>
+              <input class="ui-input" name="litres" type="number" step="0.1" min="0.5" max="30" required
+                inputmode="decimal" placeholder="5.2" value="${e ? esc(String(e.litres)) : ""}"></label>
+            <label class="ui-field"><span class="to-note">Масляный фильтр — фирма (без артикула)</span>
+              <input class="ui-input" name="filterName" type="text" maxlength="60"
+                placeholder="MANN" value="${e ? esc(e.filterName || "") : ""}"></label>
+            <label class="ui-field"><span class="to-note">Цена масляного фильтра, ₽ (пусто = уточню)</span>
+              <input class="ui-input" name="filterPrice" type="number" inputmode="numeric" min="1" max="200000" step="1"
+                placeholder="1500" value="${e && Number(e.filterPrice) > 0 ? esc(String(e.filterPrice)) : ""}"></label>
+          </div>
+          <div class="to-actions">
+            <button class="ui-btn ui-btn--primary" type="submit">${ICO.check} Сохранить</button>
+            <button class="ui-btn ui-btn--secondary" type="button" data-act="form-cancel">Отмена</button>
+            ${e ? `<button class="ui-btn ui-btn--ghost" type="button" data-act="form-del">${ICO.trash} Удалить</button>` : ""}
+          </div>
+          <div class="to-note">Запись сохранится для всех устройств. Цены масла и работ считаются из прайса;
+            цена фильтра стареет через ${FRESH_DAYS} дн. — карточка попросит подтвердить её кнопкой «Цена верна».</div>
+        </form>`;
+      const f = formWrap.querySelector("input[name=engName]");
+      if(f && !e) f.focus();
+    }
+    function updateAll(){ updateWarn(); updateList(); updateCard(); }
+
+    /* ---- события ---- */
+    searchEl.addEventListener("input", () => { query = searchEl.value; updateList(); });
+    addBtn.addEventListener("click", () => updateForm(null));
+    listEl.addEventListener("click", ev => {
+      const b = ev.target.closest(".to-eng"); if(!b) return;
+      selId = b.dataset.id;
+      slots = { air:null, cabin:null, fuel:null }; slotOpen = { air:false, cabin:false, fuel:false };
+      litresOverride = null;                      // эфемерное — сбрасывается при смене двигателя
+      updateList(); updateCard();
+    });
+    bodyEl.addEventListener("click", ev => {
+      const b = ev.target.closest("[data-act]"); if(!b) return;
+      const act = b.dataset.act, e = selId && byId(selId);
+      if(!e) return;
+      if(act === "copy"){ copyTo(bodyText(e), b); if(window.MDLOG) MDLOG.copy("ТО·" + e.name); }
+      else if(act === "edit"){ updateForm(e.id); formWrap.scrollIntoView({ behavior:"smooth", block:"nearest" }); }
+      else if(act === "fresh"){ upsert(Object.assign({}, e, { updated: todayISO() })); }  // цена подтверждена сегодня
+      else if(act === "slot-open"){ slotOpen[b.dataset.slot] = true; updateCard();
+        const i = bodyEl.querySelector(`.to-slot-form[data-slot="${b.dataset.slot}"] [data-slot-name]`); if(i) i.focus(); }
+      else if(act === "slot-close"){ slotOpen[b.dataset.slot] = false; updateCard(); }
+      else if(act === "slot-del"){ slots[b.dataset.slot] = null; updateCard(); }
+      else if(act === "slot-add"){
+        const wrap = bodyEl.querySelector(`.to-slot-form[data-slot="${b.dataset.slot}"]`); if(!wrap) return;
+        const name = wrap.querySelector("[data-slot-name]").value.trim().slice(0, 60);
+        const price = Math.round(Number(wrap.querySelector("[data-slot-price]").value));
+        if(!name){ wrap.querySelector("[data-slot-name]").focus(); return; }
+        if(!isFinite(price) || price < 1 || price > 200000){ wrap.querySelector("[data-slot-price]").focus(); return; }
+        slots[b.dataset.slot] = { name, price }; slotOpen[b.dataset.slot] = false; updateCard();
+      }
+      else if(act === "litres-reset"){ litresOverride = null; updateCard(); }
+    });
+    bodyEl.addEventListener("change", ev => {
+      const i = ev.target.closest("[data-act=litres]"); if(!i) return;
+      const v = Number(i.value);
+      if(isFinite(v) && v >= 0.5 && v <= 30){ const e = selId && byId(selId);
+        litresOverride = (e && Math.abs(v - Number(e.litres)) < 0.001) ? null : Math.round(v * 10) / 10; }
+      updateCard();
+    });
+    formWrap.addEventListener("click", ev => {
+      const b = ev.target.closest("[data-act]"); if(!b) return;
+      if(b.dataset.act === "form-cancel") updateForm(undefined);
+      if(b.dataset.act === "form-del"){
+        const id = formWrap.querySelector("form").dataset.edit, e = id && byId(id);
+        if(e && confirm("Удалить двигатель «" + e.name + "» из каталога на всех устройствах?")){
+          upsert(Object.assign({}, e, { status:"del", updated: todayISO() }));
+          if(selId === id) selId = null;
+          updateForm(undefined); updateAll();
+        }
+      }
+    });
+    formWrap.addEventListener("submit", ev => {
+      ev.preventDefault();
+      const f = ev.target;
+      const name = f.engName.value.trim().slice(0, 80);
+      const litres = Math.round(Number(f.litres.value) * 10) / 10;
+      const priceRaw = f.filterPrice.value.trim();
+      const price = priceRaw === "" ? 0 : Math.round(Number(priceRaw));
+      if(name.length < 2){ f.engName.focus(); return; }
+      if(!isFinite(litres) || litres < 0.5 || litres > 30){ f.litres.focus(); return; }
+      if(!isFinite(price) || price < 0 || price > 200000){ f.filterPrice.focus(); return; }
+      const editId = f.dataset.edit;
+      const rec = {
+        id: editId || ("e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5)),
+        name, fuel: f.fuel.value, oilKey: f.oilKey.value, litres,
+        filterName: f.filterName.value.trim().slice(0, 60), filterPrice: price,
+        status: "", updated: todayISO(),
+      };
+      upsert(rec);
+      selId = rec.id;
+      slots = { air:null, cabin:null, fuel:null }; slotOpen = { air:false, cabin:false, fuel:false };
+      litresOverride = null;
+      updateForm(undefined); updateAll();
+    });
+
+    // каскад появления при входе в раздел (той же дозировки, что Комплекты)
+    window.toReveal = function(){ mdBlurStagger(root.querySelectorAll(".to-card, .to-eng")); };
+
+    updateAll();
+    loadEngines();
+  })();
 
   /* ===================== Меню и страницы ===================== */
   const PAGES = {
     grafik:   { t:"График дежурств", r:"28 июня — 27 июля 2026 · 30 дней" },
     shablony: { t:"Шаблоны",         r:"Каталог · выбери марку, копируй и отправляй клиенту" },
+    to:       { t:"Расчёт ТО",       r:"Двигатель → масло, фильтры и работы · копируй и отправляй" },
     tseny:    { t:"Цены",            r:"Запчасти и масла · поиск по названию и артикулу" },
     komplekty:{ t:"Комплекты",       r:"Наборы на продажу — собираем, отправляем и продаём вживую" },
     prodazhi: { t:"Продажи",         r:"Присадки · выручка и штуки по дням" },
@@ -4092,6 +4656,7 @@
     if(id === "shablony" && window.equalizeTplHeads) window.equalizeTplHeads();
     if(id === "shablony" && window.tplRevealCards) window.tplRevealCards(); // ③ каскад карточек
     if(id === "komplekty" && window.kitsReveal)    window.kitsReveal();     // каскад карточек комплектов
+    if(id === "to"        && window.toReveal)      window.toReveal();       // каскад раздела ТО
     if(id === "prodazhi" && window.salesReveal)    window.salesReveal();    // ② счётчик денег
     try { localStorage.setItem("md_page", id); } catch(e){}  // запомнить вкладку для следующей загрузки
     closeMenu();
