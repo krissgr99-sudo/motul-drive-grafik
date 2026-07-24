@@ -723,6 +723,10 @@
   .to-row{display:flex;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
   .to-row:last-child{border-bottom:none}
   .to-row .n{min-width:0}
+  /* номер фильтра — только на экране (в буфер не уходит, клиенту номера не отправляем); клик копирует номер */
+  .to-code{flex:none;align-self:center;padding:5px 9px;font-size:11px}
+  /* старая запись: номер вписан внутрь фирмы → он уйдёт клиенту. Мягкий флаг + клик открывает правку */
+  .to-fixnum{flex:none;align-self:center;cursor:pointer;font-family:inherit}
   .to-row .p{margin-left:auto;font-family:var(--font-mono);font-weight:700;white-space:nowrap}
   .to-row .p.ask{color:var(--warn);font-family:inherit;font-weight:700}
   .to-litres{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);font-weight:600;flex-wrap:wrap}
@@ -730,7 +734,8 @@
     color:var(--text);font:inherit;font-weight:700}
   .to-litres input:focus{border-color:#d11f2d;outline:none}
   .to-slots{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .to-slot-form{display:grid;grid-template-columns:1fr 130px auto auto;gap:8px;align-items:center}
+  .to-slot-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 120px auto auto;gap:8px;
+    align-items:center;flex:1 1 100%}
   .to-total{display:flex;align-items:baseline;gap:10px;padding-top:10px;border-top:1px solid var(--line-strong);
     font-weight:800;font-size:15px}
   .to-total .p{margin-left:auto;font-family:var(--font-mono)}
@@ -744,7 +749,10 @@
   @media(max-width:720px){
     .to-eng{min-height:44px}
     .to-form-grid{grid-template-columns:1fr}
-    .to-slot-form{grid-template-columns:1fr 110px auto auto}
+    /* на телефоне три поля слота — каждое своей строкой, кнопки последней (хит ≥44px) */
+    .to-slot-form{grid-template-columns:1fr auto auto}
+    .to-slot-form .ui-input{grid-column:1/-1}
+    .to-slot-form .ui-btn{min-height:44px}
     .to-actions .ui-btn{flex:1;min-height:44px}
     .to-litres input{min-height:44px}
   }
@@ -1420,6 +1428,9 @@
     filter_mild:  ["Оригинальный Фильтр-поддон ZF", 19000],
     work_full:    ["Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76 с промывкой системы", 6000],
     work_partial: ["Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 с заменой фильтр-поддона", 3000],
+    // Глубокий поддон 1087298361 (Jeep/Dodge и др.): масла те же, но объём 13 л; цена поддона = каталог PARTS.
+    oil_zf_13:    ["Оригинальное трансмиссионное масло ZF8HP S671090312 13л", perL(RATES.zf8hp, 13)],
+    filter_deep:  ["Оригинальный Фильтр-поддон ZF 1087298361 глубокий", 11000],
     // Полный гибрид ZF 8HP60 (PHEV): заводское масло Hybrid2, оригинальный поддон BMW, работа 10000
     oil_zf_hyb2_12: ["Оригинальное трансмиссионное масло ZF Hybrid2 (то что с завода) 12л", perL(RATES.zf_hybrid2, 12)],
     oil_zf_hyb2_5:  ["Оригинальное трансмиссионное масло ZF Hybrid2 (то что с завода) 5л", perL(RATES.zf_hybrid2, 5)],
@@ -1672,7 +1683,7 @@
       "motul_atf6", "motul_multiatf", "zf8hp", "zf6hp", "zf_hybrid2", "toyota_ws",
       "motul_dctf", "motul_ht_dctf", "gear300", "gear300_ls", "motul_cvtf", "motul_hf",
       "kia_sp4", "ravenol_ulv", "mb_236_17", "mb_236_15", "oil_motul_12", "oil_zf_12",
-      "oil_zf_5", "oil_zf_hyb2_12", "oil_zf_hyb2_5", "oil_motul_13", "oil_zf6_13", "oil_zf6_6",
+      "oil_zf_5", "oil_zf_13", "oil_zf_hyb2_12", "oil_zf_hyb2_5", "oil_motul_13", "oil_zf6_13", "oil_zf6_6",
       "diff_oil_front", "diff_oil_transf", "diff_oil_rear", "oil_motul_11", "oil_ravenol_11", "oil_mb_9g_13",
       "oil_mb_9g_10", "mb_diff_oil", "mb_transf_oil", "oil_mb_7g_12", "oil_motul_atf6_12", "oil_zf8hp_12",
       "oil_zf8hp_6", "oil_motul_10", "oil_motul_15", "oil_motul_16", "oil_zf_4", "oil_zf_10",
@@ -1698,6 +1709,9 @@
     ],
     "2026-07-23": [   // ставки моторных масел 0W=2200/л, 5W=2000/л (страница «Цены», ТО) — продиктованы владельцем
       "motor_0w", "motor_5w",
+    ],
+    "2026-07-24": [   // глубокий поддон 1087298361 — владелец сослался на цену каталога «Цены» (PARTS, 11000) при добавлении шаблонов
+      "filter_deep",
     ],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
@@ -1806,7 +1820,11 @@
       filter: { "Обычная": "filter_std", "Мягкий гибрид": "filter_mild" },
       "Аппаратная": {
         head: "Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76",
-        variants: f => [
+        // Глубокий поддон (t.filter="filter_deep", Jeep/Dodge): масла те же, но 13 л вместо 12.
+        variants: f => f === "filter_deep" ? [
+          { label: "1.",  items: ["oil_motul_13", "bardahl", f, "work_full"] },
+          { label: "1.1", items: ["oil_zf_13",    "bardahl", f, "work_full"] },
+        ] : [
           { label: "1.",  items: ["oil_motul_12", "bardahl", f, "work_full"] },
           { label: "1.1", items: ["oil_zf_12",    "bardahl", f, "work_full"] },
         ],
@@ -1822,7 +1840,10 @@
       },
       "Частичная": {
         head: "Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 (заменой фильтр-поддона)",
-        variants: f => [
+        // С глубоким поддоном сливается больше — 6 л вместо 5 (масло то же, ключ уже есть в PRICE).
+        variants: f => f === "filter_deep" ? [
+          { label: "1.2", items: ["oil_zf8hp_6", f, "work_partial"] },
+        ] : [
           { label: "1.2", items: ["oil_zf_5", f, "work_partial"] },
         ],
         // Полный гибрид 8HP60: тот же поддон BMW, работа частичной 7000. Два масла на выбор.
@@ -2198,7 +2219,9 @@
   const engineOf = t => t.engine ? t.engine : (t.hybrid ? "Мягкий гибрид" : "Обычная");
   const lockOf   = t => t.lock   ? "С блокировкой" : "Без блокировки";
   // Стабильный код карточки для лога А3 (ключ дедупа устройство+карточка+минута) и метрики «какие шаблоны в ходу».
-  const tplCode  = t => [t.brand, t.box, t.type, engineOf(t), t.lock?"lock":"nolock"].filter(Boolean).join("·");
+  // t.code — явный код карточки: нужен там, где одну коробку разводят не мотором/блокировкой, а поддоном
+  // (иначе две разные карточки дали бы один код и слиплись в дедупе «устройство+карточка+минута»).
+  const tplCode  = t => t.code || [t.brand, t.box, t.type, engineOf(t), t.lock?"lock":"nolock"].filter(Boolean).join("·");
 
   function renderVariant(v, head){
     const lines = [`${v.label} ${head}`];
@@ -2334,6 +2357,16 @@
     { brand:"ZF", box:"8HP45-76", type:"Аппаратная", engine:"Гибрид", lock:true,  diffs:true },
     { brand:"ZF", box:"8HP45-76", type:"Частичная",  engine:"Гибрид", lock:false, diffs:true },
     { brand:"ZF", box:"8HP45-76", type:"Частичная",  engine:"Гибрид", lock:true,  diffs:true },
+    // Глубокий поддон ZF 1087298361 (Jeep/Dodge и др.): масла те же, но 13 л. Поддон выбирается
+    // полем t.filter (как у 9G-Tronic). Без мостов/раздатки — на этих машинах они везде разные.
+    { brand:"ZF", box:"8HP45-76", type:"Аппаратная", filter:"filter_deep",
+      code:"ZF·8HP45-76·Аппаратная·Глубокий поддон",
+      title:"8HP45-76 · глубокий поддон · аппаратная (Motul / оригинал ZF)", titleAccent:"глубокий поддон",
+      extraTags:["Глубокий поддон", "1087298361", "Jeep", "Dodge", "13 л", "Motul ATF6", "оригинал ZF"] },
+    { brand:"ZF", box:"8HP45-76", type:"Частичная", filter:"filter_deep",
+      code:"ZF·8HP45-76·Частичная·Глубокий поддон",
+      title:"8HP45-76 · глубокий поддон · частичная (с заменой фильтр-поддона)", titleAccent:"глубокий поддон",
+      extraTags:["Глубокий поддон", "1087298361", "Jeep", "Dodge", "6 л", "оригинал ZF"] },
 
     // ZF 8HP55 (фильтр Mahle HX189KIT)
     { brand:"ZF", box:"8HP55", type:"Аппаратная", title:"ZF 8HP55 · аппаратная (Motul / оригинал ZF)",
@@ -2342,23 +2375,32 @@
       titleAccent:"8HP55", extraTags:["8HP55", "оригинал ZF", "без фильтра"] },
 
     // ZF 8HP65 (фильтр-поддон 1103298006) + мосты и Торсен G055/G060
+    // Спек Торсена (поле axles) не входит в автокод → у каждой карточки свой code, иначе пара слипнется в логе А3.
     { brand:"ZF", box:"8HP65", type:"Аппаратная", title:"ZF 8HP65 + мосты и Торсен G055",
+      code:"ZF·8HP65·Аппаратная·Торсен G055",
       titleAccent:"G055", extraTags:["8HP65", "Motul ATF6 / оригинал ZF", "Мосты", "Торсен"] },
     { brand:"ZF", box:"8HP65", type:"Аппаратная", axles:AXLES_TORSEN_G060, title:"ZF 8HP65 + мосты и Торсен G060",
+      code:"ZF·8HP65·Аппаратная·Торсен G060",
       titleAccent:"G060", extraTags:["8HP65", "Motul ATF6 / оригинал ZF", "Мосты", "Торсен"] },
     { brand:"ZF", box:"8HP65", type:"Частичная", title:"ZF 8HP65 · частичная + мосты и Торсен G055",
+      code:"ZF·8HP65·Частичная·Торсен G055",
       titleAccent:"G055", extraTags:["8HP65", "оригинал ZF 6л", "Мосты", "Торсен"] },
     { brand:"ZF", box:"8HP65", type:"Частичная", axles:AXLES_TORSEN_G060, title:"ZF 8HP65 · частичная + мосты и Торсен G060",
+      code:"ZF·8HP65·Частичная·Торсен G060",
       titleAccent:"G060", extraTags:["8HP65", "оригинал ZF 6л", "Мосты", "Торсен"] },
 
     // ZF 8HP65A (фильтр-поддон 1103298119) + мосты и Торсен G055/G060
     { brand:"ZF", box:"8HP65A", type:"Аппаратная", title:"ZF 8HP65A + мосты и Торсен G055",
+      code:"ZF·8HP65A·Аппаратная·Торсен G055",
       titleAccent:"G055", extraTags:["8HP65A", "Motul ATF6 / оригинал ZF", "Мосты", "Торсен"] },
     { brand:"ZF", box:"8HP65A", type:"Аппаратная", axles:AXLES_TORSEN_G060, title:"ZF 8HP65A + мосты и Торсен G060",
+      code:"ZF·8HP65A·Аппаратная·Торсен G060",
       titleAccent:"G060", extraTags:["8HP65A", "Motul ATF6 / оригинал ZF", "Мосты", "Торсен"] },
     { brand:"ZF", box:"8HP65A", type:"Частичная", title:"ZF 8HP65A · частичная + мосты и Торсен G055",
+      code:"ZF·8HP65A·Частичная·Торсен G055",
       titleAccent:"G055", extraTags:["8HP65A", "оригинал ZF 6л", "Мосты", "Торсен"] },
     { brand:"ZF", box:"8HP65A", type:"Частичная", axles:AXLES_TORSEN_G060, title:"ZF 8HP65A · частичная + мосты и Торсен G060",
+      code:"ZF·8HP65A·Частичная·Торсен G060",
       titleAccent:"G060", extraTags:["8HP65A", "оригинал ZF 6л", "Мосты", "Торсен"] },
 
     // ZF 9HP48 (без фильтр-поддона)
@@ -2366,14 +2408,19 @@
       titleAccent:"9HP48", extraTags:["9HP48", "Motul ATF6", "оригинал ZF"] },
 
     // ZF 6HP (BMW): richer вариант с трёхсекционным мостом
-    { brand:"ZF", box:"6HP (BMW)", type:"Аппаратная", hybrid:false, lock:false, diffs:true },
+    // Блок мостов (обычный diffs vs diffsDetailed) в автокод не входит → парам без блокировки нужен свой code.
+    { brand:"ZF", box:"6HP (BMW)", type:"Аппаратная", hybrid:false, lock:false, diffs:true,
+      code:"ZF·6HP (BMW)·Аппаратная·Мосты и раздатка" },
     { brand:"ZF", box:"6HP (BMW)", type:"Аппаратная", hybrid:false, lock:true,  diffs:true },
     { brand:"ZF", box:"6HP (BMW)", type:"Аппаратная", hybrid:false, lock:false, diffs:false, diffsDetailed:true,
+      code:"ZF·6HP (BMW)·Аппаратная·Мосты и раздатка 3-секц.",
       title:"6HP · аппаратная + мосты и раздатка (задний мост трёхсекционный)",
       extraTags:["6HP", "Мосты", "Раздатка", "Задний мост 3-секц."] },
-    { brand:"ZF", box:"6HP (BMW)", type:"Частичная", hybrid:false, lock:false, diffs:true },
+    { brand:"ZF", box:"6HP (BMW)", type:"Частичная", hybrid:false, lock:false, diffs:true,
+      code:"ZF·6HP (BMW)·Частичная·Мосты и раздатка" },
     { brand:"ZF", box:"6HP (BMW)", type:"Частичная", hybrid:false, lock:true,  diffs:true },
     { brand:"ZF", box:"6HP (BMW)", type:"Частичная", hybrid:false, lock:false, diffs:false, diffsDetailed:true,
+      code:"ZF·6HP (BMW)·Частичная·Мосты и раздатка 3-секц.",
       title:"6HP · частичная + мосты и раздатка (задний мост трёхсекционный)",
       extraTags:["6HP", "Мосты", "Раздатка", "Задний мост 3-секц."] },
     // ZF 6HP19 (фильтр Knecht/Mahle HX164D1)
@@ -2449,28 +2496,51 @@
 
     /* ==================== Mercedes ==================== */
     // 9G-Tronic (725.0). 4 аппаратные + 4 слив-залив, отличаются поддоном (t.filter).
+    // Поддон не входит в автокод карточки → у каждой свой code, иначе четвёрка слипнется в логе А3.
     { brand:"Mercedes", box:"9G-Tronic", type:"Аппаратная", filter:"mb",    title:"9G-Tronic · аппаратная · оригинальный поддон MB",
+      code:"Mercedes·9G-Tronic·Аппаратная·Поддон MB",
       extraTags:["9G-Tronic", "725.0", "Поддон MB"] },
     { brand:"Mercedes", box:"9G-Tronic", type:"Аппаратная", filter:"sollo", title:"9G-Tronic · аппаратная · поддон SOLLO ZM PARTS",
+      code:"Mercedes·9G-Tronic·Аппаратная·Поддон SOLLO",
       extraTags:["9G-Tronic", "725.0", "Поддон SOLLO"] },
     { brand:"Mercedes", box:"9G-Tronic", type:"Аппаратная", filter:"mahle", title:"9G-Tronic · аппаратная · поддон Mahle",
+      code:"Mercedes·9G-Tronic·Аппаратная·Поддон Mahle",
       extraTags:["9G-Tronic", "725.0", "Поддон Mahle"] },
     { brand:"Mercedes", box:"9G-Tronic", type:"Аппаратная", filter:"zf",    title:"9G-Tronic · аппаратная · поддон ZF",
+      code:"Mercedes·9G-Tronic·Аппаратная·Поддон ZF",
       extraTags:["9G-Tronic", "725.0", "Поддон ZF"] },
     { brand:"Mercedes", box:"9G-Tronic", type:"Слив-залив", filter:"mb",    title:"9G-Tronic · слив-залив · оригинальный поддон MB",
+      code:"Mercedes·9G-Tronic·Слив-залив·Поддон MB",
       extraTags:["9G-Tronic", "725.0", "Поддон MB"] },
     { brand:"Mercedes", box:"9G-Tronic", type:"Слив-залив", filter:"sollo", title:"9G-Tronic · слив-залив · поддон SOLLO ZM PARTS",
+      code:"Mercedes·9G-Tronic·Слив-залив·Поддон SOLLO",
       extraTags:["9G-Tronic", "725.0", "Поддон SOLLO"] },
     { brand:"Mercedes", box:"9G-Tronic", type:"Слив-залив", filter:"mahle", title:"9G-Tronic · слив-залив · поддон Mahle",
+      code:"Mercedes·9G-Tronic·Слив-залив·Поддон Mahle",
       extraTags:["9G-Tronic", "725.0", "Поддон Mahle"] },
     { brand:"Mercedes", box:"9G-Tronic", type:"Слив-залив", filter:"zf",    title:"9G-Tronic · слив-залив · поддон ZF",
+      code:"Mercedes·9G-Tronic·Слив-залив·Поддон ZF",
       extraTags:["9G-Tronic", "725.0", "Поддон ZF"] },
-    // 7G-Tronic (722.9) — аппаратная замена с промывкой. 2 варианта масла по filter.
+    // 7G-Tronic (722.9) — аппаратная замена с промывкой. 2 варианта масла по filter (тоже свой code).
     { brand:"Mercedes", box:"7G-Tronic", type:"Аппаратная", filter:"plus", title:"7G-Tronic Plus (масло MB 236.15) с промывкой",
+      code:"Mercedes·7G-Tronic·Аппаратная·Plus (MB 236.15)",
       titleAccent:"7G-Tronic Plus", extraTags:["7G-Tronic Plus", "722.9", "Mercedes 236.15"] },
     { brand:"Mercedes", box:"7G-Tronic", type:"Аппаратная", filter:"std", title:"7G-Tronic (масло Motul ATF6) с промывкой",
+      code:"Mercedes·7G-Tronic·Аппаратная·Motul ATF6",
       extraTags:["7G-Tronic", "722.9", "Motul ATF6"] },
   ];
+
+  // Страховка от повторения дефекта: две РАЗНЫЕ карточки с одинаковым кодом молча слиплись бы в дедупе
+  // лога А3 (устройство+карточка+минута) и метрика «какие шаблоны в ходу» соврала бы. Ругаемся в консоль
+  // при загрузке — как renderVariant на пропущенный ключ PRICE. Лечение: задать явный t.code.
+  (function(){
+    const seen = new Map();
+    for(const t of TEMPLATES){
+      const c = tplCode(t), name = t.title || (t.box + " · " + t.type);
+      if(seen.has(c)) console.warn("TEMPLATES: одинаковый код карточки —", c, "|", seen.get(c), "и", name, "→ задай t.code");
+      else seen.set(c, name);
+    }
+  })();
 
   // ==================== Справочник «машина → коробка» (BMW · все кузова 2007+) ====================
   //    Единый источник, как PRICE. Поиск в «Шаблоны» понимает язык клиента («BMW X5», «F30»,
@@ -2812,6 +2882,10 @@
     // Какие ВАРИАНТЫ карточек коробки уместны конкретной машине (c.allow). База — всегда; гибрид/
     // блокировку/раздатку показываем, только если машина их разрешает. Нет c.allow → старое поведение (всё).
     const cardAllowed = (t, c) => {
+      // Глубокий поддон 1087298361 — Jeep/Dodge, а карта CARS у нас про BMW: в подборе ПО МАШИНЕ
+      // такую карточку не показываем, пока машина её явно не разрешит (c.allow.deep). Fail-closed —
+      // прячем и там, где c.allow вообще не задан, иначе BMW получит поддон не от своей машины.
+      if(t.filter === "filter_deep" && !(c.allow && c.allow.deep)) return false;
       if(!c.allow) return true;
       if(t.diffsDetailed && !c.allow.transfer) return false;   // мосты+раздатка
       if(t.engine === "Гибрид" && !c.allow.phev) return false; // полный гибрид (PHEV)
@@ -4281,7 +4355,9 @@
      кнопка «Цена верна» (пересохраняет запись с сегодняшней датой — свежесть подтверждена).
      Слоты воздушный/салонный/топливный зависят от КУЗОВА → вводятся по месту и НЕ сохраняются
      (эфемерны; врать каталогом нельзя). Копирование — ровно тело сметы (правило 9), формат
-     строк как в renderVariant. Весь ручной ввод (и данные с листа) — через esc() при рендере. */
+     строк как в renderVariant, но БЕЗ номеров фильтров: клиенту уходит только фирма, номер
+     живёт на экране чипом (нам — искать деталь; см. splitFilter/packFilter).
+     Весь ручной ввод (и данные с листа) — через esc() при рендере. */
   (function(){
     const root = document.getElementById("page-to");
     if(!root) return;
@@ -4294,6 +4370,19 @@
     const freshISO = iso => { if(!iso) return false;
       const days = (new Date() - new Date(String(iso).slice(0, 10) + "T00:00")) / 864e5;
       return days >= 0 && days <= FRESH_DAYS; };
+
+    /* Номер (артикул) фильтра нужен НАМ — искать деталь; клиенту в смете уходит только фирма.
+       Поэтому обе части живут в ОДНОМ поле filterName как "фирма | номер": лист «Двигатели»
+       (колонка filterName, 60 знаков) и уже задеплоенный Apps Script менять не надо, старые
+       записи без «|» читаются как «только фирма». На экране номер показываем чипом, в bodyText
+       (буфер) он не попадает по построению — copy берёт r.n, а номер лежит в r.code. */
+    const splitFilter = s => { const t = String(s || ""), i = t.indexOf("|");
+      return i < 0 ? { name: t.trim(), code: "" } : { name: t.slice(0, i).trim(), code: t.slice(i + 1).trim() }; };
+    const packFilter = (name, code) => {                // «|» вырезаем — иначе разбор станет неоднозначным
+      const n = String(name || "").replace(/\|/g, " ").replace(/\s+/g, " ").trim();
+      const c = String(code || "").replace(/\|/g, " ").replace(/\s+/g, " ").trim().slice(0, 26);
+      return c ? n.slice(0, 30) + " | " + c : n.slice(0, 60);   // ≤ 60 знаков — потолок колонки листа
+    };
 
     const CKEY = "md_to_engines";
     const SLOTS = [
@@ -4374,16 +4463,20 @@
       const litres = litresOverride != null ? litresOverride : (Number(e.litres) || 0);
       if(oil && litres > 0) push(oil.name + " " + fmtL(litres) + "л", isFresh(oil.rate) ? perL(RATES[oil.rate], litres) : null);
       else push("⚠ уточню: масло", null);
-      if(e.filterName){                                 // масляный фильтр записи — свежесть по дате updated
+      const oilF = splitFilter(e.filterName);
+      if(oilF.name){                                    // масляный фильтр записи — свежесть по дате updated
         const p = Number(e.filterPrice) || 0;
         const ok = p > 0 && freshISO(e.updated);
-        push("Масляный фильтр " + e.filterName, ok ? p : null, ok ? null : { confirm: p > 0 ? p : null });
+        // цифра в «фирме» и пустой номер = старая запись, номер вписан внутрь → предупредим (fail-closed)
+        push("Масляный фильтр " + oilF.name, ok ? p : null,
+          Object.assign({ code: oilF.code, fixnum: !oilF.code && /\d/.test(oilF.name) },
+            ok ? null : { confirm: p > 0 ? p : null }));
       } else push("Масляный фильтр — уточню", null);
       pushKey("to_work_oil");
       for(const s of SLOTS){
         const v = slots[s.id];
         if(!v) continue;
-        push(s.label + " " + v.name, v.price, { slot: s.id });  // ввод «сейчас» = свежий
+        push(s.label + " " + v.name, v.price, { slot: s.id, code: v.code });  // ввод «сейчас» = свежий
         pushKey(s.work);
       }
       return { rows, sum, stale, litres };
@@ -4464,7 +4557,13 @@
           data-act="slot-del" data-slot="${r.slot}" aria-label="Убрать">${ICO.close}</button>` : "";
         const conf = r.confirm != null ? ` <button class="ui-btn ui-btn--secondary ui-btn--sm" type="button"
           data-act="fresh">${ICO.check} Цена верна — ${esc(String(r.confirm))} ₽</button>` : "";
-        return `<div class="to-row"><span class="n">${esc(r.n)}</span>${conf}
+        // номер фильтра: виден нам (искать деталь), в буфер не уходит; клик копирует один номер
+        const code = r.code ? ` <button class="pr-art to-code" type="button" data-act="code"
+          data-code="${esc(r.code)}" title="Копировать номер — клиенту он не уходит">${esc(r.code)}</button>` : "";
+        const fix = r.fixnum ? ` <button class="tpl-badge b-check to-fixnum" type="button" data-act="edit"
+          title="Номер вписан в фирму — он уйдёт клиенту. Нажми и вынеси его в поле «Номер фильтра»"
+          >${ICO.warn} вынести номер</button>` : "";
+        return `<div class="to-row"><span class="n">${esc(r.n)}</span>${code}${fix}${conf}
           <span class="p${r.p == null ? " ask" : ""}">${r.p == null ? "уточню" : rub(r.p)}</span>${del}</div>`;
       }).join("");
       const slotsHtml = SLOTS.map(sl => {
@@ -4473,7 +4572,8 @@
           return `<button class="ui-btn ui-btn--secondary ui-btn--sm" type="button"
             data-act="slot-open" data-slot="${sl.id}">+ ${sl.label.replace(" фильтр","")}</button>`;
         return `<div class="to-slot-form" data-slot="${sl.id}">
-          <input class="ui-input" type="text" data-slot-name placeholder="${sl.label}: фирма (MANN…)" aria-label="Фирма фильтра">
+          <input class="ui-input" type="text" maxlength="60" data-slot-name placeholder="${sl.label}: фирма (MANN…)" aria-label="Фирма фильтра">
+          <input class="ui-input" type="text" maxlength="26" data-slot-code placeholder="Номер — не уйдёт клиенту" aria-label="Номер фильтра">
           <input class="ui-input" type="number" inputmode="numeric" min="1" max="200000" step="1" data-slot-price
             placeholder="Цена ₽" aria-label="Цена фильтра">
           <button class="ui-btn ui-btn--primary ui-btn--sm" type="button" data-act="slot-add" data-slot="${sl.id}">${ICO.check}</button>
@@ -4525,9 +4625,12 @@
             <label class="ui-field"><span class="to-note">Паспортный литраж, л</span>
               <input class="ui-input" name="litres" type="number" step="0.1" min="0.5" max="30" required
                 inputmode="decimal" placeholder="5.2" value="${e ? esc(String(e.litres)) : ""}"></label>
-            <label class="ui-field"><span class="to-note">Масляный фильтр — фирма (без артикула)</span>
-              <input class="ui-input" name="filterName" type="text" maxlength="60"
-                placeholder="MANN" value="${e ? esc(e.filterName || "") : ""}"></label>
+            <label class="ui-field"><span class="to-note">Масляный фильтр — фирма (уйдёт клиенту)</span>
+              <input class="ui-input" name="filterName" type="text" maxlength="30"
+                placeholder="MANN" value="${e ? esc(splitFilter(e.filterName).name) : ""}"></label>
+            <label class="ui-field"><span class="to-note">Номер фильтра — только для поиска, клиенту не уходит</span>
+              <input class="ui-input" name="filterCode" type="text" maxlength="26"
+                placeholder="HU 719/7 x" value="${e ? esc(splitFilter(e.filterName).code) : ""}"></label>
             <label class="ui-field"><span class="to-note">Цена масляного фильтра, ₽ (пусто = уточню)</span>
               <input class="ui-input" name="filterPrice" type="number" inputmode="numeric" min="1" max="200000" step="1"
                 placeholder="1500" value="${e && Number(e.filterPrice) > 0 ? esc(String(e.filterPrice)) : ""}"></label>
@@ -4564,15 +4667,21 @@
       else if(act === "fresh"){ upsert(Object.assign({}, e, { updated: todayISO() })); }  // цена подтверждена сегодня
       else if(act === "slot-open"){ slotOpen[b.dataset.slot] = true; updateCard();
         const i = bodyEl.querySelector(`.to-slot-form[data-slot="${b.dataset.slot}"] [data-slot-name]`); if(i) i.focus(); }
+      else if(act === "code"){                    // клик по номеру — в буфер уходит ТОЛЬКО номер (искать деталь)
+        copyTo(b.dataset.code || "");
+        b.classList.add("ok"); clearTimeout(b._codeT);
+        b._codeT = setTimeout(() => b.classList.remove("ok"), 1200);
+      }
       else if(act === "slot-close"){ slotOpen[b.dataset.slot] = false; updateCard(); }
       else if(act === "slot-del"){ slots[b.dataset.slot] = null; updateCard(); }
       else if(act === "slot-add"){
         const wrap = bodyEl.querySelector(`.to-slot-form[data-slot="${b.dataset.slot}"]`); if(!wrap) return;
         const name = wrap.querySelector("[data-slot-name]").value.trim().slice(0, 60);
+        const code = wrap.querySelector("[data-slot-code]").value.trim().slice(0, 26);
         const price = Math.round(Number(wrap.querySelector("[data-slot-price]").value));
         if(!name){ wrap.querySelector("[data-slot-name]").focus(); return; }
         if(!isFinite(price) || price < 1 || price > 200000){ wrap.querySelector("[data-slot-price]").focus(); return; }
-        slots[b.dataset.slot] = { name, price }; slotOpen[b.dataset.slot] = false; updateCard();
+        slots[b.dataset.slot] = { name, price, code }; slotOpen[b.dataset.slot] = false; updateCard();
       }
       else if(act === "litres-reset"){ litresOverride = null; updateCard(); }
     });
@@ -4609,7 +4718,7 @@
       const rec = {
         id: editId || ("e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5)),
         name, fuel: f.fuel.value, oilKey: f.oilKey.value, litres,
-        filterName: f.filterName.value.trim().slice(0, 60), filterPrice: price,
+        filterName: packFilter(f.filterName.value, f.filterCode.value), filterPrice: price,
         status: "", updated: todayISO(),
       };
       upsert(rec);
