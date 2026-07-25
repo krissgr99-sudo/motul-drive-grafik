@@ -18,10 +18,13 @@
   /* =========================================================
      ТЕМЫ И ТОКЕНЫ — всё меняется отсюда (PERFORMANCE / motorsport dark)
      ========================================================= */
-  /* шрифты — общие для обеих тем */
+  /* шрифты — общие для обеих тем. Три роли, четвёртой гарнитуры нет (дизайн-система §2/§6.3).
+     Базовый текст тоже через токен: одно место на все файлы проекта. */
   :root{
     --font-disp:'Space Grotesk', 'Manrope', system-ui, sans-serif;
+    --font-text:'Manrope', system-ui, sans-serif;
     --font-mono:'JetBrains Mono', ui-monospace, monospace;
+    --brand-hover:#e6232f;   /* наведение на красную заливку — один источник, не хекс россыпью */
   }
 
   /* ===== ТЁМНАЯ ТЕМА — PERFORMANCE / motorsport ===== */
@@ -81,7 +84,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   ::selection{background:var(--brand);color:#fff}
   body{
-    font-family:'Manrope',system-ui,sans-serif;color:var(--text);
+    font-family:var(--font-text);color:var(--text);
     background-color:var(--bg);
     background-image:
       radial-gradient(1100px 540px at 50% -16%, var(--glow), transparent 60%),
@@ -171,7 +174,7 @@
   .home-ask-go{display:inline-flex;align-items:center;gap:8px;padding:15px 20px;border:none;border-radius:12px;
     background:var(--brand);color:#fff;font:inherit;font-weight:700;font-size:14px;letter-spacing:.2px;cursor:pointer;white-space:nowrap;
     box-shadow:0 0 16px rgba(209,31,45,.35);transition:background .15s,box-shadow .15s,transform .15s}
-  .home-ask-go:hover{background:#e6232f;box-shadow:0 0 22px rgba(209,31,45,.5)}
+  .home-ask-go:hover{background:var(--brand-hover);box-shadow:0 0 22px rgba(209,31,45,.5)}
   .home-ask-go:active{transform:scale(.95);box-shadow:none}
   .home-ask-go:focus-visible{outline:none;box-shadow:0 0 16px rgba(209,31,45,.35),0 0 0 3px rgba(209,31,45,.28)}
   .home-ask-go svg{width:16px;height:16px;flex:none}
@@ -270,7 +273,7 @@
   .tpl-nav-head .tpl-count{min-width:22px;text-align:right;font-variant-numeric:tabular-nums}
   .tpl-nav-model .tpl-count{font-variant-numeric:tabular-nums}
   .tpl-nav-chev{flex:none;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
-    transform:rotate(-45deg);transition:transform .2s;margin-left:9px}
+    transform:rotate(-45deg);transition:transform .25s;margin-left:9px}
   .tpl-nav-group.open .tpl-nav-chev{transform:rotate(45deg)}
   .tpl-nav-models{display:none;flex-direction:column;gap:2px;padding:2px 4px 8px 30px}
   .tpl-nav-group.open .tpl-nav-models{display:flex}
@@ -357,7 +360,7 @@
   .tpl-actions{padding:0 16px 16px;display:flex;gap:10px}
   .tpl-copy{flex:1;padding:12px;border:none;border-radius:12px;background:var(--brand);color:#fff;font:inherit;font-weight:700;
     font-size:13px;cursor:pointer;transition:background .15s,box-shadow .15s;box-shadow:0 0 16px rgba(209,31,45,.35)}
-  .tpl-copy:hover{background:#e6232f;box-shadow:0 0 22px rgba(209,31,45,.5)}
+  .tpl-copy:hover{background:var(--brand-hover);box-shadow:0 0 22px rgba(209,31,45,.5)}
   .tpl-copy.ok{background:var(--ok);box-shadow:0 0 16px rgba(76,195,138,.4)}
   .tpl-empty{grid-column:1/-1;padding:56px 24px;text-align:center;color:var(--muted);font-size:14px}
   .tpl-notfound{grid-column:1/-1;margin:-16px auto 8px;max-width:520px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.5}
@@ -787,7 +790,7 @@
   #gate-pass:focus{border-color:var(--brand)}
   #gate-btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--brand);color:#fff;font-weight:700;font-size:15px;
     cursor:pointer;font-family:inherit;letter-spacing:.3px;transition:background .15s,box-shadow .15s;box-shadow:0 0 20px rgba(209,31,45,.4)}
-  #gate-btn:hover{background:#e6232f;box-shadow:0 0 28px rgba(209,31,45,.55)}
+  #gate-btn:hover{background:var(--brand-hover);box-shadow:0 0 28px rgba(209,31,45,.55)}
   .gate-err{color:#ff6b73;font-size:13px;font-weight:600;margin-top:12px;min-height:16px}
   .gate-foot{margin-top:22px;font-size:11px;font-weight:600;letter-spacing:.5px;color:#5b6270}
   .vh{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
@@ -798,9 +801,9 @@
     background:var(--brand);border:1px solid rgba(255,255,255,.22);color:#fff;
     box-shadow:0 6px 20px rgba(209,31,45,.45),0 2px 6px rgba(0,0,0,.22);
     opacity:0;visibility:hidden;transform:translateY(10px) scale(.9);
-    transition:opacity .22s ease,transform .22s ease,visibility .22s,box-shadow .18s,background .18s}
+    transition:opacity .25s ease,transform .25s ease,visibility .25s,box-shadow .15s,background .15s}
   #to-top.show{opacity:1;visibility:visible;transform:none}
-  #to-top:hover{background:#e6232f;box-shadow:0 10px 26px rgba(209,31,45,.6),0 2px 8px rgba(0,0,0,.28);transform:translateY(-2px)}
+  #to-top:hover{background:var(--brand-hover);box-shadow:0 10px 26px rgba(209,31,45,.6),0 2px 8px rgba(0,0,0,.28);transform:translateY(-2px)}
   #to-top:active{transform:scale(.95)}
   #to-top svg{width:24px;height:24px;display:block}
   @media(max-width:720px){ #to-top{right:16px;bottom:16px;width:50px;height:50px} }
@@ -840,9 +843,12 @@
      Красятся ТОЛЬКО через токены темы. Спека и «закон» — design/design-system.md §4.
      Namespace .ui-* — существующую вёрстку не трогает. Новых цветов/шрифтов/радиусов
      мимо системы не вводить. Витрина всех состояний — design-preview.html (dev, не деплоится).
-     ⚠ Этот блок зеркалится в design-preview.html — правишь тут, синхронь там.
+     ⚠ Здесь живут ТОЛЬКО применённые компоненты: кнопка, поле, селект. Полный каталог
+     (таблица, диалог, меню, свитч, чекбокс, карточка, textarea) — в design-preview.html:
+     рабочий файл грузится с телефона, неиспользуемое в него не кладём. Понадобился компонент —
+     перенеси его сюда из витрины вместе с разметкой, а не «про запас».
      ═══════════════════════════════════════════════════════════════════════ */
-  :where(.ui-btn,.ui-input,.ui-textarea,.ui-select,.ui-switch input,.ui-check input,.ui-menu__item,.ui-card--interactive){--ui-ring:0 0 0 3px rgba(209,31,45,.28)}
+  :where(.ui-btn,.ui-input,.ui-select){--ui-ring:0 0 0 3px rgba(209,31,45,.28)}
 
   /* ── Кнопка ─────────────────────────────────────────────── */
   .ui-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
@@ -858,7 +864,7 @@
      aria-disabled="true" и tabindex="-1", иначе контрол остаётся фокусируемым/активируемым с клавиатуры */
   .ui-btn[disabled],.ui-btn.is-disabled{opacity:.5;cursor:not-allowed;pointer-events:none;box-shadow:none;transform:none}
   .ui-btn--primary{background:var(--brand);color:#fff;box-shadow:0 0 16px rgba(209,31,45,.35)}
-  .ui-btn--primary:hover{background:#e6232f;box-shadow:0 0 22px rgba(209,31,45,.5)}
+  .ui-btn--primary:hover{background:var(--brand-hover);box-shadow:0 0 22px rgba(209,31,45,.5)}
   .ui-btn--primary:active{box-shadow:none}
   .ui-btn--primary:focus-visible{box-shadow:0 0 16px rgba(209,31,45,.35),var(--ui-ring)}
   .ui-btn--secondary{background:var(--fill);border-color:var(--line);color:var(--text)}
@@ -869,121 +875,26 @@
   .ui-btn--sm svg{width:15px;height:15px}
   .ui-btn--icon{padding:0;width:42px;height:42px}
   .ui-btn--icon.ui-btn--sm{width:34px;height:34px}
-  .ui-btn--block{display:flex;width:100%}
-  .ui-btn.is-loading{color:transparent!important;pointer-events:none}
-  .ui-btn.is-loading::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;
-    border:2px solid var(--muted);border-top-color:transparent;animation:ui-spin .6s linear infinite}
-  .ui-btn--primary.is-loading::after{border-color:#fff;border-top-color:transparent}
-  .ui-btn--secondary.is-loading::after{border-color:var(--accent-soft);border-top-color:transparent}
-  @keyframes ui-spin{to{transform:rotate(360deg)}}
 
   /* ── Поле формы ─────────────────────────────────────────── */
   .ui-field{display:grid;gap:6px}
-  .ui-label{font-family:inherit;font-weight:600;font-size:13px;color:var(--text)}
-  .ui-label .ui-req{color:var(--accent-soft);margin-left:2px}
-  .ui-input,.ui-textarea,.ui-select{width:100%;padding:12px 14px;border-radius:12px;
+  .ui-input,.ui-select{width:100%;padding:12px 14px;border-radius:12px;
     border:1px solid var(--line);background:var(--fill);color:var(--text);font:inherit;font-size:14px;
     line-height:1.4;outline:none;transition:border-color .15s ease,background .15s ease,box-shadow .15s ease}
-  .ui-input::placeholder,.ui-textarea::placeholder{color:var(--muted)}
-  .ui-input:hover,.ui-textarea:hover,.ui-select:hover{border-color:var(--line-strong)}
-  .ui-input:focus,.ui-textarea:focus,.ui-select:focus{border-color:#d11f2d;background:var(--fill-hover)}
-  .ui-input:focus-visible,.ui-textarea:focus-visible,.ui-select:focus-visible{box-shadow:var(--ui-ring)}
-  .ui-textarea{resize:vertical;min-height:84px}
-  .ui-input[disabled],.ui-textarea[disabled],.ui-select[disabled]{opacity:.55;cursor:not-allowed;background:var(--fill-soft)}
-  .ui-select-wrap{position:relative}
+  .ui-input::placeholder{color:var(--muted)}
+  .ui-input:hover,.ui-select:hover{border-color:var(--line-strong)}
+  .ui-input:focus,.ui-select:focus{border-color:#d11f2d;background:var(--fill-hover)}
+  .ui-input:focus-visible,.ui-select:focus-visible{box-shadow:var(--ui-ring)}
+  .ui-input[disabled],.ui-select[disabled]{opacity:.55;cursor:not-allowed;background:var(--fill-soft)}
+  .ui-select-wrap{position:relative;display:block}
   .ui-select-wrap::after{content:"";position:absolute;right:15px;top:50%;width:7px;height:7px;
     border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
     transform:translateY(-70%) rotate(45deg);pointer-events:none}
   .ui-select{appearance:none;-webkit-appearance:none;padding-right:36px;cursor:pointer}
-  .ui-hint{font-size:12.5px;color:var(--muted);line-height:1.45}
-  .ui-field--error .ui-input,.ui-field--error .ui-textarea,.ui-field--error .ui-select{border-color:var(--brand)}
-  .ui-field--error .ui-hint{color:var(--accent-soft)}
-  .ui-field--ok .ui-input,.ui-field--ok .ui-select{border-color:var(--ok)}
-  .ui-check{display:inline-flex;align-items:center;gap:9px;cursor:pointer;font-size:14px;color:var(--text);user-select:none}
-  .ui-check input{width:18px;height:18px;accent-color:var(--brand);cursor:pointer;flex:none}
-  .ui-check input:disabled{cursor:not-allowed}
-  .ui-check input:focus-visible{outline:none;box-shadow:var(--ui-ring)}
-  .ui-check:has(input:disabled){opacity:.55;cursor:not-allowed}
-  .ui-switch{position:relative;display:inline-block;width:42px;height:24px;flex:none}
-  .ui-switch input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
-  .ui-switch__track{position:absolute;inset:0;border-radius:999px;background:var(--fill-soft);
-    border:1px solid var(--line-strong);transition:background .15s ease,border-color .15s ease}
-  .ui-switch__track::before{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
-    background:var(--muted);transition:transform .15s ease,background .15s ease}
-  .ui-switch input:checked+.ui-switch__track{background:var(--brand);border-color:var(--brand)}
-  .ui-switch input:checked+.ui-switch__track::before{transform:translateX(18px);background:#fff}
-  .ui-switch input:focus-visible+.ui-switch__track{box-shadow:var(--ui-ring)}
-  .ui-switch input:disabled+.ui-switch__track{opacity:.5}
-
-  /* ── Карточка ───────────────────────────────────────────── */
-  .ui-card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;
-    box-shadow:var(--shadow);padding:20px;overflow:hidden}
-  .ui-card__title{font-family:var(--font-disp);font-weight:800;font-size:18px;line-height:1.15;letter-spacing:.2px;color:var(--text)}
-  .ui-card__desc{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.5}
-  .ui-card__body{margin-top:14px;font-size:14px;color:var(--text);line-height:1.55}
-  .ui-card__footer{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
-  .ui-card--interactive{cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease}
-  .ui-card--interactive::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brand);opacity:0;transition:opacity .15s ease}
-  .ui-card--interactive:hover{border-color:var(--open-border);transform:translateY(-3px);box-shadow:var(--shadow),0 6px 20px rgba(0,0,0,.10)}
-  .ui-card--interactive:hover::before,.ui-card--interactive.is-active::before{opacity:1}
-  .ui-card--interactive.is-active{border-color:var(--open-border)}
-  .ui-card--interactive:focus-visible{outline:none;box-shadow:var(--ui-ring)}
-
-  /* ── Таблица ────────────────────────────────────────────── */
-  .ui-table-wrap{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:auto}
-  table.ui-table{width:100%;border-collapse:collapse;font-size:14px}
-  .ui-table thead th{background:var(--card2);color:var(--muted);font-family:var(--font-mono);font-size:11px;
-    font-weight:600;letter-spacing:.5px;text-transform:uppercase;text-align:left;
-    padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
-  .ui-table tbody td{padding:12px 14px;border-bottom:1px solid var(--line);color:var(--text)}
-  .ui-table tbody tr{transition:background .12s ease}
-  .ui-table tbody tr:hover{background:var(--rowhover)}
-  .ui-table tbody tr.is-active{background:rgba(209,31,45,.08)}
-  .ui-table tbody tr.is-active td:first-child{box-shadow:inset 3px 0 0 var(--brand)}
-  .ui-table tbody tr:last-child td{border-bottom:none}
-  .ui-table .ui-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
-  .ui-table tfoot td{padding:12px 14px;background:var(--card2);font-family:var(--font-mono);font-weight:600;color:var(--text);border-top:1px solid var(--line-strong)}
-
-  /* ── Диалог (нативный <dialog>) ─────────────────────────── */
-  .ui-dialog{border:1px solid var(--line);border-radius:20px;background:var(--card);color:var(--text);
-    box-shadow:var(--shadow);padding:0;max-width:460px;width:calc(100% - 32px)}
-  .ui-dialog::backdrop{background:rgba(10,11,14,.55);backdrop-filter:blur(2px)}
-  .ui-dialog[open]{animation:ui-dialog-in .15s ease}
-  @keyframes ui-dialog-in{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
-  .ui-dialog__head{padding:22px 22px 0;position:relative}
-  .ui-dialog__title{font-family:var(--font-disp);font-weight:700;font-size:20px;letter-spacing:.3px;color:var(--text);padding-right:34px}
-  .ui-dialog__desc{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.5}
-  .ui-dialog__body{padding:16px 22px 0}
-  .ui-dialog__foot{padding:22px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
-  .ui-dialog__x{position:absolute;top:14px;right:14px}
-
-  /* ── Выпадающее меню ────────────────────────────────────── */
-  .ui-menu{position:relative;display:inline-block}
-  .ui-menu__list{position:absolute;top:calc(100% + 6px);left:0;min-width:210px;z-index:50;
-    background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
-    padding:6px;display:none}
-  .ui-menu__list--right{left:auto;right:0}
-  .ui-menu.is-open .ui-menu__list{display:block;animation:ui-menu-in .15s ease}
-  @keyframes ui-menu-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-  .ui-menu__label{padding:7px 12px 5px;font-family:var(--font-mono);font-size:10px;font-weight:600;
-    letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
-  .ui-menu__item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
-    padding:9px 12px;border:none;background:transparent;border-radius:8px;
-    font:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;
-    transition:background .12s ease,color .12s ease}
-  .ui-menu__item .ui-menu__ic{width:15px;height:15px;flex:none;color:var(--muted)}
-  .ui-menu__item:hover{background:var(--nav-hover);color:var(--text)}
-  .ui-menu__item:focus-visible{outline:none;background:var(--nav-hover);color:var(--text);box-shadow:var(--ui-ring)}
-  .ui-menu__item--danger{color:var(--accent-soft)}
-  .ui-menu__item--danger:hover{background:rgba(209,31,45,.1);color:var(--accent-soft)}
-  .ui-menu__item--danger .ui-menu__ic{color:var(--accent-soft)}
-  .ui-menu__item[disabled]{opacity:.45;cursor:not-allowed;pointer-events:none}
-  .ui-menu__sep{height:1px;background:var(--line);margin:6px 4px;border:none}
 
   @media (prefers-reduced-motion: reduce){
-    .ui-btn,.ui-card--interactive,.ui-input,.ui-textarea,.ui-select,.ui-switch__track,.ui-switch__track::before{transition-duration:.01ms}
-    .ui-dialog[open],.ui-menu.is-open .ui-menu__list,.ui-btn.is-loading::after{animation:none}
-    .ui-btn:active,.ui-card--interactive:hover{transform:none}
+    .ui-btn,.ui-input,.ui-select{transition-duration:.01ms}
+    .ui-btn:active{transform:none}
   }
   /* ── Иконки: inline-SVG в currentColor вместо эмодзи (дизайн-система §6 п.2) ── */
   .mi{width:1em;height:1em;flex:none;display:inline-block;vertical-align:-.14em}
@@ -2561,6 +2472,8 @@
   const CARS = [
     // Поля: boxes — ключи t.box из TEMPLATES (точное совпадение), ПУСТОЙ [] = коробка вне ассортимента;
     //   noservice:true — коробка не наша (робот DCT / EV / 8HP90+ / GM 2ML70) -> показываем «не обслуживается»;
+    //   nocard:"ZF 8HP80" — коробку ОБСЛУЖИВАЕМ, но готовой карточки в TEMPLATES ещё нет -> показываем
+    //     код коробки + «смета вручную». НЕ путать с noservice: там отказ клиенту, тут ручной расчёт;
     //   draft:true — коробка зависит от мотора/версии/года -> плашка «сверь по VIN»; note — короткая развилка;
     //   allow — какие ВАРИАНТЫ карточек: base / mild(48V) / phev(engine:"Гибрид") / lock(блокировка) / transfer.
     // ВНИМАНИЕ: почти ВСЕ PHEV BMW идут на ОТДЕЛЬНОЙ гибридной коробке (GA8P75HZ/GA8P70H) — НЕ обычная 8HP,
@@ -2643,9 +2556,9 @@
     { brand:"BMW", model:"7 серия", gen:"G11/G12 · 2015-2022 · RWD/xDrive", boxes:["8HP45-76"], draft:true,
       match:["g11","g12","7 серия","7 серии","7er","bmw 7","730i","740i","750i","730d","740d","730ld","740ld","740e","745e","m760li"],
       allow:{base:true, mild:true}, note:"8HP50/75. 48V только у дизелей 730d/740d с 2020. PHEV 740e/745e — отдельная коробка GA8P75HZ. M760Li (V12) = 8HP95, не наш." },
-    { brand:"BMW", model:"7 серия", gen:"G70 · 2022+ · RWD/xDrive", boxes:["8HP45-76"],
+    { brand:"BMW", model:"7 серия", gen:"G70 · 2022+ · RWD/xDrive", boxes:[], nocard:"ZF 8HP80",
       match:["g70","7 серия","7 серии","7er","bmw 7","735i","740i","740d","760i","750e","m760e"],
-      allow:{base:true, mild:true}, note:"735i/740i/740d/760i (V8) + 48V штатно (8HP76). PHEV 750e/M760e — гибридная 8HP, сверять. i7 = EV, не наш." },
+      allow:{base:true, mild:true}, note:"Коробку обслуживаем, но она ВНЕ катч-олла 8HP45-76: масло ZF Lifeguard Hybrid2, ~9 л, поддон 24115A13224. Смету считать вручную по разделу «Цены». PHEV 750e/M760e — гибридная 8HP, сверять. i7 = EV, не наш." },
 
     /* ==================== 8 серия ==================== */
     { brand:"BMW", model:"8 серия", gen:"G14/G15/G16 · 2018+ · кабрио/купе/Gran Coupe", boxes:["8HP45-76"], draft:true,
@@ -2993,10 +2906,14 @@
       const carHint = cars.length ? (
         `<div class="tpl-carhint">${ICO.car} <b>Найдено по машине:</b><br>` +
         cars.map(c=>{
+          // nocard → коробку обслуживаем, но карточки в каталоге ещё нет: смету считаем вручную,
+          //          и это НЕ «не обслуживается» (иначе менеджер откажет клиенту зря).
           // noservice / пустой boxes → коробка вне ассортимента (робот DCT, EV-редуктор, крупный 8HP90+ и т.п.)
-          const target = (c.noservice || !c.boxes || !c.boxes.length)
-            ? `<span class="tpl-carhint-box" style="color:var(--c-red)">не обслуживается</span>`
-            : c.boxes.map(b=>`<span class="tpl-carhint-box">${esc(b)}</span>`).join(", ");
+          const target = c.nocard
+            ? `<span class="tpl-carhint-box">${esc(c.nocard)}</span> <span style="color:var(--c-red)">— карточки нет, смета вручную</span>`
+            : (c.noservice || !c.boxes || !c.boxes.length)
+              ? `<span class="tpl-carhint-box" style="color:var(--c-red)">не обслуживается</span>`
+              : c.boxes.map(b=>`<span class="tpl-carhint-box">${esc(b)}</span>`).join(", ");
           const note = c.note ? `<span class="tpl-carhint-note">${esc(c.note)}</span>` : "";
           return `<span class="tpl-carhint-car">${esc(c.brand)} ${esc(c.model)}</span> <span style="opacity:.7">(${esc(c.gen)})</span> → ${target}${note}`;
         }).join("<br>") +
@@ -3007,9 +2924,12 @@
       if(!list.length){
         // если совпавшие машины все «не наши» — честно говорим об этом, а не «ничего не найдено»
         const onlyNoservice = cars.length && cars.every(c=>c.noservice || !c.boxes || !c.boxes.length);
-        const msg = onlyNoservice
-          ? "Эту коробку у нас не обслуживают (робот DCT / электро / крупный автомат вне ассортимента)."
-          : "Ничего не найдено";
+        const anyNocard = cars.some(c=>c.nocard);
+        const msg = anyNocard
+          ? "Эту коробку мы обслуживаем, но готовой карточки в каталоге ещё нет — соберите смету вручную из раздела «Цены» (см. подсказку выше)."
+          : onlyNoservice
+            ? "Эту коробку у нас не обслуживают (робот DCT / электро / крупный автомат вне ассортимента)."
+            : "Ничего не найдено";
         const q = searchInp.value.trim();
         // А4: искал и не нашёл → предложить зафиксировать пробел покрытия (DemandLog found=false).
         const notFound = q
@@ -4305,7 +4225,9 @@
     root.querySelectorAll(".tpl-copy").forEach(btn =>
       btn.addEventListener("click", async e => {
         e.stopPropagation();
-        const text = kitBodyText(KITS[+btn.dataset.i]);
+        const kit = KITS[+btn.dataset.i];
+        const text = kitBodyText(kit);
+        if(window.MDLOG) window.MDLOG.copy("Комплект·" + kit.name);  // А3: то же, что в Шаблонах и ТО — иначе метрика слепа на комплектах
         try { await navigator.clipboard.writeText(text); }
         catch(_){ const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed";
           ta.style.opacity="0"; document.body.appendChild(ta); ta.select();
@@ -4615,13 +4537,13 @@
               <input class="ui-input" name="engName" type="text" maxlength="80" required
                 placeholder="BMW B47 2.0d" value="${e ? esc(e.name) : ""}"></label>
             <label class="ui-field"><span class="to-note">Топливо</span>
-              <select class="ui-select" name="fuel">
+              <span class="ui-select-wrap"><select class="ui-select" name="fuel">
                 <option value=""${!e || !e.fuel ? " selected" : ""}>—</option>
                 <option value="бензин"${e && e.fuel === "бензин" ? " selected" : ""}>бензин</option>
                 <option value="дизель"${e && e.fuel === "дизель" ? " selected" : ""}>дизель</option>
-              </select></label>
+              </select></span></label>
             <label class="ui-field"><span class="to-note">Масло (наше, цена за литр — из прайса)</span>
-              <select class="ui-select" name="oilKey">${oilOpts}</select></label>
+              <span class="ui-select-wrap"><select class="ui-select" name="oilKey">${oilOpts}</select></span></label>
             <label class="ui-field"><span class="to-note">Паспортный литраж, л</span>
               <input class="ui-input" name="litres" type="number" step="0.1" min="0.5" max="30" required
                 inputmode="decimal" placeholder="5.2" value="${e ? esc(String(e.litres)) : ""}"></label>
@@ -4841,61 +4763,6 @@
   try { authed = sessionStorage.getItem("md_auth") === "1"; } catch(e){}
   if(isLocal || authed){ unlock(); }
   else { inp.focus(); form.addEventListener("submit", e => { e.preventDefault(); tryUnlock(); }); }
-</script>
-<script>
-  /* ═══ UI-KIT: поведение диалогов и меню (без зависимостей) ═══
-     Диалог: [data-ui-open="dialogId"] открывает, [data-ui-close] закрывает, клик по подложке и Esc — тоже.
-     Меню: клик по .ui-menu__trigger переключает; клик вне, выбор пункта и Esc — закрывают. */
-  (function(){
-    // ── Диалоги (всё делегировано на document → работает и для авто-рендеренных <dialog>) ──
-    document.addEventListener("click", function(e){
-      var opener = e.target.closest("[data-ui-open]");
-      if(opener){
-        var dlg = document.getElementById(opener.getAttribute("data-ui-open"));
-        if(dlg && typeof dlg.showModal === "function"){ e.preventDefault(); dlg.showModal(); }
-        return;
-      }
-      var closer = e.target.closest("[data-ui-close]");
-      if(closer){ var d = closer.closest("dialog"); if(d){ e.preventDefault(); d.close(); } return; }
-      // клик по подложке: e.target === сам <dialog> (содержимое перекрывает его целиком)
-      if(e.target.matches && e.target.matches("dialog.ui-dialog")){ e.target.close(); }
-    });
-
-    // ── Меню ──
-    function closeMenu(m){
-      m.classList.remove("is-open");
-      var t = m.querySelector(".ui-menu__trigger"); if(t) t.setAttribute("aria-expanded","false");
-    }
-    function closeMenus(except){
-      document.querySelectorAll(".ui-menu.is-open").forEach(function(m){ if(m !== except) closeMenu(m); });
-    }
-    document.addEventListener("click", function(e){
-      var trig = e.target.closest(".ui-menu__trigger");
-      if(trig){
-        e.preventDefault();
-        var menu = trig.closest(".ui-menu"), open = !menu.classList.contains("is-open");
-        closeMenus(menu);
-        menu.classList.toggle("is-open", open);
-        trig.setAttribute("aria-expanded", open ? "true" : "false");
-        return;
-      }
-      if(e.target.closest(".ui-menu__item")){ closeMenus(); return; }  // выбрал пункт — закрыть
-      if(!e.target.closest(".ui-menu")) closeMenus();                  // клик вне — закрыть
-    });
-    // фокус ушёл за пределы меню (Tab) — закрыть, чтобы не «осиротело» открытым
-    document.addEventListener("focusout", function(e){
-      var menu = e.target.closest && e.target.closest(".ui-menu");
-      if(menu && menu.classList.contains("is-open") && !menu.contains(e.relatedTarget)) closeMenu(menu);
-    });
-    document.addEventListener("keydown", function(e){ if(e.key === "Escape") closeMenus(); });
-
-    // ── Кликабельная карточка: активация с клавиатуры (Enter/Space), как у кнопки ──
-    document.addEventListener("keydown", function(e){
-      if((e.key === "Enter" || e.key === " ") && e.target.classList && e.target.classList.contains("ui-card--interactive")){
-        e.preventDefault(); e.target.click();
-      }
-    });
-  })();
 </script>
 <script>
   /* PWA-оболочка (Н4): регистрируем service worker для офлайна — чистая вкладка открывает инструмент
