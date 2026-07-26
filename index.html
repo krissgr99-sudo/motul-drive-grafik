@@ -1602,21 +1602,22 @@
      Пересверил цену с поставщиком — перенеси ключ на дату сверки; масла берут БОЛЕЕ СТАРШУЮ из
      даты цены и даты её ставки RATES (сменил ставку RATES — перенеси и её масла). */
   const FRESH_DAYS = 30;                 // порог свежести, дней (стартовое значение, правит владелец)
+  // Дата сверки = день, когда владелец подтвердил цены (НЕ git-blame). Старше FRESH_DAYS → «уточню».
+  // 26.07.2026: владелец подтвердил весь прайс разом («цены свежие»), поэтому дата одна.
+  // Группы ниже сохранены от прежних сверок — видно, откуда взялись цифры; сами даты остались в git-истории.
   const CHECKED_ON = {   // "дата сверки": [ключи]
-    "2026-06-28": [
+    "2026-07-26": [
+      // ядро ZF 8HP: промывка, фильтр-поддоны, работы (первая сверка 28.06.2026)
       "bardahl", "filter_std", "filter_mild", "work_full", "work_partial",
-    ],
-    "2026-06-29": [
+      // (первая сверка 29.06.2026)
       "filter_bmw_60", "work_full_60", "work_part_60", "filter_6hp", "work_full_6hp", "work_part_6hp",
       "diff_work_front", "diff_work_transf", "diff_work_rear3", "work_full_aisin", "work_full_09s", "oil_haldex",
       "haldex_ring", "work_haldex_cut", "work_haldex_full",
-    ],
-    "2026-07-02": [
+      // (первая сверка 02.07.2026)
       "filter_mb_9g", "bolt_mb_9g", "drain_mb_9g", "filter_sollo_9g", "filter_mahle_9g_a", "filter_mahle_9g_f",
       "filter_zf_9g_a", "filter_zf_9g_f", "work_full_9g_wash", "work_full_9g", "work_fill_9g", "mb_diff_front",
       "mb_diff_rear", "mb_transf_work",
-    ],
-    "2026-07-03": [
+      // (первая сверка 03.07.2026)
       "filter_mb_7g", "work_full_7g_wash", "work_full_7g_std_wash", "filter_zf_8hp65", "work_full_8hp65_wash", "work_part_8hp65",
       "filter_zf_8hp65a", "work_full_8hp65a_wash", "work_part_8hp65a", "filter_mahle_hx189", "filter_mahle_hx187", "filter_mahle_hx160",
       "filter_mahle_hx139", "filter_mahle_hx132", "filter_tf60", "filter_tf60_alt", "filter_tf62", "filter_u660",
@@ -1629,45 +1630,34 @@
       "work_full_re7", "work_full_u340", "work_full_fw6el", "work_full_gm6l45", "work_full_a6mf1", "work_full_dq724",
       "work_full_dq500", "work_part_dq500", "work_full_dq250", "work_part_dq250", "work_full_dl501", "work_dl501_mech",
       "work_dl382_hydro", "work_dl382_mech", "work_dq200", "work_full_cvt_re0f11a", "work_full_cvt_jf016",
-    ],
-    "2026-07-05": [
+      // ставки масел (RATES) и все объёмы из них (первая сверка 05.07.2026)
       "motul_atf6", "motul_multiatf", "zf8hp", "zf6hp", "zf_hybrid2", "toyota_ws",
       "motul_dctf", "motul_ht_dctf", "gear300", "gear300_ls", "motul_cvtf", "motul_hf",
       "kia_sp4", "ravenol_ulv", "mb_236_17", "mb_236_15", "oil_motul_12", "oil_zf_12",
-      "oil_zf_5", "oil_zf_13", "oil_zf_hyb2_12", "oil_zf_hyb2_5", "oil_motul_13", "oil_zf6_13", "oil_zf6_6",
-      "diff_oil_front", "diff_oil_transf", "diff_oil_rear", "oil_motul_11", "oil_ravenol_11", "oil_mb_9g_13",
-      "oil_mb_9g_10", "mb_diff_oil", "oil_mb_7g_12", "oil_motul_atf6_12", "oil_zf8hp_12",
+      "oil_zf_5", "oil_zf_13", "oil_zf_hyb2_12", "oil_zf_hyb2_5", "oil_motul_13", "oil_zf6_13",
+      "oil_zf6_6", "diff_oil_front", "diff_oil_transf", "diff_oil_rear", "oil_motul_11", "oil_ravenol_11",
+      "oil_mb_9g_13", "oil_mb_9g_10", "mb_diff_oil", "oil_mb_7g_12", "oil_motul_atf6_12", "oil_zf8hp_12",
       "oil_zf8hp_6", "oil_motul_10", "oil_motul_15", "oil_motul_16", "oil_zf_4", "oil_zf_10",
       "oil_multiatf_11", "oil_multiatf_15", "oil_multiatf_16", "oil_toyota_16", "oil_toyota_11", "oil_dctf_9",
       "oil_dctf_5", "oil_dctf_35", "oil_dctf_2", "oil_httdctf_9", "oil_gear300_4", "oil_gear300_38",
       "oil_cvtf_12", "oil_hf_1", "oil_kia_sp4_11",
-      "kit_diff_motul_ls", "kit_diff_motul_reg",   // масла комплекта-с-блокировкой — по ставкам gear300_ls/gear300 (эта дата)
-    ],
-    "2026-07-09": [
+      "kit_diff_motul_ls", "kit_diff_motul_reg",   // масла комплекта-с-блокировкой — по ставкам gear300_ls/gear300
+      // (первая сверка 09.07.2026)
       "transfer_oil_motul", "transfer_oil_dtf1", "transfer_work",
-    ],
-    "2026-07-10": [
-      "diffs_motul_nolock", "diffs_orig_nolock", "diffs_motul_lock", "diffs_orig_lock",
-      "axles_x1_motul", "axles_torsen_motul", "axles_torsen_orig_g055", "axles_torsen_orig_g060",
-    ],
-    "2026-07-19": [   // поузловые мосты/раздатка — состав сверен владельцем (скрин: обычный мост + оригинал по 1 л)
-      "diff_work_rear", "bmw_g_oil", "diff_lock_motul", "diff_lock_orig",
-      "kit_diff_motul", "kit_diff_orig",   // комплект (запчасти) для мостов/раздатки — DIFFS_KIT
-    ],
-    "2026-07-22": [   // комплект С БЛОКИРОВКОЙ — оригинал 4 шт = 2×6500 (LSD) + 2×5000 = 23000, сверено владельцем (DIFFS_KIT_LOCK)
-      "kit_diff_orig_lock",
-      "to_work_oil", "to_work_air", "to_work_cabin", "to_work_fuel",   // работы ТО — расценки продиктованы владельцем
-    ],
-    "2026-07-23": [   // ставки моторных масел 0W=2200/л, 5W=2000/л (страница «Цены», ТО) — продиктованы владельцем
+      // (первая сверка 10.07.2026)
+      "diffs_motul_nolock", "diffs_orig_nolock", "diffs_motul_lock", "diffs_orig_lock", "axles_x1_motul", "axles_torsen_motul",
+      "axles_torsen_orig_g055", "axles_torsen_orig_g060",
+      // поузловые мосты/раздатка — состав сверен владельцем (скрин: обычный мост + оригинал по 1 л) (первая сверка 19.07.2026)
+      "diff_work_rear", "bmw_g_oil", "diff_lock_motul", "diff_lock_orig", "kit_diff_motul", "kit_diff_orig",
+      // комплект С БЛОКИРОВКОЙ — оригинал 4 шт = 2×6500 (LSD) + 2×5000 = 23000, сверено владельцем (DIFFS_KIT_LOCK) (первая сверка 22.07.2026)
+      "kit_diff_orig_lock", "to_work_oil", "to_work_air", "to_work_cabin", "to_work_fuel",
+      // ставки моторных масел 0W=2200/л, 5W=2000/л (страница «Цены», ТО) — продиктованы владельцем (первая сверка 23.07.2026)
       "motor_0w", "motor_5w",
-    ],
-    "2026-07-24": [   // глубокий поддон 1087298361 — владелец сослался на цену каталога «Цены» (PARTS, 11000) при добавлении шаблонов
+      // глубокий поддон 1087298361 — владелец сослался на цену каталога «Цены» (PARTS, 11000) при добавлении шаблонов (первая сверка 24.07.2026)
       "filter_deep",
-    ],
-    "2026-07-26": [   // мосты и раздатка Mercedes, вариант «оригинал MB» — цены продиктованы владельцем (Итого 22000)
-      "mb_235_7", "mb_239_71", "mb_236_15_sm",                              // ставки ₽/л (ими же считается каталог «Цены»)
-      "mb_diff_front_orig", "mb_diff_rear_orig", "mb_diff_work_all",
-      "mb_transf_oil",                                                      // 0,6 л в раздатку = 1500 — названо владельцем в тот же день
+      // мосты и раздатка Mercedes, вариант «оригинал MB» — цены продиктованы владельцем (Итого 22000)
+      "mb_235_7", "mb_239_71", "mb_236_15_sm", "mb_diff_front_orig", "mb_diff_rear_orig", "mb_diff_work_all",
+      "mb_transf_oil",
     ],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
@@ -2775,7 +2765,7 @@
     const searchInp  = document.getElementById("tpl-search");
     const copyAllBtn = document.getElementById("tpl-copyall");
     let activeBrand = "all", activeBox = "all", query = "", expandedBrand = null;
-    const filters = { type:null, engine:null, lock:null, axle:null };
+    const filters = { type:null, pan:null, engine:null, lock:null, axle:null };
     const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
     const cnt = n => n ? `<span class="tpl-count">${n}</span>` : "";   // бейдж-счётчик у вкладок/фильтров
     const plural = (n,a,b,c) => { const m=n%100,d=n%10; return n+" "+(m>=11&&m<=14?c:d===1?a:d>=2&&d<=4?b:c); };
@@ -2783,6 +2773,9 @@
     // Оси фильтров: get(t) берёт значение прямо из полей карточки (порядок значений фиксирован)
     const FACETS = [
       { key:"type",   label:"Тип",   get:t=>t.type, order:["Аппаратная","Частичная","Слив-залив"] },
+      // Поддон: глубокий 1087298361 (Jeep/Dodge) против штатного. Ось появляется только там, где есть оба
+      // (сейчас — ZF 8HP45-76): иначе карточки глубокого поддона теряются среди «Обычная / Без блокировки».
+      { key:"pan",    label:"Поддон", get:t=>t.filter==="filter_deep"?"Глубокий":"Обычный", order:["Обычный","Глубокий"] },
       { key:"engine", label:"Мотор", get:engineOf,  order:["Обычная","Мягкий гибрид","Гибрид"] },
       { key:"lock",   label:"Блок.", get:lockOf,    order:["Без блокировки","С блокировкой"] },
       { key:"axle",   label:"Мост",  get:t=>t.diffsDetailed?"Трёхсекционный":"Обычный", order:["Обычный","Трёхсекционный"] },
