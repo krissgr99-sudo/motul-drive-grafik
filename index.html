@@ -1390,7 +1390,7 @@
     work_full_6hp:["Полная аппаратная замена масла в АКПП ZF 6HP с промывкой системы", 6000],
     oil_zf6_6:    ["Оригинальное трансмиссионное масло ZF6HP S671090255 6л", perL(RATES.zf6hp, 6)],
     work_part_6hp:["Частичная замена масла в АКПП ZF 6HP с заменой фильтр-поддона", 3000],
-    // Мосты/раздатка ПОУЗЛОВО (renderDiffsMulti в «Шаблонах»). Motul: передний+задний диф на одной канистре
+    // Мосты/раздатка ПОУЗЛОВО (diffsMultiBlock в «Шаблонах»). Motul: передний+задний диф на одной канистре
     //   Gear 300, раздатка на Multi DCTF. Оригинал BMW: по 1 л G OIL в каждый диф + BMW DTF-1 в раздатку.
     //   Задний мост «обычный» (diff_work_rear) или «трёхсекционный» (diff_oil_rear на Gear 300 LS + diff_work_rear3).
     diff_oil_front:   ["Трансмиссионное масло Motul Gear 300 75W90 105777 1.5л", perL(RATES.gear300, 1.5)],
@@ -1411,7 +1411,7 @@
     kit_diff_motul_reg: ["Трансмиссионное масло Motul Gear 300 75W90 105777 1л (в мосты)",    perL(RATES.gear300, 1)],    // 4500
     kit_diff_orig_lock: ["Оригинальное трансмиссионное масло BMW G OIL (в мосты, 4 шт)", 23000],                          // блокировка: 2×6500 (LSD) + 2×5000
     // Агрегатные «мосты/раздатка/Торсен» — Motul и Оригинал АЛЬТЕРНАТИВЫ (не слагаемые), «Итого» нет.
-    // diffs_* = сумма поузловых (нужны «Комплектам»/addons, KITS); AXLES_* — X1/Торсен (renderAxles). Цены здесь.
+    // diffs_* = сумма поузловых (нужны «Комплектам»/addons, KITS); AXLES_* — X1/Торсен (axlesBlock). Цены здесь.
     diffs_motul_nolock:     ["Масло Motul +замена", 11550],
     diffs_orig_nolock:      ["Оригинал BMW +замена", 28500],
     diffs_motul_lock:       ["Масло Motul +замена", 12450],
@@ -1676,7 +1676,7 @@
   const isFresh = key => { const iso = CHECKED[key]; if(!iso) return false;
     const days = (new Date() - new Date(iso)) / 864e5; return days >= 0 && days <= FRESH_DAYS; };
 
-  // 2) Мосты + раздатка ПОУЗЛОВО (renderDiffsMulti): 2 варианта (Motul / оригинал BMW), у каждого своё «Итого».
+  // 2) Мосты + раздатка ПОУЗЛОВО (diffsMultiBlock): 2 варианта (Motul / оригинал BMW), у каждого своё «Итого».
   //    Обычный задний мост — Итого Motul 11550 / оригинал 28500. lockItem → доплата за блокировку (LSD-масло зада):
   //    Motul 12450 / оригинал 31500. Меняешь только числа/состав в PRICE — тексты и «Итого» соберутся сами.
   const DIFFS_REGULAR = {
@@ -1689,7 +1689,7 @@
     ],
   };
 
-  // 2.0) КОМПЛЕКТ (запчасти без работ) для мостов и раздатки — апсел в «Комплектах» (renderDiffsMulti / addonBlockHtml).
+  // 2.0) КОМПЛЕКТ (запчасти без работ) для мостов и раздатки — апсел в «Комплектах» (diffsMultiBlock / addonBlockHtml).
   //      Не путать с DIFFS_REGULAR (это УСЛУГА с работами). Итого: Motul 12000 / оригинал BMW 25500. Цены — в PRICE.
   const DIFFS_KIT = {
     head:  "Так же можем предложить комплект для мостов и раздатки.",
@@ -1721,7 +1721,7 @@
   // 2.2) Мосты для переднеприводной платформы (X1 F48) — без раздатки, только Motul.
   const AXLES_X1 = { head: "Передний и задний дифференциал.", motulKey: "axles_x1_motul" };
 
-  // 2.2.1) Мосты + Торсен (Audi/VW, ZF 8HP65) — вариант Motul или оригинал VAG (см. renderAxles).
+  // 2.2.1) Мосты + Торсен (Audi/VW, ZF 8HP65) — вариант Motul или оригинал VAG (см. axlesBlock).
   //    G055 и G060 — два спека оригинального масла VAG, отличаются ценой оригинала (33000 / 39800).
   const AXLES_TORSEN = {
     head: "Также можем заменить масла в переднем, заднем дифференциале и в ТОРСЕН.",
@@ -1744,7 +1744,7 @@
 
   // 2.4) Раздатка BMW xDrive — отдельная услуга (не путать с раздаткой внутри DIFFS_DETAILED
   //      блока X5 E70). Два варианта масла: Motul Multi DCTF (3000) или оригинал BMW DTF-1 (5500),
-  //      «считаем литр». Форма как у HALDEX → рендерится тем же renderHaldex. Цены — в PRICE.
+  //      «считаем литр». Форма как у HALDEX → рендерится тем же haldexBlock. Цены — в PRICE.
   //      Пока не привязан к карточкам (данные заведены, привязка к машинам — следующим шагом).
   const TRANSFER = {
     head:  "Замена масла в раздаточной коробке (BMW xDrive)",
@@ -1764,7 +1764,7 @@
   };
 
   // Сноска «мосты + раздатка» для Mercedes — одинакова во всех карточках 9G и 7G. Два варианта
-  // (рендер renderDiffsMulti, у каждого свой «Итого»): оригинал Mercedes-Benz 22000 / Motul 14000.
+  // (рендер diffsMultiBlock, у каждого свой «Итого»): оригинал Mercedes-Benz 22000 / Motul 14000.
   // Раздатка в обоих вариантах на оригинальном Mercedes 236.15 — строка mb_transf_oil общая.
   const MB9G_AXLES = {
     head:  "Также можем предложить замену масла в переднем, заднем дифференциале и в раздаточной коробке.",
@@ -2186,80 +2186,87 @@
   // (иначе две разные карточки дали бы один код и слиплись в дедупе «устройство+карточка+минута»).
   const tplCode  = t => t.code || [t.brand, t.box, t.type, engineOf(t), t.lock?"lock":"nolock"].filter(Boolean).join("·");
 
-  function renderVariant(v, head){
-    const lines = [`${v.label} ${head}`];
-    let sum = 0;
-    for(const key of v.items){
-      const item = PRICE[key];
-      if(!item){ console.warn("PRICE: нет ключа", key); lines.push(`⚠ уточню: ${key}`); continue; } // пропуск ВИДЕН в смете, «Итого» не занижается молча (правило 2)
-      if(isFresh(key)){ lines.push(`${item[0]} ${item[1]} руб.`); sum += item[1]; }
-      else            { lines.push(`${item[0]} — уточню`); }   // цена протухла/без даты → без числа (правило 7)
+  /* ===== ЕДИНЫЙ ФОРМАТ КОПИРУЕМОГО ТЕКСТА (Шаблоны · Комплекты · ТО) =====
+     Один источник правды для того, что уходит клиенту в WhatsApp. Раньше формат жил в трёх
+     местах и разъехался (где-то «12000 руб.» слитно с названием, где-то «17500р», где-то буллиты).
+     Каркас документа: заголовок печатается ОДИН раз → блоки, разделённые SEP → у каждого блока
+     свой «Итого». Меняешь оформление здесь — меняется во всех трёх разделах сразу.
+     Правило 9: в буфер уходит ровно смета, без интерфейсных подписей. */
+  const CDOC = (function(){
+    const SEP   = "— — — — —";                                    // граница смысловых блоков (коробка → мосты → примечание)
+    const money = n => Number(n).toLocaleString("ru-RU") + " ₽";   // как в интерфейсе: 21 600 ₽
+    const isNum = s => /^\d+([.)]\d*)*[.)]?$/.test(s);             // служебная метка варианта: «1.», «1.1», «2)»
+    // строка позиции: «• Название — 21 600 ₽»; цены нет → «— уточню» (число не выдумываем, правило 7).
+    // Хвост « — уточню» в самом названии (ТО) снимаем, иначе получилось бы «— уточню — уточню».
+    // Строка-сигнал «⚠ уточню: ключ» (нет позиции в PRICE) печатается как есть — цены у неё нет по смыслу.
+    const line = (name, price) => {
+      const n = String(name).replace(/\s*—\s*уточню$/, "");
+      return "• " + n + (/^⚠/.test(n) ? "" : " — " + (price == null ? "уточню" : money(price)));
+    };
+    const total = (sum, label) => (label || "Итого") + ": " + (sum == null ? "уточню" : money(sum));
+    // метка варианта: служебная нумерация → «Вариант N»; осмысленная («Motul:») — как есть, без хвостового «:»
+    const varLabel = (raw, i) => {
+      const s = String(raw == null ? "" : raw).trim().replace(/[:\s]+$/, "");
+      return (!s || isNum(s)) ? "Вариант " + (i + 1) : s;
+    };
+    /* Блок: { head, intro, note, variants:[{ label, lines:[{name,price}], sum, totalLabel }] }.
+       sum === undefined → «Итого» не печатаем (альтернативы-однострочники: мосты X1/Торсен).
+       Единственный вариант без осмысленного имени печатается без метки (не «Вариант 1» на пустом месте). */
+    function block(b){
+      const parts = [];
+      const cap  = [b.head, b.intro].filter(Boolean).join("\n");
+      const vars = b.variants || [];
+      // единственный вариант без имени («Состав», «Итого», мосты-альтернативы) — список идёт
+      // прямо под заголовком, без пустой строки: разделять там нечего
+      const tight = vars.length === 1 && vars[0].label == null;
+      if(cap && !tight) parts.push(cap);
+      vars.forEach((v, i) => {
+        const named = v.label != null && !isNum(String(v.label).trim().replace(/[:\s]+$/, ""));
+        const chunk = (tight && cap) ? [cap] : [];
+        if(named || vars.length > 1) chunk.push(varLabel(v.label, i));
+        v.lines.forEach(l => chunk.push(line(l.name, l.price)));
+        if(v.sum !== undefined) chunk.push(total(v.sum, v.totalLabel));
+        parts.push(chunk.join("\n"));
+      });
+      if(b.note) parts.push(b.note);
+      return parts.join("\n\n");
     }
-    lines.push(`Итого: ${sum} руб.`);     // «Итого» = сумма позиций, считается само
-    return lines.join("\n");
+    // Документ: заголовок (+ подзаголовок) и блоки через разделитель. Пустые блоки отбрасываются.
+    function doc(d){
+      const cap  = [d.title, d.sub].filter(Boolean).join("\n");
+      const body = (d.blocks || []).filter(Boolean).join("\n\n" + SEP + "\n\n");
+      return [cap, body].filter(Boolean).join("\n\n");
+    }
+    return { SEP, money, line, total, block, doc };
+  })();
+
+  // Позиция прайса → {name, price}: нет ключа → пропуск ВИДЕН в смете (правило 2),
+  // цена протухла/без даты → без числа (правило 7). Общая для Шаблонов, Комплектов и ТО.
+  function priceLine(key){
+    const item = PRICE[key];
+    if(!item){ console.warn("PRICE: нет ключа", key); return { name: `⚠ уточню: ${key}`, price: null }; }
+    return { name: item[0], price: isFresh(key) ? item[1] : null };
   }
+  // Вариант «список ключей PRICE» → {label, lines, sum}: «Итого» = сумма позиций, считается само.
+  function priceVariant(label, keys){
+    const lines = keys.map(priceLine);
+    return { label, lines, sum: lines.reduce((a, l) => a + (l.price || 0), 0) };
+  }
+
+  // Блок услуги (варианты масла у одной коробки): заголовок услуги уходит в шапку документа, не в каждый вариант.
+  const serviceBlock = variants => CDOC.block({ variants: variants.map(v => priceVariant(v.label, v.items)) });
   // Мосты + раздатка ПОУЗЛОВО: у каждого варианта (Motul / оригинал) свой «Итого». lock=true → строка доплаты за блокировку.
-  function renderDiffsMulti(block, lock){
-    const blocks = block.variants.map(v=>{
-      const items = (lock && v.lockItem) ? [...v.items, v.lockItem] : v.items;
-      const lines = [v.label];
-      let sum = 0;
-      for(const key of items){
-        const item = PRICE[key];
-        if(!item){ console.warn("PRICE: нет ключа", key); lines.push(`⚠ уточню: ${key}`); continue; } // пропуск ВИДЕН (правило 2)
-        if(isFresh(key)){ lines.push(`${item[0]} ${item[1]} руб.`); sum += item[1]; }
-        else            { lines.push(`${item[0]} — уточню`); }   // протухло → без числа (правило 7)
-      }
-      lines.push(`Итого: ${sum} руб.`);
-      return lines.join("\n");
-    });
-    let out = `${block.head}\n${block.intro}\n\n${blocks.join("\n\n")}`;
-    if(block.note) out += `\n\n${block.note}`;
-    return out;
-  }
-  // Детальные мосты/раздатка: поузловой список с собственным «Итого».
-  function renderDiffsDetailed(d){
-    const lines = [d.head];
-    let sum = 0;
-    for(const key of d.items){
-      const item = PRICE[key];
-      if(!item){ console.warn("PRICE: нет ключа", key); lines.push(`⚠ уточню: ${key}`); continue; } // пропуск ВИДЕН (правило 2)
-      if(isFresh(key)){ lines.push(`${item[0]} ${item[1]} руб.`); sum += item[1]; }
-      else            { lines.push(`${item[0]} — уточню`); }   // протухло → без числа (правило 7)
-    }
-    lines.push(`Итого по мостам и раздатке: ${sum} руб.`);
-    return lines.join("\n");
-  }
-  // Простые мосты (X1 F48): один блок, только Motul. Если заданы orig/note — добавляем строку оригинала и сноску (Audi/VW, Торсен).
-  function renderAxles(a){
-    const lines = [a.head];
-    for(const key of [a.motulKey, a.origKey]){        // Motul и Оригинал — АЛЬТЕРНАТИВЫ (у X1 origKey нет), «Итого» нет
-      if(!key) continue;
-      const item = PRICE[key];
-      if(!item){ console.warn("PRICE: нет ключа", key); lines.push(`⚠ уточню: ${key}`); continue; } // пропуск ВИДЕН (правило 2)
-      if(isFresh(key)){ lines.push(`${item[0]} ${item[1]}р`); }
-      else            { lines.push(`${item[0]} — уточню`); }   // протухло/без даты → без числа (правило 7)
-    }
-    if(a.note) lines.push(a.note);
-    if(a.tail) lines.push(a.tail);
-    return lines.join("\n");
-  }
-  // Муфта Haldex: общий заголовок + варианты с собственным «Итого».
-  function renderHaldex(h){
-    const blocks = h.variants.map(v=>{
-      const lines = [v.label];
-      let sum = 0;
-      for(const key of v.items){
-        const item = PRICE[key];
-        if(!item){ console.warn("PRICE: нет ключа", key); lines.push(`⚠ уточню: ${key}`); continue; } // пропуск ВИДЕН (правило 2)
-        if(isFresh(key)){ lines.push(`${item[0]} ${item[1]} руб.`); sum += item[1]; }
-        else            { lines.push(`${item[0]} — уточню`); }   // протухло → без числа (правило 7)
-      }
-      lines.push(`Итого: ${sum} руб.`);
-      return lines.join("\n");
-    });
-    return `${h.head}\n${h.intro}\n\n${blocks.join("\n\n")}`;
-  }
+  const diffsMultiBlock = (b, lock) => CDOC.block({ head: b.head, intro: b.intro, note: b.note,
+    variants: b.variants.map(v => priceVariant(v.label, (lock && v.lockItem) ? [...v.items, v.lockItem] : v.items)) });
+  // Детальные мосты/раздатка: один поузловой список с собственным «Итого».
+  const diffsDetailedBlock = d => CDOC.block({ head: d.head, variants: [priceVariant(null, d.items)] });
+  // Простые мосты (X1 F48 / Торсен): Motul и Оригинал — АЛЬТЕРНАТИВЫ (у X1 origKey нет), «Итого» нет.
+  const axlesBlock = a => CDOC.block({ head: a.head,
+    note: [a.note, a.tail].filter(Boolean).join("\n") || null,
+    variants: [{ label: null, lines: [a.motulKey, a.origKey].filter(Boolean).map(priceLine) }] });
+  // Муфта Haldex / раздатка xDrive: общий заголовок + варианты с собственным «Итого».
+  const haldexBlock = h => CDOC.block({ head: h.head, intro: h.intro,
+    variants: h.variants.map(v => priceVariant(v.label, v.items)) });
 
   // Текст шаблона: АКПП (1-2 варианта) + при необходимости мосты/раздатка/Haldex
   function tplBody(t){
@@ -2270,16 +2277,16 @@
     if(svc[eng]) svc = svc[eng];           // мотор переопределяет услугу (полный гибрид = др. агрегат)
     const filterKey = t.filter || (box.filter ? box.filter[eng] : null); // t.filter — явный выбор поддона (9G-Tronic)
     const head = typeof svc.head === "function" ? svc.head(filterKey) : svc.head; // head может зависеть от фильтра (7G-Tronic)
-    const parts = [svc.variants(filterKey).map(v => renderVariant(v, head)).join("\n\n")];
-    if(t.diffs)         parts.push(renderDiffsMulti(DIFFS_REGULAR, t.lock));  // ZF: мосты + раздатка поузлово (Motul/оригинал), блокировка = доплата
-    if(t.diffsDetailed) parts.push(renderDiffsDetailed(DIFFS_DETAILED)); // поузловой расчёт мостов
-    if(box.diffsBlock)  parts.push(box.diffsBlock.variants                // сноска мостов на уровне коробки (Mercedes 9G/7G):
-      ? renderDiffsMulti(box.diffsBlock)                                  //   2 варианта с «Итого» у каждого
-      : renderDiffsDetailed(box.diffsBlock));                             //   или один поузловой список
+    const blocks = [serviceBlock(svc.variants(filterKey))];                 // заголовок услуги = шапка документа (CDOC.doc)
+    if(t.diffs)         blocks.push(diffsMultiBlock(DIFFS_REGULAR, t.lock)); // ZF: мосты + раздатка поузлово (Motul/оригинал), блокировка = доплата
+    if(t.diffsDetailed) blocks.push(diffsDetailedBlock(DIFFS_DETAILED));     // поузловой расчёт мостов
+    if(box.diffsBlock)  blocks.push(box.diffsBlock.variants               // сноска мостов на уровне коробки (Mercedes 9G/7G):
+      ? diffsMultiBlock(box.diffsBlock)                                   //   2 варианта с «Итого» у каждого
+      : diffsDetailedBlock(box.diffsBlock));                              //   или один поузловой список
     const axles = t.axles || box.axles;                // t.axles — переопределение блока мостов на карточке (Торсен G055/G060)
-    if(axles) parts.push(renderAxles(axles));          // простой блок мостов (данные в коробке или карточке)
-    if(box.haldex)parts.push(renderHaldex(box.haldex));
-    return parts.filter(Boolean).join("\n\n");
+    if(axles) blocks.push(axlesBlock(axles));          // простой блок мостов (данные в коробке или карточке)
+    if(box.haldex) blocks.push(haldexBlock(box.haldex));
+    return CDOC.doc({ title: head, blocks });
   }
   // Заголовок и теги — тоже из полей карточки, единый источник правды
   function tplTitle(t){
@@ -2497,7 +2504,7 @@
 
   // Страховка от повторения дефекта: две РАЗНЫЕ карточки с одинаковым кодом молча слиплись бы в дедупе
   // лога А3 (устройство+карточка+минута) и метрика «какие шаблоны в ходу» соврала бы. Ругаемся в консоль
-  // при загрузке — как renderVariant на пропущенный ключ PRICE. Лечение: задать явный t.code.
+  // при загрузке — как priceLine на пропущенный ключ PRICE. Лечение: задать явный t.code.
   (function(){
     const seen = new Map();
     for(const t of TEMPLATES){
@@ -3089,8 +3096,9 @@
     });
     searchInp.addEventListener("input", ()=>{ query = searchInp.value.trim().toLowerCase(); render(); });
     copyAllBtn.addEventListener("click", ()=>{
+      // между карточками разделитель ДЛИННЕЕ внутреннего (CDOC.SEP), иначе границы смет сливаются с границами блоков
       const text = visible().map(t=>[t, tplBody(t)]).filter(([t,b])=>!t.todo && b)
-        .map(([t,b])=>`${t.brand} · ${tplTitle(t)}\n\n${b}`).join("\n\n— — — — —\n\n");
+        .map(([t,b])=>`${t.brand} · ${tplTitle(t)}\n\n${b}`).join(`\n\n${CDOC.SEP} ${CDOC.SEP}\n\n`);
       if(text) copyText(text, copyAllBtn);
     });
     renderNav(); renderFacets(); render();
@@ -4427,44 +4435,27 @@
   }
   // Текст для клиента (ровно тело комплекта: состав + цена), без интерфейсных подписей (правило 9).
   function kitBodyText(k){
-    const lines = [k.name];
-    if(k.sub) lines.push(k.sub);
-    lines.push("", "Состав:");
-    for(const it of (k.items || [])){
-      const l = kitLine(it);
-      lines.push(l.price != null ? `• ${l.name} — ${l.price} руб.` : `• ${l.name}`);
-    }
-    lines.push("");
-    lines.push(k.price != null ? `Цена комплекта: ${k.price} руб.` : "Цена комплекта: уточню");
+    const blocks = [];
+    // состав + продажная цена: «Цена комплекта» — цена владельца, НЕ сумма позиций (потому отдельная подпись «Итого»)
+    blocks.push(CDOC.block({ head: "Состав",
+      variants: [{ label: null, lines: (k.items || []).map(kitLine), sum: k.price, totalLabel: "Цена комплекта" }] }));
     if(k.addons){                                       // доп. предложение (апсел) — отдельным блоком, не в цене комплекта
       const vars = kitAddonVariants(k.addons);
       if(vars){                                         // блок-варианты: ТОТ ЖЕ расчёт, что карточка и сводка (fail-closed «Итого»)
         const b = k.addons.block;
-        lines.push("", b.head);
-        if(b.intro) lines.push(b.intro);
-        for(const v of vars){
-          lines.push("", v.label);
-          for(const l of v.lines) lines.push(l.price != null ? `${l.name} ${l.price} руб.` : `${l.name} — уточню`);
-          lines.push(v.stale ? "Итого: уточню" : `Итого: ${v.sum} руб.`);   // без уверенной частичной суммы рядом с «уточню»
-        }
-        if(b.note) lines.push("", b.note);
+        blocks.push(CDOC.block({ head: b.head, intro: b.intro, note: b.note,
+          variants: vars.map(v => ({ label: v.label, lines: v.lines,
+            sum: v.stale ? null : v.sum })) }));        // без уверенной частичной суммы рядом с «уточню»
       } else {                                          // плоский список позиций-альтернатив
-        lines.push("", k.addons.head || "Дополнительно:");
-        for(const it of (k.addons.items || [])){
-          const l = kitLine(it);
-          lines.push(l.price != null ? `• ${l.name} — ${l.price} руб.` : `• ${l.name}`);
-        }
-        if(k.addons.note) lines.push(k.addons.note);
+        blocks.push(CDOC.block({ head: k.addons.head || "Дополнительно", note: k.addons.note,
+          variants: [{ label: null, lines: (k.addons.items || []).map(kitLine) }] }));
       }
     }
     const totals = kitAddonTotals(k);                   // сводка: коробка + каждый вариант мостов/раздатки
-    if(totals){
-      lines.push("", "Итого:");
-      for(const t of totals)
-        lines.push(`Коробка + ${kitLc(t.label)} — ${t.total != null ? t.total + " руб." : "уточню"}`);
-    }
-    if(k.note) lines.push("", k.note);
-    return lines.join("\n");
+    if(totals) blocks.push(CDOC.block({ head: "Итого",
+      variants: [{ label: null, lines: totals.map(t => ({ name: `Коробка + ${kitLc(t.label)}`, price: t.total })) }] }));
+    if(k.note) blocks.push(k.note);
+    return CDOC.doc({ title: k.name, sub: k.sub, blocks });
   }
 
   function renderKits(){
@@ -4714,13 +4705,15 @@
       }
       return { rows, sum, stale, litres };
     }
-    // текст клиенту: ровно тело сметы (правило 9); есть «уточню» → «Итого: уточню» (fail-closed целиком)
+    // текст клиенту: ровно тело сметы (правило 9); есть «уточню» → «Итого: уточню» (fail-closed целиком).
+    // Формат — общий с Шаблонами и Комплектами (CDOC): заголовок, позиции буллитами, «Итого».
     function bodyText(e){
       const s = smeta(e);
-      const lines = ["Техническое обслуживание " + e.name + (e.fuel ? " (" + e.fuel + ")" : ""), ""];
-      for(const r of s.rows) lines.push(r.p != null ? r.n + " " + r.p + " руб." : r.n.replace(/ — уточню$/, "") + " — уточню");
-      lines.push("Итого: " + (s.stale ? "уточню" : s.sum + " руб."));
-      return lines.join("\n");
+      return CDOC.doc({
+        title:  "Техническое обслуживание " + e.name + (e.fuel ? " (" + e.fuel + ")" : ""),
+        blocks: [CDOC.block({ variants: [{ label: null,
+          lines: s.rows.map(r => ({ name: r.n, price: r.p })), sum: s.stale ? null : s.sum }] })],
+      });
     }
     async function copyTo(text, btn){
       try { await navigator.clipboard.writeText(text); }
