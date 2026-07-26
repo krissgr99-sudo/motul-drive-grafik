@@ -323,7 +323,7 @@
   .tpl-badge.b-part{background:rgba(240,180,41,.12);color:var(--warn);border:1px solid rgba(240,180,41,.3)}
   .tpl-badge.b-hybrid{background:var(--fill-soft);color:var(--muted);border:1px solid var(--line-strong)}
   .tpl-badge.b-lock{background:rgba(209,31,45,.1);color:var(--accent-soft);border:1px solid rgba(209,31,45,.3)}
-  .tpl-badge.b-check{background:rgba(240,180,41,.14);color:var(--warn);border:1px solid rgba(240,180,41,.42)} /* «Проверить цены» — мягкий флаг свежести (правило 7) */
+  .tpl-badge.b-check{background:rgba(240,180,41,.14);color:var(--warn);border:1px solid rgba(240,180,41,.42)} /* «Проверить цены» — внутренний флаг свежести, в буфер не уходит */
   .tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,380px));justify-content:center;gap:16px;align-items:start}
   .tpl-grid.is-landing{grid-template-columns:repeat(auto-fill,minmax(215px,1fr));justify-content:stretch}
   .tpl-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;
@@ -1593,16 +1593,18 @@
   ];
   const TO_OIL = Object.fromEntries(TO_OILS.map(o => [o.key, o]));
 
-  /* ---- Свежесть Уровня 0: дата сверки цены с прайсом поставщика (fail-closed, правило 7). ----
+  /* ---- Свежесть Уровня 0: дата сверки цены с прайсом поставщика. ----
      Дата-ключ в CHECKED_ON (checkedAt) = день, когда ВЛАДЕЛЕЦ лично подтвердил цену против
      актуального источника поставщика. Это НЕ дата правки файла, НЕ дата публикации/деплоя,
-     НЕ git-blame и НЕ «сегодня» автоматом. Нет подтверждённой владельцем даты → ключ НЕ вносится
-     в CHECKED_ON; нет ключа ИЛИ старше FRESH_DAYS дней → смета покажет «уточню» вместо числа,
-     а карточка — бейдж «Проверить цены» (fail-closed, не молча уверенное число).
+     НЕ git-blame и НЕ «сегодня» автоматом.
+     ЧТО ДЕЛАЕТ ПРОСРОЧКА (решение владельца 26.07.2026): цена старше FRESH_DAYS остаётся
+     в смете ПРЕЖНИМ числом — клиент видит рабочую цену и полное «Итого», сумма не занижается.
+     Просрочка поднимает только внутренний бейдж «Проверить цены» на карточке (в буфер не уходит).
+     Слово «уточню» означает ровно одно: цены НЕТ (нет ключа в PRICE или она не число).
      Пересверил цену с поставщиком — перенеси ключ на дату сверки; масла берут БОЛЕЕ СТАРШУЮ из
      даты цены и даты её ставки RATES (сменил ставку RATES — перенеси и её масла). */
   const FRESH_DAYS = 30;                 // порог свежести, дней (стартовое значение, правит владелец)
-  // Дата сверки = день, когда владелец подтвердил цены (НЕ git-blame). Старше FRESH_DAYS → «уточню».
+  // Дата сверки = день, когда владелец подтвердил цены (НЕ git-blame). Старше FRESH_DAYS → бейдж «Проверить цены».
   // 26.07.2026: владелец подтвердил весь прайс разом («цены свежие»), поэтому дата одна.
   // Группы ниже сохранены от прежних сверок — видно, откуда взялись цифры; сами даты остались в git-истории.
   const CHECKED_ON = {   // "дата сверки": [ключи]
@@ -2186,7 +2188,7 @@
     const SEP   = "— — — — —";                                    // граница смысловых блоков (коробка → мосты → примечание)
     const money = n => Number(n).toLocaleString("ru-RU") + " ₽";   // как в интерфейсе: 21 600 ₽
     const isNum = s => /^\d+([.)]\d*)*[.)]?$/.test(s);             // служебная метка варианта: «1.», «1.1», «2)»
-    // строка позиции: «• Название — 21 600 ₽»; цены нет → «— уточню» (число не выдумываем, правило 7).
+    // строка позиции: «• Название — 21 600 ₽»; цены нет → «— уточню» (число не выдумываем).
     // Хвост « — уточню» в самом названии (ТО) снимаем, иначе получилось бы «— уточню — уточню».
     // Строка-сигнал «⚠ уточню: ключ» (нет позиции в PRICE) печатается как есть — цены у неё нет по смыслу.
     const line = (name, price) => {
@@ -2230,54 +2232,68 @@
     return { SEP, money, line, total, block, doc };
   })();
 
-  // Позиция прайса → {name, price}: нет ключа → пропуск ВИДЕН в смете (правило 2),
-  // цена протухла/без даты → без числа (правило 7). Общая для Шаблонов, Комплектов и ТО.
-  function priceLine(key){
+  /* Позиция прайса → {name, price, stale}. Два РАЗНЫХ состояния — не путать (решение владельца 26.07.2026):
+       • цены нет вообще (нет ключа в PRICE) → «уточню» в строке, пропуск ВИДЕН (правило 2);
+       • цена есть, но давно не подтверждалась → показываем ПРЕЖНЮЮ цену и ставим stale.
+     Занижать «Итого», выбрасывая неподтверждённые позиции, нельзя: клиент получает сумму, по которой
+     мы не работаем. stale наружу не уходит — это бейдж «Проверить цены» на экране, сигнал владельцу.
+     sink (необязательный) — массив, куда складываются все позиции сметы: по нему считается бейдж. */
+  function priceLine(key, sink){
     const item = PRICE[key];
-    if(!item){ console.warn("PRICE: нет ключа", key); return { name: `⚠ уточню: ${key}`, price: null }; }
-    return { name: item[0], price: isFresh(key) ? item[1] : null };
+    const l = !item
+      ? (console.warn("PRICE: нет ключа", key), { name: `⚠ уточню: ${key}`, price: null })
+      : { name: item[0], price: item[1], stale: !isFresh(key) };
+    if(sink) sink.push(l);
+    return l;
   }
   // Вариант «список ключей PRICE» → {label, lines, sum}: «Итого» = сумма позиций, считается само.
-  function priceVariant(label, keys){
-    const lines = keys.map(priceLine);
+  function priceVariant(label, keys, sink){
+    const lines = keys.map(k => priceLine(k, sink));
     return { label, lines, sum: lines.reduce((a, l) => a + (l.price || 0), 0) };
   }
 
   // Блок услуги (варианты масла у одной коробки): заголовок услуги уходит в шапку документа, не в каждый вариант.
-  const serviceBlock = variants => CDOC.block({ variants: variants.map(v => priceVariant(v.label, v.items)) });
+  const serviceBlock = (variants, sink) => CDOC.block({ variants: variants.map(v => priceVariant(v.label, v.items, sink)) });
   // Мосты + раздатка ПОУЗЛОВО: у каждого варианта (Motul / оригинал) свой «Итого». lock=true → строка доплаты за блокировку.
-  const diffsMultiBlock = (b, lock) => CDOC.block({ head: b.head, intro: b.intro, note: b.note,
-    variants: b.variants.map(v => priceVariant(v.label, (lock && v.lockItem) ? [...v.items, v.lockItem] : v.items)) });
+  const diffsMultiBlock = (b, lock, sink) => CDOC.block({ head: b.head, intro: b.intro, note: b.note,
+    variants: b.variants.map(v => priceVariant(v.label, (lock && v.lockItem) ? [...v.items, v.lockItem] : v.items, sink)) });
   // Детальные мосты/раздатка: один поузловой список с собственным «Итого».
-  const diffsDetailedBlock = d => CDOC.block({ head: d.head, variants: [priceVariant(null, d.items)] });
+  const diffsDetailedBlock = (d, sink) => CDOC.block({ head: d.head, variants: [priceVariant(null, d.items, sink)] });
   // Простые мосты (X1 F48 / Торсен): Motul и Оригинал — АЛЬТЕРНАТИВЫ (у X1 origKey нет), «Итого» нет.
-  const axlesBlock = a => CDOC.block({ head: a.head,
+  const axlesBlock = (a, sink) => CDOC.block({ head: a.head,
     note: [a.note, a.tail].filter(Boolean).join("\n") || null,
-    variants: [{ label: null, lines: [a.motulKey, a.origKey].filter(Boolean).map(priceLine) }] });
+    variants: [{ label: null, lines: [a.motulKey, a.origKey].filter(Boolean).map(k => priceLine(k, sink)) }] });
   // Муфта Haldex / раздатка xDrive: общий заголовок + варианты с собственным «Итого».
-  const haldexBlock = h => CDOC.block({ head: h.head, intro: h.intro,
-    variants: h.variants.map(v => priceVariant(v.label, v.items)) });
+  const haldexBlock = (h, sink) => CDOC.block({ head: h.head, intro: h.intro,
+    variants: h.variants.map(v => priceVariant(v.label, v.items, sink)) });
 
-  // Текст шаблона: АКПП (1-2 варианта) + при необходимости мосты/раздатка/Haldex
-  function tplBody(t){
+  /* Смета шаблона → { text, stale, unknown }: АКПП (1-2 варианта) + при необходимости мосты/раздатка/Haldex.
+     text — то, что уходит клиенту; stale — «есть неподтверждённые цены» (бейдж на карточке);
+     unknown — «есть позиция без цены» (в тексте «уточню»). */
+  function tplDoc(t){
     const box = BOXES[t.box];
     let svc = box && box[t.type];
-    if(!svc) return "";                    // нет данных по услуге (заготовка) — пусто
+    if(!svc) return { text: "", stale: false, unknown: false };   // нет данных по услуге (заготовка) — пусто
     const eng = engineOf(t);
     if(svc[eng]) svc = svc[eng];           // мотор переопределяет услугу (полный гибрид = др. агрегат)
     const filterKey = t.filter || (box.filter ? box.filter[eng] : null); // t.filter — явный выбор поддона (9G-Tronic)
     const head = typeof svc.head === "function" ? svc.head(filterKey) : svc.head; // head может зависеть от фильтра (7G-Tronic)
-    const blocks = [serviceBlock(svc.variants(filterKey))];                 // заголовок услуги = шапка документа (CDOC.doc)
-    if(t.diffs)         blocks.push(diffsMultiBlock(DIFFS_REGULAR, t.lock)); // ZF: мосты + раздатка поузлово (Motul/оригинал), блокировка = доплата
-    if(t.diffsDetailed) blocks.push(diffsDetailedBlock(DIFFS_DETAILED));     // поузловой расчёт мостов
+    const seen = [];                                                        // все позиции сметы → флаги свежести
+    const blocks = [serviceBlock(svc.variants(filterKey), seen)];           // заголовок услуги = шапка документа (CDOC.doc)
+    if(t.diffs)         blocks.push(diffsMultiBlock(DIFFS_REGULAR, t.lock, seen)); // ZF: мосты + раздатка поузлово (Motul/оригинал), блокировка = доплата
+    if(t.diffsDetailed) blocks.push(diffsDetailedBlock(DIFFS_DETAILED, seen));     // поузловой расчёт мостов
     if(box.diffsBlock)  blocks.push(box.diffsBlock.variants               // сноска мостов на уровне коробки (Mercedes 9G/7G):
-      ? diffsMultiBlock(box.diffsBlock)                                   //   2 варианта с «Итого» у каждого
-      : diffsDetailedBlock(box.diffsBlock));                              //   или один поузловой список
-    const axles = t.axles || box.axles;                // t.axles — переопределение блока мостов на карточке (Торсен G055/G060)
-    if(axles) blocks.push(axlesBlock(axles));          // простой блок мостов (данные в коробке или карточке)
-    if(box.haldex) blocks.push(haldexBlock(box.haldex));
-    return CDOC.doc({ title: head, blocks });
+      ? diffsMultiBlock(box.diffsBlock, false, seen)                      //   2 варианта с «Итого» у каждого
+      : diffsDetailedBlock(box.diffsBlock, seen));                        //   или один поузловой список
+    const axles = t.axles || box.axles;                    // t.axles — переопределение блока мостов на карточке (Торсен G055/G060)
+    if(axles) blocks.push(axlesBlock(axles, seen));         // простой блок мостов (данные в коробке или карточке)
+    if(box.haldex) blocks.push(haldexBlock(box.haldex, seen));
+    return { text: CDOC.doc({ title: head, blocks }),
+             stale:   seen.some(l => l.stale),
+             unknown: seen.some(l => l.price == null) };
   }
+  // Текст шаблона (то же, но только тело — для копирования, поиска и «Копировать всё видимое»)
+  const tplBody = t => tplDoc(t).text;
   // Заголовок и теги — тоже из полей карточки, единый источник правды
   function tplTitle(t){
     if(t.title) return t.title;            // нестандартная карточка — свой заголовок
@@ -3000,13 +3016,16 @@
       grid.innerHTML = carHint + list.map((t,i)=>{
         const tags = tplTags(t).map(x=>`<span class="tpl-tag">${esc(x)}</span>`).join("");
         const logo = BRAND_LOGOS[t.brand] || "";
-        const body = tplBody(t);
+        const doc = tplDoc(t);
+        const body = doc.text;
         const placeholder = t.todo || !body;   // нет данных по услуге → показываем как заготовку
         const badges = [`<span class="tpl-badge ${t.type==="Частичная"?"b-part":"b-app"}">${esc(t.type)}</span>`];
         const eng = engineOf(t);
         if(eng !== "Обычная") badges.push(`<span class="tpl-badge b-hybrid">${ICO.bolt} ${esc(eng)}</span>`);
         if(t.lock)   badges.push(`<span class="tpl-badge b-lock">${ICO.lock} Блокировка</span>`);
-        if(body.includes("уточню")) badges.push(`<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>`); // Н2/Н1: смета содержит «уточню» → мягкий флаг «проверить» (правило 7)
+        // мягкий флаг «проверить»: цена не подтверждена (в смете она ПРЕЖНЯЯ) или позиции нет в PRICE.
+        // Бейдж живёт только на экране — в буфер уходит ровно смета (правило 9).
+        if(doc.stale || doc.unknown) badges.push(`<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>`);
         return `<div class="tpl-card ${placeholder?"is-todo":""}">
           <button class="tpl-card-head" type="button" aria-expanded="false">
             <span class="tpl-brand-block">
@@ -4395,19 +4414,18 @@
     if(Array.isArray(it))      return { name:it[0], price:(it[1] ?? null) };
     if(it && it.ref){
       const p = PRICE[it.ref];
-      if(!p)              return { name:`⚠ уточню: ${it.ref}`, price:null, stale:true }; // нет ключа (опечатка) → тоже флаг «Проверить цены», fail-closed (правила 2,7)
-      if(isFresh(it.ref)) return typeof p[1] === "number"
-        ? { name:p[0], price:p[1] }
-        : { name:p[0], price:null, stale:true };                             // битая цена (не число) → тоже «уточню», не молча 0 (правило 2)
-      return { name:p[0], price:null, stale:true };                          // цена протухла → без числа (правило 7)
+      if(!p)                          return { name:`⚠ уточню: ${it.ref}`, price:null, stale:true }; // нет ключа (опечатка) → «уточню» + флаг (правило 2)
+      if(typeof p[1] !== "number")    return { name:p[0], price:null, stale:true };  // битая цена (не число) → «уточню», не молча 0 (правило 2)
+      return { name:p[0], price:p[1], stale: !isFresh(it.ref) };  // цена не подтверждена → показываем ПРЕЖНЮЮ + бейдж (решение владельца 26.07.2026)
     }
     return { name:String(it), price:null };
   }
   const kitRub = n => Number(n).toLocaleString("ru-RU") + " ₽";
   const kitLc  = s => s.charAt(0).toLowerCase() + s.slice(1);   // «Комплект Motul» → «комплект Motul» (для строк сводки)
   // ЕДИНЫЙ расчёт вариантов апсел-блока — карточка, сводка и копи-текст считают ОДНО и то же
-  // (иначе рассинхрон: частичное «Итого» в одном месте и «уточню» в другом).
-  // Вариант: { label, lines:[kitLine…], sum, stale }; stale → «Итого: уточню» везде (fail-closed, правило 7).
+  // (иначе рассинхрон: одна сумма на экране, другая в буфере).
+  // Вариант: { label, lines:[kitLine…], sum, stale }; sum — полная сумма по прежним ценам,
+  // stale — только бейдж «Проверить цены» на экране (сумму не занижаем, решение владельца 26.07.2026).
   function kitAddonVariants(ad){
     if(!ad || !ad.block) return null;
     return (ad.block.variants || []).map(v => {
@@ -4418,13 +4436,14 @@
                stale: lines.some(l => l.stale) };
     });
   }
-  // Сводка «Итого»: коробка (price) + каждый вариант апсел-блока. total:null = «уточню» в варианте
-  // ИЛИ в составе коробки → сумму не показываем (fail-closed, правило 7 — без уверенных цифр рядом с «уточню»).
+  // Сводка «Итого»: коробка (price) + каждый вариант апсел-блока. Сумма полная — по прежним ценам;
+  // «уточню» только если цены реально нет (позиция без числа), см. решение владельца 26.07.2026.
   function kitAddonTotals(k){
     const vars = kitAddonVariants(k.addons);
     if(!vars || k.price == null) return null;
-    const itemsStale = (k.items || []).map(kitLine).some(l => l.stale);
-    return vars.map(v => ({ label: v.label, total: (v.stale || itemsStale) ? null : k.price + v.sum }));
+    const itemsUnknown = (k.items || []).map(kitLine).some(l => l.price == null);
+    return vars.map(v => ({ label: v.label,
+      total: (itemsUnknown || v.lines.some(l => l.price == null)) ? null : k.price + v.sum }));
   }
   // Текст для клиента (ровно тело комплекта: состав + цена), без интерфейсных подписей (правило 9).
   function kitBodyText(k){
@@ -4434,11 +4453,11 @@
       variants: [{ label: null, lines: (k.items || []).map(kitLine), sum: k.price, totalLabel: "Цена комплекта" }] }));
     if(k.addons){                                       // доп. предложение (апсел) — отдельным блоком, не в цене комплекта
       const vars = kitAddonVariants(k.addons);
-      if(vars){                                         // блок-варианты: ТОТ ЖЕ расчёт, что карточка и сводка (fail-closed «Итого»)
+      if(vars){                                         // блок-варианты: ТОТ ЖЕ расчёт, что карточка и сводка
         const b = k.addons.block;
         blocks.push(CDOC.block({ head: b.head, intro: b.intro, note: b.note,
           variants: vars.map(v => ({ label: v.label, lines: v.lines,
-            sum: v.stale ? null : v.sum })) }));        // без уверенной частичной суммы рядом с «уточню»
+            sum: v.lines.some(l => l.price == null) ? null : v.sum })) }));  // «уточню» — только если цены нет вовсе
       } else {                                          // плоский список позиций-альтернатив
         blocks.push(CDOC.block({ head: k.addons.head || "Дополнительно", note: k.addons.note,
           variants: [{ label: null, lines: (k.addons.items || []).map(kitLine) }] }));
@@ -4470,7 +4489,7 @@
     const addonBlockHtml = vars => vars.map(v =>
       `<div class="kit-var-lbl">${esc(v.label)}</div>
         <div class="kit-list">${listHtml(v.lines)}<div class="kit-row kit-total"><span class="kit-row-n">Итого</span>
-          <span class="kit-row-p">${v.stale ? "уточню" : esc(kitRub(v.sum))}</span></div></div>`).join("");
+          <span class="kit-row-p">${v.lines.some(l => l.price == null) ? "уточню" : esc(kitRub(v.sum))}</span></div></div>`).join("");
     const cards = KITS.map((k,i) => {
       const items = (k.items || []).map(kitLine);
       const ad = k.addons || null;
@@ -4482,7 +4501,7 @@
       if(ad && ad.lock) badges.push(`<span class="tpl-badge b-lock">${ICO.lock} Блокировка</span>`); // мосты/раздатка с блокировкой диф.
       (k.format || []).forEach(f =>
         badges.push(`<span class="tpl-badge b-hybrid">${KIT_FORMAT_ICO[f] || ""} ${esc(f)}</span>`));
-      if(stale) badges.push(`<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>`); // свежесть (правило 7)
+      if(stale) badges.push(`<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>`); // цена не подтверждена (в смете она прежняя) — сигнал владельцу, в буфер не уходит
       const priceTxt = k.price != null ? kitRub(k.price) : "уточню";
       const list = listHtml(items);
       return `<div class="tpl-card">
@@ -4567,9 +4586,10 @@
      Локальный кэш md_to_engines — мгновенный показ и офлайн. Upsert: каждая правка — новая строка
      листа, при чтении выигрывает последняя по id; удаление — status:"del".
      Цены: масло = perL(RATES[ставка масла], паспортный литраж записи), работы — ключи PRICE
-     (to_work_*); свежесть fail-closed (правило 7): протухло → «уточню», «Итого: уточню» + бейдж.
-     Цена масляного фильтра записи стареет по дате updated: старше FRESH_DAYS → «уточню» +
-     кнопка «Цена верна» (пересохраняет запись с сегодняшней датой — свежесть подтверждена).
+     (to_work_*); просроченная цена остаётся в смете прежним числом, «Итого» полное, поднимается
+     бейдж «Проверить цены» (как в Шаблонах и Комплектах). «Уточню» — только когда цены нет вовсе.
+     Цена масляного фильтра записи стареет по дате updated: старше FRESH_DAYS → кнопка
+     «Цена верна» (пересохраняет запись с сегодняшней датой — свежесть подтверждена).
      Слоты воздушный/салонный/топливный зависят от КУЗОВА → вводятся по месту и НЕ сохраняются
      (эфемерны; врать каталогом нельзя). Копирование — ровно тело сметы (правило 9), формат
      строк как в renderVariant, но БЕЗ номеров фильтров: клиенту уходит только фирма, номер
@@ -4666,28 +4686,33 @@
       }
     }
 
-    /* ---- смета: единый расчёт для карточки И копи-текста (расходиться им не из чего) ---- */
+    /* ---- смета: единый расчёт для карточки И копи-текста (расходиться им не из чего).
+       Два разных состояния, как в Шаблонах и Комплектах: unknown — цены нет вовсе («уточню» в строке
+       и «Итого: уточню»); stale — цена есть, но не подтверждена → показываем ПРЕЖНЮЮ и сумму не занижаем,
+       на карточке горит бейдж «Проверить цены» (решение владельца 26.07.2026). ---- */
     function smeta(e){
-      const rows = []; let sum = 0, stale = false;
+      const rows = []; let sum = 0, stale = false, unknown = false;
       const push = (n, p, extra) => { rows.push(Object.assign({ n, p }, extra || {}));
-        if(p != null) sum += p; else stale = true; };
-      const pushKey = key => {                          // позиция из PRICE — как в renderVariant
+        if(p != null) sum += p; else unknown = true;
+        if(extra && extra.stale) stale = true; };
+      const pushKey = key => {                          // позиция из PRICE — как priceLine в Шаблонах
         const item = PRICE[key];
         if(!item){ push("⚠ уточню: " + key, null); return; }
-        push(item[0], isFresh(key) ? item[1] : null);
+        push(item[0], item[1], { stale: !isFresh(key) });
       };
       const oil = TO_OIL[e.oilKey];
       const litres = litresOverride != null ? litresOverride : (Number(e.litres) || 0);
-      if(oil && litres > 0) push(oil.name + " " + fmtL(litres) + "л", isFresh(oil.rate) ? perL(RATES[oil.rate], litres) : null);
+      if(oil && litres > 0) push(oil.name + " " + fmtL(litres) + "л",
+        perL(RATES[oil.rate], litres), { stale: !isFresh(oil.rate) });
       else push("⚠ уточню: масло", null);
       const oilF = splitFilter(e.filterName);
       if(oilF.name){                                    // масляный фильтр записи — свежесть по дате updated
         const p = Number(e.filterPrice) || 0;
-        const ok = p > 0 && freshISO(e.updated);
-        // цифра в «фирме» и пустой номер = старая запись, номер вписан внутрь → предупредим (fail-closed)
-        push("Масляный фильтр " + oilF.name, ok ? p : null,
+        const old = !freshISO(e.updated);               // запись давно не подтверждалась → кнопка «Цена верна»
+        // цифра в «фирме» и пустой номер = старая запись, номер вписан внутрь → предупредим
+        push("Масляный фильтр " + oilF.name, p > 0 ? p : null,
           Object.assign({ code: oilF.code, fixnum: !oilF.code && /\d/.test(oilF.name) },
-            ok ? null : { confirm: p > 0 ? p : null }));
+            p > 0 && old ? { confirm: p, stale: true } : null));
       } else push("Масляный фильтр — уточню", null);
       pushKey("to_work_oil");
       for(const s of SLOTS){
@@ -4696,16 +4721,16 @@
         push(s.label + " " + v.name, v.price, { slot: s.id, code: v.code });  // ввод «сейчас» = свежий
         pushKey(s.work);
       }
-      return { rows, sum, stale, litres };
+      return { rows, sum, stale, unknown, litres };
     }
-    // текст клиенту: ровно тело сметы (правило 9); есть «уточню» → «Итого: уточню» (fail-closed целиком).
-    // Формат — общий с Шаблонами и Комплектами (CDOC): заголовок, позиции буллитами, «Итого».
+    // текст клиенту: ровно тело сметы (правило 9). «Итого: уточню» — только когда цены реально нет;
+    // неподтверждённая цена идёт в сумму прежним числом. Формат общий с Шаблонами и Комплектами (CDOC).
     function bodyText(e){
       const s = smeta(e);
       return CDOC.doc({
         title:  "Техническое обслуживание " + e.name + (e.fuel ? " (" + e.fuel + ")" : ""),
         blocks: [CDOC.block({ variants: [{ label: null,
-          lines: s.rows.map(r => ({ name: r.n, price: r.p })), sum: s.stale ? null : s.sum }] })],
+          lines: s.rows.map(r => ({ name: r.n, price: r.p })), sum: s.unknown ? null : s.sum }] })],
       });
     }
     async function copyTo(text, btn){
@@ -4804,7 +4829,7 @@
         `<div class="to-card">
           <div class="to-card-top">
             <div class="to-card-title">${esc(e.name)}${e.fuel ? ` <span class="f">· ${esc(e.fuel)}</span>` : ""}</div>
-            ${s.stale ? `<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>` : ""}
+            ${s.stale || s.unknown ? `<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>` : ""}
             <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" data-act="edit">Изменить</button>
           </div>
           <div class="to-litres">Объём масла:
@@ -4814,7 +4839,7 @@
           </div>
           <div class="to-rows">${rowsHtml}</div>
           <div class="to-slots">${slotsHtml}</div>
-          <div class="to-total">Итого <span class="p${s.stale ? " ask" : ""}">${s.stale ? "уточню" : rub(s.sum)}</span></div>
+          <div class="to-total">Итого <span class="p${s.unknown ? " ask" : ""}">${s.unknown ? "уточню" : rub(s.sum)}</span></div>
           <div class="to-actions">
             <button class="ui-btn ui-btn--primary" type="button" data-act="copy">${ICO.copy} Копировать</button>
           </div>
