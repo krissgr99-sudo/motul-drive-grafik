@@ -1353,7 +1353,10 @@
     kia_sp4:       1500,  // Kia Sp4
     ravenol_ulv:   3200,  // Ravenol ATF T-ULV
     mb_236_17:     2600,  // Mercedes 236.17 A000989590411 (9G)
-    mb_236_15:     2200,  // Mercedes 236.15 A000989270411 (7G)
+    mb_236_15:     2200,  // Mercedes 236.15 A000989270411 (7G, канистра 12 л)
+    mb_236_15_sm:  2500,  // Mercedes 236.15 мелким объёмом (0,6 л в раздатку = 1500)
+    mb_235_7:      8000,  // Mercedes-Benz 235.7 — оригинал в передний дифференциал
+    mb_239_71:     9000,  // Mercedes-Benz 239.71/239.72 — оригинал в задний дифференциал
     motor_0w:      2200,  // моторные Motul 0W30/0W40 (8100 X-Clean+ EFE, X-Max, Eco-nergy)
     motor_5w:      2000,  // моторные Motul 5W30/5W40 (8100, Specific 504/507)
   };
@@ -1448,13 +1451,18 @@
     work_full_9g_wash: ["Полная аппаратная замена масла в АКПП 9G-Tronic с промывкой системы", 8000],
     work_full_9g:      ["Полная аппаратная замена масла в АКПП 9G-Tronic", 8000],
     work_fill_9g:      ["Полная замена масла в АКПП 9G-Tronic (методом слил и залил)", 4000],
-    // Мосты + раздатка для 9G-Tronic (одинаковая сноска во всех 8 шаблонах). Итого 14000.
-    // Цены — суммарные по строке: Gear 300 = 2л×4500; масло раздатки Mercedes = 0,6л×2500.
-    mb_diff_oil:    ["Масло трансмиссионное Motul Gear 300 75W90 105777 2л", perL(RATES.gear300, 2)],
+    // Мосты + раздатка Mercedes (одинаковая сноска во всех 10 шаблонах 9G и 7G, блок MB9G_AXLES):
+    // 2 варианта — оригинал Mercedes-Benz (Итого 22000) и Motul (Итого 14000).
+    // Цены — суммарные по строке: Gear 300 = 2л×4500; масло раздатки Mercedes = 0,6л×2500 (общее для обоих вариантов).
+    mb_diff_oil:    ["Масло трансмиссионное Motul Gear 300 75W90 105777 2л (передний и задний дифференциал)", perL(RATES.gear300, 2)],
     mb_diff_front:  ["Замена масла в переднем дифференциале", 1000],
     mb_diff_rear:   ["Замена масла в заднем дифференциале", 1000],
-    mb_transf_oil:  ["Трансмиссионное масло Mercedes 236.15 A000989270411 0.6л", 1500],  // не по ставке: мелкий объём 2500/л
+    mb_transf_oil:  ["Трансмиссионное масло Mercedes 236.15 A000989270411 0.6л (раздаточная коробка)", perL(RATES.mb_236_15_sm, 0.6)],
     mb_transf_work: ["Замена масла в раздаточной коробке", 1500],
+    // Вариант «оригинал Mercedes-Benz»: масло в каждый мост по допуску (по 1 л) + одна строка работ на все три узла.
+    mb_diff_front_orig: ["Оригинальное трансмиссионное масло Mercedes-Benz 235.7 1л (передний дифференциал)", perL(RATES.mb_235_7, 1)],
+    mb_diff_rear_orig:  ["Оригинальное трансмиссионное масло Mercedes-Benz 239.71/239.72 1л (задний дифференциал)", perL(RATES.mb_239_71, 1)],
+    mb_diff_work_all:   ["Замена масла в переднем, заднем дифференциале и раздаточной коробке", 3500],  // = 1000 (перед) + 1000 (зад) + 1500 (раздатка): поменял работы выше — поправь и здесь
     // Mercedes 7G-Tronic (722.9): 2 варианта — «+» на масле MB 236.15, обычный на Motul ATF6.
     // Фильтр (в сборе с прокладкой) и промывка BARDAHL — общие. Мосты/раздатка — как у 9G (MB9G_AXLES).
     oil_mb_7g_12:          ["Трансмиссионное масло Mercedes 236.15 A000989270411 12л", perL(RATES.mb_236_15, 12)],
@@ -1628,7 +1636,7 @@
       "kia_sp4", "ravenol_ulv", "mb_236_17", "mb_236_15", "oil_motul_12", "oil_zf_12",
       "oil_zf_5", "oil_zf_13", "oil_zf_hyb2_12", "oil_zf_hyb2_5", "oil_motul_13", "oil_zf6_13", "oil_zf6_6",
       "diff_oil_front", "diff_oil_transf", "diff_oil_rear", "oil_motul_11", "oil_ravenol_11", "oil_mb_9g_13",
-      "oil_mb_9g_10", "mb_diff_oil", "mb_transf_oil", "oil_mb_7g_12", "oil_motul_atf6_12", "oil_zf8hp_12",
+      "oil_mb_9g_10", "mb_diff_oil", "oil_mb_7g_12", "oil_motul_atf6_12", "oil_zf8hp_12",
       "oil_zf8hp_6", "oil_motul_10", "oil_motul_15", "oil_motul_16", "oil_zf_4", "oil_zf_10",
       "oil_multiatf_11", "oil_multiatf_15", "oil_multiatf_16", "oil_toyota_16", "oil_toyota_11", "oil_dctf_9",
       "oil_dctf_5", "oil_dctf_35", "oil_dctf_2", "oil_httdctf_9", "oil_gear300_4", "oil_gear300_38",
@@ -1655,6 +1663,11 @@
     ],
     "2026-07-24": [   // глубокий поддон 1087298361 — владелец сослался на цену каталога «Цены» (PARTS, 11000) при добавлении шаблонов
       "filter_deep",
+    ],
+    "2026-07-26": [   // мосты и раздатка Mercedes, вариант «оригинал MB» — цены продиктованы владельцем (Итого 22000)
+      "mb_235_7", "mb_239_71", "mb_236_15_sm",                              // ставки ₽/л (ими же считается каталог «Цены»)
+      "mb_diff_front_orig", "mb_diff_rear_orig", "mb_diff_work_all",
+      "mb_transf_oil",                                                      // 0,6 л в раздатку = 1500 — названо владельцем в тот же день
     ],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
@@ -1750,10 +1763,17 @@
     fill: { mb:["filter_mb_9g","bolt_mb_9g","drain_mb_9g"], sollo:["filter_sollo_9g"], mahle:["filter_mahle_9g_f"], zf:["filter_zf_9g_f"] },
   };
 
-  // Сноска «мосты + раздатка» для 9G-Tronic — одинакова во всех 8 карточках (рендер renderDiffsDetailed → «Итого 14000»).
+  // Сноска «мосты + раздатка» для Mercedes — одинакова во всех карточках 9G и 7G. Два варианта
+  // (рендер renderDiffsMulti, у каждого свой «Итого»): оригинал Mercedes-Benz 22000 / Motul 14000.
+  // Раздатка в обоих вариантах на оригинальном Mercedes 236.15 — строка mb_transf_oil общая.
   const MB9G_AXLES = {
-    head: "Также можем заменить масло в переднем, заднем дифференциале и раздаточной коробке:",
-    items: ["mb_diff_oil", "mb_diff_front", "mb_diff_rear", "mb_transf_oil", "mb_transf_work"],
+    head:  "Также можем предложить замену масла в переднем, заднем дифференциале и в раздаточной коробке.",
+    intro: "2 варианта:",
+    note:  "Motul ничем не уступает оригиналу",
+    variants: [
+      { label: "Оригинал Mercedes-Benz:", items: ["mb_diff_front_orig", "mb_transf_oil", "mb_diff_rear_orig", "mb_diff_work_all"] },
+      { label: "Motul:",                  items: ["mb_diff_oil", "mb_transf_oil", "mb_diff_front", "mb_diff_rear", "mb_transf_work"] },
+    ],
   };
 
   // 3) Услуги по коробкам. Новую коробку (6-ступку) добавляешь сюда + позиции в PRICE.
@@ -2253,7 +2273,9 @@
     const parts = [svc.variants(filterKey).map(v => renderVariant(v, head)).join("\n\n")];
     if(t.diffs)         parts.push(renderDiffsMulti(DIFFS_REGULAR, t.lock));  // ZF: мосты + раздатка поузлово (Motul/оригинал), блокировка = доплата
     if(t.diffsDetailed) parts.push(renderDiffsDetailed(DIFFS_DETAILED)); // поузловой расчёт мостов
-    if(box.diffsBlock)  parts.push(renderDiffsDetailed(box.diffsBlock)); // сноска мостов на уровне коробки (9G-Tronic)
+    if(box.diffsBlock)  parts.push(box.diffsBlock.variants                // сноска мостов на уровне коробки (Mercedes 9G/7G):
+      ? renderDiffsMulti(box.diffsBlock)                                  //   2 варианта с «Итого» у каждого
+      : renderDiffsDetailed(box.diffsBlock));                             //   или один поузловой список
     const axles = t.axles || box.axles;                // t.axles — переопределение блока мостов на карточке (Торсен G055/G060)
     if(axles) parts.push(renderAxles(axles));          // простой блок мостов (данные в коробке или карточке)
     if(box.haldex)parts.push(renderHaldex(box.haldex));
@@ -3148,6 +3170,10 @@
     ["Mercedes", "A002989060311", "Трансмиссионное масло Mercedes 236.17 5л", 40, perL(RATES.mb_236_17, 5), "oils"],  // цена из RATES (5л)
     ["Mercedes", "A000989590413AVLW", "Трансмиссионное масло Mercedes 236.17 5л", 40, perL(RATES.mb_236_17, 5), "oils"],  // цена из RATES (5л)
     ["Mercedes", "A000989280413BVLR", "Трансмиссионное масло Mercedes 236.17 5л", 40, perL(RATES.mb_236_17, 5), "oils"],  // цена из RATES (5л)
+    // Оригинал MB в мосты и раздатку (вариант «оригинал Mercedes-Benz» в шаблонах 9G/7G) — цены за литр из RATES.
+    ["Mercedes", "A000989270411", "Трансмиссионное масло Mercedes 236.15 1л (раздаточная коробка)", 100, RATES.mb_236_15_sm, "oils"],  // цена из RATES (0,6 л в раздатку = 1500)
+    ["Mercedes", "MB 235.7", "Оригинальное трансмиссионное масло Mercedes-Benz 235.7 1л (передний дифференциал)", 100, RATES.mb_235_7, "oils"],  // цена из RATES
+    ["Mercedes", "MB 239.71/239.72", "Оригинальное трансмиссионное масло Mercedes-Benz 239.71/239.72 1л (задний дифференциал)", 100, RATES.mb_239_71, "oils"],  // цена из RATES
     ["Sollo", "34s00060", "Фильтр поддон для 9G-Tronic. Болты и трубки в комплекте. Made in Germany", 40, 14000, "pans"],
     ["Mercedes", "A7252703707", "Оригинальный фильтр поддон для 9G-Tronic", 12, 22000, "pans"],
     ["VAG", "4M0614517AABEF", "Блок ABS Audi Q7 4M Б/У Пробег 30.000км 2019г. БЕЗ ACC", 100, 35000, "misc"],
