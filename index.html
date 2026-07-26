@@ -539,9 +539,12 @@
 
   /* ===================== ПРОДАЖИ ===================== */
   .sales-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-  .sales-prod{display:inline-flex;align-items:center;gap:9px;font-family:var(--font-disp);font-weight:700;font-size:15px;
-    background:var(--card);border:1px solid var(--line);border-radius:999px;padding:9px 16px;box-shadow:var(--shadow)}
-  .sales-prod-dot{width:9px;height:9px;border-radius:50%;background:var(--brand);flex:none;box-shadow:0 0 10px var(--brand)}
+  /* переключатель каналов «Промывка / Масло» (заменяет пилюлю товара — имя товара в нижней подписи) */
+  .sales-tabs{display:inline-flex;gap:4px;padding:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+  .sales-tab{font:inherit;font-family:var(--font-disp);font-weight:700;font-size:14px;padding:8px 14px;border:none;border-radius:8px;
+    background:transparent;color:var(--muted);cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
+  .sales-tab:hover{color:var(--text)}
+  .sales-tab.active{background:var(--accent-soft-bg,rgba(209,31,45,.06));color:var(--accent-soft)}
   .sales-month-sel{appearance:none;-webkit-appearance:none;font:inherit;font-family:var(--font-disp);font-weight:700;font-size:14px;
     color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:9px 38px 9px 16px;
     box-shadow:var(--shadow);cursor:pointer;
@@ -578,6 +581,13 @@
     font-size:13px;cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s;white-space:nowrap}
   .kopilka-btn:hover{background:rgba(209,31,45,.18)}
   .kopilka-btn.is-disabled{border-color:var(--line);background:var(--fill-soft);color:var(--muted);opacity:.7;pointer-events:none}
+  /* группа кнопок копилки (вывод + расход у канала масла) */
+  .kopilka-btns{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .kopilka-btns .kopilka-btn{margin-left:0}
+  .kopilka-btn.ghost{border-color:var(--line);background:var(--fill);color:var(--text)}
+  .kopilka-btn.ghost:hover{border-color:var(--brand);background:rgba(209,31,45,.1);color:var(--accent-soft)}
+  .kopilka-v.neg{color:var(--text)}
+  .kopilka-warnline{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--warn);margin-top:2px}
   tbody tr.withdraw-row td{background:rgba(209,31,45,.06);border-top:1px solid var(--open-border);border-bottom:1px solid var(--open-border)}
   .withdraw-cell{display:flex;align-items:center;gap:10px;font-weight:700;font-size:13px;color:var(--accent-soft)}
   .withdraw-cell .wd-amount{font-family:var(--font-disp);font-weight:800}
@@ -585,6 +595,18 @@
   .withdraw-card{background:rgba(209,31,45,.06);border:1px solid var(--open-border);border-radius:14px;padding:13px 15px;
     display:flex;align-items:center;gap:9px;font-weight:700;font-size:13px;color:var(--accent-soft)}
   .withdraw-card .wd-note{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  /* расход из копилки масла (Алексей взял деньги — напр. купил масло): нейтральная строка, не красная */
+  tbody tr.spend-row td{background:var(--fill-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .spend-cell{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:700;font-size:13px;color:var(--text)}
+  .spend-cell .wd-amount{font-family:var(--font-disp);font-weight:800}
+  .spend-cell .wd-note{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .spend-card{background:var(--fill-soft);border:1px solid var(--line);border-radius:14px;padding:13px 15px;
+    display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-weight:700;font-size:13px;color:var(--text)}
+  .spend-card .wd-note{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .op-note{color:var(--muted);font-weight:600;font-size:12px;min-width:0;overflow-wrap:anywhere} /* слитный комментарий не растягивает карточку на мобайле */
+  /* операция из очереди, ещё не подтверждена таблицей */
+  .op-pend{font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--warn);
+    border:1px solid var(--warn);border-radius:6px;padding:1px 5px;white-space:nowrap}
   .sales-months{margin-top:18px;display:flex;flex-direction:column;gap:10px}
   .sales-months-h{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
   .smonth{display:grid;grid-template-columns:1fr auto auto;gap:8px 20px;align-items:baseline;width:100%;text-align:left;
@@ -592,12 +614,16 @@
     box-shadow:var(--shadow);cursor:pointer;transition:border-color .15s,background .15s}
   .smonth:hover{border-color:var(--line-strong)}
   .smonth.active{border-color:var(--c-red);background:var(--accent-soft-bg,rgba(209,31,45,.06))}
+  .smonth.has3{grid-template-columns:1fr auto auto auto} /* канал масла: Продано · Расходы · Выведено */
   .smonth-name{font-family:var(--font-disp);font-weight:700;font-size:15px}
   .smonth-cell{display:flex;flex-direction:column;gap:3px;text-align:right}
   .smonth-cell .k{font-family:var(--font-mono);font-size:9px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
   .smonth-cell .v{font-family:var(--font-disp);font-weight:700;font-size:14px}
   @media(max-width:720px){ .kopilka{gap:12px} .kopilka-v{font-size:26px} .kopilka-btn{margin-left:0;width:100%;justify-content:center}
-    .smonth{grid-template-columns:1fr 1fr;gap:10px 14px} .smonth-name{grid-column:1/-1} .smonth-cell{text-align:left} }
+    .kopilka-btns{margin-left:0;width:100%;flex-direction:column;gap:8px}
+    .sales-tabs{width:100%} .sales-tab{flex:1;min-height:44px;text-align:center}
+    .smonth{grid-template-columns:1fr 1fr;gap:10px 14px} .smonth-name{grid-column:1/-1} .smonth-cell{text-align:left}
+    .smonth.has3{grid-template-columns:1fr 1fr 1fr} }
   .sales-wd{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
   tr.weekend .sales-wd{color:var(--accent-soft)}
   /* строка «Итого» в таблице продаж */
@@ -629,6 +655,8 @@
   .ord-time::before{content:"·";margin-right:7px;opacity:.55}
   .ord-qty{color:var(--muted);font-weight:600;text-align:right;white-space:nowrap}
   .ord-sum{font-weight:700;color:var(--text);text-align:right;white-space:nowrap;min-width:78px}
+  /* имя масла — отдельной строкой на всю ширину карточки заказа (Manrope, не mono: это товар, не код) */
+  .ord-name{grid-column:1/-1;font-family:var(--font-text);font-size:12.5px;font-weight:600;color:var(--muted);line-height:1.45;min-width:0}
   /* мобильные карточки продаж */
   .sday-btn{display:block;width:100%;padding:0;border:none;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
   .daycard.sday .dhead .chev{margin-left:8px}
@@ -900,7 +928,7 @@
   .mi{width:1em;height:1em;flex:none;display:inline-block;vertical-align:-.14em}
   /* Нажатие action-кнопок — тактильный отклик scale(.95) (идиома проекта, §4): убирает «мёртвое» состояние нажатия. */
   .theme-btn:active,.tpl-copy:active,.tpl-copyall:active,.tpl-notfound-btn:active,
-  .kopilka-btn:active,.fb-send:active,.tpl-facet-reset:active{transform:scale(.95)}
+  .kopilka-btn:active,.fb-send:active,.tpl-facet-reset:active,.sales-tab:active{transform:scale(.95)}
   .tpl-copy:active{box-shadow:none}
 </style>
 <script>(function(){try{var t=localStorage.getItem('md_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
@@ -1039,7 +1067,11 @@
     <!-- ===== Страница: Продажи ===== -->
     <div id="page-prodazhi" class="page" hidden>
       <div class="sales-head">
-        <div class="sales-prod"><span class="sales-prod-dot"></span><span id="sales-prod-name">—</span></div>
+        <!-- честный ARIA: группа кнопок-переключателей (не tablist — без клавиатурной модели вкладок) -->
+        <div class="sales-tabs" id="sales-tabs" role="group" aria-label="Канал продаж">
+          <button class="sales-tab active" type="button" aria-pressed="true" data-ch="flush">Промывка</button>
+          <button class="sales-tab" type="button" aria-pressed="false" data-ch="oil">Масло · Алексей</button>
+        </div>
         <select class="sales-month-sel" id="sales-month" aria-label="Месяц" hidden></select>
         <div class="sales-upd" id="sales-upd"></div>
       </div>
@@ -3269,16 +3301,18 @@
   })();
 
   /* ===================== ПРОДАЖИ (данные → авто-рендер) =====================
-     Живые данные приходят из Google Apps Script (SHEET_API?type=sales): его робот
-     каждые 30 минут пересчитывает LiveSklad и держит историю в листе «Продажи»
-     Google-таблицы. Запасной источник — sales.json (замороженный снимок; старый
-     робот GitHub Actions отключён 04.07.2026, файл больше не обновляется).
-     SALES ниже — последний резерв: показывается мгновенно и офлайн.
-     Формат везде одинаковый. Правь данные, не вёрстку: таблица, карточки, плитки и
-     «Итого» считаются сами; день раскрывается в список заказ-нарядов.
+     ДВА КАНАЛА: «Промывка» (владелец) и «Масло» (Алексей) — канал это параметр
+     рендера, не копия кода. Живые данные приходят из Google Apps Script
+     (SHEET_API?type=sales): его робот каждые 30 минут пересчитывает LiveSklad
+     ОДНИМ проходом для обоих каналов и держит историю в листах «Продажи» и
+     «Продажи-масло». Запасной источник промывки — sales.json (замороженный
+     снимок; старый робот GitHub Actions отключён 04.07.2026); SALES ниже —
+     последний резерв: мгновенно и офлайн. У масла резерва-файла нет: только
+     поле oil ответа Apps Script + кэш localStorage (md_sales_oil).
+     Правь данные, не вёрстку: таблица, карточки, плитки и «Итого» считаются сами.
      days[].orders: [номер заказ-наряда, продано(шт), сумма(₽), время(HH:mm)]
-     Время — момент создания заказ-наряда в LiveSklad; необязательное (старые записи
-     без него показываются просто без времени). Даёт его робот Apps Script. */
+     — у масла 5-й элемент: индекс имени в словаре names[] (payload меньше).
+     Время — момент создания заказ-наряда в LiveSklad; необязательное. */
   const SALES = {
     product: "Промывка двигателя Liqui Moly Engine Flush (0,3л)",
     updated: "2026-07-04",
@@ -3289,6 +3323,10 @@
       { date:"2026-07-04", orders:[ ["A024320",1,2200], ["A024332",1,2200] ] },
     ],
   };
+
+  /* Резерв канала масла (Алексей): живых данных до первого ответа Apps Script нет.
+     agg — помесячные агрегаты (дни старше 13 месяцев сервер отдаёт только итогом). */
+  const SALES_OIL = { product:"Моторное масло", updated:null, names:[], days:[], agg:[] };
 
   /* Выводы копилки (факт снятия наличных). Живые данные — Google-таблица (кнопка
      «Отметить вывод» пишет туда). Ниже — запас для офлайна/мгновенного показа. */
@@ -3373,7 +3411,6 @@
     const dateFull = dt => `${dt.getDate()} ${MONF[dt.getMonth()]}`;
     const monthKey = dt => dt.getFullYear()*12 + dt.getMonth(); // year*12+month — сортируемый ключ месяца
 
-    const nameEl = document.getElementById("sales-prod-name");
     const updEl  = document.getElementById("sales-upd");
     const statsEl= document.getElementById("sales-stats");
     const rowsEl = document.getElementById("sales-rows");
@@ -3382,6 +3419,7 @@
     const kopEl    = document.getElementById("kopilka");
     const monthsEl = document.getElementById("sales-months");
     const monthSel = document.getElementById("sales-month");
+    const tabsEl   = document.getElementById("sales-tabs");
     const MONN = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
     // ② Счётчик денег (перенос Magic UI NumberTicker): анимируем .num[data-to] 0→значение,
     // формат сохраняем (money / шт). Триггер — вход в раздел (showPage → window.salesReveal),
@@ -3399,120 +3437,313 @@
       });
     }
     window.salesReveal = runSalesTickers;
-    // Хранилище выводов копилки — Google Apps Script (общая таблица, SHEET_API выше).
+    // Хранилище — Google Apps Script (общая таблица, SHEET_API выше).
     const WITHDRAW_API   = SHEET_API;
     const WITHDRAW_TOKEN = SHEET_TOKEN;
-    const OPENING = 17600; // стартовая сумма: касса с промывок до системы (до 01.07). Входит в копилку, спишется первым выводом. 0 = выкл.
-    let   wdSeq = 0;
-    let   wdBusy = false;                    // вывод уже отправляется → защита от повторного клика/гонки (Р5.1)
-    // Уникальный ключ события вывода: приёмник дедуплицирует по нему, поэтому date+amount (не уникальны:
-    // два законных вывода равной суммы в один день) больше не схлопываются в одну строку (Р5.1).
-    const newWithdrawalId = () => {
+    // Уникальный id операции (вывод/расход): приёмник дедуплицирует по нему, поэтому
+    // ретрай/досыл из очереди не двоится, а два законных расхода равной суммы не схлопываются (Р5.1).
+    const newOpId = () => {
       try { if(self.crypto && crypto.randomUUID) return crypto.randomUUID(); } catch(e){}
-      return "wd-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+      return "op-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
     };
-    const saveWdCache = list => { try { localStorage.setItem("md_withdrawals", JSON.stringify(list)); } catch(e){} };
-    // читаем выводы из таблицы (JSONP — обходит CORS у Apps Script)
-    function loadWithdrawals(){
+    const saveLS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
+
+    // номер заказа / имя масла / комментарий приходят из LiveSklad/таблицы —
+    // экранируем перед вставкой в разметку (defense-in-depth)
+    const escOrd = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+    /* ==== Каналы: «Промывка» (владелец) и «Масло» (Алексей). Канал — параметр рендера.
+       У каждого свои данные, копилка, settled/busy-гейты, выбранный месяц и кэши.
+       opening — старт копилки (касса до системы, спишется первым выводом; 0 = выкл). ==== */
+    const CH = {
+      flush: {
+        key:"flush", person:null, opening:17600, allowSpend:false, clampZero:true, unit:"шт",
+        data:SALES, rank:0, settled:false, connected:true,
+        ops:(WITHDRAWALS.withdrawals || []), pend:[],
+        selMonth:null, busy:false,
+      },
+      oil: {
+        key:"oil", person:"Алексей", opening:0, allowSpend:true, clampZero:false,
+        unit:"л", // масло считаем литрами (решение владельца 2026-07-25) — count из LiveSklad и есть литры
+        data:SALES_OIL, rank:0, settled:false, connected:false, // connected = бэкенд уже отдаёт oil-поля
+        ops:[], pend:[],  // pend — очередь недоставленных операций (постоянный opId → досыл идемпотентен)
+        selMonth:null, busy:false,
+      },
+    };
+    let cur = CH.flush;
+    try { if(localStorage.getItem("md_sales_ch") === "oil") cur = CH.oil; } catch(e){}
+
+    // нормализация операции (сервер/очередь → вид для рендера); cd — дата ВНЕСЕНИЯ (бекдейт виден)
+    const normOp = (w, pending) => ({ id:String(w.id || ""), date:String(w.date || ""), dt:parse(w.date),
+      amount:Number(w.amount) || 0, time:w.time || "", cd:String(w.cd || ""),
+      kind:(w.kind === "spend" ? "spend" : "wd"), note:String(w.note || "").slice(0, 80), pending:!!pending });
+    function chanOps(ch){
+      const seen = {}, out = [];
+      (ch.ops || []).forEach(w => {
+        if(!w || !w.date) return;
+        const o = normOp(w, false);
+        if(isNaN(o.dt.getTime())) return;
+        if(o.id) seen[o.id] = 1;
+        out.push(o);
+      });
+      (ch.pend || []).forEach(w => {   // очередь: с меткой «не сохранено», пока сервер не подтвердил
+        if(seen[w.id]) return;
+        const o = normOp(w, true);
+        if(isNaN(o.dt.getTime())) return;
+        // старше серверного окна (62 дня) — сервер уже никогда не примет: терминальное
+        // «не записано», из сумм копилки исключаем (иначе фантом занижал бы «К выводу» вечно)
+        o.failed = Date.now() - o.dt.getTime() > 62 * 86400000;
+        out.push(o);
+      });
+      return out.sort((a,b)=> a.dt - b.dt);
+    }
+    const opAmt = o => o.failed ? 0 : o.amount; // «не записанные» (устаревшие) операции деньги не двигают
+    // дни продаж канала; у масла имя — индекс в словаре names (5-й элемент кортежа)
+    function chanDays(ch){
+      const names = ch.data.names || null;
+      return (ch.data.days || []).map(d => {
+        const orders = (d.orders || []).map(o => names && o.length > 4
+          ? [o[0], o[1], o[2], o[3], typeof o[4] === "number" ? (names[o[4]] || "") : String(o[4] || "")]
+          : o);
+        return { dt: parse(d.date), orders,
+          qty: orders.reduce((s,o)=>s+(Number(o[1])||0), 0),
+          sum: orders.reduce((s,o)=>s+(Number(o[2])||0), 0) };
+      }).filter(d => !isNaN(d.dt.getTime()));
+    }
+    const chanAgg = ch => (ch.data.agg || [])
+      .map(a => ({ m:String(a.m || ""), qty:Number(a.qty) || 0, sum:Number(a.sum) || 0 }))
+      .filter(a => /^\d{4}-\d{2}$/.test(a.m));
+    const aggKey = a => Number(a.m.slice(0,4)) * 12 + (Number(a.m.slice(5,7)) - 1);
+    // «к выводу»: старт + все продажи (дни + агрегаты) − выводы − расходы; у промывки минуса не бывает
+    // (clampZero). Целые рубли (Math.round): сервер округляет сумму oil-op — без клиентского округления
+    // дробные копейки розлива давали бы ложный минус −0,5 ₽ после перечитки.
+    function potOf(ch){
+      const grand = chanDays(ch).reduce((s,d)=>s+d.sum, 0) + chanAgg(ch).reduce((s,a)=>s+a.sum, 0);
+      const pot = Math.round(ch.opening + grand - chanOps(ch).reduce((s,o)=> s + opAmt(o), 0));
+      return ch.clampZero ? Math.max(0, pot) : pot;
+    }
+
+    /* ==== Очередь операций масла (паттерн MDLOG): постоянный opId + досыл при online/загрузке;
+       сервер дедупит по opId → ретрай идемпотентен, офлайн-расход не теряется. Запись висит
+       с меткой «не сохранено», пока перечитка не увидит её в таблице (reconcile). ==== */
+    let oilSending = false;
+    function sendPending(){
+      const q = CH.oil.pend;
+      if(oilSending || !q.length || !WITHDRAW_API) return;
+      oilSending = true;
+      let i = 0, sentAny = false;
+      const next = () => {
+        if(i >= q.length){
+          oilSending = false;
+          if(sentAny) setTimeout(loadOps, 2000); // после досыла — перечитка, иначе бейдж «не сохранено» залипает до перезагрузки
+          return;
+        }
+        const p = q[i++];
+        if(Date.now() - parse(p.date).getTime() > 62 * 86400000) return next(); // окно дат сервера прошло — не шлём (висит как «не записано»)
+        sentAny = true;
+        fetch(WITHDRAW_API, { method:"POST", mode:"no-cors",
+          headers:{ "Content-Type":"text/plain;charset=utf-8" },
+          body: JSON.stringify({ token: WITHDRAW_TOKEN, kind:"oil-op", opId:p.id, date:p.date, amount:p.amount, op:p.kind, note:p.note || "", time:p.time || "" }) })
+          .then(next)
+          .catch(() => { oilSending = false; });  // офлайн — очередь остаётся, повтор при online/загрузке
+      };
+      next();
+    }
+    window.addEventListener("online", sendPending);
+    function reconcilePending(server){
+      const ids = {};
+      server.forEach(o => { if(o && o.id) ids[o.id] = 1; });
+      const left = CH.oil.pend.filter(p => !ids[p.id]);
+      if(left.length !== CH.oil.pend.length){ CH.oil.pend = left; saveLS("md_oil_pending", left); }
+    }
+    function enqueueOp(kind, amount, note){
+      // финансовая очередь падает ГРОМКО: при переполнении отказываем в новой записи,
+      // а не выталкиваем молча старую недоставленную (это была бы тихая потеря денег)
+      if(CH.oil.pend.length >= 20){
+        alert("Очередь несохранённых операций переполнена (20) — операция НЕ записана.\nПроверь интернет и бэкенд таблицы, дождись доставки и повтори.");
+        return false;
+      }
+      const d = new Date(), p = n => String(n).padStart(2, "0");
+      const op = { id:newOpId(), date:d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate()),
+        time:p(d.getHours()) + ":" + p(d.getMinutes()), amount:amount, kind:kind, note:note || "" };
+      CH.oil.pend.push(op);
+      saveLS("md_oil_pending", CH.oil.pend);
+      oilRecheck = 0;
+      render();
+      sendPending();
+      setTimeout(loadOps, 1800);   // подтверждение — перечиткой (no-cors ответ непрозрачен)
+      return true;
+    }
+
+    // читаем выводы владельца + операции масла из таблицы (JSONP — обходит CORS у Apps Script)
+    let wdSeq = 0, oilRecheck = 0;
+    function loadOps(){
       if(!WITHDRAW_API) return;
       const cb = "__wd_" + (++wdSeq);
       const s = document.createElement("script");
       window[cb] = data => {
-        if(data && Array.isArray(data.withdrawals)){ WD_DATA = { withdrawals: data.withdrawals }; saveWdCache(data.withdrawals); render(); }
+        let dirty = false;
+        if(data && Array.isArray(data.withdrawals)){ CH.flush.ops = data.withdrawals; saveLS("md_withdrawals", data.withdrawals); dirty = true; }
+        if(data && Array.isArray(data.oilOps)){    // поле есть ТОЛЬКО у нового бэкенда: отсутствие ≠ «пусто», кэш не трогаем
+          CH.oil.ops = data.oilOps; saveLS("md_oil_ops", data.oilOps);
+          if(!CH.oil.connected){ CH.oil.connected = true; try { localStorage.setItem("md_oil_connected", "1"); } catch(e){} }
+          reconcilePending(data.oilOps);
+          // очередь ещё не подтверждена (медленная запись Apps Script: waitLock до 5 с) →
+          // страховочная перечитка, максимум две — потом ждём следующей загрузки/online
+          const live = CH.oil.pend.some(p => Date.now() - parse(p.date).getTime() <= 62 * 86400000);
+          if(live && oilRecheck < 2){ oilRecheck++; setTimeout(loadOps, 7000); }
+          else if(!CH.oil.pend.length) oilRecheck = 0;
+          dirty = true;
+        }
+        if(dirty) render();
         delete window[cb]; s.remove();
       };
       s.onerror = () => { delete window[cb]; s.remove(); };
       s.src = WITHDRAW_API + "?callback=" + cb + "&t=" + Date.now();
       document.head.appendChild(s);
     }
-    // отмечаем вывод: сразу показываем ноль (оптимистично) и шлём в таблицу фоном
+
+    // отмечаем вывод: сразу показываем ноль (оптимистично), сохранение — фоном
     function doWithdraw(pot){
+      const ch = cur;
       if(pot <= 0) return;
-      if(wdBusy) return;                     // вывод уже отправляется → повторный клик/гонку игнорируем (Р5.1)
-      if(!salesSettled){ alert("Секунду — подгружаю свежие продажи. Нажми «Отметить вывод» ещё раз через пару секунд."); return; }
+      if(ch.busy) return;                    // вывод уже отправляется → повторный клик/гонку игнорируем (Р5.1)
+      if(!ch.settled){ alert("Секунду — подгружаю свежие продажи. Нажми «Отметить вывод» ещё раз через пару секунд."); return; }
       if(!WITHDRAW_API){ alert("Копилка ещё не подключена к таблице."); return; }
-      if(!confirm("Отметить вывод всей копилки — " + money(pot) + "?\nКопилка обнулится.")) return;
-      wdBusy = true;                         // с этого момента до реконсиляции повторный вывод заблокирован
+      // гейты канала масла — ДО confirm (симметрично doSpend): без connected операции писать некуда,
+      // а сумму выше серверного потолка WITHDRAW_MAX бэкенд молча отклонит (no-cors) — не даём отправить
+      if(ch.key === "oil" && !ch.connected){ alert("Канал масла ещё не подключён к таблице — вывод пока не отметить."); return; }
+      if(ch.key === "oil" && pot > 1000000){ alert("Вывод больше 1 000 000 ₽ одной операцией сервер не примет (потолок-предохранитель WITHDRAW_MAX в таблице). Разбей на части или подними потолок."); return; }
+      if(!confirm("Отметить вывод всей копилки" + (ch.person ? " (" + ch.person + ")" : "") + " — " + money(pot) + "?\nКопилка обнулится.")) return;
+      ch.busy = true;                        // с этого момента до реконсиляции повторный вывод заблокирован
+      if(ch.key === "oil"){
+        if(!enqueueOp("wd", pot, "")){ ch.busy = false; return; } // очередь переполнена — отказ уже показан
+        setTimeout(() => { ch.busy = false; }, 1600);
+        return;
+      }
+      // промывка — прежний проверенный путь в первый лист (формат записи не меняем)
       const d = new Date(), p = n => String(n).padStart(2, "0");
       const today = d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate());
-      const nowTime = p(d.getHours()) + ":" + p(d.getMinutes());
-      const withdrawalId = newWithdrawalId();
-      (WD_DATA.withdrawals = WD_DATA.withdrawals || []).push({ id: withdrawalId, date: today, amount: pot, time: nowTime });
-      saveWdCache(WD_DATA.withdrawals);
+      const withdrawalId = newOpId();
+      (ch.ops = ch.ops || []).push({ id: withdrawalId, date: today, amount: pot, time: p(d.getHours()) + ":" + p(d.getMinutes()) });
+      saveLS("md_withdrawals", ch.ops);
       render();
-      // no-cors сохраняем (ответ Apps Script непрозрачен, CORS-заголовков не отдаёт); подтверждение — перечиткой loadWithdrawals.
+      // no-cors сохраняем (ответ Apps Script непрозрачен, CORS-заголовков не отдаёт); подтверждение — перечиткой loadOps.
       fetch(WITHDRAW_API, { method:"POST", mode:"no-cors",
         headers:{ "Content-Type":"text/plain;charset=utf-8" },
         body: JSON.stringify({ token: WITHDRAW_TOKEN, withdrawalId: withdrawalId, date: today, amount: pot }) })
-        .then(() => setTimeout(loadWithdrawals, 1500))
+        .then(() => setTimeout(loadOps, 1500))
         .catch(() => alert("Не удалось сохранить вывод — проверь интернет и обнови страницу."))
-        .finally(() => setTimeout(() => { wdBusy = false; }, 1600)); // окно debounce: гасит двойной клик, затем снова можно
+        .finally(() => setTimeout(() => { ch.busy = false; }, 1600)); // окно debounce: гасит двойной клик, затем снова можно
     }
 
-    // список заказ-нарядов внутри раскрытого дня
-    // номер заказа приходит из LiveSklad/таблицы — экранируем перед вставкой в разметку (defense-in-depth)
-    const escOrd = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-    const ordersHtml = orders => `<div class="ord-list">` + orders.map(o => {
-      const t = o[3] ? `<span class="ord-time">${escOrd(o[3])}</span>` : "";
-      return `<div class="ord"><span class="ord-head"><span class="ord-num">Заказ-наряд №${escOrd(o[0])}</span>${t}</span><span class="ord-qty">${nf.format(o[1])} шт</span><span class="ord-sum">${money(o[2])}</span></div>`;
-    }).join("") + `</div>`;
+    // «Внести расход» (только масло): сумма → комментарий → подтверждение → очередь.
+    // Отмена (Cancel) на ЛЮБОМ шаге = полная отмена без записи.
+    const parseAmount = s => { const n = Number(String(s).replace(/[\s₽рp]/gi, "").replace(",", ".")); return isFinite(n) ? Math.round(n) : 0; };
+    function doSpend(){
+      const ch = cur;
+      if(!ch.allowSpend) return;
+      if(!ch.connected){ alert("Канал масла ещё не подключён к таблице — расход пока не записать."); return; }
+      let s = prompt("Расход из копилки: сколько взял, ₽?\nНапример: 3500");
+      if(s === null) return;
+      let amount = parseAmount(s);
+      if(!(amount > 0)){
+        s = prompt("Не понял сумму. Введи числом, например 3500:");
+        if(s === null) return;
+        amount = parseAmount(s);
+        if(!(amount > 0)){ alert("Сумму разобрать не получилось — расход не записан."); return; }
+      }
+      if(amount > 50000){ alert("Больше 50 000 ₽ одним расходом нельзя (потолок-предохранитель SPEND_MAX в таблице). Разбей на части или попроси владельца поднять потолок."); return; }
+      let note = prompt("На что потратил? Коротко, без имён и телефонов клиентов.\nНапример: масло 5W-30. Можно оставить пустым.");
+      if(note === null) return;
+      note = note.trim().slice(0, 80);
+      const over = amount > potOf(ch) ? "\n\nВнимание: расход больше копилки — «К выводу» уйдёт в минус." : "";
+      if(!confirm("Записать расход " + money(amount) + (note ? " — «" + note + "»" : "") + "?\nСумма спишется из «К выводу»." + over)) return;
+      enqueueOp("spend", amount, note);
+    }
 
-    let DATA = SALES;         // сначала запасные; ниже подменяем свежими (Apps Script или sales.json)
-    let WD_DATA = WITHDRAWALS; // выводы: запас; ниже подменяем кэшем и свежими из таблицы
-    let salesSettled = false;  // true, когда свежие продажи загрузились (или точно не загрузятся) — до этого вывод не отмечаем
-    let selectedMonth = null;  // ключ выбранного месяца (year*12+month); null → при первом render берём самый свежий
+    // метка операции из очереди: «не сохранено» уйдёт после подтверждения таблицей;
+    // «не записано» — терминально (окно дат сервера прошло, покажи владельцу и удали руками)
+    const pendBadge = o => o.failed ? `<span class="op-pend">не записано · устарело</span>`
+      : (o.pending ? `<span class="op-pend">не сохранено</span>` : "");
+    // у операции, внесённой задним числом, показываем и дату внесения (cd = created из таблицы)
+    const opWhen = o => dateFull(o.dt) + (o.time ? ", " + o.time : "") +
+      (o.cd && o.cd.slice(0, 10) !== o.date ? " · внесено " + dateFull(parse(o.cd)) : "");
+
+    // список заказ-нарядов внутри раскрытого дня; у масла позиции группируются
+    // под одним № заказа, имя масла — отдельной строкой (.ord-name)
+    const ordersHtml = (orders, oil) => {
+      if(!oil) return `<div class="ord-list">` + orders.map(o => {
+        const t = o[3] ? `<span class="ord-time">${escOrd(o[3])}</span>` : "";
+        return `<div class="ord"><span class="ord-head"><span class="ord-num">Заказ-наряд №${escOrd(o[0])}</span>${t}</span><span class="ord-qty">${nf.format(o[1])} ${cur.unit}</span><span class="ord-sum">${money(o[2])}</span></div>`;
+      }).join("") + `</div>`;
+      const groups = [];
+      let last = null;
+      orders.forEach(o => {
+        if(!last || last.num !== String(o[0])){ last = { num:String(o[0]), time:o[3] || "", items:[] }; groups.push(last); }
+        last.items.push(o);
+      });
+      return `<div class="ord-list">` + groups.map(g => {
+        const t = g.time ? `<span class="ord-time">${escOrd(g.time)}</span>` : "";
+        const qty = g.items.reduce((s,o)=>s+(Number(o[1])||0), 0);
+        const sum = g.items.reduce((s,o)=>s+(Number(o[2])||0), 0);
+        const names = g.items.map(o => `<span class="ord-name">${escOrd(o[4] || "")}${g.items.length > 1 ? " — " + nf.format(o[1]) + " " + cur.unit + " · " + money(o[2]) : ""}</span>`).join("");
+        return `<div class="ord"><span class="ord-head"><span class="ord-num">Заказ-наряд №${escOrd(g.num)}</span>${t}</span><span class="ord-qty">${nf.format(qty)} ${cur.unit}</span><span class="ord-sum">${money(sum)}</span>${names}</div>`;
+      }).join("") + `</div>`;
+    };
 
     function render(){
-      nameEl.textContent = DATA.product;
+      const ch = cur;
+      // вкладки каналов: активная подсвечена
+      if(tabsEl) tabsEl.querySelectorAll(".sales-tab").forEach(b => {
+        const act = b.dataset.ch === ch.key;
+        b.classList.toggle("active", act);
+        b.setAttribute("aria-pressed", act ? "true" : "false");
+      });
 
-      // все дни: штуки/сумма как сумма заказов дня
-      const allDays = DATA.days.map(d => {
-        const orders = d.orders || [];
-        return {
-          dt: parse(d.date), orders,
-          qty: orders.reduce((s,o)=>s+(Number(o[1])||0), 0),
-          sum: orders.reduce((s,o)=>s+(Number(o[2])||0), 0),
-        };
-      }).filter(d => !isNaN(d.dt.getTime()));
+      const allDays = chanDays(ch);   // все дни: штуки/сумма как сумма заказов дня
+      const allOps  = chanOps(ch);    // все операции: выводы + расходы (сервер + очередь)
+      const aggList = chanAgg(ch);    // помесячные агрегаты (масло: дни старше 13 месяцев)
 
-      // все выводы копилки (за всё время)
-      const allWithdrawals = (WD_DATA.withdrawals || [])
-        .filter(w => w && w.date)
-        .map(w => ({ dt: parse(w.date), amount: Number(w.amount) || 0, time: w.time || "" }))
-        .filter(w => !isNaN(w.dt.getTime()))
-        .sort((a,b)=> a.dt - b.dt);
+      // канал масла до первых данных (старый бэкенд / нет сети и нет кэша) — честное «не подключён»
+      const virgin = ch.key === "oil" && !ch.connected && !ch.settled && !allDays.length && !allOps.length;
 
-      // ==== копилка сквозная: считается по всем месяцам, не по выбранному ====
-      const grandSum = allDays.reduce((s,d)=>s+d.sum, 0);
-      const totWithdrawn = allWithdrawals.reduce((s,w)=> s + w.amount, 0);
-      const pot = Math.max(0, OPENING + grandSum - totWithdrawn);
-      const lastW = allWithdrawals.length ? allWithdrawals[allWithdrawals.length - 1] : null;
+      // ==== копилка сквозная: старт + все продажи (дни + агрегаты) − выводы − расходы ====
+      // целые рубли (как potOf) и без «не записанных» операций (opAmt)
+      const grandSum = allDays.reduce((s,d)=>s+d.sum, 0) + aggList.reduce((s,a)=>s+a.sum, 0);
+      const totSpend = allOps.reduce((s,o)=> s + (o.kind === "spend" ? opAmt(o) : 0), 0);
+      let pot = Math.round(ch.opening + grandSum - allOps.reduce((s,o)=> s + opAmt(o), 0));
+      if(ch.clampZero) pot = Math.max(0, pot);
+      const wdList = allOps.filter(o => o.kind === "wd");
+      const lastW = wdList.length ? wdList[wdList.length - 1] : null;
 
-      // ==== список месяцев: из продаж + выводов + текущий календарный ====
+      // ==== список месяцев: продажи + операции + агрегаты + текущий календарный ====
       const monthMap = {}; // ключ → {y,m}
       const mark = dt => { monthMap[monthKey(dt)] = { y:dt.getFullYear(), m:dt.getMonth() }; };
       allDays.forEach(d => mark(d.dt));
-      allWithdrawals.forEach(w => mark(w.dt));
+      allOps.forEach(o => mark(o.dt));
+      aggList.forEach(a => { monthMap[aggKey(a)] = { y:Number(a.m.slice(0,4)), m:Number(a.m.slice(5,7)) - 1 }; });
       mark(new Date()); // текущий месяц есть всегда, даже если продаж ещё нет
       const monthKeys = Object.keys(monthMap).map(Number).sort((a,b)=> b - a); // новые сверху
-      const liveMonth = monthKeys[0]; // самый свежий месяц — живой (копилка + кнопка вывода)
-      if(selectedMonth == null || !monthMap[selectedMonth]) selectedMonth = liveMonth;
-      const selMo = monthMap[selectedMonth];
+      const liveMonth = monthKeys[0]; // самый свежий месяц — живой (копилка + кнопки)
+      if(ch.selMonth == null || !monthMap[ch.selMonth]) ch.selMonth = liveMonth;
+      const selMo = monthMap[ch.selMonth];
 
       // выпадающий список месяцев
       monthSel.hidden = false;
       monthSel.innerHTML = monthKeys.map(k =>
-        `<option value="${k}"${k===selectedMonth?" selected":""}>${MONN[monthMap[k].m]} ${monthMap[k].y}</option>`
+        `<option value="${k}"${k===ch.selMonth?" selected":""}>${MONN[monthMap[k].m]} ${monthMap[k].y}</option>`
       ).join("");
 
       // ==== срез по выбранному месяцу ====
-      const inSel = dt => monthKey(dt) === selectedMonth;
+      const inSel = dt => monthKey(dt) === ch.selMonth;
       const days = allDays.filter(d => inSel(d.dt));
-      const withdrawals = allWithdrawals.filter(w => inSel(w.dt));
+      const ops  = allOps.filter(o => inSel(o.dt));
+      const selAgg = aggList.find(a => aggKey(a) === ch.selMonth) || null; // архивный месяц без дней
 
-      // итоги выбранного месяца — из данных, руками не дублируем
-      const totQty = days.reduce((s,d)=>s+d.qty, 0);
-      const totSum = days.reduce((s,d)=>s+d.sum, 0);
+      // итоги выбранного месяца — из данных, руками не дублируем (агрегат — если дни уже срезаны)
+      const totQty = days.reduce((s,d)=>s+d.qty, 0) + (selAgg ? selAgg.qty : 0);
+      const totSum = days.reduce((s,d)=>s+d.sum, 0) + (selAgg ? selAgg.sum : 0);
       const avgDay   = days.length ? Math.round(totSum / days.length) : 0;
       const avgCheck = totQty ? Math.round(totSum / totQty) : 0;
       const best = days.reduce((b,d)=> (!b || d.sum>b.sum) ? d : b, null);
@@ -3520,52 +3751,65 @@
       // плитки-итоги (за выбранный месяц)
       statsEl.innerHTML = [
         ["Выручка за месяц", totSum,   "money", "accent"],
-        ["Продано",          totQty,   "int",   "",      "шт"],
+        ["Продано",          totQty,   "int",   "",      ch.unit],
         ["Средний чек",      avgCheck, "money"],
         ["В среднем в день", avgDay,   "money"],
       ].map(([k,raw,fmt,cls,u]) =>
         `<div class="stat ${cls||""}"><div class="k">${k}</div><div class="v"><span class="num" data-to="${raw}" data-fmt="${fmt}">${SALES_FMT[fmt](raw)}</span>${u?`<span class="u">${u}</span>`:""}</div></div>`
       ).join("");
 
-      // ==== копилка: живой месяц — с кнопкой; архивный — read-only итог ====
-      const isLive = selectedMonth === liveMonth;
+      // ==== копилка: живой месяц — с кнопками; архивный — read-only итог ====
+      const isLive = ch.selMonth === liveMonth;
       kopEl.hidden = false;
-      if(isLive){
-        const lastWhen = lastW ? dateFull(lastW.dt) + (lastW.time ? ", " + lastW.time : "") : "";
-        const kopSub = lastW
-          ? `Прошлый вывод: ${lastWhen} — ${money(lastW.amount)}.`
-          : (OPENING > 0
-              ? `Выводов ещё не было. В копилке: ${money(grandSum)} продаж + ${money(OPENING)} с прошлого периода.`
+      if(virgin){
+        kopEl.className = "kopilka empty";
+        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">Масло · Алексей</div><div class="kopilka-v">—</div><div class="kopilka-sub">Канал ещё не подключён: жду первые данные из Google-таблицы (робот пересчитывает каждые полчаса). Если долго пусто — обнови бэкенд-скрипт таблицы (Deploy → New version).</div></div>`;
+      } else if(isLive){
+        let kopSub = lastW
+          ? `Прошлый вывод: ${opWhen(lastW)} — ${money(lastW.amount)}.`
+          : (ch.opening > 0
+              ? `Выводов ещё не было. В копилке: ${money(grandSum)} продаж + ${money(ch.opening)} с прошлого периода.`
               : (grandSum > 0 ? "Выводов ещё не было — вся выручка в копилке." : "Пока нет продаж."));
-        const kopBtn = pot > 0
-          ? `<button class="kopilka-btn" type="button" data-pot="${pot}">${ICO.cash} Отметить вывод</button>`
-          : `<span class="kopilka-btn is-disabled">Копилка пуста</span>`;
-        kopEl.className = "kopilka" + (pot > 0 ? "" : " empty");
-        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">К выводу на сегодня</div><div class="kopilka-v"><span class="num" data-to="${pot}" data-fmt="money">${money(pot)}</span></div><div class="kopilka-sub">${kopSub}</div></div>${kopBtn}`;
+        if(ch.allowSpend && totSpend > 0) kopSub += ` Расходы за всё время: ${money(totSpend)}.`;
+        const kopWarn = pot < 0 ? `<div class="kopilka-warnline">${ICO.warn} Расходы больше продаж — минус закроется следующими продажами.</div>` : "";
+        const btns =
+          (pot > 0 && ch.connected ? `<button class="kopilka-btn" type="button" data-act="wd" data-pot="${pot}">${ICO.cash} Отметить вывод</button>`
+                   : (pot === 0 ? `<span class="kopilka-btn is-disabled">Копилка пуста</span>` : "")) +
+          (ch.allowSpend && ch.connected ? `<button class="kopilka-btn ghost" type="button" data-act="spend">${ICO.box} Внести расход</button>` : "");
+        kopEl.className = "kopilka" + (pot === 0 ? " empty" : ""); // минус ≠ пусто: сумма остаётся в --text (.neg), не в muted
+        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">К выводу на сегодня${ch.person ? " · " + ch.person : ""}</div><div class="kopilka-v${pot < 0 ? " neg" : ""}"><span class="num" data-to="${pot}" data-fmt="money">${money(pot)}</span></div><div class="kopilka-sub">${kopSub}</div>${kopWarn}</div><div class="kopilka-btns">${btns}</div>`;
       } else {
-        const moWd = withdrawals.reduce((s,w)=> s + w.amount, 0);
+        const moWd = ops.reduce((s,o)=> s + (o.kind === "wd" ? opAmt(o) : 0), 0);
+        const moSp = ops.reduce((s,o)=> s + (o.kind === "spend" ? opAmt(o) : 0), 0);
         kopEl.className = "kopilka archive" + (totSum > 0 ? "" : " empty");
-        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">Архив · ${MONN[selMo.m]} ${selMo.y}</div><div class="kopilka-v"><span class="num" data-to="${totSum}" data-fmt="money">${money(totSum)}</span></div><div class="kopilka-sub">Продано за месяц. Выведено за месяц: ${moWd ? money(moWd) : "—"}. Только просмотр — вывод отмечается в текущем месяце.</div></div>`;
+        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">Архив · ${MONN[selMo.m]} ${selMo.y}${ch.person ? " · " + ch.person : ""}</div><div class="kopilka-v"><span class="num" data-to="${totSum}" data-fmt="money">${money(totSum)}</span></div><div class="kopilka-sub">Продано за месяц. Выведено за месяц: ${moWd ? money(moWd) : "—"}.${ch.allowSpend ? ` Расходы за месяц: ${moSp ? money(moSp) : "—"}.` : ""} Только просмотр — вывод отмечается в текущем месяце.</div></div>`;
       }
 
       // по возрастанию даты: раньше — выше
       const sorted = [...days].sort((a,b)=> a.dt - b.dt);
 
-      // объединённая лента: продажи-дни + метки выводов (вывод — после продаж того же дня)
+      // объединённая лента: дни продаж + метки выводов и расходов (операция — после продаж того же дня)
       const timeline = [
         ...sorted.map(d => ({ kind:"day", dt:d.dt, d })),
-        ...withdrawals.map(w => ({ kind:"wd", dt:w.dt, w })),
-      ].sort((a,b)=> (a.dt - b.dt) || (a.kind === "wd" ? 1 : -1));
+        ...ops.map(o => ({ kind:o.kind, dt:o.dt, o })),
+      ].sort((a,b)=> (a.dt - b.dt) || ((a.kind === "day" ? 0 : 1) - (b.kind === "day" ? 0 : 1)));
 
+      const isOil = ch.key === "oil";
       if(!timeline.length){
-        rowsEl.innerHTML = `<tr class="sales-empty"><td colspan="4">Нет продаж в этом месяце.</td></tr>`;
-        cardsEl.innerHTML = `<div class="sales-empty-card">Нет продаж в этом месяце.</div>`;
+        const msg = virgin ? "Канал масла ещё не подключён." :
+          (selAgg ? "Итог месяца — из архива: подробности по дням хранятся 13 месяцев." : "Нет продаж в этом месяце.");
+        rowsEl.innerHTML = `<tr class="sales-empty"><td colspan="4">${msg}</td></tr>`;
+        cardsEl.innerHTML = `<div class="sales-empty-card">${msg}</div>`;
       } else {
         // таблица (десктоп): строка дня + скрытая строка-деталь с заказами
         rowsEl.innerHTML = timeline.map(item => {
           if(item.kind === "wd"){
-            const w = item.w;
-            return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>${ICO.cash} Вывод — <span class="wd-amount">${money(w.amount)}</span></span><span class="wd-note">${dateFull(w.dt)}${w.time ? ", " + w.time : ""} · копилка обнулена</span></div></td></tr>`;
+            const w = item.o;
+            return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>${ICO.cash} Вывод — <span class="wd-amount">${money(w.amount)}</span></span>${pendBadge(w)}<span class="wd-note">${opWhen(w)} · копилка обнулена</span></div></td></tr>`;
+          }
+          if(item.kind === "spend"){
+            const w = item.o;
+            return `<tr class="spend-row"><td colspan="4"><div class="spend-cell"><span>${ICO.box} Расход — <span class="wd-amount">−${money(w.amount)}</span></span>${w.note ? `<span class="op-note">${escOrd(w.note)}</span>` : ""}${pendBadge(w)}<span class="wd-note">${opWhen(w)}</span></div></td></tr>`;
           }
           const d = item.d;
           const we = weekend(d.dt);
@@ -3578,55 +3822,74 @@
             <td>${qty}</td>
             <td>${sum}</td>
           </tr>`;
-          const detailRow = has ? `<tr class="sales-detail"><td colspan="4"><div class="collapse"><div class="collapse-inner">${ordersHtml(d.orders)}</div></div></td></tr>` : "";
+          const detailRow = has ? `<tr class="sales-detail"><td colspan="4"><div class="collapse"><div class="collapse-inner">${ordersHtml(d.orders, isOil)}</div></div></td></tr>` : "";
           return dayRow + detailRow;
         }).join("") +
           `<tr class="sales-total">
             <td class="date-cell" colspan="2">Итого за месяц</td>
-            <td><span class="sales-qty">${nf.format(totQty)} шт</span></td>
+            <td><span class="sales-qty">${nf.format(totQty)} ${ch.unit}</span></td>
             <td><span class="sales-sum">${money(totSum)}</span></td>
           </tr>`;
 
         // карточки (мобайл): шапка + значения кликабельны, ниже раскрывается список заказов
         cardsEl.innerHTML = timeline.map(item => {
           if(item.kind === "wd"){
-            const w = item.w;
-            return `<div class="withdraw-card"><span>${ICO.cash} Вывод — <b>${money(w.amount)}</b></span><span class="wd-note">${dateFull(w.dt)}${w.time ? ", " + w.time : ""}</span></div>`;
+            const w = item.o;
+            return `<div class="withdraw-card"><span>${ICO.cash} Вывод — <b>${money(w.amount)}</b></span>${pendBadge(w)}<span class="wd-note">${opWhen(w)}</span></div>`;
+          }
+          if(item.kind === "spend"){
+            const w = item.o;
+            return `<div class="spend-card"><span>${ICO.box} Расход — <b>−${money(w.amount)}</b></span>${w.note ? `<span class="op-note">${escOrd(w.note)}</span>` : ""}${pendBadge(w)}<span class="wd-note">${opWhen(w)}</span></div>`;
           }
           const d = item.d;
           const we = weekend(d.dt);
           const has = d.orders.length > 0;
-          const qty = has ? `${nf.format(d.qty)} шт` : `<span class="sales-zero">0 шт</span>`;
+          const qty = has ? `${nf.format(d.qty)} ${ch.unit}` : `<span class="sales-zero">0 ${ch.unit}</span>`;
           const sum = has ? money(d.sum) : `<span class="sales-zero">—</span>`;
           const head = `<div class="dhead"><span class="dnum">${d.dt.getDate()}</span><span class="dmon">${MONF[d.dt.getMonth()]}</span><span class="dbadge">${WD[d.dt.getDay()]}</span>${has?`<span class="chev"></span>`:""}</div>
             <div class="scard-vals">
               <div class="scard-val"><span class="k">Продано</span><span class="v">${qty}</span></div>
               <div class="scard-val"><span class="k">Сумма</span><span class="v">${sum}</span></div>
             </div>`;
-          const body = has ? `<div class="collapse"><div class="collapse-inner">${ordersHtml(d.orders)}</div></div>` : "";
+          const body = has ? `<div class="collapse"><div class="collapse-inner">${ordersHtml(d.orders, isOil)}</div></div>` : "";
           return `<div class="daycard${we?" weekend":""}${has?" sday":""}">${has?`<button class="sday-btn" type="button">${head}</button>`:head}${body}</div>`;
         }).join("");
       }
 
-      // помесячно (все месяцы, новые сверху): клик по строке → выбрать месяц
+      // помесячно (все месяцы, новые сверху): клик по строке → выбрать месяц; у масла — 3 ячейки
       const months = {};
-      allDays.forEach(d => { const k = monthKey(d.dt); (months[k] = months[k] || {sold:0,wd:0,y:d.dt.getFullYear(),m:d.dt.getMonth(),k}).sold += d.sum; });
-      allWithdrawals.forEach(w => { const k = monthKey(w.dt); (months[k] = months[k] || {sold:0,wd:0,y:w.dt.getFullYear(),m:w.dt.getMonth(),k}).wd += w.amount; });
+      const mrec = k => months[k] = months[k] || { sold:0, wd:0, sp:0, y:Math.floor(k/12), m:((k%12)+12)%12, k };
+      allDays.forEach(d => { mrec(monthKey(d.dt)).sold += d.sum; });
+      aggList.forEach(a => { mrec(aggKey(a)).sold += a.sum; });
+      allOps.forEach(o => { const r = mrec(monthKey(o.dt)); if(o.kind === "wd") r.wd += opAmt(o); else r.sp += opAmt(o); });
       const monthList = Object.keys(months).map(Number).sort((a,b)=> b - a).map(k => months[k]);
+      const has3 = ch.allowSpend;
       monthsEl.innerHTML = monthList.length
         ? `<div class="sales-months-h">По месяцам</div>` + monthList.map(mo =>
-            `<button type="button" class="smonth${mo.k===selectedMonth?" active":""}" data-mk="${mo.k}"><div class="smonth-name">${MONN[mo.m]} ${mo.y}</div>` +
+            `<button type="button" class="smonth${has3 ? " has3" : ""}${mo.k===ch.selMonth?" active":""}" data-mk="${mo.k}"><div class="smonth-name">${MONN[mo.m]} ${mo.y}</div>` +
             `<div class="smonth-cell"><span class="k">Продано</span><span class="v">${money(mo.sold)}</span></div>` +
+            (has3 ? `<div class="smonth-cell"><span class="k">Расходы</span><span class="v">${mo.sp ? money(mo.sp) : "—"}</span></div>` : "") +
             `<div class="smonth-cell"><span class="k">Выведено</span><span class="v">${mo.wd ? money(mo.wd) : "—"}</span></div></button>`
           ).join("")
         : "";
 
-      // подпись: когда обновлено + лучший день выбранного месяца
-      const upd = DATA.updated ? parse(DATA.updated) : null;
-      updEl.textContent = upd ? `Обновлено ${dateFull(upd)} ${upd.getFullYear()}` : "";
-      noteEl.textContent = best && best.sum
-        ? `Лучший день месяца — ${dateFull(best.dt)}: ${nf.format(best.qty)} шт на ${money(best.sum)}. Нажми на день, чтобы увидеть заказ-наряды. Данные обновляются автоматически каждые полчаса.`
-        : "Пока нет продаж в этом месяце.";
+      // подпись: когда обновлено + что считаем + лучший день выбранного месяца.
+      // active=false от бэкенда = фильтр выключен (лист «Масла» пуст) — fail-closed сигнал
+      // вместо ложного «Обновлено сегодня» при остановленном сборе.
+      const upd = ch.data.updated ? parse(ch.data.updated) : null;
+      updEl.textContent = (isOil && ch.data.active === false)
+        ? "Сбор остановлен: лист «Масла» пуст — добавь правила"
+        : (upd && !isNaN(upd.getTime()) ? `Обновлено ${dateFull(upd)} ${upd.getFullYear()}` : "");
+      const src = isOil
+        ? "Считаются все моторные масла — правила в листе «Масла» Google-таблицы. "
+        : `Товар: ${ch.data.product}. `;
+      noteEl.textContent = virgin
+        ? "Канал масла появится после обновления бэкенд-скрипта таблицы — данные подтянутся сами."
+        : src + (best && best.sum
+          ? `Лучший день месяца — ${dateFull(best.dt)}: ${nf.format(best.qty)} ${ch.unit} на ${money(best.sum)}. Нажми на день, чтобы увидеть заказ-наряды. Данные обновляются автоматически каждые полчаса.`
+          : (selAgg && selAgg.sum
+            ? "Месяц из архива: итог посчитан помесячно, разбивка по дням хранится 13 месяцев."
+            : "Пока нет продаж в этом месяце."));
     }
 
     // раскрытие дня — десктоп (строка-деталь = следующий tr)
@@ -3643,49 +3906,70 @@
       if(!btn) return;
       btn.closest(".daycard").classList.toggle("open");
     });
-    // клик по «Отметить вывод» (кнопка пересоздаётся в render — слушаем на контейнере)
+    // кнопки копилки: «Отметить вывод» / «Внести расход» (пересоздаются в render — слушаем на контейнере)
     kopEl.addEventListener("click", e => {
       const b = e.target.closest(".kopilka-btn");
       if(!b || b.classList.contains("is-disabled")) return;
-      doWithdraw(Number(b.dataset.pot) || 0);
+      if(b.dataset.act === "spend") doSpend();
+      else doWithdraw(Number(b.dataset.pot) || 0);
     });
     // выбор месяца из выпадающего списка
-    monthSel.addEventListener("change", () => { selectedMonth = Number(monthSel.value); render(); });
+    monthSel.addEventListener("change", () => { cur.selMonth = Number(monthSel.value); render(); });
     // клик по строке «По месяцам» — открыть этот месяц и подняться к началу раздела
     monthsEl.addEventListener("click", e => {
       const b = e.target.closest(".smonth");
       if(!b) return;
-      selectedMonth = Number(b.dataset.mk); render();
+      cur.selMonth = Number(b.dataset.mk); render();
       document.getElementById("page-prodazhi").scrollIntoView({ behavior:"smooth", block:"start" });
     });
+    // переключатель каналов: выбор запоминается; счётчики — one-shot на смену канала (навигационный триггер)
+    if(tabsEl) tabsEl.addEventListener("click", e => {
+      const b = e.target.closest(".sales-tab");
+      if(!b || !CH[b.dataset.ch] || CH[b.dataset.ch] === cur) return;
+      cur = CH[b.dataset.ch];
+      try { localStorage.setItem("md_sales_ch", cur.key); } catch(err){}
+      render();
+      runSalesTickers();
+    });
 
-    // выводы: сначала из локального кэша (мгновенно и офлайн), затем свежие из таблицы
-    try { const c = JSON.parse(localStorage.getItem("md_withdrawals") || "null"); if(Array.isArray(c)) WD_DATA = { withdrawals: c }; } catch(e){}
+    // кэши: мгновенный показ и офлайн (выводы владельца; операции, очередь и продажи масла)
+    try { const c = JSON.parse(localStorage.getItem("md_withdrawals") || "null"); if(Array.isArray(c)) CH.flush.ops = c; } catch(e){}
+    try { const c = JSON.parse(localStorage.getItem("md_oil_ops") || "null"); if(Array.isArray(c)) CH.oil.ops = c; } catch(e){}
+    try { const c = JSON.parse(localStorage.getItem("md_oil_pending") || "null"); if(Array.isArray(c)) CH.oil.pend = c; } catch(e){} // не усекаем: молча терять денежные записи нельзя
+    try { const j = JSON.parse(localStorage.getItem("md_sales_oil") || "null"); if(j && Array.isArray(j.days)){ CH.oil.data = j; CH.oil.rank = 2; } } catch(e){}
+    try { if(localStorage.getItem("md_oil_connected")) CH.oil.connected = true; } catch(e){}
 
     render(); // мгновенно рисуем запасные данные (и на случай офлайна)
-    // Свежие продажи, два источника параллельно. Главный — Apps Script (робот каждые
-    // 30 минут пересчитывает LiveSklad), запасной — sales.json (статичный снимок).
-    // Что бы ни пришло раньше — применяем, но Apps Script всегда главнее файла.
-    let salesRank = 0; // 0 — встроенный резерв, 1 — sales.json, 2 — Apps Script
-    const applySales = (j, rank) => {
-      if(j && Array.isArray(j.days) && rank >= salesRank){
-        salesRank = rank; DATA = j; salesSettled = true; render();
-      }
+    // Свежие продажи. Промывка: sales.json (замороженный снимок) и Apps Script параллельно,
+    // Apps Script всегда главнее (ранги: 0 резерв, 1 sales.json, 2 кэш, 3 Apps Script).
+    // Масло: ТОЛЬКО Apps Script (поле oil того же ответа) — отсутствие поля означает
+    // старый бэкенд, а не «продаж нет»: кэш в этом случае не трогаем.
+    const applySales = (ch, j, rank) => {
+      if(j && Array.isArray(j.days) && rank >= ch.rank){ ch.rank = rank; ch.data = j; ch.settled = true; render(); return true; }
+      return false;
     };
     fetch("sales.json?t=" + Date.now(), { cache:"no-store" })
       .then(r => r.ok ? r.json() : null)
-      .then(j => applySales(j, 1))
+      .then(j => applySales(CH.flush, j, 1))
       .catch(()=>{})
-      .finally(() => { salesSettled = true; render(); });
+      .finally(() => { CH.flush.settled = true; render(); }); // у промывки есть встроенный резерв — вывод не ждёт вечно
     (function loadSalesApi(){ // JSONP — обходит CORS у Apps Script
       const cb = "__sales_" + Date.now();
       const s = document.createElement("script");
-      window[cb] = j => { applySales(j, 2); delete window[cb]; s.remove(); };
+      window[cb] = j => {
+        if(j && Array.isArray(j.days)){
+          applySales(CH.flush, j, 3);
+          if(j.oil && Array.isArray(j.oil.days) && applySales(CH.oil, j.oil, 3))
+            saveLS("md_sales_oil", j.oil); // кэш пишем один раз — при приходе свежих данных
+        }
+        delete window[cb]; s.remove();
+      };
       s.onerror = () => { delete window[cb]; s.remove(); };
       s.src = SHEET_API + "?type=sales&callback=" + cb + "&t=" + Date.now();
       document.head.appendChild(s);
     })();
-    loadWithdrawals(); // свежие выводы из Google-таблицы (если копилка подключена)
+    loadOps();     // свежие выводы владельца + операции масла из Google-таблицы
+    sendPending(); // досыл очереди операций масла, накопленной офлайн
   })();
 
   /* ===================== ЗАМЕТКИ (пожелания команды) =====================
@@ -3896,18 +4180,19 @@
   // NumberTicker: счётчик 0→to с ease-out; формат сохраняем через fmt (money/шт/разряды).
   function mdTicker(el, to, fmt, delay){
     if(!el) return;
+    if(el._mdT){ cancelAnimationFrame(el._mdT); el._mdT = 0; } // повторный запуск (смена канала): прежний цикл отменяем, за textContent не дерутся
     if(reduceMotion() || typeof performance==="undefined"){ el.textContent = fmt(to); return; }
     el.textContent = fmt(0);                               // старт с 0 сразу (как NumberTicker), без вспышки финала
     var dur = 1200, t0 = performance.now() + (delay||0);   // пружина 60/100 ≈ 1.6с → берём 1.2с
     function tick(now){
       var p = (now - t0) / dur;
-      if(p < 0){ requestAnimationFrame(tick); return; }     // ждём delay
+      if(p < 0){ el._mdT = requestAnimationFrame(tick); return; } // ждём delay
       if(p > 1) p = 1;
       var eased = 1 - Math.pow(1 - p, 3);                    // ease-out cubic, без overshoot
       el.textContent = fmt(Math.round(to * eased));
-      if(p < 1) requestAnimationFrame(tick); else el.textContent = fmt(to);
+      if(p < 1) el._mdT = requestAnimationFrame(tick); else { el._mdT = 0; el.textContent = fmt(to); }
     }
-    requestAnimationFrame(tick);
+    el._mdT = requestAnimationFrame(tick);
   }
 
   /* ===================== ГЛАВНАЯ (первый экран — рабочий стол) =====================
@@ -3925,7 +4210,7 @@
       { page:"grafik",   ico:"calendar", name:"График",  hint:"Кто на смене и обязанности" },
       { page:"tseny",    ico:"cash",     name:"Цены",    hint:"Прайс: запчасти и масла" },
       { page:"komplekty",ico:"box",      name:"Комплекты", hint:"Наборы на продажу — отправка и вживую" },
-      { page:"prodazhi", ico:"chart",    name:"Продажи", hint:"Выручка и штуки по дням" },
+      { page:"prodazhi", ico:"chart",    name:"Продажи", hint:"Присадки и масло по дням" },
       { page:"zametki",  ico:"chat",     name:"Заметки", hint:"Пожелания команды" },
     ],
   };
@@ -4664,7 +4949,7 @@
     to:       { t:"Расчёт ТО",       r:"Двигатель → масло, фильтры и работы · копируй и отправляй" },
     tseny:    { t:"Цены",            r:"Запчасти и масла · поиск по названию и артикулу" },
     komplekty:{ t:"Комплекты",       r:"Наборы на продажу — собираем, отправляем и продаём вживую" },
-    prodazhi: { t:"Продажи",         r:"Присадки · выручка и штуки по дням" },
+    prodazhi: { t:"Продажи",         r:"Присадки и масло · выручка и копилки по дням" },
     zametki:  { t:"Заметки и пожелания", r:"Что починить, что добавить — пиши, увидят все" },
   };
   const titleT = document.querySelector(".title .t");
