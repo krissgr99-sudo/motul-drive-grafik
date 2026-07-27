@@ -434,6 +434,67 @@
   .pr-card-foot{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
   @media(max-width:720px){ .pr-cards{display:block} }
 
+  /* ===================== СВЕРКА ЦЕН (владелец подтверждает прайс) ===================== */
+  .pc-panel{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+  .pc-head{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .pc-title{font-family:var(--font-disp);font-weight:700;font-size:16px;letter-spacing:.2px}
+  .pc-sub{margin-top:4px;font-size:13px;color:var(--muted);line-height:1.5}
+  .pc-close{margin-left:auto}
+  .pc-stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .pc-stat{display:inline-flex;align-items:baseline;gap:7px;background:var(--fill);border:1px solid var(--line);
+    border-radius:12px;padding:8px 12px;font-size:12.5px;font-weight:600;color:var(--muted)}
+  .pc-stat b{font-family:var(--font-disp);font-size:15px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums}
+  .pc-stat.is-warn{border-color:rgba(240,180,41,.42);background:rgba(240,180,41,.10)}
+  .pc-stat.is-warn b{color:var(--warn)}
+  .pc-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+  .pc-tools .tpl-search{min-width:180px}
+  .pc-groups{margin-top:14px;border-top:1px solid var(--line)}
+  .pc-group{border-bottom:1px solid var(--line)}
+  /* чекбокс группы — СОСЕД кнопки-раскрытия, а не её содержимое: интерактив внутри <button>
+     невалиден, и клик по галочке заодно сворачивал бы группу */
+  .pc-group-h{display:flex;align-items:center;gap:10px;padding:12px 2px}
+  .pc-group-h input[type=checkbox]{width:18px;height:18px;flex:none;accent-color:var(--brand);cursor:pointer}
+  .pc-group-btn{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:0;background:none;border:none;
+    color:var(--text);font:inherit;font-weight:700;font-size:13.5px;text-align:left;cursor:pointer}
+  .pc-group-btn .pc-chev{margin-left:auto;transition:transform .25s ease;color:var(--muted);display:inline-flex}
+  .pc-group.open .pc-chev{transform:rotate(90deg)}
+  .pc-group-cnt{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--muted)}
+  .pc-group-cnt.is-warn{color:var(--warn)}
+  .pc-list{display:none;padding-bottom:8px}
+  .pc-group.open .pc-list{display:block}
+  .pc-row{display:flex;align-items:center;gap:10px;padding:8px 2px;border-top:1px solid var(--line);font-size:13px}
+  .pc-row:first-child{border-top:none}
+  .pc-row input[type=checkbox]{width:18px;height:18px;flex:none;accent-color:var(--brand);cursor:pointer}
+  .pc-name{flex:1;min-width:0;line-height:1.4;overflow-wrap:anywhere}
+  .pc-key{display:block;font-family:var(--font-mono);font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:.3px}
+  .pc-val{font-family:var(--font-disp);font-weight:800;font-size:13.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .pc-age{font-family:var(--font-mono);font-size:10.5px;font-weight:600;color:var(--muted);white-space:nowrap;min-width:74px;text-align:right}
+  .pc-age.is-warn{color:var(--warn)}
+  .pc-foot{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+  .pc-sel{font-size:13px;font-weight:600;color:var(--muted);margin-right:auto}
+  .pc-empty{padding:28px 4px;text-align:center;color:var(--muted);font-size:13.5px}
+  .pc-done{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;border-radius:12px;
+    background:var(--ok-bg);border:1px solid var(--ok);color:var(--ok);font-size:13px;font-weight:700}
+  .pc-done svg{width:16px;height:16px;flex:none}
+  /* диалог PIN — тот же каркас, что панель; поле и ошибка по правилам форм системы */
+  .pc-pin{max-width:340px}
+  .pc-pin input{width:100%;margin-top:12px;padding:13px 14px;border-radius:12px;border:1px solid var(--line);
+    background:var(--fill);color:var(--text);font:inherit;font-size:16px;letter-spacing:2px;
+    font-family:var(--font-mono);outline:none;transition:border-color .15s,background .15s}
+  .pc-pin input:focus{border-color:var(--c-red);background:var(--fill-hover)}
+  .pc-err{margin-top:8px;font-size:12.5px;font-weight:600;color:var(--accent-soft)}
+  @media(max-width:720px){
+    .pc-panel{padding:14px}
+    .pc-row{flex-wrap:wrap;padding:10px 2px}
+    .pc-age{min-width:0;margin-left:auto}
+    .pc-foot .ui-btn{flex:1;min-height:44px}
+    .pc-group-h{min-height:44px}
+    #pc-open{min-height:44px}                                  /* хит под палец — must-keep №7 */
+    .pc-row input[type=checkbox],
+    .pc-group-h input[type=checkbox]{width:22px;height:22px}
+  }
+
   /* ===================== БАННЕР «СЕГОДНЯ» ===================== */
   .today{position:relative;background:var(--today-bg);
     border:1px solid var(--today-border);border-radius:18px;padding:20px;margin-bottom:18px;box-shadow:var(--shadow);overflow:hidden}
@@ -1046,7 +1107,10 @@
     <div id="page-tseny" class="page" hidden>
       <div class="tpl-toolbar">
         <div class="tpl-search"><input id="pr-search" type="text" placeholder="Найти: артикул, марка, 8HP, поддон, Motul…" autocomplete="off"></div>
+        <button class="ui-btn ui-btn--secondary" id="pc-open" type="button"></button>
       </div>
+      <!-- Сверка цен: владелец подтверждает, что цены прайса всё ещё верны (рендерится в JS) -->
+      <div class="pc-panel" id="pc-panel" hidden></div>
       <div class="tpl-facets">
         <div class="tpl-facet" id="pr-cat-row"></div>
         <div class="tpl-facet" id="pr-brand-row"></div>
@@ -1584,6 +1648,8 @@
     to_work_fuel:  ["Замена топливного фильтра", 1000],
     // Промывка двигателя — допредложение в конце сметы ТО (TO_UPSELL). В «Итого» не входит:
     // это отдельная строка под чертой. Цена — та же, что в «Продажах» (чеки по 2200 ₽/шт).
+    // ОДИН флакон на любой мотор (решение владельца 27.07.2026) — на объём масла НЕ пересчитываем,
+    // цена фиксированная. Не «чини» это расчётом на литраж: так продаём.
     to_flush:      ["Промывка двигателя Liqui Moly Engine Flush (0,3 л)", 2200],
   };
 
@@ -1704,9 +1770,42 @@
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
+
+  /* Даты сверки приходят из ДВУХ мест: CHECKED_ON выше (правка кода) и подтверждения владельца
+     из общей таблицы, лист «Сверка цен» (экран сверки в «Ценах»). Спорить им не о чем — по ключу
+     выигрывает БОЛЕЕ СВЕЖАЯ дата, откуда бы она ни пришла. Раньше погасить бейдж «Проверить цены»
+     мог только новый деплой страницы; теперь владелец гасит его сам, и это видят все устройства.
+     Кэш читается СИНХРОННО здесь, до первой отрисовки (страницы рисуются при парсинге) — иначе
+     карточки успели бы нарисоваться со старой свежестью. Тот же приём, что md_to_engines в «ТО»:
+     мгновенно и офлайн. Сеть подтягивает лист следом (loadCheckedDates, рядом с SHEET_API). */
+  const PRICE_CHECK_CKEY = "md_price_checked";
+  const CHECKED_LIVE = Object.assign({}, CHECKED);
+  const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+  // наложить карту «ключ → дата»; true, если что-то реально стало свежее (значит надо перерисовать)
+  function applyCheckedDates(map){
+    if(!map || typeof map !== "object") return false;
+    let changed = false;
+    const p2 = n => String(n).padStart(2, "0");
+    const d = new Date();
+    const today = d.getFullYear() + "-" + p2(d.getMonth()+1) + "-" + p2(d.getDate());
+    for(const k in map){
+      const iso = String(map[k] || "");
+      if(!ISO_DATE_RE.test(iso)) continue;                  // битая дата — молча мимо
+      if(iso > today) continue;                             // дата из будущего (сбитые часы чужого устройства) — не принимаем
+      if(!(k in PRICE) && !(k in RATES)) continue;          // ключа в прайсе нет (переименовали) — игнорируем
+      if(!CHECKED_LIVE[k] || CHECKED_LIVE[k] < iso){ CHECKED_LIVE[k] = iso; changed = true; }
+    }
+    return changed;
+  }
+  (function loadCheckedCache(){
+    try { applyCheckedDates(JSON.parse(localStorage.getItem(PRICE_CHECK_CKEY) || "null")); } catch(e){}
+  })();
   // свежесть ключа: нет даты / дата в будущем / старше порога → false (fail-closed)
-  const isFresh = key => { const iso = CHECKED[key]; if(!iso) return false;
+  const isFresh = key => { const iso = CHECKED_LIVE[key]; if(!iso) return false;
     const days = (new Date() - new Date(iso)) / 864e5; return days >= 0 && days <= FRESH_DAYS; };
+  // возраст подтверждения в днях (для экрана сверки): null — даты нет вовсе
+  const checkedAge = key => { const iso = CHECKED_LIVE[key]; if(!iso) return null;
+    return Math.floor((new Date() - new Date(iso)) / 864e5); };
 
   // 2) Мосты + раздатка ПОУЗЛОВО (diffsMultiBlock): 2 варианта (Motul / оригинал BMW), у каждого своё «Итого».
   //    Обычный задний мост — Итого Motul 11550 / оригинал 28500. lockItem → доплата за блокировку (LSD-масло зада):
@@ -2782,6 +2881,207 @@
     { brand:"BMW", model:"M2 (F87)", gen:"F87 · 2016-2021 · N55/S55 · M DCT/МКПП", boxes:[], noservice:true,
       match:["f87","m2 f87"],
       allow:{base:false}, note:"M2/Competition/CS (F87) — 7-ст. M DCT или МКПП. Гидромех. автомат у M2 только с G87. Не наш." },
+
+    /* ==================== MERCEDES-BENZ ====================
+       Три наши коробки: 725.0 «9G-Tronic» (с 2013), 722.9 «7G-Tronic/Plus» (2003-2020) и
+       724.0 «7G-DCT» (робот переднеприводных MFA). Главная развилка — НЕ кузов, а год:
+       9G приходила в каждый кузов в свой момент, и рестайл одного и того же W205/W212/W166
+       может стоять на разных коробках. Такие строки помечены draft — сверять по VIN.
+       Вне ассортимента: 722.6 «5G-Tronic» (машины до ~2006-2009) и 724.1 «8G-DCT» (MFA2 с 2018). */
+    { brand:"Mercedes-Benz", model:"C-класс", gen:"W204 · 2007-2014 · 7G-Tronic", boxes:["7G-Tronic"], draft:true,
+      match:["w204","s204","c204","мерседес w204"], allow:{base:true},
+      note:"Ранние 4-цилиндровые до ~2010 могли идти на 722.6 (5G) — её мы не обслуживаем. Сверьте по VIN." },
+    { brand:"Mercedes-Benz", model:"C-класс", gen:"W205 · 2014-2021 · 7G до ~2016, дальше 9G", boxes:["7G-Tronic","9G-Tronic"], draft:true,
+      match:["w205","s205","c205","a205","c класс","с класс","c-класс","с-класс"], allow:{base:true},
+      note:"2014-2016 — 722.9 (7G), с рестайла ~2016 — 725.0 (9G). Год решает, сверяйте по VIN." },
+    { brand:"Mercedes-Benz", model:"C-класс", gen:"W206 · 2021+ · 9G-Tronic", boxes:["9G-Tronic"],
+      match:["w206","s206","c класс","с класс"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"E-класс", gen:"W211 · 2002-2009 · 7G / 5G", boxes:["7G-Tronic"], draft:true,
+      match:["w211","s211","e класс","е класс"], allow:{base:true},
+      note:"7G (722.9) — с 2004 и не на всех моторах; ранние и часть 4-цил. на 722.6 (5G), её не обслуживаем." },
+    { brand:"Mercedes-Benz", model:"E-класс", gen:"W212 · 2009-2016 · 7G, с рестайла часть на 9G", boxes:["7G-Tronic","9G-Tronic"], draft:true,
+      match:["w212","s212","c207","a207","e класс","е класс","e-класс","е-класс"], allow:{base:true},
+      note:"Мейнстрим — 722.9. С рестайла (2013-2014) часть версий, начиная с E 350 BlueTEC, уже на 725.0 (9G)." },
+    { brand:"Mercedes-Benz", model:"E-класс", gen:"W213 · 2016-2023 · 9G-Tronic", boxes:["9G-Tronic"],
+      match:["w213","s213","c238","a238","e класс","е класс"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"S-класс", gen:"W221 · 2005-2013 · 7G-Tronic", boxes:["7G-Tronic"], draft:true,
+      match:["w221","s класс","с класс w221"], allow:{base:true},
+      note:"V12 (S600/S65) — отдельная коробка, не 722.9. Сверьте по мотору." },
+    { brand:"Mercedes-Benz", model:"S-класс", gen:"W222 · 2013-2020 · 9G-Tronic", boxes:["9G-Tronic"], draft:true,
+      match:["w222","v222","x222","c217","a217","s класс"], allow:{base:true},
+      note:"9G на всех, кроме V12 (S600/S65) — у них своя коробка." },
+    { brand:"Mercedes-Benz", model:"S-класс", gen:"W223 · 2020+ · 9G-Tronic", boxes:["9G-Tronic"],
+      match:["w223","v223","s класс"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"CLS", gen:"C219 · 2004-2010 · 7G-Tronic", boxes:["7G-Tronic"], draft:true,
+      match:["c219","cls c219","cls"], allow:{base:true}, note:"Ранние версии могли идти на 722.6 (5G) — не наша." },
+    { brand:"Mercedes-Benz", model:"CLS", gen:"C218 · 2011-2018 · 7G, поздние на 9G", boxes:["7G-Tronic","9G-Tronic"], draft:true,
+      match:["c218","x218","cls c218","cls"], allow:{base:true}, note:"Поздние годы выпуска — уже 725.0 (9G). Сверьте по VIN." },
+    { brand:"Mercedes-Benz", model:"CLS", gen:"C257 · 2018+ · 9G-Tronic", boxes:["9G-Tronic"],
+      match:["c257","cls c257","cls"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"ML", gen:"W164 · 2005-2011 · 7G-Tronic", boxes:["7G-Tronic"],
+      match:["w164","ml w164","мл w164","ml"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"ML / GLE", gen:"W166 · 2011-2019 · 7G, с 2015 (GLE) 9G", boxes:["7G-Tronic","9G-Tronic"], draft:true,
+      match:["w166","c292","ml w166","gle w166","gle coupe","ml","gle","гле"], allow:{base:true},
+      note:"ML (2011-2015) — 722.9. После переименования в GLE (2015) — 725.0 (9G), начиная с GLE 250 d. Год решает." },
+    { brand:"Mercedes-Benz", model:"GLE", gen:"W167 / C167 · 2019+ · 9G-Tronic", boxes:["9G-Tronic"],
+      match:["w167","c167","gle w167","gle","гле"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"GL", gen:"X164 · 2006-2012 · 7G-Tronic", boxes:["7G-Tronic"],
+      match:["x164","gl x164","gl"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"GL / GLS", gen:"X166 · 2012-2019 · 7G, с 2015 (GLS) 9G", boxes:["7G-Tronic","9G-Tronic"], draft:true,
+      match:["x166","gl x166","gls x166","gl","gls","глс"], allow:{base:true},
+      note:"Как у W166: до переименования в GLS — 722.9, после (2015-2016) — 725.0. Сверьте по VIN." },
+    { brand:"Mercedes-Benz", model:"GLS", gen:"X167 · 2019+ · 9G-Tronic", boxes:["9G-Tronic"],
+      match:["x167","gls x167","gls","глс"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"GLK", gen:"X204 · 2008-2015 · 7G-Tronic", boxes:["7G-Tronic"],
+      match:["x204","glk"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"GLC", gen:"X253 / C253 · 2015-2022 · 9G-Tronic", boxes:["9G-Tronic"],
+      match:["x253","c253","glc","глц"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"GLC", gen:"X254 · 2022+ · 9G-Tronic", boxes:["9G-Tronic"],
+      match:["x254","c254","glc","глц"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"R-класс", gen:"W251 · 2005-2017 · 7G-Tronic", boxes:["7G-Tronic"], draft:true,
+      match:["w251","v251","r класс"], allow:{base:true}, note:"Ранние — 722.6 (5G), её не обслуживаем." },
+    { brand:"Mercedes-Benz", model:"G-класс", gen:"W463 · до 2018 · 7G-Tronic", boxes:["7G-Tronic"], draft:true,
+      match:["w463","гелик","гелендваген","g класс","г класс"], allow:{base:true},
+      note:"Дорестайл W463 — 722.9. Новый W463A (с 2018) — уже 9G, это отдельная строка." },
+    { brand:"Mercedes-Benz", model:"G-класс", gen:"W463A · 2018+ · 9G-Tronic", boxes:["9G-Tronic"],
+      match:["w463a","g500 2018","g63 2018","гелик","гелендваген","g класс","г класс"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"V-класс / Vito", gen:"W447 · 2014+ · 7G, с рестайла 9G", boxes:["7G-Tronic","9G-Tronic"], draft:true,
+      match:["w447","vito","виано","v класс","в класс"], allow:{base:true},
+      note:"До рестайла — 722.9, после (~2019) — 725.0. Сверяйте по VIN." },
+    { brand:"Mercedes-Benz", model:"A-класс", gen:"W176 · 2012-2018 · робот 7G-DCT", boxes:["DCT 724.020"],
+      match:["w176","a класс","а класс"], allow:{base:true},
+      note:"724.0 — робот с двумя сцеплениями, два фильтра. Не путать с гидромеханикой." },
+    { brand:"Mercedes-Benz", model:"B-класс", gen:"W246 · 2011-2019 · робот 7G-DCT", boxes:["DCT 724.020"],
+      match:["w246","b класс","б класс"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"CLA", gen:"C117 / X117 · 2013-2019 · робот 7G-DCT", boxes:["DCT 724.020"],
+      match:["c117","x117","cla c117","cla"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"GLA", gen:"X156 · 2013-2019 · робот 7G-DCT", boxes:["DCT 724.020"],
+      match:["x156","gla x156","gla"], allow:{base:true} },
+    { brand:"Mercedes-Benz", model:"A / B / CLA / GLA (новые)", gen:"W177 · W247 · C118 · H247 · 2018+ · робот 8G-DCT",
+      boxes:[], nocard:"8G-DCT 724.1", draft:true,
+      match:["w177","w247","c118","x118","h247","gla h247","cla c118"], allow:{base:false},
+      note:"MFA2 — это уже 724.1 (8 ступеней), а не наш 724.0. Готовой карточки нет: уточните у мастера, берём ли, и считайте вручную." },
+
+    /* ==================== VAG: VOLKSWAGEN · AUDI · SKODA · PORSCHE ====================
+       У VAG одна и та же машина в одном кузове бывает на трёх РАЗНЫХ коробках — гидромеханика,
+       мокрый DSG и сухой DSG, — и решает мотор, а не кузов. Поэтому здесь draft почти везде:
+       строка сужает круг до 2-3 вариантов, точку ставит VIN. Ориентиры продольных Audi:
+         • 8HP55 = 0BK / AL551 — поколение MLB: A4 B8, A5 8T, A6 C7, A7, A8 D4, Q5 8R (фильтр Mahle HX189KIT);
+         • MLBevo (A4 B9, A5 F5, A6/A7 C8, A8 D5, Q5 FY, Q7 4M, Q8) — это наши 8HP65 и 8HP65A.
+           Развилка между ними — НЕ поколение, а МЯГКИЙ ГИБРИД 48V (вердикт владельца 27.07.2026):
+           8HP65 — обычная, 8HP65A — мягкий гибрид. У карточек разный фильтр-поддон
+           (ZF 1103298006 против 1103298119), поэтому такие машины стоят с ОБЕИМИ коробками:
+           сузить до одной может только наличие 48V у конкретной машины;
+         • DL501 0B5 и DL-382 — это S tronic (робот), а не автомат: другой узел при том же кузове.
+       Вне ассортимента: multitronic (вариатор Audi) и PDK Porsche. */
+
+    /* ---- Volkswagen ---- */
+    { brand:"Volkswagen", model:"Golf", gen:"V / VI · 2003-2013 · DSG или Aisin", boxes:["DQ250","DQ-200","TF60/61 09G/K"], draft:true,
+      match:["golf","гольф","golf 5","golf 6","гольф 5","гольф 6","golf v","golf vi"], allow:{base:true},
+      note:"Мокрый DQ250 (2.0), сухой DQ-200 (1.2/1.4 TSI) или гидромех. Aisin 09G. Решает мотор — сверьте по VIN." },
+    { brand:"Volkswagen", model:"Golf", gen:"VII · 2012-2020 · DSG", boxes:["DQ250","DQ-200"], draft:true,
+      match:["golf","гольф","golf 7","гольф 7","golf vii"], allow:{base:true},
+      note:"DQ250 (мокрый) или DQ-200 (сухой). Golf R / GTI Performance могли идти на DQ381 — её у нас нет." },
+    { brand:"Volkswagen", model:"Passat", gen:"B6 / B7 · 2005-2015 · DSG или Aisin", boxes:["DQ250","DQ-200","TF60/61 09G/K"], draft:true,
+      match:["passat","пассат","passat b6","passat b7","пассат b6","пассат b7","passat cc","cc"], allow:{base:true},
+      note:"Как у Golf: мокрый DQ250, сухой DQ-200 или гидромех. Aisin 09G. Решает мотор." },
+    { brand:"Volkswagen", model:"Passat", gen:"B8 · 2014+ · DSG", boxes:["DQ250","DQ-200"], draft:true,
+      match:["passat","пассат","passat b8","пассат b8","arteon","артеон"], allow:{base:true},
+      note:"Мощные версии могли идти на DQ381 — карточки для неё нет, сверьте код коробки." },
+    { brand:"Volkswagen", model:"Tiguan", gen:"I · 2007-2016 · DSG или Aisin", boxes:["DQ250","TF60/61 09G/K"], draft:true,
+      match:["tiguan 1","тигуан 1","tiguan nf"], allow:{base:true},
+      note:"Чаще мокрый DQ250; часть версий — гидромеханика Aisin 09G." },
+    { brand:"Volkswagen", model:"Tiguan", gen:"II · 2016+ · DSG", boxes:["DQ500","DQ250"], draft:true,
+      match:["tiguan 2","тигуан 2","tiguan ad"], allow:{base:true},
+      note:"2.0 TSI 4motion — DQ500. Слабые версии — DQ250/DQ381. Сверьте код коробки." },
+    { brand:"Volkswagen", model:"Tiguan", gen:"— уточните поколение", boxes:["DQ500","DQ250","TF60/61 09G/K"], draft:true,
+      match:["tiguan","тигуан"], allow:{base:true},
+      note:"Год выпуска решает: до 2016 — DQ250/Aisin 09G, после — DQ500/DQ250." },
+    { brand:"Volkswagen", model:"Touareg", gen:"7L · 2002-2010 · Aisin TR-60SN", boxes:["TR60SN 09D"],
+      match:["touareg 7l","туарег 7l","туарег 1"], allow:{base:true} },
+    { brand:"Volkswagen", model:"Touareg", gen:"7P · 2010-2018 · Aisin TR-80SD", boxes:["TR80SD 0C8"], draft:true,
+      match:["touareg 7p","туарег 7p","туарег 2"], allow:{base:true},
+      note:"8-ступенчатая Aisin 0C8 (3.0 TFSI / 3.6 FSI / 4.2 FSI, 2010-2018)." },
+    { brand:"Volkswagen", model:"Touareg", gen:"— уточните поколение", boxes:["TR60SN 09D","TR80SD 0C8"], draft:true,
+      match:["touareg","туарег"], allow:{base:true},
+      note:"До 2010 — 6-ст. TR-60SN 09D; 2010-2018 — 8-ст. TR-80SD 0C8. Новый CR (с 2018) — ZF 8HP, карточки нет." },
+    { brand:"Volkswagen", model:"Multivan / Transporter", gen:"T5 / T6 · DSG DQ500", boxes:["DQ500"], draft:true,
+      match:["multivan","мультивен","transporter","транспортер","t5","t6","caravelle","каравелла"], allow:{base:true},
+      note:"Роботы DQ500 (мокрый, 7 ступеней). На части версий — механика." },
+    { brand:"Volkswagen", model:"Amarok", gen:"2010-2020 · Aisin TR-80SD", boxes:["TR80SD 0C8"], draft:true,
+      match:["amarok","амарок"], allow:{base:true}, note:"8-ст. Aisin 0C8 (V6 и 2.0 BiTDI). Механику не считаем." },
+    { brand:"Volkswagen", model:"Polo / Jetta / Caddy / Touran", gen:"DSG или Aisin", boxes:["DQ-200","DQ250","TF60/61 09G/K"], draft:true,
+      match:["polo","поло","jetta","джетта","caddy","кадди","touran","туран"], allow:{base:true},
+      note:"Массовый набор VAG: сухой DQ-200 (1.2/1.4/1.6), мокрый DQ250 (2.0) или гидромех. Aisin 09G. Решает мотор." },
+
+    /* ---- Audi ---- */
+    { brand:"Audi", model:"A4 / A5", gen:"B8 / 8T · 2007-2016 · ZF 8HP55 или S tronic DL501", boxes:["8HP55","DL501 0B5"], draft:true,
+      match:["a4 b8","a5 8t","ауди a4 b8","ауди b8"], allow:{base:true},
+      note:"Автомат — 0BK/8HP55 (фильтр Mahle HX189KIT). S tronic — DL501 0B5 (робот). Переднеприводные могли идти на multitronic (вариатор) — его не обслуживаем." },
+    { brand:"Audi", model:"A4 / A5", gen:"B9 / F5 · 2015+ · ZF 8HP65A или S tronic DL-382", boxes:["8HP65","8HP65A","DL-382"], draft:true,
+      match:["a4 b9","a5 f5","ауди a4 b9","ауди b9"], allow:{base:true},
+      note:"Мягкий гибрид 48V → 8HP65A, без него → обычная 8HP65 (у них разный фильтр-поддон). Робот S tronic — DL-382: сверьте, автомат у машины или S tronic." },
+    { brand:"Audi", model:"A6 / A7", gen:"C7 · 2011-2018 · ZF 8HP55 или S tronic DL501", boxes:["8HP55","DL501 0B5"], draft:true,
+      match:["a6 c7","a7 c7","ауди a6 c7","ауди c7"], allow:{base:true},
+      note:"Как у B8: 0BK/8HP55 либо DL501. Переднеприводные — multitronic, его не обслуживаем." },
+    { brand:"Audi", model:"A6 / A7", gen:"C8 · 2018+ · ZF 8HP65A или S tronic DL-382", boxes:["8HP65","8HP65A","DL-382"], draft:true,
+      match:["a6 c8","a7 c8","ауди a6 c8","ауди c8"], allow:{base:true},
+      note:"Мягкий гибрид 48V → 8HP65A, без него → обычная 8HP65 (у них разный фильтр-поддон). На 3.0 TFSI/TDI 48V встречается часто. Робот S tronic — DL-382." },
+    { brand:"Audi", model:"A8", gen:"D4 · 2010-2017 · ZF 8HP55", boxes:["8HP55"], draft:true,
+      match:["a8 d4","ауди a8 d4","ауди d4"], allow:{base:true}, note:"W12 — отдельная коробка, сверьте по мотору." },
+    { brand:"Audi", model:"A8", gen:"D5 · 2017+ · ZF 8HP65 / 8HP65A", boxes:["8HP65","8HP65A"], draft:true,
+      match:["a8 d5","ауди a8 d5","ауди d5"], allow:{base:true},
+      note:"Мягкий гибрид 48V → 8HP65A, без него → обычная 8HP65 (у них разный фильтр-поддон). У D5 мягкий гибрид штатный на большинстве версий — сверьте по машине." },
+    { brand:"Audi", model:"Q5", gen:"8R · 2008-2017 · ZF 8HP55 или S tronic DL501", boxes:["8HP55","DL501 0B5"], draft:true,
+      match:["q5 8r","ку5 8r"], allow:{base:true}, note:"SQ5 — тоже 0BK/8HP55." },
+    { brand:"Audi", model:"Q5", gen:"FY · 2017+ · ZF 8HP65A или S tronic DL-382", boxes:["8HP65","8HP65A","DL-382"], draft:true,
+      match:["q5 fy"], allow:{base:true},
+      note:"Мягкий гибрид 48V → 8HP65A, без него → обычная 8HP65 (у них разный фильтр-поддон). Робот S tronic — DL-382. SQ5 — автомат." },
+    { brand:"Audi", model:"Q7", gen:"4L · 2005-2015 · Aisin TR-60SN / TR-80SD", boxes:["TR60SN 09D","TR80SD 0C8"], draft:true,
+      match:["q7 4l","ку7 4l"], allow:{base:true},
+      note:"Ранние — 6-ст. 09D, с 2010 — 8-ст. 0C8. Решает год." },
+    { brand:"Audi", model:"Q7 / Q8", gen:"4M · 2015+ · ZF 8HP65A", boxes:["8HP65","8HP65A"], draft:true,
+      match:["q7 4m","q8","ку8"], allow:{base:true},
+      note:"Мягкий гибрид 48V → 8HP65A, без него → обычная 8HP65 (у них разный фильтр-поддон). Подключаемый гибрид (PHEV) — отдельная история, сверяйте по машине." },
+    { brand:"Audi", model:"A4 / A6 / Q5 / Q7 (поколение не указано)", gen:"— уточните поколение или год", boxes:["8HP55","8HP65","8HP65A","DL501 0B5"], draft:true,
+      match:["a4","a5","a6","a7","a8","q5","q7","ауди"], allow:{base:true},
+      note:"Год решает: до ~2015 — 8HP55 (0BK) / DL501; после — 8HP65 или 8HP65A / DL-382. Мягкий гибрид 48V → 8HP65A, без него → обычная 8HP65 (у них разный фильтр-поддон). Уточните год, 48V и есть ли S tronic." },
+    { brand:"Audi", model:"A3", gen:"8P / 8V · 2003-2020 · DSG", boxes:["DQ250","DQ-200","TF60/61 09G/K"], draft:true,
+      match:["a3 8p","a3 8v","ауди a3","a3"], allow:{base:true},
+      note:"Поперечная платформа: мокрый DQ250, сухой DQ-200 или гидромех. Aisin 09G — по мотору." },
+    { brand:"Audi", model:"Q3 / TT", gen:"8U / 8S · DSG", boxes:["DQ250","DQ500"], draft:true,
+      match:["q3","ку3","tt","ттшка"], allow:{base:true},
+      note:"Мокрый DQ250; RS-версии (TT RS, RS Q3) — DQ500." },
+
+    /* ---- Skoda ---- */
+    { brand:"Skoda", model:"Octavia", gen:"A5 / A7 · 2004-2020 · DSG или Aisin", boxes:["DQ250","DQ-200","TF60/61 09G/K"], draft:true,
+      match:["octavia","октавия","октавиа"], allow:{base:true},
+      note:"Мокрый DQ250 (1.8/2.0 TSI), сухой DQ-200 (1.2/1.4) или гидромех. Aisin 09G. RS — чаще DQ250." },
+    { brand:"Skoda", model:"Superb", gen:"II / III · 2008+ · DSG", boxes:["DQ250","DQ-200"], draft:true,
+      match:["superb","суперб"], allow:{base:true},
+      note:"Мокрый DQ250 (1.8/2.0 TSI) или сухой DQ-200 (1.4). Решает мотор." },
+    { brand:"Skoda", model:"Kodiaq / Karoq", gen:"2016+ · DSG", boxes:["DQ500","DQ250"], draft:true,
+      match:["kodiaq","кодиак","karoq","карок"], allow:{base:true},
+      note:"4×4 2.0 TSI — DQ500; слабые версии — DQ250/DQ381." },
+    { brand:"Skoda", model:"Yeti / Rapid / Fabia", gen:"DSG", boxes:["DQ250","DQ-200"], draft:true,
+      match:["yeti","йети","rapid","рапид","fabia","фабия"], allow:{base:true},
+      note:"Rapid и Fabia — почти всегда сухой DQ-200; Yeti — DQ250 на 1.8 TSI." },
+
+    /* ---- Porsche ---- */
+    { brand:"Porsche", model:"Cayenne", gen:"955 / 957 · 2002-2010 · Aisin TR-60SN", boxes:["TR60SN 09D"],
+      match:["cayenne 955","cayenne 957","кайен 955","кайен 957","кайен 1"], allow:{base:true} },
+    { brand:"Porsche", model:"Cayenne", gen:"92A · 2010-2018 · Aisin TR-80SD", boxes:["TR80SD 0C8"], draft:true,
+      match:["cayenne 92a","кайен 92a","кайен 2"], allow:{base:true},
+      note:"8-ст. Tiptronic S = Aisin 0C8. Гибрид S E-Hybrid сверяйте отдельно." },
+    { brand:"Porsche", model:"Cayenne", gen:"— уточните поколение", boxes:["TR60SN 09D","TR80SD 0C8"], draft:true,
+      match:["cayenne","кайен","кайенн"], allow:{base:true},
+      note:"До 2010 — 09D, 2010-2018 — 0C8. Новый 9YA (с 2017) — ZF 8HP, готовой карточки нет." },
+    { brand:"Porsche", model:"Cayenne", gen:"9YA / 9YB · 2017+ · ZF 8HP", boxes:[], nocard:"ZF 8HP (Tiptronic S)", draft:true,
+      match:["cayenne 9y","кайен 3","cayenne 2018"], allow:{base:false},
+      note:"MLBevo, 8-ст. ZF. У нас есть 8HP65 (обычная) и 8HP65A (мягкий гибрид) — совпадёт ли по фильтру-поддону, сверьте по артикулу; иначе считайте вручную." },
+    { brand:"Porsche", model:"Macan / Panamera", gen:"PDK (робот)", boxes:[], nocard:"PDK", draft:true,
+      match:["macan","макан","panamera","панамера"], allow:{base:false},
+      note:"Оба идут на PDK — роботе с двумя сцеплениями (Macan 7 ступеней, Panamera 7/8), а не на нашем автомате. Уточните у мастера, берём ли." },
   ];
 
   // Значки семейств коробок (inline SVG — работает офлайн). Ключ = brand из TEMPLATES.
@@ -2895,11 +3195,37 @@
       .replace(/е|ё/g,"e").replace(/х/g,"x").replace(/а/g,"a").replace(/о/g,"o")
       .replace(/р/g,"p").replace(/с/g,"c").replace(/у/g,"y").replace(/к/g,"k")
       .replace(/м/g,"m").replace(/т/g,"t").replace(/в/g,"b").replace(/н/g,"h").replace(/г/g,"g");
-    // Поиск по машине: сверяем и «сырой» запрос (кир. слова «серии»/«бмв»), и свёрнутый (коды кузова).
+    /* Совпадение по ГРАНИЦЕ токена, а не по подстроке. Простой includes ловил чужие машины:
+       запрос «x253» (Mercedes GLC) содержит «x2» и притаскивал BMW X2, «w205» → «w20» и т.п.
+       Чем больше марок в CARS, тем чаще такие пересечения, поэтому требуем, чтобы слева и справа
+       от совпадения не было буквы или цифры (пробел, дефис, точка, край строки — годятся). */
+    const BOUND = /[a-zа-яё0-9]/;
+    const hasToken = (hay, m) => {
+      let i = -1;
+      while((i = hay.indexOf(m, i + 1)) !== -1){
+        const before = i === 0 ? "" : hay[i - 1];
+        const after  = hay[i + m.length] || "";
+        if(!BOUND.test(before) && !BOUND.test(after)) return true;
+      }
+      return false;
+    };
+    /* Поиск по машине: сверяем и «сырой» запрос (кир. слова «серии»/«бмв»), и свёрнутый (коды кузова).
+       Выигрывает САМОЕ ТОЧНОЕ совпадение: «a8 d5» не должен тащить за собой общую строку Audi,
+       совпавшую всего по «a8», иначе к верной 8HP65A подмешаются чужие 8HP55 и DL501 — а это
+       чужая смета клиенту. Запрос без уточнения («x5», «a4») по-прежнему показывает все поколения:
+       там длина совпадения у всех одинаковая. */
     const carsForQuery = () => {
       if(!query) return [];
       const raw = query, lat = foldLat(query);
-      return CARS.filter(c => c.match.some(m => raw.includes(m) || lat.includes(m)));
+      const hits = [];
+      for(const c of CARS){
+        let best = 0;
+        for(const m of c.match) if(hasToken(raw, m) || hasToken(lat, m)) best = Math.max(best, m.length);
+        if(best) hits.push({ c, best });
+      }
+      if(!hits.length) return [];
+      const top = Math.max(...hits.map(h => h.best));
+      return hits.filter(h => h.best === top).map(h => h.c);
     };
 
     // Какие ВАРИАНТЫ карточек коробки уместны конкретной машине (c.allow). База — всегда; гибрид/
@@ -3119,6 +3445,10 @@
     }
     const equalizeSoon = () => requestAnimationFrame(equalizeHeads);
     window.equalizeTplHeads = equalizeSoon;              // дёргается из showPage, когда вкладка становится видимой
+    // Перерисовка после сверки цен: даты подтверждения пришли из таблицы (или владелец только что
+    // подтвердил) → бейджи «Проверить цены» должны погаснуть сразу, а не после перезагрузки.
+    // Состояние раздела (марка/коробка/фильтры/поиск) живёт в замыкании и не сбрасывается.
+    window.tplRerender = () => { render(); equalizeSoon(); };
     // при изменении ширины окна заголовки переносятся иначе — пересчитываем
     let eqRaf;
     window.addEventListener("resize", () => {
@@ -3386,6 +3716,229 @@
     update();
   })();
 
+  /* ===================== СВЕРКА ЦЕН (экран владельца) =====================
+     Отвечает ровно на один вопрос: «эта цена всё ещё верна?». Подтверждение переносит
+     ключ на сегодняшнюю дату и гасит бейдж «Проверить цены» — раньше это умел только
+     новый деплой страницы (правило 11 CLAUDE.md).
+     ЧЕГО ЗДЕСЬ НЕТ И НЕ ДОЛЖНО БЫТЬ: правки самих цен. PRICE остаётся единственным
+     источником сумм; цена изменилась — владелец её НЕ подтверждает и называет новую.
+     Доступ — PIN владельца: портал открыт всей команде под одним паролем, а дата сверки
+     это личное подтверждение владельца, менеджер гасить сигнал не должен. Защита того же
+     уровня, что вход (must-keep №6): от чужого клика, не от атаки — токен-то публичный.
+     Данные уходят в лист «Сверка цен» ПАКЕТОМ: 197 отдельных POST упёрлись бы в
+     RL_POST_MAX и включили автостоп API на час. ===================== */
+  const OWNER_PIN_ENC = "NTY4Nw==";        // PIN владельца (base64, как PASS_ENC): btoa(unescape(encodeURIComponent('…')))
+  (function(){
+    const openBtn = document.getElementById("pc-open");
+    const panel   = document.getElementById("pc-panel");
+    if(!openBtn || !panel) return;
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+    const fmt = n => n.toLocaleString("ru-RU");
+    const p2  = n => String(n).padStart(2, "0");
+    const todayISO = () => { const d = new Date(); return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate()); };
+    const word   = (n,a,b,c) => { const m=n%100,d=n%10; return m>=11&&m<=14?c:d===1?a:d>=2&&d<=4?b:c; };
+    const plural = (n,a,b,c) => n + " " + word(n,a,b,c);
+
+    // Группы считаются ПРАВИЛОМ по ключу, а не вторым списком руками: добавили позицию в
+    // PRICE — она сама попала куда надо. Порядок важен: первое подошедшее правило выигрывает.
+    const GROUPS = [
+      { id:"rate", label:"Ставки масел (₽/л)", test: k => k in RATES },
+      { id:"work", label:"Работы",             test: k => /(^|_)work(_|$)/.test(k) },
+      { id:"oil",  label:"Масла (объёмы)",     test: k => /(^|_)oil(_|$)/.test(k) },
+      { id:"part", label:"Фильтры и запчасти", test: k => /^(filter|bolt|drain|cvt|kit|haldex)_|gasket|ring/.test(k) },
+      { id:"axle", label:"Мосты и раздатка",   test: k => /^(diff|diffs|axles)_|_diff_/.test(k) },
+      { id:"etc",  label:"Прочее",             test: () => true },
+    ];
+    const groupOf = k => (GROUPS.find(g => g.test(k)) || GROUPS[GROUPS.length-1]).id;
+    // позиция для экрана: имя и цена берутся из прайса, дата — из живой карты сверки
+    const infoOf = k => (k in RATES)
+      ? { name: k, price: RATES[k] + " ₽/л", isRate: true }
+      : { name: (PRICE[k] && PRICE[k][0]) || k, price: (PRICE[k] && typeof PRICE[k][1] === "number") ? fmt(PRICE[k][1]) + " ₽" : "—", isRate: false };
+    const ALL_KEYS = [...Object.keys(RATES), ...Object.keys(PRICE)];
+
+    let open = false, onlyStale = false, query = "", done = 0;
+    const selected = new Set();
+    const openGroups = new Set();
+
+    const isOwner = () => { try { return localStorage.getItem("md_owner") === "1"; } catch(e){ return false; } };
+
+    function setBtn(){
+      const stale = ALL_KEYS.filter(k => !isFresh(k)).length;
+      openBtn.innerHTML = ICO.check + " Сверка цен" +
+        (stale ? ` <span class="tpl-count">${stale}</span>` : "");
+    }
+
+    /* Экран PIN. Тот же приём, что гейт входа: base64 в статике — «от посторонних глаз».
+       Признак живёт в localStorage (не sessionStorage): владелец не должен вводить PIN каждый день. */
+    function renderPin(err){
+      panel.innerHTML =
+        `<div class="pc-pin">
+          <div class="pc-head"><div>
+            <div class="pc-title">${ICO.lock} Сверка цен</div>
+            <div class="pc-sub">Подтверждать цены может только владелец. Введите PIN.</div>
+          </div><button class="ui-btn ui-btn--ghost ui-btn--sm pc-close" type="button" data-act="close">${ICO.close}</button></div>
+          <input type="password" inputmode="numeric" autocomplete="off" data-pin placeholder="PIN">
+          ${err ? `<div class="pc-err">${esc(err)}</div>` : ""}
+          <div class="pc-foot"><button class="ui-btn ui-btn--primary" type="button" data-act="pin-ok">Войти</button></div>
+        </div>`;
+      const inp = panel.querySelector("[data-pin]");
+      if(inp){ inp.focus(); inp.addEventListener("keydown", e => { if(e.key === "Enter") checkPin(); }); }
+    }
+    function checkPin(){
+      const inp = panel.querySelector("[data-pin]");
+      if(!inp) return;
+      if(btoa(unescape(encodeURIComponent(inp.value))) === OWNER_PIN_ENC){
+        try { localStorage.setItem("md_owner", "1"); } catch(e){}
+        renderPanel();
+      } else renderPin("Неверный PIN.");
+    }
+
+    // список позиций под текущими фильтрами (поиск идёт и по ключу — владелец видит ключи в коде)
+    function rows(){
+      return ALL_KEYS.filter(k => {
+        if(onlyStale && isFresh(k)) return false;
+        if(query){
+          const i = infoOf(k);
+          if(!(k + " " + i.name).toLowerCase().includes(query)) return false;
+        }
+        return true;
+      });
+    }
+
+    /* Группы и строки. Отдельно от renderPanel: ввод в поиск перерисовывает ТОЛЬКО их —
+       иначе поле пересоздавалось бы на каждой букве и теряло каретку. */
+    function groupsHtml(){
+      const list = rows();
+      const byGroup = GROUPS.map(g => ({ g, keys: list.filter(k => groupOf(k) === g.id) })).filter(x => x.keys.length);
+      if(!byGroup.length) return `<div class="pc-empty">Ничего не найдено</div>`;
+      return byGroup.map(({g, keys}) => {
+        const staleN = keys.filter(k => !isFresh(k)).length;
+        return `<div class="pc-group ${openGroups.has(g.id) ? "open" : ""}">
+          <div class="pc-group-h">
+            <input type="checkbox" data-act="group-sel" data-g="${g.id}"
+              aria-label="Выбрать группу «${esc(g.label)}»" ${keys.every(k => selected.has(k)) ? "checked" : ""}>
+            <button class="pc-group-btn" type="button" data-act="group" data-g="${g.id}">
+              <span>${esc(g.label)}</span>
+              <span class="pc-group-cnt ${staleN ? "is-warn" : ""}">${keys.length}${staleN ? " · " + staleN + " просроч." : ""}</span>
+              <span class="pc-chev">${ICO.arrow}</span>
+            </button>
+          </div>
+          <div class="pc-list">${keys.map(k => {
+            const i = infoOf(k), age = checkedAge(k);
+            return `<label class="pc-row">
+              <input type="checkbox" data-act="row" data-k="${esc(k)}" ${selected.has(k) ? "checked" : ""}>
+              <span class="pc-name">${esc(i.name)}${i.isRate ? "" : `<span class="pc-key">${esc(k)}</span>`}</span>
+              <span class="pc-val">${esc(i.price)}</span>
+              <span class="pc-age ${isFresh(k) ? "" : "is-warn"}">${age == null ? "нет даты" : age === 0 ? "сегодня" : plural(age, "день", "дня", "дней") + " назад"}</span>
+            </label>`;
+          }).join("")}</div>
+        </div>`;
+      }).join("");
+    }
+
+    function renderPanel(){
+      const staleAll = ALL_KEYS.filter(k => !isFresh(k)).length;
+      // сколько дней до ближайшей просрочки: минимум запаса среди ещё свежих
+      let soon = null;
+      for(const k of ALL_KEYS){
+        const age = checkedAge(k);
+        if(age == null || age > FRESH_DAYS) continue;
+        const left = FRESH_DAYS - age;
+        if(soon == null || left < soon) soon = left;
+      }
+      panel.innerHTML =
+        `<div class="pc-head"><div>
+          <div class="pc-title">${ICO.check} Сверка цен</div>
+          <div class="pc-sub">Отметьте позиции, цена которых всё ещё верна — бейдж «Проверить цены» погаснет
+            на всех устройствах. Цена изменилась — не подтверждайте её, скажите новую: суммы правятся в коде.</div>
+        </div><button class="ui-btn ui-btn--ghost ui-btn--sm pc-close" type="button" data-act="close">${ICO.close}</button></div>
+        <div class="pc-stats">
+          <span class="pc-stat"><b>${ALL_KEYS.length}</b> позиций в прайсе</span>
+          <span class="pc-stat ${staleAll ? "is-warn" : ""}"><b>${staleAll}</b> просрочено</span>
+          ${soon != null ? `<span class="pc-stat"><b>${soon}</b> ${word(soon, "день", "дня", "дней")} до ближайшей просрочки</span>` : ""}
+        </div>
+        <div class="pc-tools">
+          <div class="tpl-search"><input type="text" data-act="q" value="${esc(query)}" placeholder="Найти позицию или ключ…" autocomplete="off"></div>
+          <button class="ui-btn ui-btn--secondary ui-btn--sm" type="button" data-act="only">${onlyStale ? "Показать все" : "Только просроченные"}</button>
+        </div>
+        ${done ? `<div class="pc-done">${ICO.check} Подтверждено ${plural(done, "позиция", "позиции", "позиций")} — дата сверки ${todayISO().split("-").reverse().join(".")}</div>` : ""}
+        <div class="pc-groups">${groupsHtml()}</div>
+        <div class="pc-foot">
+          <span class="pc-sel">${selected.size ? "Выбрано: " + selected.size : "Ничего не выбрано"}</span>
+          <button class="ui-btn ui-btn--secondary" type="button" data-act="confirm-sel" ${selected.size ? "" : "disabled"}>Подтвердить выбранные</button>
+          <button class="ui-btn ui-btn--primary" type="button" data-act="confirm-all">Подтвердить все (${ALL_KEYS.length})</button>
+        </div>`;
+      const q = panel.querySelector("[data-act=q]");
+      if(q && query){ q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+      setBtn();
+    }
+
+    /* Подтверждение: локально сразу (бейджи гаснут на глазах) → кэш → перерисовка разделов →
+       отправка в лист. Порядок именно такой: сеть здесь не блокирующая, и владелец видит
+       результат мгновенно даже офлайн. Имя confirmKeys, а не confirm — window.confirm в
+       этом же scope зовёт «Отметить вывод» и удаление двигателя, перекрывать его нельзя. */
+    function confirmKeys(keys){
+      if(!keys.length) return;
+      const date = todayISO(), map = {};
+      keys.forEach(k => map[k] = date);
+      applyCheckedDates(map);
+      try {
+        const c = JSON.parse(localStorage.getItem(PRICE_CHECK_CKEY) || "{}") || {};
+        localStorage.setItem(PRICE_CHECK_CKEY, JSON.stringify(Object.assign(c, map)));
+      } catch(e){}
+      rerenderFreshness();
+      selected.clear(); done = keys.length;
+      renderPanel();
+      sendPriceCheck(date, keys);
+    }
+
+    openBtn.addEventListener("click", () => {
+      open = !open;
+      panel.hidden = !open;
+      if(open){ done = 0; isOwner() ? renderPanel() : renderPin(""); }
+    });
+
+    panel.addEventListener("click", e => {
+      const el = e.target.closest("[data-act]");
+      if(!el) return;
+      const act = el.dataset.act;
+      if(act === "close"){ open = false; panel.hidden = true; }
+      else if(act === "pin-ok") checkPin();
+      else if(act === "group"){
+        const g = el.dataset.g;
+        openGroups.has(g) ? openGroups.delete(g) : openGroups.add(g);
+        renderPanel();
+      }
+      else if(act === "only"){ onlyStale = !onlyStale; renderPanel(); }
+      else if(act === "confirm-sel") confirmKeys([...selected]);
+      else if(act === "confirm-all") confirmKeys(ALL_KEYS.slice());
+    });
+    panel.addEventListener("change", e => {
+      const el = e.target.closest("[data-act]");
+      if(!el) return;
+      if(el.dataset.act === "row"){
+        el.checked ? selected.add(el.dataset.k) : selected.delete(el.dataset.k);
+        const sel = panel.querySelector(".pc-sel");
+        if(sel) sel.textContent = selected.size ? "Выбрано: " + selected.size : "Ничего не выбрано";
+        const btn = panel.querySelector("[data-act=confirm-sel]");
+        if(btn) btn.disabled = !selected.size;
+      } else if(el.dataset.act === "group-sel"){
+        const keys = rows().filter(k => groupOf(k) === el.dataset.g);
+        keys.forEach(k => el.checked ? selected.add(k) : selected.delete(k));
+        renderPanel();
+      }
+    });
+    panel.addEventListener("input", e => {
+      const el = e.target.closest("[data-act=q]");
+      if(!el) return;
+      query = el.value.trim().toLowerCase();
+      const box = panel.querySelector(".pc-groups");        // только список: поле не пересоздаём, каретка на месте
+      if(box) box.innerHTML = groupsHtml();
+    });
+
+    setBtn();
+  })();
+
   /* ===================== ПРОДАЖИ (данные → авто-рендер) =====================
      ДВА КАНАЛА: «Промывка» (владелец) и «Масло» (Алексей) — канал это параметр
      рендера, не копия кода. Живые данные приходят из Google Apps Script
@@ -3422,6 +3975,55 @@
      лист 1 — выводы копилки, лист «Заметки» — заметки команды. Код — копилка-apps-script.gs */
   const SHEET_API   = "https://script.google.com/macros/s/AKfycbwGxC7-EvzNs9Fv47tcR5iDUwCFEUVz_Y3ToWld1tOXR8pip2rHLeCThUm2yL0f5tie/exec";
   const SHEET_TOKEN = "749ee6f82c31d87dfd00e2d5"; // клиентский фильтр (в статике не секретен) — основную защиту держим на стороне Apps Script
+
+  /* ===== Сверка цен: даты подтверждения из листа «Сверка цен» (см. прайс-ядро, applyCheckedDates).
+     Кэш уже прочитан синхронно ДО отрисовки; здесь — дозагрузка по сети и перерисовка тех разделов,
+     где висит бейдж «Проверить цены». JSONP — как «Заметки»/«ТО» (Apps Script не отдаёт CORS). ===== */
+  let checkedSeq = 0;
+  function loadCheckedDates(){
+    if(!SHEET_API) return;
+    const cb = "__pchk_" + (++checkedSeq);
+    const s = document.createElement("script");
+    window[cb] = data => {
+      if(data && data.prices && applyCheckedDates(data.prices)){
+        try { localStorage.setItem(PRICE_CHECK_CKEY, JSON.stringify(data.prices)); } catch(e){}
+        rerenderFreshness();
+      } else if(data && data.prices){
+        try { localStorage.setItem(PRICE_CHECK_CKEY, JSON.stringify(data.prices)); } catch(e){}
+      }
+      delete window[cb]; s.remove();
+    };
+    s.onerror = () => { delete window[cb]; s.remove(); };
+    s.src = SHEET_API + "?type=prices&callback=" + cb + "&t=" + Date.now();
+    document.head.appendChild(s);
+  }
+  // Перерисовать разделы, показывающие бейдж «Проверить цены». Хуки опциональны и каждый в своём
+  // try: раздел, который не успел объявиться (или его сняли), не должен ронять остальные.
+  function rerenderFreshness(){
+    for(const hook of ["tplRerender", "kitsRerender", "toRerender"]){
+      try { if(typeof window[hook] === "function") window[hook](); } catch(e){}
+    }
+  }
+  // Ответ придёт через сотни мс — к этому моменту разделы объявлены и хуки на месте.
+  loadCheckedDates();
+  /* Отправка подтверждения (зовёт экран сверки из «Цен»). Живёт здесь, а не в том IIFE:
+     SHEET_API объявлен ниже него, и обращаться к нему оттуда можно было бы только по счастливой
+     случайности — из отложенного обработчика. Пакет по 200 ключей: приёмник режет на 400,
+     а 197 отдельных POST упёрлись бы в RL_POST_MAX и включили автостоп API на час.
+     no-cors, ответ не читаем (как «Заметки»/«ТО») — расхождение вычистит перечитка при загрузке. */
+  function sendPriceCheck(date, keys){
+    if(!SHEET_API || !keys.length) return;
+    // анонимная метка устройства MDLOG (без ПДн). Лежит в localStorage как JSON-строка —
+    // сырой getItem дал бы её в кавычках, и в листе оказалось бы "«dev-…»" вместо dev-…
+    let device = "";
+    try { const v = JSON.parse(localStorage.getItem("md_device")); if(typeof v === "string") device = v; } catch(e){}
+    for(let i = 0; i < keys.length; i += 200){
+      fetch(SHEET_API, { method:"POST", mode:"no-cors",
+        headers:{ "Content-Type":"text/plain;charset=utf-8" },
+        body: JSON.stringify({ token: SHEET_TOKEN, kind:"price-check", date, keys: keys.slice(i, i + 200), device }) })
+        .catch(() => {});
+    }
+  }
 
   /* ===== Лёгкий лог событий (А3 «Копировать» + А4 «не нашёл») — та же Google-таблица (SHEET_API).
      Мерит ИНСТРУМЕНТ, не человека: метка устройства анонимна (случайный md_device, без ПДн).
@@ -4612,6 +5214,10 @@
     if(window.kitEqualize) window.kitEqualize();   // вкладка уже видима (showPage снял hidden) — выровнять шапки сразу
     mdBlurStagger(root.querySelectorAll(".tpl-card"));
   };
+  // Перерисовка после сверки цен (как window.tplRerender в Шаблонах): бейдж «Проверить цены»
+  // на комплектах должен гаснуть сразу. renderKits собирает карточки заново из KITS — состояния,
+  // которое можно потерять, у раздела нет (открытая карточка схлопнется — это весь эффект).
+  window.kitsRerender = () => { renderKits(); };
   // при изменении ширины окна названия переносятся иначе — пересчитываем (rAF-дебаунс, как в Шаблонах)
   let kitEqRaf;
   window.addEventListener("resize", () => {
@@ -5031,6 +5637,10 @@
 
     // каскад появления при входе в раздел (той же дозировки, что Комплекты)
     window.toReveal = function(){ mdBlurStagger(root.querySelectorAll(".to-card, .to-eng")); };
+    // перерисовка после сверки цен (как tplRerender / kitsRerender): бейдж «Проверить цены»
+    // в смете ТО гаснет сразу. updateAll рисует из текущего состояния — выбранный двигатель,
+    // слоты фильтров и правка литража сохраняются.
+    window.toRerender = function(){ updateAll(); };
 
     updateAll();
     loadEngines();
