@@ -777,6 +777,13 @@
   .to-form-title{font-family:var(--font-disp);font-weight:700;font-size:15px}
   .to-fuel{display:flex;gap:8px}
   .to-note{font-size:12px;color:var(--muted);line-height:1.45}
+  /* допредложение «промывка» — на экране приглушено: это не позиция сметы, а хвост копии клиенту */
+  .to-upsell{margin-top:4px;padding-top:10px;border-top:1px dashed var(--line);
+    font-size:12.5px;color:var(--muted);line-height:1.5}
+  .to-upsell .cap{display:block;font-family:var(--font-mono);font-size:10.5px;font-weight:600;
+    text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+  .to-upsell .h{display:block;color:var(--text);font-weight:700;margin-bottom:4px}
+  .to-upsell .body{display:block;white-space:pre-line}   /* абзацы — как уйдут клиенту */
   @media(max-width:720px){
     .to-eng{min-height:44px}
     .to-form-grid{grid-template-columns:1fr}
@@ -1575,6 +1582,9 @@
     to_work_air:   ["Замена воздушного фильтра", 500],
     to_work_cabin: ["Замена салонного фильтра", 500],
     to_work_fuel:  ["Замена топливного фильтра", 1000],
+    // Промывка двигателя — допредложение в конце сметы ТО (TO_UPSELL). В «Итого» не входит:
+    // это отдельная строка под чертой. Цена — та же, что в «Продажах» (чеки по 2200 ₽/шт).
+    to_flush:      ["Промывка двигателя Liqui Moly Engine Flush (0,3 л)", 2200],
   };
 
   /* ---- ТО: моторные масла. Цена строки масла = perL(RATES[rate], паспортный литраж двигателя);
@@ -1592,6 +1602,34 @@
     { key:"moto_econergy_0w30",    rate:"motor_0w", name:"Моторное масло Motul 8100 Eco-nergy 0W30" },
   ];
   const TO_OIL = Object.fromEntries(TO_OILS.map(o => [o.key, o]));
+
+  /* ---- ТО: допредложение «промывка двигателя» (данные → авто-рендер). Текст живёт ЗДЕСЬ,
+     название и цена — в PRICE["to_flush"] (единственное место с ценами; протухнет —
+     поднимется бейдж «Проверить цены», как у любой позиции). В «Итого» сметы промывка НЕ входит:
+     это отдельное предложение под чертой, клиент решает сам, а сумма работ не растёт молча.
+     ЖАНР — ОПИСАНИЕ, А НЕ ЗАЗЫВ (правка владельца 27.07.2026): никаких «скажите — добавим»,
+     «по желанию», вопросов клиенту. Каркас: строка-рекомендация (lead) → абзацы описания (text)
+     → цена. Описание открывает факт, которого клиент не знал, и показывает механику — желание
+     возникает само, уговаривать не надо. Абзацы разделены пустой строкой: читается с телефона.
+     Собран по mastery/copywriting + mastery/sales и сверен с фактурой LIQUI MOLY: 10–15 мин
+     на холостых, растворённые отложения уходят со сливом, промывка полностью уходит из системы,
+     меньше несливаемого остатка → свежее масло дольше сохраняет свойства. НЕЛЬЗЯ дописывать
+     «мотор как новый», «+ресурс», «уйдёт расход масла», «безопасно для любого мотора», «нужна
+     при каждой замене» — недоказуемо и рискованно по закону о рекламе. Блок уходит в КАЖДУЮ
+     смету: если мотору промывка противопоказана (большой пробег, шлам, симптомы) — это
+     говорит менеджер лично, текст никого не уговаривает. ---- */
+  const TO_UPSELL = {
+    key:   "to_flush",                                  // позиция в PRICE: имя + цена
+    lead:  "Также рекомендуем промывку двигателя",      // первая строка — сама рекомендация
+    text: [                                             // абзацы описания (в тексте разделены пустой строкой)
+      "Старое масло уходит не полностью — часть остаётся плёнкой на стенках, со шламом и лаком, "
+      + "которые копились весь пробег. Liqui Moly Engine Flush 10–15 минут работает в старом масле: "
+      + "растворяет эти отложения и полностью уходит вместе со сливом.",
+      "Дальше — новый фильтр и свежая заливка: старого в системе остаётся меньше, "
+      + "и масло дольше сохраняет свойства.",
+    ],
+    price: "{цена}, в тот же приезд.",                  // {цена} ← PRICE.to_flush; нет цены → фраза не печатается
+  };
 
   /* ---- Свежесть Уровня 0: дата сверки цены с прайсом поставщика. ----
      Дата-ключ в CHECKED_ON (checkedAt) = день, когда ВЛАДЕЛЕЦ лично подтвердил цену против
@@ -1661,6 +1699,8 @@
       "mb_235_7", "mb_239_71", "mb_236_15_sm", "mb_diff_front_orig", "mb_diff_rear_orig", "mb_diff_work_all",
       "mb_transf_oil",
     ],
+    // промывка двигателя — цена продажи подтверждена владельцем 27.07.2026 (сходится с «Продажами»: чеки по 2200 ₽)
+    "2026-07-27": ["to_flush"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -4723,14 +4763,29 @@
       }
       return { rows, sum, stale, unknown, litres };
     }
-    // текст клиенту: ровно тело сметы (правило 9). «Итого: уточню» — только когда цены реально нет;
-    // неподтверждённая цена идёт в сумму прежним числом. Формат общий с Шаблонами и Комплектами (CDOC).
+    /* Допредложение «промывка двигателя» (TO_UPSELL): текст из данных + цена из PRICE.
+       Уходит ОТДЕЛЬНЫМ блоком после «Итого» — в сумму работ не попадает, клиент решает сам.
+       Цены нет вовсе → зовём без числа (числа не выдумываем); цена не подтверждена → уходит
+       прежней, а на карточке загорается общий бейдж «Проверить цены» (правило 11). */
+    function upsell(){
+      const l = priceLine(TO_UPSELL.key);
+      // абзацы разделяет пустая строка (в WhatsApp читается с воздухом). Цена подставляется в свою
+      // фразу («{цена}» → «2 200 ₽» из PRICE); цены в прайсе нет — фраза не печатается вовсе:
+      // число не выдумываем и «уточню» в продающий текст не тащим.
+      const body = [...TO_UPSELL.text, l.price == null ? null
+        : TO_UPSELL.price.replace("{цена}", CDOC.money(l.price))].filter(Boolean).join("\n\n");
+      return { lead: TO_UPSELL.lead, body, stale: !!l.stale, text: TO_UPSELL.lead + "\n\n" + body };
+    }
+    // текст клиенту: тело сметы (правило 9) + предложение промывки под чертой. «Итого: уточню» —
+    // только когда цены реально нет; неподтверждённая цена идёт в сумму прежним числом.
+    // Формат общий с Шаблонами и Комплектами (CDOC) — блоки он же и разделит «— — — — —».
     function bodyText(e){
       const s = smeta(e);
       return CDOC.doc({
         title:  "Техническое обслуживание " + e.name + (e.fuel ? " (" + e.fuel + ")" : ""),
         blocks: [CDOC.block({ variants: [{ label: null,
-          lines: s.rows.map(r => ({ name: r.n, price: r.p })), sum: s.unknown ? null : s.sum }] })],
+          lines: s.rows.map(r => ({ name: r.n, price: r.p })), sum: s.unknown ? null : s.sum }] }),
+          upsell().text],
       });
     }
     async function copyTo(text, btn){
@@ -4795,7 +4850,7 @@
     function updateCard(){
       const e = selId && byId(selId);
       if(!e){ bodyEl.innerHTML = ""; return; }
-      const s = smeta(e);
+      const s = smeta(e), u = upsell();          // u — хвост копии клиенту (промывка), в «Итого» не входит
       const rowsHtml = s.rows.map(r => {
         const del = r.slot ? ` <button class="ui-btn ui-btn--ghost ui-btn--sm ui-btn--icon" type="button"
           data-act="slot-del" data-slot="${r.slot}" aria-label="Убрать">${ICO.close}</button>` : "";
@@ -4829,7 +4884,7 @@
         `<div class="to-card">
           <div class="to-card-top">
             <div class="to-card-title">${esc(e.name)}${e.fuel ? ` <span class="f">· ${esc(e.fuel)}</span>` : ""}</div>
-            ${s.stale || s.unknown ? `<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>` : ""}
+            ${s.stale || s.unknown || u.stale ? `<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>` : ""}
             <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" data-act="edit">Изменить</button>
           </div>
           <div class="to-litres">Объём масла:
@@ -4840,6 +4895,8 @@
           <div class="to-rows">${rowsHtml}</div>
           <div class="to-slots">${slotsHtml}</div>
           <div class="to-total">Итого <span class="p${s.unknown ? " ask" : ""}">${s.unknown ? "уточню" : rub(s.sum)}</span></div>
+          <div class="to-upsell"><span class="cap">Уйдёт в копии клиенту</span>
+            <span class="h">${esc(u.lead)}</span><span class="body">${esc(u.body)}</span></div>
           <div class="to-actions">
             <button class="ui-btn ui-btn--primary" type="button" data-act="copy">${ICO.copy} Копировать</button>
           </div>
