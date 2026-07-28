@@ -853,6 +853,9 @@
     .to-slot-form .ui-input{grid-column:1/-1}
     .to-slot-form .ui-btn{min-height:44px}
     .to-actions .ui-btn{flex:1;min-height:44px}
+    /* две кнопки копирования на телефоне — каждая своей строкой: «Копировать с номерами»
+       в половину ширины ломается на две строки и читается хуже кнопки во всю ширину */
+    .to-card .to-actions .ui-btn{flex:1 1 100%}
     .to-litres input{min-height:44px}
   }
 
@@ -5238,8 +5241,11 @@
      «Цена верна» (пересохраняет запись с сегодняшней датой — свежесть подтверждена).
      Слоты воздушный/салонный/топливный зависят от КУЗОВА → вводятся по месту и НЕ сохраняются
      (эфемерны; врать каталогом нельзя). Копирование — ровно тело сметы (правило 9), формат
-     строк как в renderVariant, но БЕЗ номеров фильтров: клиенту уходит только фирма, номер
-     живёт на экране чипом (нам — искать деталь; см. splitFilter/packFilter).
+     строк как в renderVariant. ДВЕ кнопки, один и тот же расчёт (bodyText(e, withCodes)):
+     «Копировать» — клиенту, БЕЗ номеров (уходит только фирма) и с хвостом промывки;
+     «Копировать с номерами» — нам (записать клиента, заказать деталь): номер приклеен к
+     названию фильтра, продающий хвост не печатается. Номер живёт и на экране чипом
+     (см. splitFilter/packFilter).
      Весь ручной ввод (и данные с листа) — через esc() при рендере. */
   (function(){
     const root = document.getElementById("page-to");
@@ -5382,19 +5388,23 @@
         : TO_UPSELL.price.replace("{цена}", CDOC.money(l.price))].filter(Boolean).join("\n\n");
       return { lead: TO_UPSELL.lead, body, stale: !!l.stale, text: TO_UPSELL.lead + "\n\n" + body };
     }
-    // текст клиенту: тело сметы (правило 9) + предложение промывки под чертой. «Итого: уточню» —
-    // только когда цены реально нет; неподтверждённая цена идёт в сумму прежним числом.
-    // Формат общий с Шаблонами и Комплектами (CDOC) — блоки он же и разделит «— — — — —».
-    function bodyText(e){
+    /* Текст сметы: тело (правило 9) + предложение промывки под чертой. «Итого: уточню» —
+       только когда цены реально нет; неподтверждённая цена идёт в сумму прежним числом.
+       Формат общий с Шаблонами и Комплектами (CDOC) — блоки он же и разделит «— — — — —».
+       withCodes — версия ДЛЯ НАС: номер фильтра приклеен к названию («… MANN HU 719/7 x»),
+       хвост промывки не печатается (это продающий абзац клиенту, при записи он мусор).
+       Расчёт у обеих версий один — smeta(e), расходиться суммам не из чего. */
+    function bodyText(e, withCodes){
       const s = smeta(e);
       return CDOC.doc({
         title:  "Техническое обслуживание " + e.name + (e.fuel ? " (" + e.fuel + ")" : ""),
         blocks: [CDOC.block({ variants: [{ label: null,
-          lines: s.rows.map(r => ({ name: r.n, price: r.p })), sum: s.unknown ? null : s.sum }] }),
-          upsell().text],
+          lines: s.rows.map(r => ({ name: withCodes && r.code ? r.n + " " + r.code : r.n, price: r.p })),
+          sum: s.unknown ? null : s.sum }] }),
+          withCodes ? null : upsell().text],
       });
     }
-    async function copyTo(text, btn){
+    async function copyTo(text, btn, okLabel){
       try { await navigator.clipboard.writeText(text); }
       catch(e){
         const ta = document.createElement("textarea"); ta.value = text;
@@ -5403,7 +5413,7 @@
       }
       if(btn){
         if(!btn.classList.contains("ok")) btn.dataset.copyLabel = btn.innerHTML;
-        btn.innerHTML = ICO.check + " Вставьте в WhatsApp"; btn.classList.add("ok");
+        btn.innerHTML = ICO.check + " " + (okLabel || "Вставьте в WhatsApp"); btn.classList.add("ok");
         clearTimeout(btn._copyT);
         btn._copyT = setTimeout(() => { btn.innerHTML = btn.dataset.copyLabel; btn.classList.remove("ok"); }, 2200);
       }
@@ -5505,6 +5515,8 @@
             <span class="h">${esc(u.lead)}</span><span class="body">${esc(u.body)}</span></div>
           <div class="to-actions">
             <button class="ui-btn ui-btn--primary" type="button" data-act="copy">${ICO.copy} Копировать</button>
+            <button class="ui-btn ui-btn--secondary" type="button" data-act="copy-codes"
+              title="Та же смета, но с номерами фильтров — себе: записать клиента, заказать деталь. Клиенту её не отправляем">${ICO.copy} Копировать с номерами</button>
           </div>
         </div>`;
     }
@@ -5570,6 +5582,9 @@
       const act = b.dataset.act, e = selId && byId(selId);
       if(!e) return;
       if(act === "copy"){ copyTo(bodyText(e), b); if(window.MDLOG) MDLOG.copy("ТО·" + e.name); }
+      // копия себе (с номерами) в MDLOG не идёт: метрика А3 считает СМЕТЫ, ушедшие клиенту,
+      // а эта кнопка обычно жмётся сразу после «Копировать» — один расчёт стал бы двумя событиями
+      else if(act === "copy-codes"){ copyTo(bodyText(e, true), b, "Скопировано с номерами"); }
       else if(act === "edit"){ updateForm(e.id); formWrap.scrollIntoView({ behavior:"smooth", block:"nearest" }); }
       else if(act === "fresh"){ upsert(Object.assign({}, e, { updated: todayISO() })); }  // цена подтверждена сегодня
       else if(act === "slot-open"){ slotOpen[b.dataset.slot] = true; updateCard();
