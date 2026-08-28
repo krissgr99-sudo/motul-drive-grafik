@@ -613,14 +613,6 @@
     background-repeat:no-repeat;background-position:right 14px center}
   .sales-month-sel:hover{border-color:var(--line-strong)}
   .sales-upd{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted)}
-  .sales-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
-  .stat{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:16px;
-    padding:15px 16px;box-shadow:var(--shadow)}
-  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brand);opacity:.85}
-  .stat .k{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
-  .stat .v{font-family:var(--font-disp);font-weight:700;font-size:23px;margin-top:9px;line-height:1;letter-spacing:.3px}
-  .stat .v .u{font-size:13px;font-weight:600;color:var(--muted);margin-left:3px}
-  .stat.accent .v{color:var(--accent-soft)}
   .sales-qty{font-family:var(--font-disp);font-weight:700;font-size:15px}
   .sales-sum{font-family:var(--font-disp);font-weight:700;font-size:14px}
   .sales-zero{color:var(--muted);opacity:.55;font-weight:600}
@@ -635,7 +627,6 @@
   .kopilka-k{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
   .kopilka-v{font-family:var(--font-disp);font-weight:800;font-size:30px;line-height:1;letter-spacing:.3px;color:var(--accent-soft)}
   .kopilka.empty .kopilka-v{color:var(--muted)}
-  .kopilka.archive .kopilka-v{color:var(--text)}
   .kopilka-sub{font-size:12px;color:var(--muted);font-weight:600;line-height:1.5}
   .kopilka-btn{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:12px;
     border:1px solid var(--c-red);background:rgba(209,31,45,.1);color:var(--accent-soft);font:inherit;font-weight:700;
@@ -668,28 +659,11 @@
   /* операция из очереди, ещё не подтверждена таблицей */
   .op-pend{font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--warn);
     border:1px solid var(--warn);border-radius:6px;padding:1px 5px;white-space:nowrap}
-  .sales-months{margin-top:18px;display:flex;flex-direction:column;gap:10px}
-  .sales-months-h{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
-  .smonth{display:grid;grid-template-columns:1fr auto auto;gap:8px 20px;align-items:baseline;width:100%;text-align:left;
-    font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 16px;
-    box-shadow:var(--shadow);cursor:pointer;transition:border-color .15s,background .15s}
-  .smonth:hover{border-color:var(--line-strong)}
-  .smonth.active{border-color:var(--c-red);background:var(--accent-soft-bg,rgba(209,31,45,.06))}
-  .smonth.has3{grid-template-columns:1fr auto auto auto} /* канал масла: Продано · Расходы · Выведено */
-  .smonth-name{font-family:var(--font-disp);font-weight:700;font-size:15px}
-  .smonth-cell{display:flex;flex-direction:column;gap:3px;text-align:right}
-  .smonth-cell .k{font-family:var(--font-mono);font-size:9px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
-  .smonth-cell .v{font-family:var(--font-disp);font-weight:700;font-size:14px}
   @media(max-width:720px){ .kopilka{gap:12px} .kopilka-v{font-size:26px} .kopilka-btn{margin-left:0;width:100%;justify-content:center}
     .kopilka-btns{margin-left:0;width:100%;flex-direction:column;gap:8px}
-    .sales-tabs{width:100%} .sales-tab{flex:1;min-height:44px;text-align:center}
-    .smonth{grid-template-columns:1fr 1fr;gap:10px 14px} .smonth-name{grid-column:1/-1} .smonth-cell{text-align:left}
-    .smonth.has3{grid-template-columns:1fr 1fr 1fr} }
+    .sales-tabs{width:100%} .sales-tab{flex:1;min-height:44px;text-align:center} }
   .sales-wd{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
   tr.weekend .sales-wd{color:var(--accent-soft)}
-  /* строка «Итого» в таблице продаж */
-  tbody tr.sales-total td{border-top:2px solid var(--line-strong);background:var(--fill-soft)}
-  tbody tr.sales-total td.date-cell{font-family:var(--font-disp);font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.6px}
   /* раскрытие дня (десктоп): строка дня кликабельна, деталь — следующий tr */
   tbody tr.sales-day{cursor:pointer}
   tbody tr.sales-day.no-orders{cursor:default}
@@ -730,7 +704,7 @@
   .scard-val:last-child{align-items:flex-end}
   .scard-val .k{font-family:var(--font-mono);font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
   .scard-val .v{font-family:var(--font-disp);font-weight:700;font-size:17px}
-  @media(max-width:720px){ .sales-stats{grid-template-columns:1fr 1fr} .sales-upd{margin-left:0}
+  @media(max-width:720px){ .sales-upd{margin-left:0}
     .sales-month-sel{min-height:44px} }
 
   /* ===================== ЗАМЕТКИ (пожелания команды) ===================== */
@@ -1150,7 +1124,6 @@
         <div class="sales-upd" id="sales-upd"></div>
       </div>
       <div class="kopilka" id="kopilka" hidden></div>
-      <div class="sales-stats" id="sales-stats"></div>
       <div class="tablecard">
         <table>
           <thead><tr>
@@ -1163,7 +1136,6 @@
         </table>
       </div>
       <div class="cards" id="sales-cards"></div>
-      <div class="sales-months" id="sales-months"></div>
       <div class="note"><span class="nd"></span><span id="sales-note"></span></div>
     </div>
 
@@ -4103,12 +4075,10 @@
     const monthKey = dt => dt.getFullYear()*12 + dt.getMonth(); // year*12+month — сортируемый ключ месяца
 
     const updEl  = document.getElementById("sales-upd");
-    const statsEl= document.getElementById("sales-stats");
     const rowsEl = document.getElementById("sales-rows");
     const cardsEl= document.getElementById("sales-cards");
     const noteEl = document.getElementById("sales-note");
     const kopEl    = document.getElementById("kopilka");
-    const monthsEl = document.getElementById("sales-months");
     const monthSel = document.getElementById("sales-month");
     const tabsEl   = document.getElementById("sales-tabs");
     const MONN = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
@@ -4117,10 +4087,7 @@
     // а не render(): фоновые обновления/вывод копилки не должны перезапускать счётчик.
     const SALES_FMT = { money: money, int: n => nf.format(n) };
     function runSalesTickers(){
-      const nodes = [].concat(
-        Array.from(statsEl.querySelectorAll(".num[data-to]")),
-        Array.from(kopEl.querySelectorAll(".num[data-to]"))
-      );
+      const nodes = Array.from(kopEl.querySelectorAll(".num[data-to]"));
       nodes.forEach((el,i)=>{
         const to = +el.dataset.to;
         if(!isFinite(to)) return;
@@ -4402,7 +4369,6 @@
       // ==== копилка сквозная: старт + все продажи (дни + агрегаты) − выводы − расходы ====
       // целые рубли (как potOf) и без «не записанных» операций (opAmt)
       const grandSum = allDays.reduce((s,d)=>s+d.sum, 0) + aggList.reduce((s,a)=>s+a.sum, 0);
-      const totSpend = allOps.reduce((s,o)=> s + (o.kind === "spend" ? opAmt(o) : 0), 0);
       let pot = Math.round(ch.opening + grandSum - allOps.reduce((s,o)=> s + opAmt(o), 0));
       if(ch.clampZero) pot = Math.max(0, pot);
       const wdList = allOps.filter(o => o.kind === "wd");
@@ -4418,7 +4384,6 @@
       const monthKeys = Object.keys(monthMap).map(Number).sort((a,b)=> b - a); // новые сверху
       const liveMonth = monthKeys[0]; // самый свежий месяц — живой (копилка + кнопки)
       if(ch.selMonth == null || !monthMap[ch.selMonth]) ch.selMonth = liveMonth;
-      const selMo = monthMap[ch.selMonth];
 
       // выпадающий список месяцев
       monthSel.hidden = false;
@@ -4432,48 +4397,24 @@
       const ops  = allOps.filter(o => inSel(o.dt));
       const selAgg = aggList.find(a => aggKey(a) === ch.selMonth) || null; // архивный месяц без дней
 
-      // итоги выбранного месяца — из данных, руками не дублируем (агрегат — если дни уже срезаны)
-      const totQty = days.reduce((s,d)=>s+d.qty, 0) + (selAgg ? selAgg.qty : 0);
-      const totSum = days.reduce((s,d)=>s+d.sum, 0) + (selAgg ? selAgg.sum : 0);
-      const avgDay   = days.length ? Math.round(totSum / days.length) : 0;
-      const avgCheck = totQty ? Math.round(totSum / totQty) : 0;
-      const best = days.reduce((b,d)=> (!b || d.sum>b.sum) ? d : b, null);
-
-      // плитки-итоги (за выбранный месяц)
-      statsEl.innerHTML = [
-        ["Выручка за месяц", totSum,   "money", "accent"],
-        ["Продано",          totQty,   "int",   "",      ch.unit],
-        ["Средний чек",      avgCheck, "money"],
-        ["В среднем в день", avgDay,   "money"],
-      ].map(([k,raw,fmt,cls,u]) =>
-        `<div class="stat ${cls||""}"><div class="k">${k}</div><div class="v"><span class="num" data-to="${raw}" data-fmt="${fmt}">${SALES_FMT[fmt](raw)}</span>${u?`<span class="u">${u}</span>`:""}</div></div>`
-      ).join("");
-
-      // ==== копилка: живой месяц — с кнопками; архивный — read-only итог ====
+      // ==== копилка: всегда «к выводу на сегодня»; в архивном месяце — без кнопок ====
+      // сумм за месяц здесь нет намеренно: раздел не показывает, сколько продано за период
       const isLive = ch.selMonth === liveMonth;
       kopEl.hidden = false;
       if(virgin){
         kopEl.className = "kopilka empty";
         kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">Масло · Алексей</div><div class="kopilka-v">—</div><div class="kopilka-sub">Канал ещё не подключён: жду первые данные из Google-таблицы (робот пересчитывает каждые полчаса). Если долго пусто — обнови бэкенд-скрипт таблицы (Deploy → New version).</div></div>`;
-      } else if(isLive){
-        let kopSub = lastW
-          ? `Прошлый вывод: ${opWhen(lastW)} — ${money(lastW.amount)}.`
-          : (ch.opening > 0
-              ? `Выводов ещё не было. В копилке: ${money(grandSum)} продаж + ${money(ch.opening)} с прошлого периода.`
-              : (grandSum > 0 ? "Выводов ещё не было — вся выручка в копилке." : "Пока нет продаж."));
-        if(ch.allowSpend && totSpend > 0) kopSub += ` Расходы за всё время: ${money(totSpend)}.`;
+      } else {
+        const kopSub = (lastW ? `Прошлый вывод: ${opWhen(lastW)} — ${money(lastW.amount)}.` : "Выводов ещё не было.")
+          + (isLive ? "" : " Только просмотр — вывод отмечается в текущем месяце.");
         const kopWarn = pot < 0 ? `<div class="kopilka-warnline">${ICO.warn} Расходы больше продаж — минус закроется следующими продажами.</div>` : "";
-        const btns =
-          (pot > 0 && ch.connected ? `<button class="kopilka-btn" type="button" data-act="wd" data-pot="${pot}">${ICO.cash} Отметить вывод</button>`
-                   : (pot === 0 ? `<span class="kopilka-btn is-disabled">Копилка пуста</span>` : "")) +
-          (ch.allowSpend && ch.connected ? `<button class="kopilka-btn ghost" type="button" data-act="spend">${ICO.box} Внести расход</button>` : "");
+        const btns = isLive
+          ? ((pot > 0 && ch.connected ? `<button class="kopilka-btn" type="button" data-act="wd" data-pot="${pot}">${ICO.cash} Отметить вывод</button>`
+                     : (pot === 0 ? `<span class="kopilka-btn is-disabled">Копилка пуста</span>` : "")) +
+            (ch.allowSpend && ch.connected ? `<button class="kopilka-btn ghost" type="button" data-act="spend">${ICO.box} Внести расход</button>` : ""))
+          : "";
         kopEl.className = "kopilka" + (pot === 0 ? " empty" : ""); // минус ≠ пусто: сумма остаётся в --text (.neg), не в muted
         kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">К выводу на сегодня${ch.person ? " · " + ch.person : ""}</div><div class="kopilka-v${pot < 0 ? " neg" : ""}"><span class="num" data-to="${pot}" data-fmt="money">${money(pot)}</span></div><div class="kopilka-sub">${kopSub}</div>${kopWarn}</div><div class="kopilka-btns">${btns}</div>`;
-      } else {
-        const moWd = ops.reduce((s,o)=> s + (o.kind === "wd" ? opAmt(o) : 0), 0);
-        const moSp = ops.reduce((s,o)=> s + (o.kind === "spend" ? opAmt(o) : 0), 0);
-        kopEl.className = "kopilka archive" + (totSum > 0 ? "" : " empty");
-        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">Архив · ${MONN[selMo.m]} ${selMo.y}${ch.person ? " · " + ch.person : ""}</div><div class="kopilka-v"><span class="num" data-to="${totSum}" data-fmt="money">${money(totSum)}</span></div><div class="kopilka-sub">Продано за месяц. Выведено за месяц: ${moWd ? money(moWd) : "—"}.${ch.allowSpend ? ` Расходы за месяц: ${moSp ? money(moSp) : "—"}.` : ""} Только просмотр — вывод отмечается в текущем месяце.</div></div>`;
       }
 
       // по возрастанию даты: раньше — выше
@@ -4515,12 +4456,7 @@
           </tr>`;
           const detailRow = has ? `<tr class="sales-detail"><td colspan="4"><div class="collapse"><div class="collapse-inner">${ordersHtml(d.orders, isOil)}</div></div></td></tr>` : "";
           return dayRow + detailRow;
-        }).join("") +
-          `<tr class="sales-total">
-            <td class="date-cell" colspan="2">Итого за месяц</td>
-            <td><span class="sales-qty">${nf.format(totQty)} ${ch.unit}</span></td>
-            <td><span class="sales-sum">${money(totSum)}</span></td>
-          </tr>`;
+        }).join("");
 
         // карточки (мобайл): шапка + значения кликабельны, ниже раскрывается список заказов
         cardsEl.innerHTML = timeline.map(item => {
@@ -4547,24 +4483,7 @@
         }).join("");
       }
 
-      // помесячно (все месяцы, новые сверху): клик по строке → выбрать месяц; у масла — 3 ячейки
-      const months = {};
-      const mrec = k => months[k] = months[k] || { sold:0, wd:0, sp:0, y:Math.floor(k/12), m:((k%12)+12)%12, k };
-      allDays.forEach(d => { mrec(monthKey(d.dt)).sold += d.sum; });
-      aggList.forEach(a => { mrec(aggKey(a)).sold += a.sum; });
-      allOps.forEach(o => { const r = mrec(monthKey(o.dt)); if(o.kind === "wd") r.wd += opAmt(o); else r.sp += opAmt(o); });
-      const monthList = Object.keys(months).map(Number).sort((a,b)=> b - a).map(k => months[k]);
-      const has3 = ch.allowSpend;
-      monthsEl.innerHTML = monthList.length
-        ? `<div class="sales-months-h">По месяцам</div>` + monthList.map(mo =>
-            `<button type="button" class="smonth${has3 ? " has3" : ""}${mo.k===ch.selMonth?" active":""}" data-mk="${mo.k}"><div class="smonth-name">${MONN[mo.m]} ${mo.y}</div>` +
-            `<div class="smonth-cell"><span class="k">Продано</span><span class="v">${money(mo.sold)}</span></div>` +
-            (has3 ? `<div class="smonth-cell"><span class="k">Расходы</span><span class="v">${mo.sp ? money(mo.sp) : "—"}</span></div>` : "") +
-            `<div class="smonth-cell"><span class="k">Выведено</span><span class="v">${mo.wd ? money(mo.wd) : "—"}</span></div></button>`
-          ).join("")
-        : "";
-
-      // подпись: когда обновлено + что считаем + лучший день выбранного месяца.
+      // подпись: когда обновлено + что считаем. Лучший день убран вместе с общей статистикой.
       // active=false от бэкенда = фильтр выключен (лист «Масла» пуст) — fail-closed сигнал
       // вместо ложного «Обновлено сегодня» при остановленном сборе.
       const upd = ch.data.updated ? parse(ch.data.updated) : null;
@@ -4576,10 +4495,10 @@
         : `Товар: ${ch.data.product}. `;
       noteEl.textContent = virgin
         ? "Канал масла появится после обновления бэкенд-скрипта таблицы — данные подтянутся сами."
-        : src + (best && best.sum
-          ? `Лучший день месяца — ${dateFull(best.dt)}: ${nf.format(best.qty)} ${ch.unit} на ${money(best.sum)}. Нажми на день, чтобы увидеть заказ-наряды. Данные обновляются автоматически каждые полчаса.`
+        : src + (days.length
+          ? "Нажми на день, чтобы увидеть заказ-наряды. Данные обновляются автоматически каждые полчаса."
           : (selAgg && selAgg.sum
-            ? "Месяц из архива: итог посчитан помесячно, разбивка по дням хранится 13 месяцев."
+            ? "Месяц из архива: разбивка по дням хранится 13 месяцев."
             : "Пока нет продаж в этом месяце."));
     }
 
@@ -4606,13 +4525,6 @@
     });
     // выбор месяца из выпадающего списка
     monthSel.addEventListener("change", () => { cur.selMonth = Number(monthSel.value); render(); });
-    // клик по строке «По месяцам» — открыть этот месяц и подняться к началу раздела
-    monthsEl.addEventListener("click", e => {
-      const b = e.target.closest(".smonth");
-      if(!b) return;
-      cur.selMonth = Number(b.dataset.mk); render();
-      document.getElementById("page-prodazhi").scrollIntoView({ behavior:"smooth", block:"start" });
-    });
     // переключатель каналов: выбор запоминается; счётчики — one-shot на смену канала (навигационный триггер)
     if(tabsEl) tabsEl.addEventListener("click", e => {
       const b = e.target.closest(".sales-tab");
