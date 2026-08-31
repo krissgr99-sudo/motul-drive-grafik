@@ -321,7 +321,7 @@
     line-height:1.3;white-space:nowrap}
   .tpl-badge.b-app{background:rgba(76,195,138,.12);color:var(--ok);border:1px solid rgba(76,195,138,.3)}
   .tpl-badge.b-part{background:rgba(240,180,41,.12);color:var(--warn);border:1px solid rgba(240,180,41,.3)}
-  .tpl-badge.b-hybrid{background:var(--fill-soft);color:var(--muted);border:1px solid var(--line-strong)}
+  .tpl-badge.b-hybrid,.tpl-badge.b-all{background:var(--fill-soft);color:var(--muted);border:1px solid var(--line-strong)} /* b-all — сводка «все варианты» */
   .tpl-badge.b-lock{background:rgba(209,31,45,.1);color:var(--accent-soft);border:1px solid rgba(209,31,45,.3)}
   .tpl-badge.b-check{background:rgba(240,180,41,.14);color:var(--warn);border:1px solid rgba(240,180,41,.42)} /* «Проверить цены» — внутренний флаг свежести, в буфер не уходит */
   .tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,380px));justify-content:center;gap:16px;align-items:start}
@@ -1619,7 +1619,7 @@
     work_full_9g:      ["Полная аппаратная замена масла в АКПП 9G-Tronic", 8000],
     work_fill_9g:      ["Полная замена масла в АКПП 9G-Tronic (методом слил и залил)", 4000],
     // Мосты + раздатка Mercedes (одинаковая сноска во всех 10 шаблонах 9G и 7G, блок MB9G_AXLES):
-    // 2 варианта — оригинал Mercedes-Benz (Итого 22000) и Motul (Итого 14000).
+    // 2 варианта — оригинал Mercedes-Benz (Итого 21500) и Motul (Итого 14000).
     // Цены — суммарные по строке: Gear 300 = 2л×4500; масло раздатки Mercedes = 0,6л×2500 (общее для обоих вариантов).
     mb_diff_oil:    ["Масло трансмиссионное Motul Gear 300 75W90 105777 2л (передний и задний дифференциал)", perL(RATES.gear300, 2)],
     mb_diff_front:  ["Замена масла в переднем дифференциале", 1000],
@@ -1629,7 +1629,7 @@
     // Вариант «оригинал Mercedes-Benz»: масло в каждый мост по допуску (по 1 л) + одна строка работ на все три узла.
     mb_diff_front_orig: ["Оригинальное трансмиссионное масло Mercedes-Benz 235.7 1л (передний дифференциал)", perL(RATES.mb_235_7, 1)],
     mb_diff_rear_orig:  ["Оригинальное трансмиссионное масло Mercedes-Benz 239.71/239.72 1л (задний дифференциал)", perL(RATES.mb_239_71, 1)],
-    mb_diff_work_all:   ["Замена масла в переднем, заднем дифференциале и раздаточной коробке", 3500],  // = 1000 (перед) + 1000 (зад) + 1500 (раздатка): поменял работы выше — поправь и здесь
+    mb_diff_work_all:   ["Замена масла в переднем, заднем дифференциале и раздаточной коробке", 3000],  // пакетом дешевле поштучных работ Motul-варианта (1000 + 1000 + 1500): цена владельца 31.08.2026
     // Mercedes 7G-Tronic (722.9): 2 варианта — «+» на масле MB 236.15, обычный на Motul ATF6.
     // Фильтр (в сборе с прокладкой) и промывка BARDAHL — общие. Мосты/раздатка — как у 9G (MB9G_AXLES).
     oil_mb_7g_12:          ["Трансмиссионное масло Mercedes 236.15 A000989270411 12л", perL(RATES.mb_236_15, 12)],
@@ -1857,12 +1857,13 @@
       "motor_0w", "motor_5w",
       // глубокий поддон 1087298361 — владелец сослался на цену каталога «Цены» (PARTS, 11000) при добавлении шаблонов (первая сверка 24.07.2026)
       "filter_deep",
-      // мосты и раздатка Mercedes, вариант «оригинал MB» — цены продиктованы владельцем (Итого 22000)
-      "mb_235_7", "mb_239_71", "mb_236_15_sm", "mb_diff_front_orig", "mb_diff_rear_orig", "mb_diff_work_all",
-      "mb_transf_oil",
     ],
     // промывка двигателя — цена продажи подтверждена владельцем 27.07.2026 (сходится с «Продажами»: чеки по 2200 ₽)
     "2026-07-27": ["to_flush"],
+    // мосты и раздатка Mercedes, вариант «оригинал MB» — владелец прислал смету целиком (Итого 21500):
+    // масла 8000 / 1500 / 9000 прежние, работы пакетом 3000. Motul-вариант не менялся (Итого 14000).
+    "2026-08-31": ["mb_235_7", "mb_239_71", "mb_236_15_sm", "mb_diff_front_orig", "mb_diff_rear_orig",
+                   "mb_diff_work_all", "mb_transf_oil"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -1991,7 +1992,7 @@
   };
 
   // Сноска «мосты + раздатка» для Mercedes — одинакова во всех карточках 9G и 7G. Два варианта
-  // (рендер diffsMultiBlock, у каждого свой «Итого»): оригинал Mercedes-Benz 22000 / Motul 14000.
+  // (рендер diffsMultiBlock, у каждого свой «Итого»): оригинал Mercedes-Benz 21500 / Motul 14000.
   // Раздатка в обоих вариантах на оригинальном Mercedes 236.15 — строка mb_transf_oil общая.
   const MB9G_AXLES = {
     head:  "Также можем предложить замену масла в переднем, заднем дифференциале и в раздаточной коробке.",
@@ -2079,6 +2080,16 @@
     // diffsBlock — сноска «мосты + раздатка», одинаковая во всех карточках этой коробки.
     "9G-Tronic": {
       diffsBlock: MB9G_AXLES,
+      /* Сводка «все варианты» — карточка с combo:true в TEMPLATES: оба метода × все поддоны
+         одним копированием, сноска мостов ниже один раз (её добавляет общий хвост tplDoc).
+         pans — ключ поддона (как t.filter) и его человеческое имя: оно станет меткой варианта. */
+      combo: {
+        title: "Замена масла в АКПП Mercedes-Benz 9G-Tronic",
+        sub:   "Все варианты: аппаратная замена и слив-залив, поддон на выбор.",
+        types: ["Аппаратная", "Слив-залив"],
+        pans:  [["mb", "Оригинальный поддон MB"], ["sollo", "Поддон SOLLO ZM PARTS"],
+                ["mahle", "Поддон Mahle"], ["zf", "Поддон ZF"]],
+      },
       "Аппаратная": {
         head: "Полная аппаратная замена масла в АКПП 9G-Tronic",
         variants: fk => [
@@ -2489,6 +2500,22 @@
 
   // Блок услуги (варианты масла у одной коробки): заголовок услуги уходит в шапку документа, не в каждый вариант.
   const serviceBlock = (variants, sink) => CDOC.block({ variants: variants.map(v => priceVariant(v.label, v.items, sink)) });
+  /* Сводка «все варианты» (BOXES[box].combo): по блоку на метод замены, внутри — все поддоны,
+     у каждого своя смета и свой «Итого». Заголовок метода печатается в блоке (в шапку документа
+     уходит общее название коробки), поддон становится меткой варианта. */
+  function comboBlocks(box, c, sink){
+    return c.types.map(type => {
+      const svc = box[type];
+      if(!svc) return null;                                    // метода у коробки нет — блок пропускаем
+      const head = typeof svc.head === "function" ? svc.head(c.pans[0][0]) : svc.head;
+      const variants = c.pans.flatMap(([fk, label]) => {
+        const vs = svc.variants(fk);                           // обычно один вариант на поддон;
+        return vs.map((v, i) =>                                // будет несколько (масла) — метка уточнится
+          priceVariant(vs.length > 1 ? `${label} · вариант ${i + 1}` : label, v.items, sink));
+      });
+      return CDOC.block({ head, variants });
+    }).filter(Boolean);
+  }
   // Мосты + раздатка ПОУЗЛОВО: у каждого варианта (Motul / оригинал) свой «Итого». lock=true → строка доплаты за блокировку.
   const diffsMultiBlock = (b, lock, sink) => CDOC.block({ head: b.head, intro: b.intro, note: b.note,
     variants: b.variants.map(v => priceVariant(v.label, (lock && v.lockItem) ? [...v.items, v.lockItem] : v.items, sink)) });
@@ -2507,14 +2534,22 @@
      unknown — «есть позиция без цены» (в тексте «уточню»). */
   function tplDoc(t){
     const box = BOXES[t.box];
-    let svc = box && box[t.type];
-    if(!svc) return { text: "", stale: false, unknown: false };   // нет данных по услуге (заготовка) — пусто
-    const eng = engineOf(t);
-    if(svc[eng]) svc = svc[eng];           // мотор переопределяет услугу (полный гибрид = др. агрегат)
-    const filterKey = t.filter || (box.filter ? box.filter[eng] : null); // t.filter — явный выбор поддона (9G-Tronic)
-    const head = typeof svc.head === "function" ? svc.head(filterKey) : svc.head; // head может зависеть от фильтра (7G-Tronic)
     const seen = [];                                                        // все позиции сметы → флаги свежести
-    const blocks = [serviceBlock(svc.variants(filterKey), seen)];           // заголовок услуги = шапка документа (CDOC.doc)
+    const combo = t.combo && box ? box.combo : null;   // сводная карточка «все варианты» (данные — в коробке)
+    let head, sub = null, blocks;
+    if(combo){
+      head = combo.title; sub = combo.sub || null;
+      blocks = comboBlocks(box, combo, seen);
+      if(!blocks.length) return { text: "", stale: false, unknown: false };
+    } else {
+      let svc = box && box[t.type];
+      if(!svc) return { text: "", stale: false, unknown: false };   // нет данных по услуге (заготовка) — пусто
+      const eng = engineOf(t);
+      if(svc[eng]) svc = svc[eng];           // мотор переопределяет услугу (полный гибрид = др. агрегат)
+      const filterKey = t.filter || (box.filter ? box.filter[eng] : null); // t.filter — явный выбор поддона (9G-Tronic)
+      head = typeof svc.head === "function" ? svc.head(filterKey) : svc.head; // head может зависеть от фильтра (7G-Tronic)
+      blocks = [serviceBlock(svc.variants(filterKey), seen)];           // заголовок услуги = шапка документа (CDOC.doc)
+    }
     if(t.diffs)         blocks.push(diffsMultiBlock(DIFFS_REGULAR, t.lock, seen)); // ZF: мосты + раздатка поузлово (Motul/оригинал), блокировка = доплата
     if(t.diffsDetailed) blocks.push(diffsDetailedBlock(DIFFS_DETAILED, seen));     // поузловой расчёт мостов
     if(box.diffsBlock)  blocks.push(box.diffsBlock.variants               // сноска мостов на уровне коробки (Mercedes 9G/7G):
@@ -2523,7 +2558,7 @@
     const axles = t.axles || box.axles;                    // t.axles — переопределение блока мостов на карточке (Торсен G055/G060)
     if(axles) blocks.push(axlesBlock(axles, seen));         // простой блок мостов (данные в коробке или карточке)
     if(box.haldex) blocks.push(haldexBlock(box.haldex, seen));
-    return { text: CDOC.doc({ title: head, blocks }),
+    return { text: CDOC.doc({ title: head, sub, blocks }),
              stale:   seen.some(l => l.stale),
              unknown: seen.some(l => l.price == null) };
   }
@@ -2710,6 +2745,11 @@
     /* ==================== Mercedes ==================== */
     // 9G-Tronic (725.0). 4 аппаратные + 4 слив-залив, отличаются поддоном (t.filter).
     // Поддон не входит в автокод карточки → у каждой свой code, иначе четвёрка слипнется в логе А3.
+    // Сводка одним копированием: оба метода × все поддоны + мосты. Состав — BOXES["9G-Tronic"].combo.
+    { brand:"Mercedes", box:"9G-Tronic", type:"Все варианты", combo:true,
+      code:"Mercedes·9G-Tronic·Все варианты",
+      title:"9G-Tronic · все варианты одним текстом", titleAccent:"все варианты",
+      extraTags:["725.0", "Аппаратная", "Слив-залив", "Все поддоны"] },
     { brand:"Mercedes", box:"9G-Tronic", type:"Аппаратная", filter:"mb",    title:"9G-Tronic · аппаратная · оригинальный поддон MB",
       code:"Mercedes·9G-Tronic·Аппаратная·Поддон MB",
       extraTags:["9G-Tronic", "725.0", "Поддон MB"] },
@@ -3224,7 +3264,7 @@
 
     // Оси фильтров: get(t) берёт значение прямо из полей карточки (порядок значений фиксирован)
     const FACETS = [
-      { key:"type",   label:"Тип",   get:t=>t.type, order:["Аппаратная","Частичная","Слив-залив"] },
+      { key:"type",   label:"Тип",   get:t=>t.type, order:["Аппаратная","Частичная","Слив-залив","Все варианты"] },
       // Поддон: глубокий 1087298361 (Jeep/Dodge) против штатного. Ось появляется только там, где есть оба
       // (сейчас — ZF 8HP45-76): иначе карточки глубокого поддона теряются среди «Обычная / Без блокировки».
       { key:"pan",    label:"Поддон", get:t=>t.filter==="filter_deep"?"Глубокий":"Обычный", order:["Обычный","Глубокий"] },
@@ -3481,7 +3521,7 @@
         const doc = tplDoc(t);
         const body = doc.text;
         const placeholder = t.todo || !body;   // нет данных по услуге → показываем как заготовку
-        const badges = [`<span class="tpl-badge ${t.type==="Частичная"?"b-part":"b-app"}">${esc(t.type)}</span>`];
+        const badges = [`<span class="tpl-badge ${t.type==="Частичная"?"b-part":t.combo?"b-all":"b-app"}">${esc(t.type)}</span>`];
         const eng = engineOf(t);
         if(eng !== "Обычная") badges.push(`<span class="tpl-badge b-hybrid">${ICO.bolt} ${esc(eng)}</span>`);
         if(t.lock)   badges.push(`<span class="tpl-badge b-lock">${ICO.lock} Блокировка</span>`);
