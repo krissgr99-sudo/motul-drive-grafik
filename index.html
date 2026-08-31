@@ -860,6 +860,14 @@
   /* старая запись: номер вписан внутрь фирмы → он уйдёт клиенту. Мягкий флаг + клик открывает правку */
   .to-fixnum{flex:none;align-self:center;cursor:pointer;font-family:inherit}
   .to-row .p{margin-left:auto;font-family:var(--font-mono);font-weight:700;white-space:nowrap}
+  /* цена фильтра правится на месте: подчёркнута пунктиром, клик открывает поле */
+  .to-price-edit{background:none;border:none;padding:0 0 1px;cursor:pointer;color:inherit;font:inherit;
+    font-family:var(--font-mono);font-weight:700;border-bottom:1px dashed var(--line-strong)}
+  .to-price-edit:hover{border-bottom-color:#d11f2d;color:var(--accent-soft)}
+  .to-price-edit.ask{color:var(--warn);font-family:inherit}
+  .to-price-inp{margin-left:auto;width:112px;padding:6px 9px;border-radius:9px;border:1px solid #d11f2d;
+    background:var(--fill);color:var(--text);font:inherit;font-family:var(--font-mono);font-weight:700;text-align:right}
+  .to-price-inp:focus{outline:none}
   .to-row .p.ask{color:var(--warn);font-family:inherit;font-weight:700}
   .to-litres{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);font-weight:600;flex-wrap:wrap}
   .to-litres input{width:80px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--fill);
@@ -878,6 +886,35 @@
   .to-form-title{font-family:var(--font-disp);font-weight:700;font-size:15px}
   .to-fuel{display:flex;gap:8px}
   .to-note{font-size:12px;color:var(--muted);line-height:1.45}
+  /* Подбор по VIN: ввод → карточка машины → фильтры наших брендов с ценами.
+     Данные дают ручки vin/part в Apps Script; ответа нет — блок молчит, слоты вводятся руками. */
+  .to-vin{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .to-vin .ui-input{flex:1;min-width:220px;font-family:var(--font-mono);letter-spacing:.6px;text-transform:uppercase}
+  .to-veh{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+    padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+  .to-veh-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .to-veh-title{font-family:var(--font-disp);font-weight:700;font-size:15px;margin-right:auto}
+  .to-veh-spec{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted);font-weight:600}
+  .to-veh-spec b{color:var(--text);font-family:var(--font-mono);font-weight:700;letter-spacing:.2px}
+  .to-pick{display:flex;flex-direction:column}
+  .to-pick-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .to-pick-row:last-child{border-bottom:none}
+  .to-pick-cap{min-width:96px;font-size:12.5px;color:var(--muted);font-weight:700}
+  .to-alt{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:10px;cursor:pointer;
+    border:1px solid var(--line);background:var(--fill);color:var(--text);font:inherit;font-size:12px;font-weight:600;
+    transition:border-color .15s,background .15s,color .15s,transform .15s}
+  .to-alt:hover{border-color:var(--line-strong);background:var(--fill-hover)}
+  .to-alt:active{transform:scale(.95)}
+  .to-alt.on{border-color:#d11f2d;background:rgba(209,31,45,.1);color:var(--accent-soft)}
+  .to-alt .p{font-family:var(--font-mono);font-weight:700}
+  .to-alt .q{font-size:10.5px;opacity:.7;font-weight:600}
+  /* на телефоне вариант — полноценная цель нажатия (must-keep 7: хиты ≥44px) */
+  @media (max-width:720px){
+    .to-alt{min-height:44px;padding:9px 12px}
+    .to-pick-cap{min-width:100%}
+    .to-price-inp{min-height:44px}
+    .to-price-edit{padding:13px 0}
+  }
   /* допредложение «промывка» — на экране приглушено: это не позиция сметы, а хвост копии клиенту */
   .to-upsell{margin-top:4px;padding-top:10px;border-top:1px dashed var(--line);
     font-size:12.5px;color:var(--muted);line-height:1.5}
@@ -5573,6 +5610,7 @@
     let slots = { air:null, cabin:null, fuel:null };   // эфемерные слоты {name, price}
     let slotOpen = { air:false, cabin:false, fuel:false };
     let litresOverride = null;                         // эфемерная правка литража (не сохраняется)
+    let priceEdit = null;                              // какая цена сейчас правится: "oil" | "slot:air"…
 
     function saveCache(){ try { localStorage.setItem(CKEY, JSON.stringify({ engines, pending })); } catch(e){} }
     (function loadCache(){ try { const c = JSON.parse(localStorage.getItem(CKEY) || "null");
@@ -5586,7 +5624,14 @@
       return [...m.values()].filter(e => e.status !== "del")
         .sort((a, b) => String(a.name).localeCompare(String(b.name), "ru"));
     }
-    const byId = id => view().find(e => e.id === id) || null;
+    /* Запись двигателя может быть ВРЕМЕННОЙ — собранной из VIN и ещё не заведённой в каталог
+       (vinEngine, id вида «vin:…»). Для всей остальной механики она обычная: та же smeta,
+       те же работы, тот же хвост промывки, то же копирование. Понадобилась она затем, чтобы
+       смета собиралась сразу после разбора VIN, а заведение в каталог осталось отдельным
+       осознанным шагом («Сохранить в каталог»), а не обязательной прелюдией. */
+    let vinEngine = null;
+    const byId = id => (vinEngine && id === vinEngine.id) ? vinEngine
+      : (view().find(e => e.id === id) || null);
 
     // читаем двигатели из таблицы (JSONP — обходит CORS у Apps Script, как Заметки)
     let seq = 0;
@@ -5649,14 +5694,17 @@
         const old = !freshISO(e.updated);               // запись давно не подтверждалась → кнопка «Цена верна»
         // цифра в «фирме» и пустой номер = старая запись, номер вписан внутрь → предупредим
         push("Масляный фильтр " + oilF.name, p > 0 ? p : null,
-          Object.assign({ code: oilF.code, fixnum: !oilF.code && /\d/.test(oilF.name) },
+          Object.assign({ code: oilF.code, fixnum: !oilF.code && /\d/.test(oilF.name),
+            // цену масляного правим прямо в смете только у временной записи из VIN: у каталожной
+            // это общая для всех устройств запись, её меняем осознанно — кнопкой «Изменить»
+            edit: e.virtual ? "oil" : null },
             p > 0 && old ? { confirm: p, stale: true } : null));
       } else push("Масляный фильтр — уточню", null);
       pushKey("to_work_oil");
       for(const s of SLOTS){
         const v = slots[s.id];
         if(!v) continue;
-        push(s.label + " " + v.name, v.price, { slot: s.id, code: v.code });  // ввод «сейчас» = свежий
+        push(s.label + " " + v.name, v.price, { slot: s.id, code: v.code, edit: "slot:" + s.id });  // ввод «сейчас» = свежий
         pushKey(s.work);
       }
       return { rows, sum, stale, unknown, litres };
@@ -5713,6 +5761,12 @@
             placeholder="Найти двигатель: B47, N55, OM651…" aria-label="Поиск двигателя">
           <button class="ui-btn ui-btn--primary" id="to-add" type="button">+ Двигатель</button>
         </div>
+        <div class="to-vin">
+          <input class="ui-input" id="to-vin" type="text" maxlength="19" autocomplete="off" spellcheck="false"
+            placeholder="VIN — подберу фильтры и цены" aria-label="VIN автомобиля">
+          <button class="ui-btn ui-btn--secondary" id="to-vin-go" type="button">Разобрать</button>
+        </div>
+        <div id="to-vinbox"></div>
         <div id="to-warn" hidden></div>
         <div id="to-formwrap" hidden></div>
         <div id="to-list"></div>
@@ -5724,6 +5778,194 @@
     const formWrap = root.querySelector("#to-formwrap");
     const listEl   = root.querySelector("#to-list");
     const bodyEl   = root.querySelector("#to-body");
+    const vinInp   = root.querySelector("#to-vin");
+    const vinBox   = root.querySelector("#to-vinbox");
+
+    /* ---- Подбор по VIN ----------------------------------------------------------
+       Вписал VIN → сайт спросил Apps Script (ручки vin и part), тот сходил в каталог
+       RAVENOL и в прайс Росско и вернул машину, артикулы наших брендов и УЖЕ ПРОДАЖНЫЕ
+       цены (наценка и округление живут в одном месте — на бэкенде, см. PART_MARKUP).
+       Внешний сервис здесь ускоритель, а не зависимость: не ответил — блок молчит,
+       слоты и карточка заполняются руками ровно как раньше. */
+    let vin = null;                                    // {status, car, filters, price:{slot}, sel:{slot}}
+    let jseq = 0;
+    function jsonp(params){
+      return new Promise((resolve, reject) => {
+        if(!SHEET_API){ reject(new Error("no-api")); return; }
+        const cb = "__tov_" + (++jseq);
+        const s = document.createElement("script");
+        const cleanup = () => { clearTimeout(timer);
+          try { delete window[cb]; } catch(e){ window[cb] = undefined; } s.remove(); };
+        const timer = setTimeout(() => { cleanup(); reject(new Error("timeout")); }, 30000);
+        window[cb] = d => { cleanup(); resolve(d || {}); };
+        s.onerror = () => { cleanup(); reject(new Error("net")); };
+        s.src = SHEET_API + "?" + params + "&callback=" + cb + "&t=" + Date.now();
+        document.head.appendChild(s);
+      });
+    }
+    const VIN_SLOTS = [{ id:"oil", cap:"Масляный" }, { id:"air", cap:"Воздушный" }, { id:"cabin", cap:"Салонный" }];
+    // выбранный вариант слота: первый — тот, что подобрал бэкенд по приоритету владельца
+    function vinChosen(slot){
+      const p = vin && vin.price && vin.price[slot];
+      if(!p || p.status !== "ok" || !p.picked) return null;
+      const list = [p.picked].concat(p.alts || []);
+      return list[(vin.sel && vin.sel[slot]) || 0] || p.picked;
+    }
+    // имя записи: марка + код двигателя + объём. Модель и кузов НЕ включаем — один двигатель
+    // стоит в разных машинах, иначе каталог зарастёт дублями (B57 в X5, X6, X7 — одна запись)
+    function vinEngineName(){
+      const c = (vin && vin.car) || {};
+      const cc = Number(c.cc) > 0 ? (Number(c.cc) / 1000).toFixed(1) : "";
+      return [c.brand, c.engineFull || c.engine, cc].filter(Boolean).join(" ").slice(0, 80);
+    }
+    function vinFuel(){
+      const f = String((vin && vin.car && vin.car.fuel) || "").toUpperCase();
+      if(/DIES/.test(f)) return "дизель";
+      if(/PETR|GASOL|BENZ/.test(f)) return "бензин";
+      return "";
+    }
+
+    async function vinGo(){
+      const raw = String(vinInp.value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 17);
+      if(raw.length < 11){ vin = { status:"short" }; updateVin(); return; }
+      vin = { status:"load", vin: raw };
+      updateVin();
+      let d;
+      try { d = await jsonp("type=vin&token=" + encodeURIComponent(SHEET_TOKEN) + "&q=" + encodeURIComponent(raw)); }
+      catch(err){ vin = { status:"err", err:"net" }; updateVin(); return; }
+      if(!d || d.error){ vin = { status:"err", err:(d && d.error) || "err" }; updateVin(); return; }
+      vin = { status:"ok", vin: raw, car: d.car || {}, filters: d.filters || {}, price: {}, sel: {} };
+      slots = { air:null, cabin:null, fuel:null };     // новая машина — старые фильтры не её
+      litresOverride = null;
+      makeVinEngine();                                 // смета появляется сразу, цены дойдут следом
+      updateVin(); updateList(); updateCard();
+      for(const s of VIN_SLOTS){                       // цены — по одному запросу на слот, параллельно
+        const f = vin.filters[s.id];
+        if(!f || !f.ours || !f.ours.length) continue;
+        vin.price[s.id] = { status:"load" };
+        jsonp("type=part&token=" + encodeURIComponent(SHEET_TOKEN) +
+              "&art=" + encodeURIComponent(f.ours[0].brand + " " + f.ours[0].num))
+          .then(r => { vin.price[s.id] = (r && !r.error && r.picked)
+              ? { status:"ok", picked:r.picked, alts:r.alts || [] } : { status:"err" };
+            vinApplySlots(); updateVin(); })
+          .catch(() => { vin.price[s.id] = { status:"err" }; updateVin(); });
+      }
+      updateVin();
+    }
+
+    /* Временная запись двигателя из VIN — чтобы смета собиралась сразу, а не после заведения
+       в каталог. Масло и литраж владелец выбирает в самой карточке; выбранное переживает
+       догрузку цен (цены приходят пачками и перерисовывают карточку). */
+    function makeVinEngine(){
+      if(!vin || vin.status !== "ok") return;
+      const oil = vinChosen("oil");
+      const prev = vinEngine && vinEngine.id === "vin:" + vin.vin ? vinEngine : null;
+      vinEngine = {
+        id: "vin:" + vin.vin, virtual: true,
+        name: vinEngineName(), fuel: vinFuel(),
+        oilKey: (prev && prev.oilKey) || (TO_OILS[0] && TO_OILS[0].key) || "",
+        litres: prev ? prev.litres : 0,
+        filterName: oil ? packFilter(oil.brand, oil.num) : "",
+        filterPrice: oil ? oil.sell : 0,
+        updated: todayISO(),                        // подобрано сейчас — цена свежая по определению
+      };
+      selId = vinEngine.id;
+    }
+
+    // подстановка в смету: воздушный и салонный — эфемерные слоты; масляный живёт в записи двигателя
+    function vinApplySlots(){
+      if(!vin || vin.status !== "ok") return;
+      for(const id of ["air", "cabin"]){
+        const c = vinChosen(id);
+        if(c && !(slots[id] && slots[id].manual)) slots[id] = { name: c.brand, code: c.num, price: c.sell };
+      }
+      if(vinEngine && selId === vinEngine.id){        // масляный мог приехать позже — обновим запись
+        const oil = vinChosen("oil");
+        vinEngine.filterName = oil ? packFilter(oil.brand, oil.num) : "";
+        if(!vinEngine.priceManual) vinEngine.filterPrice = oil ? oil.sell : 0;
+      }
+      updateList(); updateCard();
+    }
+
+    // «Завести двигатель из VIN»: открываем обычную форму и заполняем всё, что знаем.
+    // Литраж масла RAVENOL не отдаёт — единственное поле, которое остаётся владельцу.
+    function vinNewEngine(){
+      updateForm(null);
+      const f = formWrap.querySelector("form");
+      if(!f) return;
+      const set = (n, v) => { const el = f.querySelector("[name=" + n + "]"); if(el && v) el.value = v; };
+      set("engName", vinEngineName());
+      set("fuel", vinFuel());
+      if(vinEngine && vinEngine.oilKey) set("oilKey", vinEngine.oilKey);
+      const lit = litresOverride != null ? litresOverride : (vinEngine && Number(vinEngine.litres)) || 0;
+      if(lit > 0) set("litres", String(lit));           // уже вписанный в карточке литраж не теряем
+      const oil = vinChosen("oil");
+      if(oil){ set("filterName", oil.brand); set("filterCode", oil.num); set("filterPrice", String(oil.sell)); }
+      formWrap.scrollIntoView({ behavior:"smooth", block:"nearest" });
+      const l = f.querySelector("[name=litres]");
+      if(l) l.focus();
+    }
+
+    function updateVin(){
+      if(!vin){ vinBox.innerHTML = ""; return; }
+      if(vin.status === "short"){ vinBox.innerHTML = `<div class="to-note">VIN — 17 знаков, без пробелов.</div>`; return; }
+      if(vin.status === "load"){ vinBox.innerHTML = `<div class="to-note">Ищу машину по VIN…</div>`; return; }
+      if(vin.status === "err"){
+        const msg = vin.err === "auth" ? "Каталог не пустил: проверь логин RAVENOL в свойствах скрипта."
+          : vin.err === "notfound" ? "Каталог не знает этот VIN — фильтры вводим руками, как раньше."
+          : vin.err === "vin" ? "Это не похоже на VIN."
+          : "Каталог не ответил. Смета собирается как обычно, фильтры — руками.";
+        vinBox.innerHTML = `<div class="to-note">${esc(msg)}</div>`;
+        return;
+      }
+      const c = vin.car || {};
+      const spec = [["Кузов", c.body], ["Двигатель", c.engineFull || c.engine],
+        ["Объём", Number(c.cc) > 0 ? (Number(c.cc) / 1000).toFixed(1) + " л" : ""],
+        ["Топливо", vinFuel()], ["КПП", c.gearbox], ["Привод", c.drive], ["Год", c.year]]
+        .filter(p => p[1]).map(p => `<span>${esc(p[0])}: <b>${esc(String(p[1]))}</b></span>`).join("");
+
+      const rows = VIN_SLOTS.map(s => {
+        const f = (vin.filters || {})[s.id];
+        if(!f) return "";
+        const p = vin.price[s.id];
+        let body;
+        if(!f.ours || !f.ours.length){
+          // наших брендов нет — отдаём оригинальный номер и «уточню» (решение владельца)
+          const oem = (f.oem || []).slice(0, 2).map(o =>
+            `<button class="pr-art to-code" type="button" data-act="vin-code" data-code="${esc(o.num)}"
+              title="Копировать номер">${esc(o.brand)} ${esc(o.num)}</button>`).join(" ");
+          body = `<span class="to-note">наших нет — уточню${oem ? ", оригинал: " : ""}</span>${oem}`;
+        } else if(!p || p.status === "load"){
+          body = `<span class="to-note">${esc(f.ours[0].brand)} ${esc(f.ours[0].num)} — узнаю цену…</span>`;
+        } else if(p.status !== "ok"){
+          body = `<span class="to-note">${esc(f.ours[0].brand)} ${esc(f.ours[0].num)} — цена не пришла, уточню</span>`;
+        } else {
+          const list = [p.picked].concat(p.alts || []);
+          const cur = (vin.sel && vin.sel[s.id]) || 0;
+          body = list.map((v, i) =>
+            `<button class="to-alt${i === cur ? " on" : ""}" type="button" data-act="vin-alt"
+              data-slot="${s.id}" data-i="${i}" title="${esc(v.name || "")}">
+              ${esc(v.brand)} ${esc(v.num)} <span class="p">${rub(v.sell)}</span>
+              <span class="q">${v.qty} шт · ${v.days} дн</span></button>`).join("");
+        }
+        return `<div class="to-pick-row"><span class="to-pick-cap">${esc(s.cap)}</span>${body}</div>`;
+      }).join("");
+
+      vinBox.innerHTML =
+        `<div class="to-veh">
+          <div class="to-veh-top">
+            <div class="to-veh-title">${esc([c.brand, c.model, c.submodel && c.submodel !== c.model ? c.submodel : ""]
+              .filter(Boolean).join(" "))}</div>
+            <button class="ui-btn ui-btn--secondary ui-btn--sm" type="button" data-act="vin-eng">+ Двигатель из VIN</button>
+            <button class="ui-btn ui-btn--ghost ui-btn--sm ui-btn--icon" type="button" data-act="vin-clear"
+              aria-label="Убрать">${ICO.close}</button>
+          </div>
+          <div class="to-veh-spec">${spec}</div>
+          <div class="to-pick">${rows}</div>
+          <div class="to-note">Воздушный и салонный уже в смете. Масляный уйдёт в запись двигателя —
+            нажми «+ Двигатель из VIN»: останется вписать только паспортный литраж масла.</div>
+        </div>`;
+    }
 
     function updateWarn(){
       warnEl.hidden = !warnOld;
@@ -5764,8 +6006,17 @@
         const fix = r.fixnum ? ` <button class="tpl-badge b-check to-fixnum" type="button" data-act="edit"
           title="Номер вписан в фирму — он уйдёт клиенту. Нажми и вынеси его в поле «Номер фильтра»"
           >${ICO.warn} вынести номер</button>` : "";
-        return `<div class="to-row"><span class="n">${esc(r.n)}</span>${code}${fix}${conf}
-          <span class="p${r.p == null ? " ask" : ""}">${r.p == null ? "уточню" : rub(r.p)}</span>${del}</div>`;
+        // цену фильтра правим прямо в строке: клик по числу → поле, Enter/уход из поля — применить
+        const money = r.p == null ? "уточню" : rub(r.p);
+        const priceHtml = !r.edit
+          ? `<span class="p${r.p == null ? " ask" : ""}">${money}</span>`
+          : priceEdit === r.edit
+            ? `<input class="to-price-inp" type="number" inputmode="numeric" min="0" max="200000" step="1"
+                 data-act="price-set" data-edit="${esc(r.edit)}" value="${r.p == null ? "" : r.p}"
+                 aria-label="Цена, ₽">`
+            : `<button class="p to-price-edit${r.p == null ? " ask" : ""}" type="button" data-act="price-edit"
+                 data-edit="${esc(r.edit)}" title="Изменить цену">${money}</button>`;
+        return `<div class="to-row"><span class="n">${esc(r.n)}</span>${code}${fix}${conf}${priceHtml}${del}</div>`;
       }).join("");
       const slotsHtml = SLOTS.map(sl => {
         if(slots[sl.id]) return "";
@@ -5787,10 +6038,20 @@
           <div class="to-card-top">
             <div class="to-card-title">${esc(e.name)}${e.fuel ? ` <span class="f">· ${esc(e.fuel)}</span>` : ""}</div>
             ${s.stale || s.unknown || u.stale ? `<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>` : ""}
-            <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" data-act="edit">Изменить</button>
+            ${e.virtual
+              ? `<span class="tpl-badge">по VIN</span>
+                 <button class="ui-btn ui-btn--secondary ui-btn--sm" type="button"
+                   data-act="vin-save">${ICO.check} Сохранить в каталог</button>`
+              : `<button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" data-act="edit">Изменить</button>`}
           </div>
+          ${e.virtual ? `<div class="to-litres">Масло:
+            <span class="ui-select-wrap"><select class="ui-select" data-act="vin-oil" aria-label="Моторное масло">${
+              TO_OILS.map(o => `<option value="${esc(o.key)}"${o.key === e.oilKey ? " selected" : ""}>${
+                esc(o.name.replace("Моторное масло ", ""))} · ${rub(RATES[o.rate])}/л</option>`).join("")
+            }</select></span></div>` : ""}
           <div class="to-litres">Объём масла:
-            <input type="number" step="0.1" min="0.5" max="30" value="${fmtL(s.litres)}" data-act="litres" aria-label="Объём масла, л"> л
+            <input type="number" step="0.1" min="0.5" max="30" placeholder="5.2"
+              value="${s.litres > 0 ? fmtL(s.litres) : ""}" data-act="litres" aria-label="Объём масла, л"> л
             ${litresOverride != null ? `<button class="ui-btn ui-btn--ghost ui-btn--sm" type="button"
               data-act="litres-reset">вернуть ${fmtL(e.litres)} л</button>` : ""}
           </div>
@@ -5856,12 +6117,30 @@
     /* ---- события ---- */
     searchEl.addEventListener("input", () => { query = searchEl.value; updateList(); });
     addBtn.addEventListener("click", () => updateForm(null));
+    root.querySelector("#to-vin-go").addEventListener("click", vinGo);
+    vinInp.addEventListener("keydown", ev => { if(ev.key === "Enter"){ ev.preventDefault(); vinGo(); } });
+    vinBox.addEventListener("click", ev => {
+      const b = ev.target.closest("[data-act]"); if(!b) return;
+      const act = b.dataset.act;
+      if(act === "vin-alt"){                      // переключение бренда: решение всегда за менеджером
+        if(!vin.sel) vin.sel = {};
+        const sl = b.dataset.slot;
+        vin.sel[sl] = Number(b.dataset.i) || 0;
+        if(slots[sl]) slots[sl].manual = false;   // выбрал другой бренд — берём его цену, а не старую ручную
+        if(sl === "oil" && vinEngine) vinEngine.priceManual = false;
+        vinApplySlots(); updateVin();
+      }
+      else if(act === "vin-eng"){ vinNewEngine(); }
+      else if(act === "vin-clear"){ vin = null; vinInp.value = ""; updateVin(); }
+      else if(act === "vin-code"){ copyTo(b.dataset.code, b, "Номер скопирован"); }
+    });
     listEl.addEventListener("click", ev => {
       const b = ev.target.closest(".to-eng"); if(!b) return;
       selId = b.dataset.id;
       slots = { air:null, cabin:null, fuel:null }; slotOpen = { air:false, cabin:false, fuel:false };
       litresOverride = null;                      // эфемерное — сбрасывается при смене двигателя
       updateList(); updateCard();
+      vinApplySlots();                            // разобранный VIN переживает смену двигателя
     });
     bodyEl.addEventListener("click", ev => {
       const b = ev.target.closest("[data-act]"); if(!b) return;
@@ -5892,8 +6171,42 @@
         slots[b.dataset.slot] = { name, price, code }; slotOpen[b.dataset.slot] = false; updateCard();
       }
       else if(act === "litres-reset"){ litresOverride = null; updateCard(); }
+      else if(act === "vin-save"){ vinNewEngine(); }     // из временной записи — в общий каталог
+      else if(act === "price-edit"){                     // правка цены фильтра прямо в смете
+        priceEdit = b.dataset.edit; updateCard();
+        const inp = bodyEl.querySelector("[data-act=price-set]");
+        if(inp){ inp.focus(); inp.select(); }
+      }
+    });
+    /* Ручная цена фильтра побеждает подобранную: пока владелец не переключит бренд, догрузка
+       цен по соседним слотам её не затрёт (флаги manual / priceManual). */
+    function applyPrice(target, raw){
+      if(priceEdit === null) return;                           // уже применили (Enter → focusout)
+      const v = Math.round(Number(raw));
+      if(isFinite(v) && v >= 0 && v <= 200000){
+        if(target === "oil"){ if(vinEngine){ vinEngine.filterPrice = v; vinEngine.priceManual = true; } }
+        else if(target.indexOf("slot:") === 0){
+          const id = target.slice(5);
+          if(slots[id]){ slots[id].price = v; slots[id].manual = true; }
+        }
+      }
+      priceEdit = null;
+      updateCard();
+    }
+    bodyEl.addEventListener("keydown", ev => {
+      const pi = ev.target.closest("[data-act=price-set]"); if(!pi) return;
+      if(ev.key === "Enter"){ ev.preventDefault(); applyPrice(pi.dataset.edit, pi.value); }
+      else if(ev.key === "Escape"){ priceEdit = null; updateCard(); }
+    });
+    bodyEl.addEventListener("focusout", ev => {
+      const pi = ev.target.closest("[data-act=price-set]"); if(!pi) return;
+      applyPrice(pi.dataset.edit, pi.value);
     });
     bodyEl.addEventListener("change", ev => {
+      const pi = ev.target.closest("[data-act=price-set]");
+      if(pi){ applyPrice(pi.dataset.edit, pi.value); return; }
+      const sel = ev.target.closest("[data-act=vin-oil]");     // масло у временной записи из VIN
+      if(sel){ if(vinEngine) vinEngine.oilKey = sel.value; updateCard(); return; }
       const i = ev.target.closest("[data-act=litres]"); if(!i) return;
       const v = Number(i.value);
       if(isFinite(v) && v >= 0.5 && v <= 30){ const e = selId && byId(selId);
