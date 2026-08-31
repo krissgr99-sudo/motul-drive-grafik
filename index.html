@@ -4382,21 +4382,42 @@
       document.head.appendChild(s);
     }
 
-    // отмечаем вывод: сразу показываем ноль (оптимистично), сохранение — фоном
+    // сумма из prompt: терпим пробелы, «₽»/«р» и запятую как разделитель; общая для вывода и расхода
+    const parseAmount = s => { const n = Number(String(s).replace(/[\s₽рp]/gi, "").replace(",", ".")); return isFinite(n) ? Math.round(n) : 0; };
+    const WD_MAX = 1000000;   // потолок-предохранитель WITHDRAW_MAX в таблице: больше сервер молча отклонит (no-cors)
+
+    // отмечаем вывод: сумму спрашиваем (по умолчанию вся копилка — Enter = как было раньше),
+    // остаток показываем сразу (оптимистично), сохранение — фоном
     function doWithdraw(pot){
       const ch = cur;
       if(pot <= 0) return;
       if(ch.busy) return;                    // вывод уже отправляется → повторный клик/гонку игнорируем (Р5.1)
       if(!ch.settled){ alert("Секунду — подгружаю свежие продажи. Нажми «Отметить вывод» ещё раз через пару секунд."); return; }
       if(!WITHDRAW_API){ alert("Копилка ещё не подключена к таблице."); return; }
-      // гейты канала масла — ДО confirm (симметрично doSpend): без connected операции писать некуда,
-      // а сумму выше серверного потолка WITHDRAW_MAX бэкенд молча отклонит (no-cors) — не даём отправить
+      // гейты канала масла — ДО ввода суммы (симметрично doSpend): без connected операции писать некуда
       if(ch.key === "oil" && !ch.connected){ alert("Канал масла ещё не подключён к таблице — вывод пока не отметить."); return; }
-      if(ch.key === "oil" && pot > 1000000){ alert("Вывод больше 1 000 000 ₽ одной операцией сервер не примет (потолок-предохранитель WITHDRAW_MAX в таблице). Разбей на части или подними потолок."); return; }
-      if(!confirm("Отметить вывод всей копилки" + (ch.person ? " (" + ch.person + ")" : "") + " — " + money(pot) + "?\nКопилка обнулится.")) return;
+      // Отмена (Cancel) на ЛЮБОМ шаге = полная отмена без записи.
+      let s = prompt("В копилке" + (ch.person ? " (" + ch.person + ")" : "") + " — " + money(pot) + ".\nСколько выводишь, ₽? Оставь как есть — выведешь всё.", String(pot));
+      if(s === null) return;
+      let amount = parseAmount(s);
+      if(!(amount > 0)){
+        s = prompt("Не понял сумму. Введи числом, например " + pot + ":", String(pot));
+        if(s === null) return;
+        amount = parseAmount(s);
+        if(!(amount > 0)){ alert("Сумму разобрать не получилось — вывод не отмечен."); return; }
+      }
+      // больше копилки не выводим: у «Промывки» минуса не бывает (clampZero) — лишнее растворилось бы
+      // в нуле, и экран разошёлся бы с таблицей молча
+      if(amount > pot){ alert("В копилке только " + money(pot) + " — вывести больше нельзя. Вывод не отмечен."); return; }
+      // потолок сервера один на оба канала: раньше проверяли только масло, но и вывод «Промывки»
+      // выше него бэкенд отклоняет молча (no-cors). Теперь сумму можно разделить на части.
+      if(amount > WD_MAX){ alert("Вывод больше " + money(WD_MAX) + " одной операцией сервер не примет (потолок-предохранитель WITHDRAW_MAX в таблице). Раздели на части или подними потолок."); return; }
+      const rest = pot - amount;
+      if(!confirm("Отметить вывод " + money(amount) + (ch.person ? " (" + ch.person + ")" : "") + "?\n" +
+                  (rest > 0 ? "В копилке останется " + money(rest) + "." : "Копилка обнулится."))) return;
       ch.busy = true;                        // с этого момента до реконсиляции повторный вывод заблокирован
       if(ch.key === "oil"){
-        if(!enqueueOp("wd", pot, "")){ ch.busy = false; return; } // очередь переполнена — отказ уже показан
+        if(!enqueueOp("wd", amount, "")){ ch.busy = false; return; } // очередь переполнена — отказ уже показан
         setTimeout(() => { ch.busy = false; }, 1600);
         return;
       }
@@ -4404,13 +4425,13 @@
       const d = new Date(), p = n => String(n).padStart(2, "0");
       const today = d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate());
       const withdrawalId = newOpId();
-      (ch.ops = ch.ops || []).push({ id: withdrawalId, date: today, amount: pot, time: p(d.getHours()) + ":" + p(d.getMinutes()) });
+      (ch.ops = ch.ops || []).push({ id: withdrawalId, date: today, amount: amount, time: p(d.getHours()) + ":" + p(d.getMinutes()) });
       saveLS("md_withdrawals", ch.ops);
       render();
       // no-cors сохраняем (ответ Apps Script непрозрачен, CORS-заголовков не отдаёт); подтверждение — перечиткой loadOps.
       fetch(WITHDRAW_API, { method:"POST", mode:"no-cors",
         headers:{ "Content-Type":"text/plain;charset=utf-8" },
-        body: JSON.stringify({ token: WITHDRAW_TOKEN, withdrawalId: withdrawalId, date: today, amount: pot }) })
+        body: JSON.stringify({ token: WITHDRAW_TOKEN, withdrawalId: withdrawalId, date: today, amount: amount }) })
         .then(() => setTimeout(loadOps, 1500))
         .catch(() => alert("Не удалось сохранить вывод — проверь интернет и обнови страницу."))
         .finally(() => setTimeout(() => { ch.busy = false; }, 1600)); // окно debounce: гасит двойной клик, затем снова можно
@@ -4418,7 +4439,6 @@
 
     // «Внести расход» (только масло): сумма → комментарий → подтверждение → очередь.
     // Отмена (Cancel) на ЛЮБОМ шаге = полная отмена без записи.
-    const parseAmount = s => { const n = Number(String(s).replace(/[\s₽рp]/gi, "").replace(",", ".")); return isFinite(n) ? Math.round(n) : 0; };
     function doSpend(){
       const ch = cur;
       if(!ch.allowSpend) return;
@@ -4558,7 +4578,7 @@
         rowsEl.innerHTML = timeline.map(item => {
           if(item.kind === "wd"){
             const w = item.o;
-            return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>${ICO.cash} Вывод — <span class="wd-amount">${money(w.amount)}</span></span>${pendBadge(w)}<span class="wd-note">${opWhen(w)} · копилка обнулена</span></div></td></tr>`;
+            return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>${ICO.cash} Вывод — <span class="wd-amount">${money(w.amount)}</span></span>${pendBadge(w)}<span class="wd-note">${opWhen(w)}</span></div></td></tr>`;
           }
           if(item.kind === "spend"){
             const w = item.o;
