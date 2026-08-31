@@ -710,13 +710,13 @@
   /* ===================== ЯМА (журнал работ и доля мастеров) =====================
      Каркас дня переиспользует .daycard из «Продаж»; своё здесь — строка машины,
      чипы работ и кнопка мастера. Цвета — только через токены (обе темы). */
-  .yama-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+  /* сводка месяца: сколько плиток есть, столько и колонок — одна не растягивается на всю ширину */
+  .yama-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,240px));gap:10px;margin-bottom:14px}
   .yama-sum .ys{background:var(--card);border:1px solid var(--line);border-radius:12px;
     padding:12px 14px;box-shadow:var(--shadow)}
   .yama-sum .ys .k{display:block;font-size:12px;color:var(--muted);letter-spacing:.02em}
   .yama-sum .ys .v{display:block;font-family:"Space Grotesk",system-ui,sans-serif;
     font-size:21px;font-weight:600;color:var(--text);margin-top:3px}
-  .yama-sum .ys.pay .v{color:var(--accent-soft)}
   /* шапка дня-гармошки: слева дата, справа три числа — свёрнутый день читается без раскрытия */
   .yday .dhead{cursor:pointer}
   .yday .dhead .dbadge{margin-left:0}
@@ -741,6 +741,15 @@
     border:1px solid var(--line);border-radius:8px;padding:3px 8px;font-size:12px;color:var(--muted)}
   .ychip b{color:var(--text);font-weight:600}
   .ychip.other{border-color:var(--accent-soft);color:var(--accent-soft)}
+  /* «некруглая» цена работы: не запрет, а вопрос — цифру не трогаем, только помечаем.
+     Статусный жёлтый (--warn), рецепт как у бейджа «Проверить цены»: акцент в системе один. */
+  .ychip.odd{background:rgba(240,180,41,.14);border-color:rgba(240,180,41,.42);color:var(--warn)}
+  .ychip.odd b{color:var(--warn)}
+  .yflag{display:inline-flex;align-items:center;gap:4px;margin-left:10px;
+    font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--warn);
+    background:rgba(240,180,41,.14);border:1px solid rgba(240,180,41,.42);
+    border-radius:6px;padding:2px 7px;white-space:nowrap}
+  .yflag svg{width:11px;height:11px}
   /* обёртка .ui-select-wrap нужна ради стрелки (у голого .ui-select её нет: appearance:none).
      Ширину держим на обёртке — иначе .ui-select с width:100% растянет строку на три этажа */
   .ymaster-wrap{flex:0 0 auto;width:auto;min-width:128px;max-width:162px}
@@ -4668,6 +4677,15 @@
     const UI_ORDER = ["КПП","Раздатка","Передний","Задний","Халдекс","ДВС",
                       "Воздушный","Салонный","Топливный","Тормозная"];   // порядок как в ручном журнале
     const CKEY = "md_yama", LKEY = "md_yama_local";
+    // «Некруглая» цена = не кратная 100 ₽. Цены работ приходят из заказа как есть, и в норме
+    // все они кратны сотне (проверено на журнале: 120 значений из 120). А 6%, вписанные ВНУТРЬ
+    // цены работы вместо расходников, дают 1 590, 6 360, 8 480 — их и ловим: в июле такая
+    // строка увела мастерам долю с чужих денег, и нашлось это только ручной сверкой.
+    // Помечаем, а не правим: цифра остаётся, вопрос задаётся до дележа дня пополам.
+    const ODD_STEP = 100;
+    const ODD_HINT = "Цена не кратна 100 ₽ — проверьте, не вшито ли в работу что-то ещё "
+                   + "(например, 6% за оплату по счёту: их место в расходниках, а не в работе).";
+    const isOdd = v => v > 0 && v % ODD_STEP !== 0;
     const WD   = ["вс","пн","вт","ср","чт","пт","сб"];
     const MON  = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
     const MONF = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль",
@@ -4709,25 +4727,32 @@
       }
       const shown = days.filter(d => !selMonth || d.date.slice(0, 7) === selMonth).slice().reverse();
 
-      // сводка месяца: сумма работ, доля мастеров, машины
-      const total = shown.reduce((a, d) => a + d.rows.reduce((s, r) => s + r.sum, 0), 0);
-      const cars  = shown.reduce((a, d) => a + d.rows.length, 0);
+      // сводка месяца: только машины — денежный итог месяца с экрана убран (решение владельца);
+      // деньги остались там, где ими работают: итог дня в шапке и сумма по машине в строке
+      const cars = shown.reduce((a, d) => a + d.rows.length, 0);
       sumEl.hidden = !shown.length;
       sumEl.innerHTML = shown.length ? `
-        <div class="ys"><span class="k">Работы за месяц</span><span class="v">${money(total)}</span></div>
-        <div class="ys pay"><span class="k">Мастерам (÷2)</span><span class="v">${money(total / 2)}</span></div>
-        <div class="ys"><span class="k">Машин</span><span class="v">${nf.format(cars)}</span></div>` : "";
+        <div class="ys"><span class="k">Машин за месяц</span><span class="v">${nf.format(cars)}</span></div>` : "";
 
+      let oddTotal = 0;   // сколько «некруглых» цен во всех показанных днях — для подписи внизу
       daysEl.innerHTML = shown.map((d, i) => {
         const dt = parse(d.date);
         const итог = d.rows.reduce((s, r) => s + r.sum, 0);
+        let dayOdd = 0;   // свёрнутый день тоже должен признаться, что внутри есть что проверить
         const cars = d.rows.map(r => {
+          // чип работы; «некруглую» цену помечаем и считаем — счёт уходит в бейдж шапки дня
+          const chip = (name, v, cls) => {
+            const odd = isOdd(v);
+            if(odd) dayOdd++;
+            return `<span class="ychip${cls ? " " + cls : ""}${odd ? " odd" : ""}"${odd ? ` title="${ODD_HINT}"` : ""}>`
+                 + `${name} <b>${nf.format(v)}</b></span>`;
+          };
           // чипы работ — в привычном порядке журнала, только ненулевые
           const chips = UI_ORDER.map(name => {
             const i = (data.columns || []).indexOf(name);
             const v = i >= 0 ? (r.cols[i] || 0) : 0;
-            return v ? `<span class="ychip">${name} <b>${nf.format(v)}</b></span>` : "";
-          }).join("") + (r.other ? `<span class="ychip other">Прочее <b>${nf.format(r.other)}</b></span>` : "");
+            return v ? chip(name, v) : "";
+          }).join("") + (r.other ? chip("Прочее", r.other, "other") : "");
           const m = masterOf(r);
           return `<div class="ycar">
             <div class="ycar-main">
@@ -4745,11 +4770,13 @@
         }).join("");
         // день = гармошка (механика «Продаж»): свежий раскрыт, остальные свёрнуты —
         // в свёрнутом виде день всё равно показывает главное: машины, работы, долю мастеров
+        oddTotal += dayOdd;
         return `<div class="daycard sday yday${i === 0 ? " open" : ""}">
           <button class="sday-btn" type="button" aria-expanded="${i === 0}">
             <div class="dhead">
               <span class="dnum">${dt.getDate()}</span><span class="dmon">${MON[dt.getMonth()]}</span>
               <span class="dbadge">${WD[dt.getDay()]}</span>
+              ${dayOdd ? `<span class="yflag" title="${ODD_HINT}">${ICO.warn} проверить ${dayOdd}</span>` : ""}
               <span class="yhead-vals">
                 <span class="yhv"><span class="k">машин</span><span class="v">${d.rows.length}</span></span>
                 <span class="yhv"><span class="k">работы</span><span class="v">${money(итог)}</span></span>
@@ -4769,6 +4796,8 @@
         ? "Журнал появится после обновления скрипта таблицы — работы подтянутся из LiveSklad сами."
         : (shown.length
           ? "Машины и работы приходят из LiveSklad автоматически каждые полчаса. Руками — только имя мастера."
+            + (oddTotal ? " Жёлтым помечены цены не кратные 100 ₽: в такую цену обычно вшито что-то ещё —"
+                        + " например, 6% за оплату по счёту, место которым в расходниках." : "")
           : "За этот месяц работ пока нет.");
     }
 
