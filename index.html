@@ -543,6 +543,7 @@
     background:var(--chip-bg);color:var(--chip-text);border:1px solid var(--line)}
 
   /* ===================== ТАБЛИЦА (десктоп) ===================== */
+  .sched-arch{margin:0 0 12px}   /* кнопка «прошлый месяц» над таблицей: архив открывается по требованию */
   .tablecard{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
   table{width:100%;border-collapse:collapse;table-layout:fixed}
   thead th{padding:14px 12px;font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:#fff;
@@ -596,6 +597,7 @@
     .ps-mode{font-size:11px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap;
       background:color-mix(in srgb, var(--cc) 18%, transparent);color:var(--cc);border:1px solid color-mix(in srgb, var(--cc) 38%, transparent)}
     .tpl-nav-head{min-height:44px}                 /* строки дерева — хит ≥44 */
+    .sched-arch .ui-btn{min-height:44px;width:100%} /* кнопка архива — хит ≥44 (правило 7) */
   }
 
   /* ===================== ПРОДАЖИ ===================== */
@@ -1091,7 +1093,7 @@
     <div class="pagehead">
       <div class="title">
         <div class="t">График дежурств</div>
-        <div class="r">28 июня — 27 июля 2026 · 30 дней</div>
+        <div class="r"></div><!-- диапазон подставляет showPage из SCHED_RANGE: дату руками не пишем -->
       </div>
     </div>
 
@@ -1106,6 +1108,9 @@
 
     <!-- Люди (компактно, только на мобильном) -->
     <div class="people-strip" id="people-strip"></div>
+
+    <!-- Архив: прошлый месяц лежит рядом, но по умолчанию скрыт (кнопка ниже) -->
+    <div class="sched-arch"><button class="ui-btn ui-btn--secondary ui-btn--sm" id="arch-btn" type="button" aria-expanded="false" hidden></button></div>
 
     <!-- Таблица (десктоп) -->
     <div class="tablecard">
@@ -1310,7 +1315,7 @@
     { who:"Бекзод", from:new Date(2026,6,21), to:new Date(2026,7,3), cover:"Святослав" }, // 21.07–03.08.2026
   ];
 
-  // [дата "ДД.ММ", день недели, работает(1/0) Бекзод, Святослав, Кристиан]
+  // [дата "ДД.ММ", день недели, работает(1/0) Бекзод, Святослав, Кристиан, прошлый месяц(true/false)]
   const pad = n => String(n).padStart(2, "0");
   const now = new Date();
   const utc = d => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
@@ -1321,7 +1326,10 @@
     return (pos === 0 || pos === 1) ? 1 : 0;                          // 2 смены / 2 выходных
   }
   function buildSchedule(){
-    const first = new Date(now.getFullYear(), now.getMonth(), 1);     // 1-е текущего месяца
+    // Окно: прошлый + текущий + следующий месяц. Прошлый — архив «кто когда был на смене»:
+    // формула та же, отпуска те же, поэтому история не хранится, а считается заново.
+    const first = new Date(now.getFullYear(), now.getMonth() - 1, 1); // 1-е ПРОШЛОГО месяца
+    const cur   = new Date(now.getFullYear(), now.getMonth(), 1);     // 1-е текущего — граница архива
     const last  = new Date(now.getFullYear(), now.getMonth() + 2, 0); // последний день следующего месяца
     const out = [];
     for(let d = new Date(first); d <= last; d.setDate(d.getDate() + 1)){
@@ -1335,11 +1343,25 @@
           else if(v.who === "Святослав"){ sv = 0; bek = 1; }         // Бекзод подменяет
         }
       }
-      out.push([pad(d.getDate()) + "." + pad(d.getMonth() + 1), WD_RU[gd], bek, sv, krist]);
+      out.push([pad(d.getDate()) + "." + pad(d.getMonth() + 1), WD_RU[gd], bek, sv, krist, utc(d) < utc(cur)]);
     }
     return out;
   }
   const SCHEDULE = buildSchedule();
+
+  /* Подпись раздела — из живого окна графика, а не строкой руками: она обязана стареть вместе
+     с данными. Архив прошлого месяца в диапазон не входит — он открывается кнопкой. */
+  const SCHED_RANGE = (() => {
+    const days = SCHEDULE.filter(r => !r[5]).length;                 // дни текущего + следующего месяца
+    const from = new Date(now.getFullYear(), now.getMonth(), 1);
+    const to   = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+    const word = n => (n % 100 >= 11 && n % 100 <= 14) ? "дней"
+                    : n % 10 === 1 ? "день" : (n % 10 >= 2 && n % 10 <= 4) ? "дня" : "дней";
+    try {
+      const fmt = d => d.toLocaleDateString("ru-RU", { day:"numeric", month:"long" });
+      return `${fmt(from)} — ${fmt(to)} ${to.getFullYear()} · ${days} ${word(days)}`;
+    } catch(e){ return `${days} ${word(days)}`; }
+  })();
 
   /* =========================== РЕНДЕР =========================== */
   const MON = { "01":"янв","02":"фев","03":"мар","04":"апр","05":"май","06":"июн",
@@ -1365,7 +1387,8 @@
       </th>`).join("");
 
   // Подготовка строк
-  const ROWS = SCHEDULE.map(([date, wd, ...work]) => {
+  const ROWS = SCHEDULE.map(([date, wd, bek, sv, krist, past]) => {
+    const work = [bek, sv, krist];                                   // порядок как в PEOPLE
     const [dd, mm] = date.split(".");
     const weekend = isWeekend(wd);
     const solo = work.reduce((a,b)=>a+b,0) === 1;
@@ -1378,7 +1401,7 @@
         label: solo ? "На смене один · всё на нём" : "На смене",
       };
     });
-    return { key: date, dd, mon: MON[mm] || "", wd, weekend, cells };
+    return { key: date, dd, mon: MON[mm] || "", wd, weekend, cells, past };
   });
 
   // Тело таблицы (десктоп)
@@ -1390,7 +1413,7 @@
           : `<span class="off">выходной</span>`}
       </td>`).join("");
     const today = r.key === todayKey;
-    return `<tr class="${r.weekend ? "weekend" : ""}${today ? " today-row" : ""}">
+    return `<tr class="${r.weekend ? "weekend" : ""}${today ? " today-row" : ""}${r.past ? " is-arch" : ""}"${r.past ? " hidden" : ""}>
       <td class="date-cell"><div><span class="dnum">${r.dd}</span><span class="dmon">${r.mon}</span></div><span class="dbadge${today ? " is-today" : ""}">${today ? "Сегодня · " + r.wd : r.wd}</span></td>
       ${cells}
     </tr>`;
@@ -1408,11 +1431,32 @@
         </div>
       </div>`).join("");
     const today = r.key === todayKey;
-    return `<div class="daycard ${r.weekend ? "weekend" : ""}${today ? " today-card" : ""}">
+    return `<div class="daycard ${r.weekend ? "weekend" : ""}${today ? " today-card" : ""}${r.past ? " is-arch" : ""}"${r.past ? " hidden" : ""}>
       <div class="dhead"><span class="dnum">${r.dd}</span><span class="dmon">${r.mon}</span><span class="dbadge${today ? " is-today" : ""}">${today ? "Сегодня · " + r.wd : r.wd}</span></div>
       ${prows}
     </div>`;
   }).join("");
+
+  /* Архив прошлого месяца: дни уже построены и лежат первыми, но скрыты — график
+     открывается на текущем месяце, а не на истории. Кнопка их показывает и прячет обратно;
+     скрытые строки не попадают и в печать. Название месяца берётся из даты, не из текста. */
+  (function(){
+    const btn  = document.getElementById("arch-btn");
+    const past = document.querySelectorAll("#rows .is-arch, #cards .is-arch");
+    if(!btn || !past.length) return;
+    const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    let mon;
+    try { mon = prev.toLocaleDateString("ru-RU", { month:"long" }); }
+    catch(e){ mon = MON[pad(prev.getMonth() + 1)] || "прошлый месяц"; }
+    const apply = open => {
+      past.forEach(el => { el.hidden = !open; });
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      btn.textContent = (open ? "Скрыть " : "Показать ") + mon;
+    };
+    btn.hidden = false;
+    apply(false);
+    btn.addEventListener("click", () => apply(btn.getAttribute("aria-expanded") !== "true"));
+  })();
 
   /* ===================== Баннер «Сегодня» ===================== */
   (function(){
@@ -5855,7 +5899,7 @@
 
   /* ===================== Меню и страницы ===================== */
   const PAGES = {
-    grafik:   { t:"График дежурств", r:"28 июня — 27 июля 2026 · 30 дней" },
+    grafik:   { t:"График дежурств", r:SCHED_RANGE },
     shablony: { t:"Шаблоны",         r:"Каталог · выбери марку, копируй и отправляй клиенту" },
     to:       { t:"Расчёт ТО",       r:"Двигатель → масло, фильтры и работы · копируй и отправляй" },
     tseny:    { t:"Цены",            r:"Запчасти и масла · поиск по названию и артикулу" },
