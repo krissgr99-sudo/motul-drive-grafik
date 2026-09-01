@@ -890,6 +890,10 @@
      Данные дают ручки vin/part в Apps Script; ответа нет — блок молчит, слоты вводятся руками. */
   .to-vin{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .to-vin .ui-input{flex:1;min-width:220px;font-family:var(--font-mono);letter-spacing:.6px;text-transform:uppercase}
+  /* Ключ подбора: вводится один раз на устройстве и живёт в localStorage. В статике сайта его
+     нет и быть не может — иначе он повторил бы судьбу токена (аудит 2026-09-01). */
+  .to-vin--key{margin-top:8px}
+  .to-vin--key .ui-input{text-transform:none;letter-spacing:0}
   .to-veh{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
     padding:14px 16px;display:flex;flex-direction:column;gap:10px}
   .to-veh-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -5825,14 +5829,29 @@
       return "";
     }
 
+    /* Ключ подбора. Общий SHEET_TOKEN лежит открытым текстом в статике сайта, поэтому ручки
+       vin и part закрыты ОТДЕЛЬНЫМ ключом (VIN_KEY в свойствах скрипта). Здесь он живёт только
+       в localStorage конкретного устройства: менеджер вводит его один раз, дальше подставляется
+       сам. Не подошёл — забываем и спрашиваем заново, чтобы старый ключ не залипал молча. */
+    const VINKEY_LS = "md_vin_key";
+    const vinKey    = () => { try { return localStorage.getItem(VINKEY_LS) || ""; } catch(e){ return ""; } };
+    const vinKeySet = v => { try { v ? localStorage.setItem(VINKEY_LS, v) : localStorage.removeItem(VINKEY_LS); } catch(e){} };
+
     async function vinGo(){
       const raw = String(vinInp.value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 17);
       if(raw.length < 11){ vin = { status:"short" }; updateVin(); return; }
+      const key = vinKey();
+      if(!key){ vin = { status:"key" }; updateVin(); return; }   // ключа нет — сначала спросим его
       vin = { status:"load", vin: raw };
       updateVin();
       let d;
-      try { d = await jsonp("type=vin&token=" + encodeURIComponent(SHEET_TOKEN) + "&q=" + encodeURIComponent(raw)); }
+      try { d = await jsonp("type=vin&token=" + encodeURIComponent(SHEET_TOKEN) +
+                            "&key=" + encodeURIComponent(key) + "&q=" + encodeURIComponent(raw)); }
       catch(err){ vin = { status:"err", err:"net" }; updateVin(); return; }
+      if(d && (d.error === "key" || d.error === "keyoff")){
+        if(d.error === "key") vinKeySet("");             // ключ не подошёл — не держим его на устройстве
+        vin = { status:"key", err: d.error }; updateVin(); return;
+      }
       if(!d || d.error){ vin = { status:"err", err:(d && d.error) || "err" }; updateVin(); return; }
       vin = { status:"ok", vin: raw, car: d.car || {}, filters: d.filters || {}, price: {}, sel: {} };
       slots = { air:null, cabin:null, fuel:null };     // новая машина — старые фильтры не её
@@ -5844,6 +5863,7 @@
         if(!f || !f.ours || !f.ours.length) continue;
         vin.price[s.id] = { status:"load" };
         jsonp("type=part&token=" + encodeURIComponent(SHEET_TOKEN) +
+              "&key=" + encodeURIComponent(key) +
               "&art=" + encodeURIComponent(f.ours[0].brand + " " + f.ours[0].num))
           .then(r => { vin.price[s.id] = (r && !r.error && r.picked)
               ? { status:"ok", picked:r.picked, alts:r.alts || [] } : { status:"err" };
@@ -5912,10 +5932,27 @@
       if(!vin){ vinBox.innerHTML = ""; return; }
       if(vin.status === "short"){ vinBox.innerHTML = `<div class="to-note">VIN — 17 знаков, без пробелов.</div>`; return; }
       if(vin.status === "load"){ vinBox.innerHTML = `<div class="to-note">Ищу машину по VIN…</div>`; return; }
+      if(vin.status === "key"){
+        // keyoff — ключа нет на СЕРВЕРЕ, вводить нечего: показываем только объяснение
+        const off = vin.err === "keyoff";
+        const msg = off ? "Подбор выключен на сервере: не задан ключ VIN_KEY в свойствах скрипта."
+          : vin.err === "key" ? "Ключ не подошёл. Введи ещё раз."
+          : "Подбор по VIN закрыт ключом. Введи его один раз — дальше он запомнится на этом устройстве.";
+        vinBox.innerHTML = `<div class="to-note">${esc(msg)}</div>` + (off ? "" :
+          `<div class="to-vin to-vin--key">
+             <input class="ui-input" id="to-vinkey" type="password" autocomplete="off" spellcheck="false"
+                    placeholder="Ключ подбора" aria-label="Ключ подбора по VIN">
+             <button class="ui-btn ui-btn--secondary" type="button" data-act="vinkey-save">Запомнить</button>
+           </div>`);
+        const k = vinBox.querySelector("#to-vinkey"); if(k) k.focus();
+        return;
+      }
       if(vin.status === "err"){
         const msg = vin.err === "auth" ? "Каталог не пустил: проверь логин RAVENOL в свойствах скрипта."
           : vin.err === "notfound" ? "Каталог не знает этот VIN — фильтры вводим руками, как раньше."
           : vin.err === "vin" ? "Это не похоже на VIN."
+          : vin.err === "budget" ? "На сегодня лимит новых разборов исчерпан. Уже разобранные машины открываются как обычно, новую — руками или завтра."
+          : vin.err === "rate" ? "Подбор просили слишком часто — он отдыхает около часа. Смета собирается как обычно, фильтры руками."
           : "Каталог не ответил. Смета собирается как обычно, фильтры — руками.";
         vinBox.innerHTML = `<div class="to-note">${esc(msg)}</div>`;
         return;
@@ -6135,7 +6172,20 @@
       else if(act === "vin-eng"){ vinNewEngine(); }
       else if(act === "vin-clear"){ vin = null; vinInp.value = ""; updateVin(); }
       else if(act === "vin-code"){ copyTo(b.dataset.code, b, "Номер скопирован"); }
+      else if(act === "vinkey-save"){ vinKeySave(); }
     });
+    // Enter в поле ключа — то же, что «Запомнить»: поле рисуется заново на каждой отрисовке,
+    // поэтому слушаем не сам input, а контейнер
+    vinBox.addEventListener("keydown", ev => {
+      if(ev.key === "Enter" && ev.target && ev.target.id === "to-vinkey"){ ev.preventDefault(); vinKeySave(); }
+    });
+    function vinKeySave(){
+      const inp = vinBox.querySelector("#to-vinkey");
+      const v = String((inp && inp.value) || "").trim();
+      if(!v){ if(inp) inp.focus(); return; }
+      vinKeySet(v);
+      vinGo();                                    // VIN всё ещё в поле — повторяем разбор сразу
+    }
     listEl.addEventListener("click", ev => {
       const b = ev.target.closest(".to-eng"); if(!b) return;
       selId = b.dataset.id;
