@@ -6,7 +6,7 @@
    Стратегия — network-first для навигаций и своих GET: свежий деплой всегда доходит до онлайн-
    пользователя (нет «залипшей» старой оболочки), кэш — только страховка на офлайн. Публикация нового
    ядра требует смены версии кэша ниже — старые версии сносятся при activate. */
-const CACHE = "motul-drive-v25";
+const CACHE = "motul-drive-v26";
 
 self.addEventListener("install", e => {
   // Предкэш корня scope (на Pages это index.html). Если недоступен — не валим установку.
@@ -42,7 +42,7 @@ self.addEventListener("fetch", e => {
     );
     return;
   }
-  // прочие same-origin GET (manifest.webmanifest, sales.json и т.п.): сеть, при офлайне — кэш
+  // прочие same-origin GET (manifest.webmanifest и т.п.): сеть, при офлайне — кэш
   e.respondWith(
     fetch(req)
       .then(res => { cachePut(req, res); return res; })

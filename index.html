@@ -6,7 +6,7 @@
 <title>MOTUL-DRIVE · Портал</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='9%25' y1='21%25' x2='91%25' y2='79%25'><stop offset='50%25' stop-color='%23d11f2d'/><stop offset='50%25' stop-color='%23141414'/></linearGradient></defs><circle cx='32' cy='32' r='31' fill='url(%23g)'/><text x='32' y='34' font-family='Arial,Helvetica,sans-serif' font-size='26' font-weight='800' fill='%23fff' text-anchor='middle' dominant-baseline='central' letter-spacing='0.5'>MD</text></svg>">
 <!-- PWA (Н4): ярлык на домашний экран + офлайн-оболочка через service worker (регистрация в конце body).
-     manifest.webmanifest и sw.js — same-origin соседи рядом с index.html (как sales.json), внешних доменов нет (КЛ3). -->
+     manifest.webmanifest и sw.js — same-origin соседи рядом с index.html, внешних доменов нет (КЛ3). -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#d11f2d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4111,9 +4111,9 @@
      рендера, не копия кода. Живые данные приходят из Google Apps Script
      (SHEET_API?type=sales): его робот каждые 30 минут пересчитывает LiveSklad
      ОДНИМ проходом для обоих каналов и держит историю в листах «Продажи» и
-     «Продажи-масло». Запасной источник промывки — sales.json (замороженный
-     снимок; старый робот GitHub Actions отключён 04.07.2026); SALES ниже —
-     последний резерв: мгновенно и офлайн. У масла резерва-файла нет: только
+     «Продажи-масло». SALES ниже — последний резерв: мгновенно и офлайн
+     (замороженный снимок 04.07.2026; отдельный файл sales.json с тем же снимком убран
+     2026-09-01 — он дублировал резерв и лежал в публичном репозитории). У масла резерва-файла нет: только
      поле oil ответа Apps Script + кэш localStorage (md_sales_oil).
      Правь данные, не вёрстку: таблица, карточки, плитки и «Итого» считаются сами.
      days[].orders: [номер заказ-наряда, продано(шт), сумма(₽), время(HH:mm)]
@@ -4702,7 +4702,7 @@
       updEl.textContent = (isOil && ch.data.active === false)
         ? "Сбор остановлен: лист «Масла» пуст — добавь правила"
         : (upd && !isNaN(upd.getTime())
-            // ранг < 2 = на экране замороженный снимок (резерв/sales.json), а не последние данные:
+            // ранг < 2 = на экране замороженный снимок из файла страницы, а не последние данные:
             // дата такого снимка не выдаётся за свежую. Кэш (ранг 2) — настоящая дата, метка не нужна.
             ? `Обновлено ${dateFull(upd)} ${upd.getFullYear()}${ch.rank < 2 ? " · подгружаю свежие…" : ""}`
             : "");
@@ -4755,25 +4755,26 @@
     try { const c = JSON.parse(localStorage.getItem("md_withdrawals") || "null"); if(Array.isArray(c)) CH.flush.ops = c; } catch(e){}
     try { const c = JSON.parse(localStorage.getItem("md_oil_ops") || "null"); if(Array.isArray(c)) CH.oil.ops = c; } catch(e){}
     try { const c = JSON.parse(localStorage.getItem("md_oil_pending") || "null"); if(Array.isArray(c)) CH.oil.pend = c; } catch(e){} // не усекаем: молча терять денежные записи нельзя
-    // без этого кэша первый кадр каждой перезагрузки — июльский снимок (SALES / sales.json заморожены 04.07.2026)
+    // без этого кэша первый кадр каждой перезагрузки — июльский снимок (резерв SALES заморожен 04.07.2026)
     try { const j = JSON.parse(localStorage.getItem("md_sales_flush") || "null"); if(j && Array.isArray(j.days)){ CH.flush.data = j; CH.flush.rank = 2; } } catch(e){}
     try { const j = JSON.parse(localStorage.getItem("md_sales_oil") || "null"); if(j && Array.isArray(j.days)){ CH.oil.data = j; CH.oil.rank = 2; } } catch(e){}
     try { if(localStorage.getItem("md_oil_connected")) CH.oil.connected = true; } catch(e){}
 
     render(); // мгновенно рисуем запасные данные (и на случай офлайна)
-    // Свежие продажи. Промывка: sales.json (замороженный снимок) и Apps Script параллельно,
-    // Apps Script всегда главнее (ранги: 0 резерв, 1 sales.json, 2 кэш, 3 Apps Script).
+    // Свежие продажи. Ранги: 0 резерв в файле, 2 кэш устройства, 3 Apps Script (главнее всех).
+    // Ранг 1 был файлом sales.json — убран 2026-09-01, см. ниже.
     // Масло: ТОЛЬКО Apps Script (поле oil того же ответа) — отсутствие поля означает
     // старый бэкенд, а не «продаж нет»: кэш в этом случае не трогаем.
     const applySales = (ch, j, rank) => {
       if(j && Array.isArray(j.days) && rank >= ch.rank){ ch.rank = rank; ch.data = j; ch.settled = true; render(); return true; }
       return false;
     };
-    fetch("sales.json?t=" + Date.now(), { cache:"no-store" })
-      .then(r => r.ok ? r.json() : null)
-      .then(j => applySales(CH.flush, j, 1))
-      .catch(()=>{})
-      .finally(() => { CH.flush.settled = true; render(); }); // у промывки есть встроенный резерв — вывод не ждёт вечно
+    /* Ранг 1 (файл sales.json) убран 2026-09-01. Это была ТА ЖЕ замороженная сводка от
+       04.07.2026, что и резерв SALES внутри страницы (ранг 0), — то есть источник не давал
+       ничего сверх уже показанного, зато лежал отдельным файлом в ПУБЛИЧНОМ репозитории
+       вместе с номерами заказов и суммами чеков. Отметку settled оставляем здесь: у промывки
+       есть встроенный резерв, и вывод не должен ждать ответа Apps Script. */
+    CH.flush.settled = true; render();
     (function loadSalesApi(){ // JSONP — обходит CORS у Apps Script
       const cb = "__sales_" + Date.now();
       const s = document.createElement("script");
