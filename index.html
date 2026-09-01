@@ -38,6 +38,7 @@
     --c-red:#ff4b57;                 /* акцент-красный (текст/точки), человек «Бекзод» */
     --c-graphite:#aeb6c2;            /* стальной — человек «Святослав» (виден на тёмном) */
     --c-blue:#5b8dff;                /* синий — человек «Кристиан» */
+    --c-teal:#43b8d4;                /* петроль — человек «Иван» (четвёртый цвет идентичности) */
     --weekend:rgba(255,75,87,.05);
     --shadow:0 16px 40px rgba(0,0,0,.5);
     --grid:rgba(255,255,255,.022); --glow:rgba(209,31,45,.20);
@@ -64,6 +65,7 @@
     --c-red:#d11f2d;                 /* Бекзод */
     --c-graphite:#2e2e2e;            /* Святослав */
     --c-blue:#1b458f;                /* Кристиан */
+    --c-teal:#0e6f8a;                /* Иван */
     --weekend:rgba(209,31,45,.05);
     --shadow:0 8px 24px rgba(20,25,40,.06);
     --grid:rgba(20,25,40,.022); --glow:rgba(209,31,45,.05);
@@ -80,6 +82,7 @@
   [data-color="red"]{--cc:var(--c-red)}
   [data-color="graphite"]{--cc:var(--c-graphite)}
   [data-color="blue"]{--cc:var(--c-blue)}
+  [data-color="teal"]{--cc:var(--c-teal)}
 
   *{box-sizing:border-box;margin:0;padding:0}
   ::selection{background:var(--brand);color:#fff}
@@ -800,12 +803,21 @@
   .fb-hint.ok{color:var(--ok)}
   .fb-warn{margin-top:12px;font-size:12px;font-weight:600;color:var(--muted);background:var(--fill-soft);
     border:1px dashed var(--line-strong);border-radius:12px;padding:10px 13px;line-height:1.5}
+  .fb-list-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .fb-list-head[hidden],.fb-switch[hidden]{display:none}   /* свой display перебивает [hidden] — гасим явно */
   .fb-list-h{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .fb-list-head .fb-list-h{margin-bottom:0}   /* внутри шапки с переключателем отступ держит сама шапка */
+  .fb-switch{margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:999px;
+    border:1px solid var(--line);background:var(--fill);color:var(--muted);font:inherit;font-weight:700;font-size:12px;
+    cursor:pointer;transition:border-color .15s,background .15s,color .15s,transform .15s}
+  .fb-switch:hover{border-color:var(--line-strong);background:var(--fill-hover);color:var(--text)}
+  .fb-switch:active{transform:scale(.95)}
   .fb-list{display:flex;flex-direction:column;gap:10px}
-  .fb-note{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:13px 16px}
+  .fb-note{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:13px 16px}
   .fb-note.is-done{opacity:.62}
+  .fb-note.u-hot::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brand)} /* срочная — красная полоса, как у формы */
   .fb-note-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .fb-note-foot{margin-top:11px;display:flex;justify-content:flex-end}
+  .fb-note-foot{margin-top:11px;display:flex;justify-content:flex-end;gap:8px}
   .fb-mark{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:12px;border:1px solid var(--line);
     background:var(--fill);color:var(--text);font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;
     transition:border-color .15s,background .15s,color .15s,transform .15s}
@@ -816,9 +828,19 @@
     transition:color .15s,background .15s,transform .15s}
   .fb-undo:hover{color:var(--text);background:var(--fill-soft)}
   .fb-undo:active{transform:scale(.95)}
+  .fb-del{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:12px;border:1px solid transparent;
+    background:transparent;color:var(--muted);font:inherit;font-weight:600;font-size:12.5px;cursor:pointer;
+    transition:border-color .15s,color .15s,background .15s,transform .15s}
+  .fb-del:hover{color:var(--accent-soft);background:rgba(209,31,45,.1)}
+  .fb-del:active{transform:scale(.95)}
+  .fb-del.armed{border-color:var(--c-red);color:var(--accent-soft);background:rgba(209,31,45,.1);font-weight:700}
   .fb-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700}
   .fb-badge.c-bug{background:rgba(209,31,45,.1);color:var(--accent-soft);border:1px solid rgba(209,31,45,.3)}
   .fb-badge.c-add,.fb-badge.c-del,.fb-badge.c-other{background:var(--fill-soft);color:var(--muted);border:1px solid var(--line-strong)}
+  .fb-urg{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;
+    font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;font-weight:700}
+  .fb-urg.u-hot{color:var(--accent-soft);border:1px solid rgba(209,31,45,.42);background:rgba(209,31,45,.08)}
+  .fb-urg.u-low{color:var(--muted);border:1px solid var(--line);background:transparent}
   .fb-who{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13px}
   .fb-who .fb-dot{width:8px;height:8px;border-radius:50%;background:var(--cc,var(--muted));flex:none}
   .fb-when{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap}
@@ -827,7 +849,95 @@
   .fb-note-text{margin-top:9px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
   .fb-empty{background:var(--card);border:1px dashed var(--line-strong);border-radius:14px;padding:22px;text-align:center;
     color:var(--muted);font-weight:600;font-size:13px}
-  @media(max-width:720px){ .fb-chip{min-height:44px;padding:9px 16px} .fb-send{width:100%;justify-content:center;min-height:44px} .fb-when{margin-left:0;width:100%} .fb-mark,.fb-undo{min-height:44px} }
+  @media(max-width:720px){ .fb-chip{min-height:44px;padding:9px 16px} .fb-send{width:100%;justify-content:center;min-height:44px} .fb-when{margin-left:0;width:100%} .fb-mark,.fb-undo,.fb-del,.fb-switch{min-height:44px} }
+
+  /* ===================== ШТРАФЫ (дисциплина команды) =====================
+     Табло месяца (кто сколько), форма и лента. Форма и кнопки переиспользуют компоненты
+     «Заметок» (.fb-form / .fb-chip / .fb-send / .fb-undo) — второй такой же набор правил
+     заводить незачем. Цвет человека приезжает через data-color → --cc, новых хексов нет. */
+  .fn-hero{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;
+    box-shadow:var(--shadow);padding:17px 20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .fn-hero::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--brand)}
+  .fn-hero-main{display:flex;flex-direction:column;gap:5px;min-width:0}
+  .fn-hero-k{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .fn-hero-v{font-family:var(--font-disp);font-weight:800;font-size:30px;line-height:1.05;letter-spacing:.3px}
+  .fn-hero-v.muted{color:var(--muted)}
+  .fn-hero-sub{font-size:12px;color:var(--muted);font-weight:600;line-height:1.5}
+  .fn-month{margin-left:auto}
+  /* табло: карточка на человека — количество крупно, сумма рядом, полоска для сравнения на глаз */
+  .fn-score{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:20px}
+  .fn-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px}
+  .fn-card.is-best{border-color:var(--ok)}
+  .fn-card-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .fn-dot{width:9px;height:9px;border-radius:50%;background:var(--cc,var(--muted));flex:none;box-shadow:0 0 8px var(--cc)}
+  .fn-name{font-family:var(--font-disp);font-weight:700;font-size:16px}
+  .fn-best{margin-left:auto;display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;
+    font-size:11px;font-weight:700;background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bg)}
+  .fn-nums{display:flex;align-items:baseline;gap:7px;margin-top:11px}
+  .fn-count{font-family:var(--font-disp);font-weight:800;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
+  .fn-count.zero{color:var(--muted)}
+  .fn-unit{font-size:12px;font-weight:600;color:var(--muted)}
+  .fn-sum{margin-left:auto;font-family:var(--font-mono);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+  .fn-sum.zero{color:var(--muted)}
+  .fn-bar{margin-top:11px;height:6px;border-radius:999px;background:var(--fill-soft);overflow:hidden}
+  .fn-bar i{display:block;height:100%;border-radius:999px;background:var(--cc,var(--muted));transition:width .3s}
+  /* «за всё время» переносится ЦЕЛИКОМ (label и значение — два неразрывных куска):
+     на узкой карточке иначе отрывался хвост «₽» */
+  .fn-alltime{margin-top:9px;display:flex;flex-wrap:wrap;gap:2px 6px;font-family:var(--font-mono);font-size:10px;
+    letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .fn-alltime b{font-weight:600;white-space:nowrap}
+  /* поля формы (сумма и комментарий) — те же токены, что у #fb-text */
+  .fn-fields{display:flex;gap:12px;flex-wrap:wrap;margin-top:15px}
+  .fn-field{display:flex;flex-direction:column;gap:7px;min-width:0}
+  .fn-field.grow{flex:1 1 220px}
+  .fn-field .fb-lbl{margin:0}
+  .fn-input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--fill);
+    color:var(--text);font:inherit;font-size:14px;outline:none;transition:border-color .15s}
+  .fn-input::placeholder{color:var(--muted)}
+  .fn-input:focus{border-color:var(--c-red);background:var(--fill-hover)}
+  .fn-amount{font-family:var(--font-mono);font-weight:600;font-variant-numeric:tabular-nums;width:150px}
+  /* замок раздела: PIN-поле и подпись «кто выписывает» (правила форм те же, что у сверки цен) */
+  .fn-gate{max-width:520px}
+  .fn-pin{margin-top:15px;max-width:220px;font-family:var(--font-mono);letter-spacing:2px;font-size:16px}
+  .fn-pin-err{margin-top:8px;font-size:12.5px;font-weight:600;color:var(--accent-soft)}
+  .fn-boss{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted)}
+  .fn-boss b{font-weight:700;color:var(--text)}
+  .fn-boss button{border:none;background:transparent;padding:0;font:inherit;font-weight:600;color:var(--muted);
+    text-decoration:underline;cursor:pointer}
+  .fn-boss button:hover{color:var(--accent-soft)}
+  /* лента штрафов */
+  .fn-list{display:flex;flex-direction:column;gap:10px}
+  .fn-row{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:13px 16px}
+  .fn-row.is-off{opacity:.6}
+  .fn-row-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .fn-who{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:14px}
+  .fn-reason{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:var(--fill-soft);
+    color:var(--muted);border:1px solid var(--line-strong)}
+  .fn-money{font-family:var(--font-mono);font-size:12.5px;font-weight:700;color:var(--accent-soft);font-variant-numeric:tabular-nums}
+  .fn-row.is-off .fn-money{color:var(--muted);text-decoration:line-through}
+  .fn-off{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;
+    background:var(--fill-soft);color:var(--muted);border:1px solid var(--line-strong)}
+  .fn-when{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;
+    color:var(--muted);font-weight:600;white-space:nowrap}
+  .fn-comment{margin-top:9px;font-size:13.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+  .fn-foot{margin-top:10px;display:flex;align-items:center;gap:10px}
+  .fn-author{font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .fn-foot .fb-undo{margin-left:auto}
+  @media(max-width:720px){
+    .fn-hero-v{font-size:26px}
+    .fn-month{margin-left:0;width:100%;min-height:44px}
+    .fn-score{grid-template-columns:1fr 1fr;gap:10px}
+    .fn-card{padding:12px 13px}
+    .fn-count{font-size:24px}
+    .fn-sum{width:100%;margin-left:0}
+    .fn-nums{flex-wrap:wrap}
+    .fn-input{min-height:44px}
+    .fn-amount{width:100%}
+    .fn-field.amount{flex:1 1 100%}
+    .fn-pin{max-width:none}
+    .fn-boss{margin-left:0;width:100%}
+    .fn-when{margin-left:0;width:100%}
+  }
 
   /* ===================== ТО (двигатель → смета) =====================
      Обучаемый конструктор: чипы сохранённых двигателей + карточка-смета + форма заведения.
@@ -1122,6 +1232,7 @@
         <button class="nav-item" data-page="komplekty">Комплекты</button>
         <button class="nav-item" data-page="prodazhi">Продажи</button>
         <button class="nav-item" data-page="yama">Яма</button>
+        <button class="nav-item" data-page="shtrafy">Штрафы</button>
         <button class="nav-item" data-page="zametki">Заметки</button>
       </nav>
       <button class="theme-btn" id="theme-btn" type="button" aria-label="Сменить тему"></button>
@@ -1261,6 +1372,55 @@
       <div class="note"><span class="nd"></span><span id="yama-note"></span></div>
     </div>
 
+    <!-- ===== Страница: Штрафы (дисциплина команды) — табло, лента и «лучший» считаются из данных ===== -->
+    <div id="page-shtrafy" class="page" hidden>
+      <div class="fn-hero">
+        <div class="fn-hero-main" id="fn-hero-main"></div>
+        <select class="sales-month-sel fn-month" id="fn-month" aria-label="Месяц"></select>
+      </div>
+      <div class="fn-score" id="fn-score"></div>
+
+      <!-- Форма видна только тому, кто вошёл по PIN (Алексей / Рамиль) -->
+      <div class="fb-form" id="fn-form" hidden>
+        <div class="fb-h">Выписать штраф</div>
+        <div class="fb-sub">Штраф увидят все, кто заходит на портал. Ошибся — штраф можно отменить: из счёта он уйдёт, из истории нет.</div>
+        <div class="fb-lbl">Кому</div>
+        <div class="fb-chips" id="fn-who"></div>
+        <div class="fb-lbl">За что</div>
+        <div class="fb-chips" id="fn-reasons"></div>
+        <div class="fn-fields">
+          <div class="fn-field amount">
+            <span class="fb-lbl">Сумма, ₽</span>
+            <input class="fn-input fn-amount" id="fn-amount" type="number" inputmode="numeric" min="0" step="100" placeholder="0">
+          </div>
+          <div class="fn-field grow">
+            <span class="fb-lbl">Комментарий</span>
+            <input class="fn-input" id="fn-comment" maxlength="200" placeholder="Например: опоздал на 40 минут">
+          </div>
+        </div>
+        <div class="fb-actions">
+          <button class="fb-send" id="fn-send" type="button">Записать штраф</button>
+          <span class="fb-hint" id="fn-hint"></span>
+          <span class="fn-boss" id="fn-boss"></span>
+        </div>
+        <div class="fb-warn" id="fn-warn" hidden>Скрипт Google-таблицы ещё не обновлён — штрафы пока сохраняются только на этом устройстве и уйдут в таблицу, когда он обновится.</div>
+      </div>
+
+      <!-- Замок для всех остальных: раздел читается, но не пишется -->
+      <div class="fb-form fn-gate" id="fn-gate" hidden>
+        <div class="fb-h">Выписывают штрафы Алексей и Рамиль</div>
+        <div class="fb-sub">Остальным раздел виден целиком — табло, лучший месяца и лента. Чтобы записать или отменить штраф, введите PIN.</div>
+        <input class="fn-input fn-pin" id="fn-pin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN">
+        <div class="fn-pin-err" id="fn-pin-err" hidden></div>
+        <div class="fb-actions">
+          <button class="fb-send" id="fn-pin-ok" type="button">Войти</button>
+        </div>
+      </div>
+
+      <div class="fb-list-h" id="fn-list-h" hidden></div>
+      <div class="fn-list" id="fn-list"></div>
+    </div>
+
     <!-- ===== Страница: Заметки (пожелания команды) ===== -->
     <div id="page-zametki" class="page" hidden>
       <div class="fb-form">
@@ -1270,6 +1430,8 @@
         <div class="fb-chips" id="fb-authors"></div>
         <div class="fb-lbl">О чём</div>
         <div class="fb-chips" id="fb-cats"></div>
+        <div class="fb-lbl">Срочность</div>
+        <div class="fb-chips" id="fb-urgs"></div>
         <textarea id="fb-text" maxlength="600" rows="3" placeholder="Например: в шаблонах не находится DQ381 · добавьте цены на Hyundai · уберите старую строку из прайса…"></textarea>
         <div class="fb-actions">
           <button class="fb-send" id="fb-send" type="button">Отправить</button>
@@ -1277,7 +1439,10 @@
         </div>
         <div class="fb-warn" id="fb-warn" hidden>Скрипт Google-таблицы ещё не обновлён — заметки пока сохраняются только на этом устройстве.</div>
       </div>
-      <div class="fb-list-h" id="fb-list-h" hidden></div>
+      <div class="fb-list-head" id="fb-list-head" hidden>
+        <div class="fb-list-h" id="fb-list-h"></div>
+        <button class="fb-switch" id="fb-switch" type="button" hidden></button>
+      </div>
       <div class="fb-list" id="fb-list"></div>
     </div>
 
@@ -1316,6 +1481,7 @@
     chart:  _ic('<path d="M2.4 13.4h11.2"/><path d="M4.4 11.4V8.2M8 11.4V5M11.6 11.4V9.2"/>'),
     box:    _ic('<path d="M8 2 2.6 5v6L8 14l5.4-3V5L8 2Z"/><path d="M2.6 5 8 8l5.4-3"/><path d="M8 8v6"/>'),
     list:   _ic('<path d="M6 4.4h7.4M6 8h7.4M6 11.6h7.4"/><path d="M2.8 4.4h.01M2.8 8h.01M2.8 11.6h.01"/>'),
+    flag:   _ic('<path d="M4 14.2V2.2"/><path d="M4 2.8h8.2l-1.7 2.9 1.7 2.9H4"/>'),
   };
 
   /* =========================================================
@@ -4997,7 +5163,14 @@
      «Отработано»: кнопка на карточке ставит status="готово" (doPost kind:"note-status")
      — карточка гаснет и получает зелёную метку ✔, видно всем. Отметка кладётся
      и локально (md_notes_done) — срабатывает сразу и офлайн, а после ответа таблицы
-     сверяется с ней и очищается. Руками в колонке status тоже можно (напр. «не будем»). */
+     сверяется с ней и очищается. Руками в колонке status тоже можно (напр. «не будем»).
+     Отработанные уходят из ленты в АРХИВ (переключатель в шапке списка) — активное
+     не тонет в сделанном. Кнопка «Удалить» есть только в архиве и ставит тем же
+     note-status статус «удалено»: строка в таблице остаётся (владелец может вернуть),
+     но doGet её не отдаёт и портал не показывает нигде. Отдельного kind для удаления
+     нет намеренно — токен публичный, лишний эндпоинт = лишняя поверхность атаки.
+     СРОЧНОСТЬ (колонка urgency): «Срочно» — красная полоса + метка, «Несрочно» — тихая
+     метка, «Средняя» — без метки (норма). Активные сортируются срочностью, архив — датой. */
   (function(){
     const CATS = [
       { id:"bug",   icon:ICO.wrench, label:"Не работает" },
@@ -5010,24 +5183,37 @@
       { name:"Святослав", color:"graphite" },
       { name:"Кристиан",  color:"blue" },
     ];
+    // Срочность: label уходит в таблицу (колонка urgency) и читается там глазами.
+    // «Средняя» — значение по умолчанию: у старых заметок поля нет, метку им не рисуем.
+    const URGS = [
+      { id:"low", label:"Несрочно", rank:2 },
+      { id:"mid", label:"Средняя",  rank:1 },
+      { id:"hot", label:"Срочно",   rank:0 },
+    ];
+    const URG_DEF = URGS[1];
+    const DELETED = "удалено";   // статус-надгробие: заметки с ним не показываем нигде
     const MONF = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
     const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
     const authorsEl = document.getElementById("fb-authors");
     const catsEl    = document.getElementById("fb-cats");
+    const urgsEl    = document.getElementById("fb-urgs");
     const textEl    = document.getElementById("fb-text");
     const sendEl    = document.getElementById("fb-send");
     const hintEl    = document.getElementById("fb-hint");
     const warnEl    = document.getElementById("fb-warn");
     const listEl    = document.getElementById("fb-list");
+    const headEl    = document.getElementById("fb-list-head");
     const listHEl   = document.getElementById("fb-list-h");
+    const switchEl  = document.getElementById("fb-switch");
     // Иконки статичных кнопок формы (эмодзи → inline-SVG, §6 п.2): prepend, текст в разметке
     sendEl.insertAdjacentHTML("afterbegin", ICO.send + " ");
     warnEl.insertAdjacentHTML("afterbegin", ICO.warn + " ");
 
     let notes = [];    // подтверждённые (из таблицы или кэша)
     let pending = [];  // отправленные, ещё не увиденные в таблице
-    let author = null, cat = null, ntSeq = 0, hintTimer = 0;
+    let author = null, cat = null, urg = URG_DEF, ntSeq = 0, hintTimer = 0;
+    let view = "active";   // какой список показываем: "active" | "archive"
     const saveCache = () => { try { localStorage.setItem("md_notes", JSON.stringify([...pending, ...notes])); } catch(e){} };
 
     // локальные отметки «отработано» (key → "готово" | ""): показываем сразу и офлайн,
@@ -5046,6 +5232,8 @@
     }
     const catOf   = label => CATS.find(c => c.label === label) || CATS[CATS.length - 1];
     const colorOf = name  => (AUTHORS.find(a => a.name === name) || {}).color || "graphite";
+    const urgOf   = n => URGS.find(u => u.label === String(n.urg || "").trim()) || URG_DEF;
+    const isDel   = n => statusOf(n).trim().toLowerCase() === DELETED;
 
     function hint(msg, ok){
       hintEl.textContent = msg || "";
@@ -5059,6 +5247,8 @@
       `<button class="fb-chip" type="button" data-color="${a.color}" data-name="${a.name}"><span class="fb-dot"></span>${a.name}</button>`).join("");
     catsEl.innerHTML = CATS.map(c =>
       `<button class="fb-chip" type="button" data-cat="${c.id}">${c.icon} ${c.label}</button>`).join("");
+    urgsEl.innerHTML = URGS.map(u =>
+      `<button class="fb-chip${u.id === URG_DEF.id ? " active" : ""}" type="button" data-urg="${u.id}">${u.id === "hot" ? ICO.bolt + " " : ""}${u.label}</button>`).join("");
     function pick(wrap, btn){ wrap.querySelectorAll(".fb-chip").forEach(x => x.classList.toggle("active", x === btn)); }
     authorsEl.addEventListener("click", e => {
       const b = e.target.closest(".fb-chip"); if(!b) return;
@@ -5069,6 +5259,10 @@
       const b = e.target.closest(".fb-chip"); if(!b) return;
       cat = CATS.find(c => c.id === b.dataset.cat); pick(catsEl, b);
     });
+    urgsEl.addEventListener("click", e => {
+      const b = e.target.closest(".fb-chip"); if(!b) return;
+      urg = URGS.find(u => u.id === b.dataset.urg) || URG_DEF; pick(urgsEl, b);
+    });
     // автор запоминается — в следующий раз чип уже выбран
     try {
       const savedA = localStorage.getItem("md_note_author");
@@ -5077,26 +5271,42 @@
     } catch(e){}
 
     function render(){
-      const all = [...pending, ...notes].sort((a,b) => String(b.created).localeCompare(String(a.created)));
-      rendered = all;
-      listHEl.hidden = all.length === 0;
-      listHEl.textContent = `Заметки · ${all.length}`;
-      listEl.innerHTML = all.length ? all.map((n, i) => {
-        const c = catOf(n.cat);
+      const byDate = (a,b) => String(b.created).localeCompare(String(a.created));
+      const all = [...pending, ...notes].filter(n => !isDel(n));   // удалённые не показываем нигде
+      // активные — срочные сверху, внутри срочности новые первыми; архив — просто по дате
+      const active  = all.filter(n => !statusOf(n).trim())
+                         .sort((a,b) => (urgOf(a).rank - urgOf(b).rank) || byDate(a,b));
+      const archive = all.filter(n =>  statusOf(n).trim()).sort(byDate);
+      const arch = view === "archive";
+      const list = arch ? archive : active;
+      rendered = list;
+
+      headEl.hidden = all.length === 0;
+      listHEl.textContent = arch ? `Архив · ${archive.length}` : `Заметки · ${active.length}`;
+      switchEl.hidden = !arch && archive.length === 0;             // некуда идти — кнопки нет
+      switchEl.innerHTML = arch ? `${ICO.list} Активные · ${active.length}`
+                                : `${ICO.box} Архив · ${archive.length}`;
+
+      listEl.innerHTML = list.length ? list.map((n, i) => {
+        const c = catOf(n.cat), u = urgOf(n);
         const done = statusOf(n).trim();
-        return `<div class="fb-note${done ? " is-done" : ""}">
+        return `<div class="fb-note${done ? " is-done" : ""}${u.id === "hot" ? " u-hot" : ""}">
           <div class="fb-note-top">
             <span class="fb-badge c-${c.id}">${c.icon} ${c.label}</span>
             <span class="fb-who" data-color="${colorOf(n.author)}"><span class="fb-dot"></span>${esc(n.author)}</span>
+            ${u.id === "mid" ? "" : `<span class="fb-urg u-${u.id}">${u.id === "hot" ? ICO.bolt + " " : ""}${u.label}</span>`}
             ${done ? `<span class="fb-done">${ICO.check} ${esc(done)}</span>` : ""}
             <span class="fb-when">${when(n.created)}</span>
           </div>
           <div class="fb-note-text">${esc(n.text)}</div>
           <div class="fb-note-foot">${done
-            ? `<button class="fb-undo" type="button" data-note="${i}" data-done="0">Вернуть в работу</button>`
-            : `<button class="fb-mark" type="button" data-note="${i}" data-done="1">${ICO.check} Отработано</button>`}</div>
+            ? `<button class="fb-del" type="button" data-note="${i}" data-act="del">${ICO.trash} Удалить</button>
+               <button class="fb-undo" type="button" data-note="${i}" data-act="undo">Вернуть в работу</button>`
+            : `<button class="fb-mark" type="button" data-note="${i}" data-act="done">${ICO.check} Отработано</button>`}</div>
         </div>`;
-      }).join("") : `<div class="fb-empty">Пока нет заметок — напиши первую</div>`;
+      }).join("") : `<div class="fb-empty">${arch
+        ? "В архиве пусто — сюда попадают отработанные заметки"
+        : (archive.length ? "Всё отработано — активных заметок нет" : "Пока нет заметок — напиши первую")}</div>`;
     }
 
     // читаем заметки из таблицы (JSONP — обходит CORS у Apps Script)
@@ -5109,9 +5319,18 @@
           notes = data.notes;
           // из pending убираем то, что уже долетело до таблицы
           pending = pending.filter(p => !notes.some(n => n.text === p.text && n.author === p.author));
-          // локальную отметку «отработано» гасим, когда таблица догнала её (или статус сменили руками)
-          for(const n of notes){ const k = keyOf(n);
-            if(k in override && (override[k].trim() !== "") === (String(n.status || "").trim() !== "")) delete override[k]; }
+          // локальную отметку гасим, когда таблица догнала её (или статус сменили руками);
+          // «удалено» сверяем дословно — иначе чужое «готово» из таблицы воскресит удалённую
+          const live = new Set();
+          for(const n of notes){
+            const k = keyOf(n), srv = String(n.status || "").trim(); live.add(k);
+            if(!(k in override)) continue;
+            const loc = override[k].trim();
+            if(loc.toLowerCase() === DELETED ? srv.toLowerCase() === DELETED : (loc !== "") === (srv !== "")) delete override[k];
+          }
+          // сироты: строки в таблице уже нет (удалена совсем) — отметке жить незачем
+          for(const k of Object.keys(override))
+            if(!live.has(k) && !pending.some(p => keyOf(p) === k)) delete override[k];
           saveOverride();
           warnEl.hidden = true;
           saveCache(); render();
@@ -5133,35 +5352,51 @@
       if(text.length < 3){ hint("Напиши текст заметки."); textEl.focus(); return; }
       const d = new Date(), p = n => String(n).padStart(2, "0");
       const created = `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
-      pending.unshift({ created, cat: cat.label, author: author.name, text, status:"" });
+      const urgLabel = urg.label;            // запоминаем ДО сброса чипа — иначе в таблицу уедет «Средняя»
+      pending.unshift({ created, cat: cat.label, author: author.name, text, status:"", urg: urgLabel });
+      view = "active";                       // свою заметку сразу видно, даже если смотрели архив
       saveCache(); render();
       textEl.value = "";
+      urg = URG_DEF; pick(urgsEl, urgsEl.querySelector(`.fb-chip[data-urg="${URG_DEF.id}"]`));  // срочность не прилипает
       hint("Заметка сохранена", true);
       if(SHEET_API){
         fetch(SHEET_API, { method:"POST", mode:"no-cors",
           headers:{ "Content-Type":"text/plain;charset=utf-8" },
-          body: JSON.stringify({ token: SHEET_TOKEN, kind:"note", cat: cat.label, author: author.name, text }) })
+          body: JSON.stringify({ token: SHEET_TOKEN, kind:"note", cat: cat.label, author: author.name, text, urg: urgLabel }) })
           .then(() => { setTimeout(loadNotes, 2500); setTimeout(loadNotes, 9000); })
           .catch(() => {});
       }
     }
     sendEl.addEventListener("click", send);
     textEl.addEventListener("keydown", e => { if((e.ctrlKey || e.metaKey) && e.key === "Enter") send(); });
+    switchEl.addEventListener("click", () => { view = view === "archive" ? "active" : "archive"; render(); });
 
-    // «Отработано» / «Вернуть в работу» — по кнопке на карточке
+    // «Отработано» / «Вернуть в работу» / «Удалить» — по кнопке на карточке
     listEl.addEventListener("click", e => {
       const b = e.target.closest("[data-note]"); if(!b) return;
       const n = rendered[+b.dataset.note]; if(!n) return;
-      setDone(n, b.dataset.done === "1");
+      if(b.dataset.act === "del"){ askDel(b, n); return; }
+      setStatus(n, b.dataset.act === "done" ? "готово" : "");
     });
-    function setDone(n, done){
-      override[keyOf(n)] = done ? "готово" : "";   // оптимистично: карточка гаснет/оживает сразу
+    // удаление — в два клика: первый взводит кнопку, второй (в течение 4 сек) стирает
+    let armed = null, armTimer = 0;
+    function disarm(){ if(armed){ armed.classList.remove("armed"); armed.innerHTML = ICO.trash + " Удалить"; armed = null; } clearTimeout(armTimer); }
+    function askDel(btn, n){
+      if(armed === btn){ disarm(); setStatus(n, DELETED); return; }
+      disarm();
+      armed = btn; btn.classList.add("armed"); btn.innerHTML = ICO.trash + " Точно удалить?";
+      armTimer = setTimeout(disarm, 4000);
+    }
+    // общий канал статуса: "" — в работу, «готово» — в архив, «удалено» — с портала совсем
+    function setStatus(n, status){
+      disarm();
+      override[keyOf(n)] = status;                 // оптимистично: карточка сразу гаснет/оживает/исчезает
       saveOverride(); render();
       if(SHEET_API){
         fetch(SHEET_API, { method:"POST", mode:"no-cors",
           headers:{ "Content-Type":"text/plain;charset=utf-8" },
           body: JSON.stringify({ token: SHEET_TOKEN, kind:"note-status",
-            created: n.created, author: n.author, text: n.text, status: done ? "готово" : "" }) })
+            created: n.created, author: n.author, text: n.text, status }) })
           .then(() => { setTimeout(loadNotes, 2500); setTimeout(loadNotes, 9000); })
           .catch(() => {});
       }
@@ -5171,6 +5406,313 @@
     try { const c = JSON.parse(localStorage.getItem("md_notes") || "null"); if(Array.isArray(c)) notes = c; } catch(e){}
     render();
     loadNotes();
+  })();
+
+  /* ===================== ШТРАФЫ (дисциплина команды) =====================
+     Общее хранилище — лист «Штрафы» той же Google-таблицы (SHEET_API): читаем JSONP
+     (?type=fines), пишем doPost (kind:"fine"). Механика Заметок: оптимистично показали →
+     отправили → перечитали. Отличие одно: у штрафа есть свой id, поэтому неподтверждённое
+     лежит в очереди (md_fines_out) и досылается при следующей загрузке и при возврате сети —
+     дедуп по id на стороне таблицы делает повтор безопасным, и штраф, записанный без связи,
+     не пропадает. Отмена (kind:"fine-status") строку не удаляет: из счёта штраф уходит,
+     из истории — нет. Табло, суммы и «лучший месяца» СЧИТАЮТСЯ из ленты, руками нигде
+     не дублируются (данные → авто-рендер). */
+  (function(){
+    // Люди раздела свои, а не PEOPLE: Ивана нет в графике дежурств, а штраф ему выписывают.
+    const FINE_PEOPLE = [
+      { name:"Бекзод",    color:"red" },
+      { name:"Святослав", color:"graphite" },
+      { name:"Кристиан",  color:"blue" },
+      { name:"Иван",      color:"teal" },
+    ];
+    // Типовые причины: label уходит в таблицу, amount — сумма по умолчанию (правится здесь,
+    // в смете она не участвует). Сумму у конкретного штрафа всегда можно поправить руками.
+    const FINE_REASONS = [
+      { id:"late",   label:"Опоздание",               amount:500  },
+      { id:"absent", label:"Невыход на работу",       amount:2000 },
+      { id:"mess",   label:"Не убрано рабочее место", amount:500  },
+      { id:"lead",   label:"Необработанная заявка",   amount:500  },
+      { id:"call",   label:"Необработанный звонок",   amount:500  },
+      { id:"video",  label:"Неотправленные видео",    amount:500  },
+    ];
+    /* Писать штрафы могут только эти двое — решение владельца 2026-09-01. Портал открыт всей
+       команде под одним паролем, поэтому «кто выписал» нельзя было оставлять выбором из чипов:
+       любой сотрудник записал бы штраф от чужого имени. PIN определяет автора сам.
+       Уровень защиты тот же, что у входа и «Сверки цен» (base64 в статике — «от посторонних
+       глаз», не от атаки: decisions/2026-07-19-parol-ot-postoronnih-glaz.md).
+       Сменить PIN: btoa(unescape(encodeURIComponent('новый'))) в консоли браузера → сюда. */
+    const FINE_BOSSES = [
+      { name:"Алексей", pin:"NDQxNw==" },   // 4417
+      { name:"Рамиль",  pin:"NjI5Mw==" },   // 6293
+    ];
+    const FINE_MAX = 50000;   // тот же потолок, что в Apps Script (санитарная рамка, не бизнес-число)
+    const OUT_MAX  = 50;      // потолок очереди неподтверждённых штрафов
+
+    const MON_NOM = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+    const MON_IN  = ["январе","феврале","марте","апреле","мае","июне","июле","августе","сентябре","октябре","ноябре","декабре"];
+    const MON_GEN = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+    const esc    = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    const money  = n => Number(n || 0).toLocaleString("ru-RU") + " ₽";
+    const word   = (n,a,b,c) => { const m = n % 100, d = n % 10; return m >= 11 && m <= 14 ? c : d === 1 ? a : d >= 2 && d <= 4 ? b : c; };
+    const plural = (n,a,b,c) => n + " " + word(n,a,b,c);
+    const p2 = n => String(n).padStart(2, "0");
+
+    const heroEl    = document.getElementById("fn-hero-main");
+    const monthEl   = document.getElementById("fn-month");
+    const scoreEl   = document.getElementById("fn-score");
+    const whoEl     = document.getElementById("fn-who");
+    const reasonsEl = document.getElementById("fn-reasons");
+    const amountEl  = document.getElementById("fn-amount");
+    const commentEl = document.getElementById("fn-comment");
+    const sendEl    = document.getElementById("fn-send");
+    const hintEl    = document.getElementById("fn-hint");
+    const warnEl    = document.getElementById("fn-warn");
+    const listHEl   = document.getElementById("fn-list-h");
+    const listEl    = document.getElementById("fn-list");
+    const formEl    = document.getElementById("fn-form");
+    const gateEl    = document.getElementById("fn-gate");
+    const bossEl    = document.getElementById("fn-boss");
+    const pinEl     = document.getElementById("fn-pin");
+    const pinOkEl   = document.getElementById("fn-pin-ok");
+    const pinErrEl  = document.getElementById("fn-pin-err");
+    if(!heroEl) return;
+    sendEl.insertAdjacentHTML("afterbegin", ICO.flag + " ");   // иконка статичной кнопки (§6 п.2: не эмодзи)
+    warnEl.insertAdjacentHTML("afterbegin", ICO.warn + " ");
+
+    let fines = [];      // подтверждённые таблицей (или из кэша)
+    let out   = [];      // записанные здесь, таблицей ещё не подтверждённые
+    let override = {};   // локальная отметка «отменён» по id — до подтверждения таблицей
+    let who = null, reason = null, boss = null, fnSeq = 0, hintTimer = 0;
+    let month = "", shown = [];
+
+    const save     = () => { try { localStorage.setItem("md_fines", JSON.stringify(fines)); } catch(e){} };
+    const saveOut  = () => { try { localStorage.setItem("md_fines_out", JSON.stringify(out)); } catch(e){} };
+    const saveOver = () => { try { localStorage.setItem("md_fines_cancel", JSON.stringify(override)); } catch(e){} };
+    const statusOf = f => (f.id && (f.id in override)) ? override[f.id] : String(f.status || "");
+    const isOff    = f => statusOf(f).trim() !== "";
+    const colorOf  = name => (FINE_PEOPLE.find(p => p.name === name) || {}).color || "graphite";
+    const keyOf    = f => String(f.created || "").slice(0, 7);          // месяц штрафа
+    const curKey   = () => { const d = new Date(); return `${d.getFullYear()}-${p2(d.getMonth() + 1)}`; };
+    const monthLabel = k => `${MON_NOM[Number(k.slice(5, 7)) - 1] || k} ${k.slice(0, 4)}`;
+    const monthIn = k => {
+      const y = k.slice(0, 4), n = MON_IN[Number(k.slice(5, 7)) - 1] || k;
+      return n + (y === String(new Date().getFullYear()) ? "" : " " + y);
+    };
+    // «2026-09-01 15:20» → «1 сентября, 15:20»
+    function when(s){
+      const m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}:\d{2}))?/.exec(String(s || ""));
+      if(!m) return esc(s || "");
+      return `${Number(m[3])} ${MON_GEN[Number(m[2]) - 1]}${m[4] ? ", " + m[4] : ""}`;
+    }
+    function hint(msg, ok){
+      hintEl.textContent = msg || "";
+      hintEl.classList.toggle("ok", !!ok);
+      clearTimeout(hintTimer);
+      if(msg) hintTimer = setTimeout(() => { hintEl.textContent = ""; }, 4000);
+    }
+
+    /* ---- доступ: форму и отмену видит только вошедший по PIN ---- */
+    function applyAccess(){
+      formEl.hidden = !boss;
+      gateEl.hidden = !!boss;
+      if(boss) bossEl.innerHTML = `выписывает <b>${esc(boss.name)}</b> · <button type="button" data-act="boss-out">выйти</button>`;
+    }
+    function checkPin(){
+      const b = FINE_BOSSES.find(x => x.pin === btoa(unescape(encodeURIComponent(pinEl.value))));
+      if(!b){ pinErrEl.textContent = "Неверный PIN."; pinErrEl.hidden = false; pinEl.value = ""; pinEl.focus(); return; }
+      boss = b; pinEl.value = ""; pinErrEl.hidden = true;
+      try { localStorage.setItem("md_fine_boss", b.name); } catch(e){}
+      applyAccess(); render();     // в ленте появятся кнопки отмены
+    }
+    pinOkEl.addEventListener("click", checkPin);
+    pinEl.addEventListener("keydown", e => { if(e.key === "Enter") checkPin(); });
+    bossEl.addEventListener("click", e => {
+      if(!e.target.closest("[data-act='boss-out']")) return;
+      boss = null;
+      try { localStorage.removeItem("md_fine_boss"); } catch(e2){}
+      applyAccess(); render();
+    });
+
+    /* ---- чипы формы: кому · за что (автор приходит из PIN) ---- */
+    whoEl.innerHTML = FINE_PEOPLE.map(p =>
+      `<button class="fb-chip" type="button" data-color="${p.color}" data-name="${p.name}"><span class="fb-dot"></span>${p.name}</button>`).join("");
+    reasonsEl.innerHTML = FINE_REASONS.map(r =>
+      `<button class="fb-chip" type="button" data-reason="${r.id}">${r.label}</button>`).join("");
+    const pick = (wrap, btn) => wrap.querySelectorAll(".fb-chip").forEach(x => x.classList.toggle("active", x === btn));
+    whoEl.addEventListener("click", e => {
+      const b = e.target.closest(".fb-chip"); if(!b) return;
+      who = FINE_PEOPLE.find(p => p.name === b.dataset.name); pick(whoEl, b);
+    });
+    reasonsEl.addEventListener("click", e => {
+      const b = e.target.closest(".fb-chip"); if(!b) return;
+      reason = FINE_REASONS.find(r => r.id === b.dataset.reason); pick(reasonsEl, b);
+      amountEl.value = reason.amount ? String(reason.amount) : "";   // сумма по умолчанию, дальше правится руками
+    });
+    /* ---- рендер: табло месяца, «лучший» и лента ---- */
+    function render(){
+      const all = [...out, ...fines].sort((a,b) => String(b.created).localeCompare(String(a.created)));
+      // месяцы селектора — те, что есть в данных, плюс текущий (даже если он пустой)
+      const months = [...new Set([curKey(), ...all.map(keyOf).filter(k => /^\d{4}-\d{2}$/.test(k))])].sort().reverse();
+      if(!months.includes(month)) month = months[0];
+      monthEl.innerHTML = months.map(k => `<option value="${k}">${monthLabel(k)}</option>`).join("");
+      monthEl.value = month;
+
+      const inMonth = all.filter(f => keyOf(f) === month);
+      const live    = inMonth.filter(f => !isOff(f));
+      const stat = FINE_PEOPLE.map(p => {
+        const mine = live.filter(f => f.who === p.name);
+        const ever = all.filter(f => f.who === p.name && !isOff(f));
+        const sum  = a => a.reduce((s,f) => s + (Number(f.amount) || 0), 0);
+        return { p, n: mine.length, sum: sum(mine), everN: ever.length, everSum: sum(ever) };
+      });
+      const maxN = stat.reduce((m,s) => Math.max(m, s.n), 0);
+      // лучший: меньше всего штрафов, при равенстве — меньше сумма; равные с лидером тоже лучшие
+      const rank = [...stat].sort((a,b) => a.n - b.n || a.sum - b.sum);
+      const best = stat.filter(s => s.n === rank[0].n && s.sum === rank[0].sum);
+      const allTie = best.length === stat.length;   // у всех поровну — звание никому
+
+      heroEl.innerHTML = allTie
+        ? `<div class="fn-hero-k">Лучший в ${monthIn(month)}</div>
+           <div class="fn-hero-v muted">${maxN === 0 ? "Пока чисто у всех" : "Пока поровну"}</div>
+           <div class="fn-hero-sub">${maxN === 0
+              ? "Ни одного штрафа за месяц"
+              : `У всех одинаково — по ${plural(rank[0].n, "штрафу", "штрафа", "штрафов")}`}</div>`
+        : `<div class="fn-hero-k">Лучший в ${monthIn(month)}</div>
+           <div class="fn-hero-v">${best.map(s => esc(s.p.name)).join(" · ")}</div>
+           <div class="fn-hero-sub">${best[0].n === 0
+              ? "Ни одного штрафа за месяц"
+              : `${plural(best[0].n, "штраф", "штрафа", "штрафов")}${best[0].sum ? " · " + money(best[0].sum) : ""} за месяц`}</div>`;
+
+      scoreEl.innerHTML = stat.map(s => {
+        const isBest = !allTie && best.indexOf(s) >= 0;
+        const w = maxN ? Math.round(s.n / maxN * 100) : 0;
+        return `<div class="fn-card${isBest ? " is-best" : ""}" data-color="${s.p.color}">
+          <div class="fn-card-top">
+            <span class="fn-dot"></span><span class="fn-name">${s.p.name}</span>
+            ${isBest ? `<span class="fn-best">${ICO.check} Лучший</span>` : ""}
+          </div>
+          <div class="fn-nums">
+            <span class="fn-count${s.n ? "" : " zero"}">${s.n}</span>
+            <span class="fn-unit">${word(s.n, "штраф", "штрафа", "штрафов")}</span>
+            <span class="fn-sum${s.sum ? "" : " zero"}">${money(s.sum)}</span>
+          </div>
+          <div class="fn-bar"><i style="width:${w}%"></i></div>
+          <div class="fn-alltime"><span>за всё время:</span><b>${s.everN} · ${money(s.everSum)}</b></div>
+        </div>`;
+      }).join("");
+
+      shown = inMonth;
+      listHEl.hidden = inMonth.length === 0;
+      listHEl.textContent = `Штрафы · ${monthLabel(month)} · ${inMonth.length}`;
+      listEl.innerHTML = inMonth.length ? inMonth.map((f,i) => {
+        const off = isOff(f);
+        return `<div class="fn-row${off ? " is-off" : ""}">
+          <div class="fn-row-top">
+            <span class="fn-who" data-color="${colorOf(f.who)}"><span class="fn-dot"></span>${esc(f.who)}</span>
+            <span class="fn-reason">${esc(f.reason)}</span>
+            ${Number(f.amount) > 0 ? `<span class="fn-money">${money(f.amount)}</span>` : ""}
+            ${off ? `<span class="fn-off">${esc(statusOf(f).trim())}</span>` : ""}
+            <span class="fn-when">${when(f.created)}</span>
+          </div>
+          ${f.comment ? `<div class="fn-comment">${esc(f.comment)}</div>` : ""}
+          <div class="fn-foot">
+            <span class="fn-author">${f.author ? "выписал " + esc(f.author) : ""}</span>
+            ${boss ? `<button class="fb-undo" type="button" data-fine="${i}" data-off="${off ? "0" : "1"}">${off ? "Вернуть штраф" : "Отменить"}</button>` : ""}
+          </div>
+        </div>`;
+      }).join("") : `<div class="fb-empty">За этот месяц штрафов нет</div>`;
+    }
+
+    /* ---- сеть: чтение листа и отправка ---- */
+    function post(body){
+      if(!SHEET_API) return Promise.resolve();
+      return fetch(SHEET_API, { method:"POST", mode:"no-cors",
+        headers:{ "Content-Type":"text/plain;charset=utf-8" },
+        body: JSON.stringify(body) }).catch(() => {});
+    }
+    // досыл очереди: повтор безопасен — таблица дедуплицирует по id
+    function flushOut(){
+      out.slice(0, OUT_MAX).forEach(f => post({ token: SHEET_TOKEN, kind:"fine", id: f.id, who: f.who,
+        reason: f.reason, amount: f.amount, comment: f.comment, author: f.author }));
+    }
+    function loadFines(){
+      if(!SHEET_API) return;
+      const cb = "__fn_" + (++fnSeq);
+      const s = document.createElement("script");
+      window[cb] = data => {
+        if(data && Array.isArray(data.fines)){
+          fines = data.fines;
+          const ids = {}; fines.forEach(f => { if(f.id) ids[f.id] = 1; });
+          out = out.filter(f => !ids[f.id]);                 // долетевшее убираем из очереди
+          // локальную отметку «отменён» гасим, когда таблица догнала её (или статус сменили руками)
+          for(const f of fines){ const k = f.id;
+            if(k && (k in override) && (override[k].trim() !== "") === (String(f.status || "").trim() !== "")) delete override[k]; }
+          warnEl.hidden = true;
+          save(); saveOut(); saveOver(); render();
+        } else if(data && !data.blocked && !data.error){
+          warnEl.hidden = false;   // таблица ответила, но штрафов не отдаёт — скрипт ещё не обновлён
+        }                          // error (token/rate) — это не «старый скрипт», молча остаёмся на кэше
+        delete window[cb]; s.remove();
+      };
+      s.onerror = () => { delete window[cb]; s.remove(); };
+      // токен: в ответе имена сотрудников и за что наказаны — ручка закрыта, как у «Ямы»
+      s.src = SHEET_API + "?type=fines&token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
+      document.head.appendChild(s);
+    }
+
+    function send(){
+      if(!boss){ hint("Записывать штрафы могут только Алексей и Рамиль"); return; }
+      if(!who){ hint("Выбери, кому штраф"); return; }
+      if(!reason){ hint("Выбери, за что"); return; }
+      const comment = commentEl.value.trim();   // необязателен: причина уже сказана чипом
+      const amount = Math.round(Number(amountEl.value) || 0);
+      if(amount < 0 || amount > FINE_MAX){ hint(`Сумма — от 0 до ${money(FINE_MAX)}`); amountEl.focus(); return; }
+      if(out.length >= OUT_MAX){ hint("Слишком много неотправленных штрафов — дождись связи"); return; }
+      const d = new Date();
+      const created = `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+      const id = "f" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      const rec = { created, id, who: who.name, reason: reason.label, amount, comment, author: boss.name, status:"" };
+      out.unshift(rec); saveOut();
+      month = created.slice(0, 7);     // штраф лёг в текущий месяц — его и показываем
+      render();
+      commentEl.value = "";
+      hint("Штраф записан", true);
+      post({ token: SHEET_TOKEN, kind:"fine", id, who: rec.who, reason: rec.reason,
+             amount, comment, author: rec.author })
+        .then(() => { setTimeout(loadFines, 2500); setTimeout(loadFines, 9000); });
+    }
+    sendEl.addEventListener("click", send);
+    commentEl.addEventListener("keydown", e => { if(e.key === "Enter") send(); });
+    monthEl.addEventListener("change", () => { month = monthEl.value; render(); });
+
+    // отмена / возврат штрафа — по кнопке в ленте
+    listEl.addEventListener("click", e => {
+      const b = e.target.closest("[data-fine]"); if(!b) return;
+      if(!boss) return;                                  // кнопок и так нет, но клик мимо PIN не проходит
+      const f = shown[+b.dataset.fine]; if(!f) return;
+      if(!f.id){ hint("Этот штраф добавлен в таблицу руками — отменить его можно только там"); return; }
+      const off = b.dataset.off === "1";
+      override[f.id] = off ? "отменён" : "";     // оптимистично: из счёта уходит сразу
+      saveOver(); render();
+      post({ token: SHEET_TOKEN, kind:"fine-status", id: f.id, status: off ? "отменён" : "" })
+        .then(() => { setTimeout(loadFines, 2500); setTimeout(loadFines, 9000); });
+    });
+
+    // каскад появления карточек табло при входе в раздел (та же дозировка, что у Комплектов)
+    window.finesReveal = function(){ mdBlurStagger(scoreEl.querySelectorAll(".fn-card")); };
+
+    // сначала кэш (мгновенно и офлайн), затем досыл очереди и свежие из таблицы
+    try { const c = JSON.parse(localStorage.getItem("md_fines")  || "null"); if(Array.isArray(c)) fines = c; } catch(e){}
+    try { const o = JSON.parse(localStorage.getItem("md_fines_out") || "null"); if(Array.isArray(o)) out = o; } catch(e){}
+    try { const v = JSON.parse(localStorage.getItem("md_fines_cancel") || "null"); if(v && typeof v === "object") override = v; } catch(e){}
+    // кто вошёл по PIN на этом устройстве (не sessionStorage: каждый день PIN вводить незачем)
+    try { const b = localStorage.getItem("md_fine_boss"); if(b) boss = FINE_BOSSES.find(x => x.name === b) || null; } catch(e){}
+    applyAccess();
+    month = curKey();
+    render();
+    flushOut();
+    loadFines();
+    window.addEventListener("online", () => { flushOut(); setTimeout(loadFines, 2500); });
   })();
 
   /* ===================== Анимации появления =====================
@@ -5230,6 +5772,7 @@
       { page:"komplekty",ico:"box",      name:"Комплекты", hint:"Наборы на продажу — отправка и вживую" },
       { page:"prodazhi", ico:"chart",    name:"Продажи", hint:"Присадки и масло по дням" },
       { page:"yama",     ico:"list",     name:"Яма",     hint:"Журнал работ и мастера по дням" },
+      { page:"shtrafy",  ico:"flag",     name:"Штрафы",  hint:"Дисциплина и лучший месяца" },
       { page:"zametki",  ico:"chat",     name:"Заметки", hint:"Пожелания команды" },
     ],
   };
@@ -6322,6 +6865,7 @@
     komplekty:{ t:"Комплекты",       r:"Наборы на продажу — собираем, отправляем и продаём вживую" },
     prodazhi: { t:"Продажи",         r:"Присадки и масло · выручка и копилки по дням" },
     yama:     { t:"Яма",             r:"Работы по машинам · итог дня и доля мастеров" },
+    shtrafy:  { t:"Штрафы",          r:"Дисциплина команды · кто, за что и сколько" },
     zametki:  { t:"Заметки и пожелания", r:"Что починить, что добавить — пиши, увидят все" },
   };
   const titleT = document.querySelector(".title .t");
@@ -6348,6 +6892,7 @@
     if(id === "komplekty" && window.kitsReveal)    window.kitsReveal();     // каскад карточек комплектов
     if(id === "to"        && window.toReveal)      window.toReveal();       // каскад раздела ТО
     if(id === "prodazhi" && window.salesReveal)    window.salesReveal();    // ② счётчик денег
+    if(id === "shtrafy"  && window.finesReveal)    window.finesReveal();    // каскад карточек табло
     try { localStorage.setItem("md_page", id); } catch(e){}  // запомнить вкладку для следующей загрузки
     closeMenu();
     window.scrollTo(0, 0);
