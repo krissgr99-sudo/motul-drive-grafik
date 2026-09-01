@@ -5866,7 +5866,7 @@
         oilKey: (prev && prev.oilKey) || (TO_OILS[0] && TO_OILS[0].key) || "",
         litres: prev ? prev.litres : 0,
         filterName: oil ? packFilter(oil.brand, oil.num) : "",
-        filterPrice: oil ? oil.sell : 0,
+        filterPrice: oil ? (Number(oil.sell) || 0) : 0,
         updated: todayISO(),                        // подобрано сейчас — цена свежая по определению
       };
       selId = vinEngine.id;
@@ -5877,12 +5877,14 @@
       if(!vin || vin.status !== "ok") return;
       for(const id of ["air", "cabin"]){
         const c = vinChosen(id);
-        if(c && !(slots[id] && slots[id].manual)) slots[id] = { name: c.brand, code: c.num, price: c.sell };
+        // Number на приёме: цена приходит из чужого ответа, а дальше она и складывается в
+        // «Итого», и печатается в атрибут value. Строка вместо числа тихо склеила бы сумму.
+        if(c && !(slots[id] && slots[id].manual)) slots[id] = { name: c.brand, code: c.num, price: Number(c.sell) || 0 };
       }
       if(vinEngine && selId === vinEngine.id){        // масляный мог приехать позже — обновим запись
         const oil = vinChosen("oil");
         vinEngine.filterName = oil ? packFilter(oil.brand, oil.num) : "";
-        if(!vinEngine.priceManual) vinEngine.filterPrice = oil ? oil.sell : 0;
+        if(!vinEngine.priceManual) vinEngine.filterPrice = oil ? (Number(oil.sell) || 0) : 0;
       }
       updateList(); updateCard();
     }
@@ -5946,7 +5948,7 @@
             `<button class="to-alt${i === cur ? " on" : ""}" type="button" data-act="vin-alt"
               data-slot="${s.id}" data-i="${i}" title="${esc(v.name || "")}">
               ${esc(v.brand)} ${esc(v.num)} <span class="p">${rub(v.sell)}</span>
-              <span class="q">${v.qty} шт · ${v.days} дн</span></button>`).join("");
+              <span class="q">${Number(v.qty) || 0} шт · ${Number(v.days) || 0} дн</span></button>`).join("");
         }
         return `<div class="to-pick-row"><span class="to-pick-cap">${esc(s.cap)}</span>${body}</div>`;
       }).join("");
@@ -6012,7 +6014,7 @@
           ? `<span class="p${r.p == null ? " ask" : ""}">${money}</span>`
           : priceEdit === r.edit
             ? `<input class="to-price-inp" type="number" inputmode="numeric" min="0" max="200000" step="1"
-                 data-act="price-set" data-edit="${esc(r.edit)}" value="${r.p == null ? "" : r.p}"
+                 data-act="price-set" data-edit="${esc(r.edit)}" value="${r.p == null ? "" : (Number(r.p) || 0)}"
                  aria-label="Цена, ₽">`
             : `<button class="p to-price-edit${r.p == null ? " ask" : ""}" type="button" data-act="price-edit"
                  data-edit="${esc(r.edit)}" title="Изменить цену">${money}</button>`;
