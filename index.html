@@ -6294,14 +6294,23 @@
        слоты и карточка заполняются руками ровно как раньше. */
     let vin = null;                                    // {status, car, filters, price:{slot}, sel:{slot}}
     let jseq = 0;
-    function jsonp(params){
+    /* Сколько ждём ответа. Разбору VIN дано втрое больше остальных: на бэкенде это цепочка
+       из пяти-шести запросов к чужому каталогу (проверка сессии, при протухшей — полный
+       вход в три запроса, поиск по VIN, страница фильтров), и на холодную она укладывалась
+       в 30 секунд не всегда. Не дождались — бэкенд всё равно дорабатывает и кладёт разбор
+       в лист «VIN» навсегда, но на экране это выглядело поломкой: первое нажатие «каталог
+       не ответил», второе — мгновенный правильный разбор из листа (02.09.2026).
+       Потолок самого Apps Script — 6 минут, так что 75 секунд он переживает. */
+    const JSONP_MS     = 30000;
+    const JSONP_VIN_MS = 75000;
+    function jsonp(params, ms){
       return new Promise((resolve, reject) => {
         if(!SHEET_API){ reject(new Error("no-api")); return; }
         const cb = "__tov_" + (++jseq);
         const s = document.createElement("script");
         const cleanup = () => { clearTimeout(timer);
           try { delete window[cb]; } catch(e){ window[cb] = undefined; } s.remove(); };
-        const timer = setTimeout(() => { cleanup(); reject(new Error("timeout")); }, 30000);
+        const timer = setTimeout(() => { cleanup(); reject(new Error("timeout")); }, ms || JSONP_MS);
         window[cb] = d => { cleanup(); resolve(d || {}); };
         s.onerror = () => { cleanup(); reject(new Error("net")); };
         s.src = SHEET_API + "?" + params + "&callback=" + cb + "&t=" + Date.now();
@@ -6338,38 +6347,71 @@
     const vinKey    = () => { try { return localStorage.getItem(VINKEY_LS) || ""; } catch(e){ return ""; } };
     const vinKeySet = v => { try { v ? localStorage.setItem(VINKEY_LS, v) : localStorage.removeItem(VINKEY_LS); } catch(e){} };
 
+    /* Один разбор с автоповтором. Первая попытка может не дождаться холодной цепочки к
+       каталогу, но бэкенд её ДОРАБАТЫВАЕТ и кладёт машину в лист «VIN» навсегда. Поэтому на
+       таймауте мы не сдаёмся, а через пару секунд спрашиваем ещё раз: второй запрос почти
+       всегда попадает уже в готовую запись и отвечает мгновенно — ровно то, что владелец
+       делал руками («второй раз нажимаешь — разбирает»). Повтор ровно один: не дождались и
+       его — значит дело не в холодном старте, и обещать «сейчас будет» нечестно. Повторяем
+       ТОЛЬКО таймаут: обрыв сети и ошибку бэкенда повтор не лечит, а нагрузку удваивает.
+       Повтор идёт с cached=1 — «отдай, что уже есть, в каталог не ходи». Иначе он застал бы
+       первый разбор в работе и отправил в каталог ВТОРОЙ обход той же машины: лишний слот
+       суточного бюджета и строки-близнецы в листе (01.09.2026, 09:03:32 и 09:03:36). Раз он
+       не ходит в сеть каталога, ему хватает обычного ожидания. */
+    async function vinAsk(raw, key, mine){
+      const q = "type=vin&token=" + encodeURIComponent(SHEET_TOKEN) +
+                "&key=" + encodeURIComponent(key) + "&q=" + encodeURIComponent(raw);
+      try { return await jsonp(q, JSONP_VIN_MS); }
+      catch(err){
+        if(String(err && err.message) !== "timeout" || vin !== mine) throw err;
+        mine.again = true; updateVin();                // экран честно говорит, что идёт вторая попытка
+        await new Promise(r => setTimeout(r, 2000));   // даём бэкенду дописать разбор в лист
+        return await jsonp(q + "&cached=1", JSONP_MS);
+      }
+    }
+
+    /* Ответ может прийти, когда владелец уже разбирает ДРУГУЮ машину: запросы долгие, а поле
+       ввода никто не блокирует. Поэтому у каждого разбора есть свой объект состояния, и перед
+       записью мы сверяем, что он всё ещё текущий (`vin !== mine` → тихо уходим). Иначе цены
+       и фильтры прошлой машины дописывались бы в карточку новой. */
     async function vinGo(){
       const raw = String(vinInp.value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 17);
       if(raw.length < 11){ vin = { status:"short" }; updateVin(); return; }
       const key = vinKey();
       if(!key){ vin = { status:"key" }; updateVin(); return; }   // ключа нет — сначала спросим его
-      vin = { status:"load", vin: raw };
+      const mine = vin = { status:"load", vin: raw };
       updateVin();
       let d;
-      try { d = await jsonp("type=vin&token=" + encodeURIComponent(SHEET_TOKEN) +
-                            "&key=" + encodeURIComponent(key) + "&q=" + encodeURIComponent(raw)); }
-      catch(err){ vin = { status:"err", err:"net" }; updateVin(); return; }
+      try { d = await vinAsk(raw, key, mine); }
+      catch(err){
+        if(vin !== mine) return;
+        vin = { status:"err", err: String(err && err.message) === "timeout" ? "slow" : "net" };
+        updateVin(); return;
+      }
+      if(vin !== mine) return;                         // пока ждали, начали разбирать другую машину
       if(d && (d.error === "key" || d.error === "keyoff")){
         if(d.error === "key") vinKeySet("");             // ключ не подошёл — не держим его на устройстве
         vin = { status:"key", err: d.error }; updateVin(); return;
       }
       if(!d || d.error){ vin = { status:"err", err:(d && d.error) || "err" }; updateVin(); return; }
-      vin = { status:"ok", vin: raw, car: d.car || {}, filters: d.filters || {}, price: {}, sel: {} };
+      const cur = vin = { status:"ok", vin: raw, car: d.car || {}, filters: d.filters || {}, price: {}, sel: {} };
       slots = { air:null, cabin:null, fuel:null };     // новая машина — старые фильтры не её
       litresOverride = null;
       makeVinEngine();                                 // смета появляется сразу, цены дойдут следом
       updateVin(); updateList(); updateCard();
       for(const s of VIN_SLOTS){                       // цены — по одному запросу на слот, параллельно
-        const f = vin.filters[s.id];
+        const f = cur.filters[s.id];
         if(!f || !f.ours || !f.ours.length) continue;
-        vin.price[s.id] = { status:"load" };
+        cur.price[s.id] = { status:"load" };
         jsonp("type=part&token=" + encodeURIComponent(SHEET_TOKEN) +
               "&key=" + encodeURIComponent(key) +
               "&art=" + encodeURIComponent(f.ours[0].brand + " " + f.ours[0].num))
-          .then(r => { vin.price[s.id] = (r && !r.error && r.picked)
+          .then(r => { cur.price[s.id] = (r && !r.error && r.picked)
               ? { status:"ok", picked:r.picked, alts:r.alts || [] } : { status:"err" };
+            if(vin !== cur) return;                    // машину сменили — экран уже не наш
             vinApplySlots(); updateVin(); })
-          .catch(() => { vin.price[s.id] = { status:"err" }; updateVin(); });
+          .catch(() => { cur.price[s.id] = { status:"err" };
+            if(vin === cur) updateVin(); });
       }
       updateVin();
     }
@@ -6432,7 +6474,8 @@
     function updateVin(){
       if(!vin){ vinBox.innerHTML = ""; return; }
       if(vin.status === "short"){ vinBox.innerHTML = `<div class="to-note">VIN — 17 знаков, без пробелов.</div>`; return; }
-      if(vin.status === "load"){ vinBox.innerHTML = `<div class="to-note">Ищу машину по VIN…</div>`; return; }
+      if(vin.status === "load"){ vinBox.innerHTML = `<div class="to-note">${vin.again
+        ? "Каталог думает дольше обычного — спрашиваю ещё раз…" : "Ищу машину по VIN…"}</div>`; return; }
       if(vin.status === "key"){
         // keyoff — ключа нет на СЕРВЕРЕ, вводить нечего: показываем только объяснение
         const off = vin.err === "keyoff";
@@ -6448,12 +6491,19 @@
         const k = vinBox.querySelector("#to-vinkey"); if(k) k.focus();
         return;
       }
+      /* Причины РАЗВЕДЕНЫ по текстам: раньше и таймаут, и обрыв связи, и ошибка бэкенда
+         выглядели одинаково («каталог не ответил»), и по экрану нельзя было понять, надо
+         подождать или чинить. Отдельно важен slow: разбор к этому моменту почти наверняка
+         дописался на сервере, и повтор через минуту отдаст его из листа мгновенно. */
       if(vin.status === "err"){
         const msg = vin.err === "auth" ? "Каталог не пустил: проверь логин RAVENOL в свойствах скрипта."
           : vin.err === "notfound" ? "Каталог не знает этот VIN — фильтры вводим руками, как раньше."
           : vin.err === "vin" ? "Это не похоже на VIN."
           : vin.err === "budget" ? "На сегодня лимит новых разборов исчерпан. Уже разобранные машины открываются как обычно, новую — руками или завтра."
           : vin.err === "rate" ? "Подбор просили слишком часто — он отдыхает около часа. Смета собирается как обычно, фильтры руками."
+          : vin.err === "slow" ? "Каталог не успел ответить дважды. Разбор, скорее всего, уже дописался на сервере — нажми «Разобрать» ещё раз через минуту, ответ придёт из памяти."
+          : vin.err === "pending" ? "Разбор ещё готовится на сервере. Нажми «Разобрать» ещё раз через полминуты — машина появится из памяти."
+          : vin.err === "net" ? "Не дозвонился до сервера. Смета собирается как обычно, фильтры — руками."
           : "Каталог не ответил. Смета собирается как обычно, фильтры — руками.";
         vinBox.innerHTML = `<div class="to-note">${esc(msg)}</div>`;
         return;
