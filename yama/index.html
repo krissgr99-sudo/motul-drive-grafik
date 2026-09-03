@@ -185,6 +185,25 @@
   }
 </style>
 <script>(function(){try{var t=localStorage.getItem('md_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<!-- Ранний перехватчик ошибок (как в портале): копит сбои в буфер, пока не поднялся основной
+     скрипт с адресом API. Телефоны мастеров мы не видим никогда — без этого журнала их сбои
+     не узнать вообще. Ничего не отправляет сам. -->
+<script>(function(){
+  var B = window.__mdErrBuf = [], MAX = 10;
+  function push(o){
+    var L = window.MDERR;
+    if(L){ try { L(o.t, o.m, o.f ? (o.f + (o.l ? ":" + o.l : "")) : ""); } catch(e){} return; }
+    if(B.length < MAX) B.push(o);
+  }
+  window.addEventListener("error", function(e){
+    if(!e || !e.message) return;                  // без message — сбой загрузки ресурса, а не наш баг
+    push({ t:"js", m:String(e.message), f:String(e.filename||""), l:e.lineno||0 });
+  }, true);
+  window.addEventListener("unhandledrejection", function(e){
+    var r = e && e.reason, m = (r && (r.message || r)) || "promise rejected";
+    push({ t:"js", m:"promise: " + String(m), f:"", l:0 });
+  });
+})();</script>
 </head>
 <body class="locked">
 
@@ -339,6 +358,56 @@
     return v;
   }
 
+  /* ЖУРНАЛ ОШИБОК страницы мастеров → лист «Лог-ошибок» (kind:"err", ключ ямы).
+     Здесь нарочно проще, чем в портале: телефон в яме — не место для очереди с досылом,
+     не ушло так не ушло. Предохранители те же и обязательны: потолок записей и дедуп по
+     отпечатку, иначе одна ошибка в цикле рендера уводит канал ямы в автостоп — и мастера
+     остаются без журнала посреди смены.
+     Окно у обоих — ЧАС, как в портале: страница висит на телефоне всю смену, и «один раз
+     за сессию» означало бы, что связь падала восемь раз, а в журнале одна строка.
+     Отправляем только под ключом: без него ворота всё равно ответят «token». */
+  var ERR_PER_HOUR = 5, errN = 0, errSeen = {}, errHour = "";
+  window.MDERR = function(type, msg, where){
+    var key = keyGet(); if(!key) return;
+    var t = (type === "net" || type === "ui") ? type : "js";
+    /* Сети нет у самого телефона — это не сбой портала, а яма без интернета, и мастер это
+       уже видит на экране. Запись всё равно не уедет, а место в бюджете часа займёт. */
+    if(t === "net" && navigator.onLine === false) return;
+    var hour = new Date().toISOString().slice(0, 13);
+    if(errHour !== hour){ errHour = hour; errN = 0; errSeen = {}; }   // новый час — новый лимит
+    if(errN >= ERR_PER_HOUR) return;
+    var m = String(msg || "").replace(/\s+/g, " ").trim().slice(0, 200); if(!m) return;
+    var w = String(where || ""), q = w.indexOf("?"); if(q >= 0) w = w.slice(0, q);
+    var i = w.lastIndexOf("/"); w = (i >= 0 ? w.slice(i + 1) : w).slice(0, 60);
+    var fp = t + "|" + m.slice(0, 80) + "|" + w;
+    if(errSeen[fp]) return;
+    errSeen[fp] = 1; errN++;
+    var u = navigator.userAgent || "";
+    var ua = (/YaBrowser/.test(u) ? "Yandex" : /Edg\//.test(u) ? "Edge" : /Chrome\//.test(u) ? "Chrome"
+      : /Firefox\//.test(u) ? "Firefox" : /Safari\//.test(u) ? "Safari" : "?") + " · " +
+      (/Android/.test(u) ? "Android" : /iPhone|iPad|iPod/.test(u) ? "iOS"
+       : /Windows/.test(u) ? "Windows" : /Mac OS X/.test(u) ? "macOS" : "?");
+    // прод или локальный прогон разработки — иначе мои проверки лягут в дайджест как сбои у мастеров
+    var src = (location.protocol === "file:" ||
+      /^(localhost|127\.|192\.168\.|10\.)/.test(location.hostname)) ? "local" : "prod";
+    var dev = deviceId();
+    try {
+      fetch(API, { method: "POST", mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ key: key, kind: "err", errType: t, msg: m, at: w,
+          page: "yama", ua: ua, src: src, appUserHandle: dev,
+          minuteKey: dev + "·err·" + fp + "·" + hour, ts: new Date().toISOString() }) })
+        .catch(function(){});
+    } catch(e){}
+  };
+  // ошибки, случившиеся до этого места, ждут в буфере раннего перехватчика
+  try {
+    var buf = window.__mdErrBuf || [];
+    for(var bi = 0; bi < buf.length; bi++)
+      window.MDERR(buf[bi].t, buf[bi].m, buf[bi].f ? (buf[bi].f + (buf[bi].l ? ":" + buf[bi].l : "")) : "");
+    buf.length = 0;
+  } catch(e){}
+
   function load(fromGate){
     var key = keyGet();
     if(!key){ lock(""); return; }
@@ -367,6 +436,9 @@
       if(done) return;
       finish();
       noAnswer();
+      // связи с бэкендом нет — в журнал ошибок: сколько раз в неделю яма остаётся без данных,
+      // иначе знает только мастер, который в этот момент стоит с телефоном под машиной
+      window.MDERR && window.MDERR("net", "канал не ответил: журнал ямы", "jsonp:yama");
     }
     window[cb] = function(j){
       if(done) return;

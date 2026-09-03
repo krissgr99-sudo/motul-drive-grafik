@@ -8,7 +8,7 @@
 
    Стратегия та же, что у портала: network-first (свежий деплой доходит до онлайн-мастера),
    кэш — страховка на офлайн. Меняешь yama.html — подними версию ниже. */
-const CACHE = "md-yama-v1";
+const CACHE = "md-yama-v2";
 
 self.addEventListener("install", e => {
   e.waitUntil(

@@ -1228,6 +1228,26 @@
   .tpl-copy:active{box-shadow:none}
 </style>
 <script>(function(){try{var t=localStorage.getItem('md_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<!-- Ранний перехватчик ошибок. Живёт здесь, а не в основном скрипте, потому что MDLOG объявлен
+     на ~4400-й строке: сбои САМОЙ загрузки — самые ценные — случились бы раньше и потерялись.
+     Ничего не отправляет: только копит в буфер (с потолком, чтобы шторм не съел память),
+     дальше буфер разбирает MDLOG.err и решает, что писать. -->
+<script>(function(){
+  var B = window.__mdErrBuf = [], MAX = 20;
+  function push(o){
+    var L = window.MDLOG;                          // портал уже загрузился — отдаём сразу, буфер не нужен
+    if(L && L.err){ try { L.err(o.t, o.m, o.f ? (o.f + (o.l ? ":" + o.l : "")) : ""); } catch(e){} return; }
+    if(B.length < MAX) B.push(o);
+  }
+  window.addEventListener("error", function(e){
+    if(!e || !e.message) return;                  // без message — это сбой загрузки ресурса, а не наш баг
+    push({ t:"js", m:String(e.message), f:String(e.filename||""), l:e.lineno||0 });
+  }, true);
+  window.addEventListener("unhandledrejection", function(e){
+    var r = e && e.reason, m = (r && (r.message || r)) || "promise rejected";
+    push({ t:"js", m:"promise: " + String(m), f:"", l:0 });
+  });
+})();</script>
 </head>
 <body class="locked">
 
@@ -3624,7 +3644,11 @@
       catch(e){
         const ta=document.createElement("textarea"); ta.value=text;
         ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
-        ta.select(); try{ document.execCommand("copy"); }catch(_){} ta.remove();
+        ta.select();
+        let ok=false; try{ ok = document.execCommand("copy"); }catch(_){} ta.remove();
+        // оба способа отказали: кнопка скажет «Скопировано», а буфер пуст — самый обидный сбой,
+        // менеджер узнаёт о нём только у клиента. В журнал ошибок; сам ТЕКСТ сметы не пишем.
+        if(!ok) window.MDLOG && window.MDLOG.err("ui", "копирование в буфер не сработало", "copyText");
       }
       if(btn){
         // okLabel — мостик к следующему шагу (Н5): после копирования сметы подсказываем «пришлите в WhatsApp».
@@ -4022,7 +4046,9 @@
       catch(e){
         const ta=document.createElement("textarea"); ta.value=t;
         ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
-        ta.select(); try{ document.execCommand("copy"); }catch(_){} ta.remove();
+        ta.select();
+        let ok=false; try{ ok = document.execCommand("copy"); }catch(_){} ta.remove();
+        if(!ok) window.MDLOG && window.MDLOG.err("ui", "копирование в буфер не сработало", "copyArt");
       }
       const old=btn.innerHTML; btn.innerHTML=ICO.check+" скопирован"; btn.classList.add("ok");
       setTimeout(()=>{ btn.innerHTML=old; btn.classList.remove("ok"); }, 1200);
@@ -4348,7 +4374,9 @@
       }
       delete window[cb]; s.remove();
     };
-    s.onerror = () => { delete window[cb]; s.remove(); };
+    // канал не ответил (сеть, автостоп, упавший Apps Script) → в журнал ошибок: молчаливый сбой станет цифрой
+    s.onerror = () => { delete window[cb]; s.remove();
+      window.MDLOG && window.MDLOG.err("net", "канал не ответил: сверка цен", "jsonp:prices"); };
     // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
     s.src = SHEET_API + "?type=prices&token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
     document.head.appendChild(s);
@@ -4401,6 +4429,29 @@
     }
     const minuteStamp = () => { const d=new Date(), p=n=>String(n).padStart(2,"0");
       return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes()); };
+    const hourStamp   = () => minuteStamp().slice(0, 13);   // окно дедупа ошибок — час (см. err ниже)
+    // Из адреса файла — только имя со строкой: полный URL тащил бы query, а он бывает с данными.
+    const shortWhere = w => { let s = String(w || ""); const q = s.indexOf("?"); if(q >= 0) s = s.slice(0, q);
+      const i = s.lastIndexOf("/"); return (i >= 0 ? s.slice(i + 1) : s).slice(0, 60); };
+    // Браузер и платформа коротко — чинить «только на телефонах» без разбора километрового User-Agent.
+    const uaShort = () => { const u = navigator.userAgent || "";
+      const br = /YaBrowser/.test(u) ? "Yandex" : /Edg\//.test(u) ? "Edge" : /OPR\//.test(u) ? "Opera"
+        : /Chrome\//.test(u) ? "Chrome" : /Firefox\//.test(u) ? "Firefox" : /Safari\//.test(u) ? "Safari" : "?";
+      const os = /Android/.test(u) ? "Android" : /iPhone|iPad|iPod/.test(u) ? "iOS"
+        : /Windows/.test(u) ? "Windows" : /Mac OS X/.test(u) ? "macOS" : "?";
+      const v = (u.match(/(?:YaBrowser|Chrome|Firefox|Version)\/(\d+)/) || [])[1] || "";
+      return (br + (v ? " " + v : "") + " · " + os).slice(0, 40); };
+    // Прод или моя локальная проверка — чтобы отладочный мусор не подмешивался к реальным сбоям.
+    const srcTag = () => (location.protocol === "file:" ||
+      /^(localhost|127\.|192\.168\.|10\.)/.test(location.hostname)) ? "local" : "prod";
+    /* Потолок записей об ошибках — на ЧАС, а не на загрузку страницы. Портал одностраничный:
+       менеджер открывает вкладку утром и не перезагружает её до вечера. При потолке «на загрузку»
+       журнал замолкал бы после пятой ошибки — то есть ровно на всю рабочую смену.
+       Бюджет РАЗДЕЛЬНЫЙ по типам, и у net он меньше: обрыв связи роняет все семь каналов
+       разом, и общий счётчик выгорал бы за секунду на одном событии «нет интернета» —
+       а js-исключение, ради которого журнал и заводился, в этот час уже не записалось бы. */
+    const ERR_PER_HOUR = { js: 5, ui: 5, net: 2 };
+    let errN = { js:0, ui:0, net:0 }, errHour = "";
     let queue = load(QKEY, []);
     let sentKeys = load(SKEY, []);
     const remember = mk => { sentKeys.push(mk); if(sentKeys.length>MAXSENT) sentKeys = sentKeys.slice(-MAXSENT); save(SKEY, sentKeys); };
@@ -4424,7 +4475,7 @@
     }
     window.addEventListener("online", flush);
     flush(); // досыл хвостов, накопленных офлайн в прошлые сессии
-    return {
+    const api = {
       // А3: нажатие «Копировать» смету. cardCode — стабильный код карточки (tplCode).
       copy(cardCode){
         enqueue({ token: SHEET_TOKEN, kind:"copy", templateCode: cardCode||null,
@@ -4437,8 +4488,54 @@
         enqueue({ token: SHEET_TOKEN, kind:"demand", queryText: q, unitAsked: unitAsked||null,
           found:false, carKey: carKey||null, appUserHandle: device,
           minuteKey: device+"·demand·"+q+"·"+minuteStamp(), ts: new Date().toISOString() });
+      },
+      /* ЖУРНАЛ ОШИБОК → лист «Лог-ошибок». Три типа: js (исключение), net (бэкенд не ответил),
+         ui (человек упёрся в видимый отказ). Чинить по фактам, а не по жалобам.
+
+         Два предохранителя, без которых журнал КЛАДЁТ ПОРТАЛ. Одна битая строка в рендере
+         стреляет исключением в цикле; при потолке RL_POST_MAX=60 записей за 10 минут это
+         автостоп API на час, то есть журнал ошибок гасит продажи, цены и Яму:
+           • ERR_PER_HOUR — бюджет записей в час с устройства, свой на каждый тип;
+           • дедуп по отпечатку в том же часовом окне (у copy/demand окно — минута): одна и та же
+             ошибка пишется раз в час с устройства. Частоту потом видно по числу
+             записей × устройств, а не по 300 одинаковых строк.
+         Время сбоя (ts) шлём своё: net-ошибка случается БЕЗ связи, лежит в очереди и доезжает
+         часами позже — серверное время записи показало бы момент досыла, а не поломки.
+         В сообщение НЕ подставляем данные клиента (VIN, номер заказа): текст ошибки уезжает
+         в общую таблицу. Из адреса берём только имя файла со строкой — без query. */
+      err(type, msg, where){
+        const t = (type === "net" || type === "ui") ? type : "js";
+        /* Сети нет у самого клиента — это не сбой портала, чинить нечего. Такая запись всё
+           равно не уедет (ляжет в ту же очередь), зато займёт место в бюджете часа. */
+        if(t === "net" && navigator.onLine === false) return;
+        const hour = hourStamp();
+        if(errHour !== hour){ errHour = hour; errN = { js:0, ui:0, net:0 }; }   // новый час — новый лимит
+        if(errN[t] >= ERR_PER_HOUR[t]) return;
+        const m = String(msg || "").replace(/\s+/g, " ").trim().slice(0, 200);
+        if(!m) return;
+        const w = shortWhere(where);
+        const fp = t + "|" + m.slice(0, 80) + "|" + w;             // отпечаток: по нему группирует недельный робот
+        const hk = device + "·err·" + fp + "·" + hour;
+        if(sentKeys.indexOf(hk) !== -1) return;                    // уже писали в этом часе — молчим (до потолка не тратимся)
+        errN[t]++;
+        let page = "";
+        try { page = String(localStorage.getItem("md_page") || ""); } catch(e){}
+        enqueue({ token: SHEET_TOKEN, kind:"err", errType: t, msg: m, at: w, page,
+          ua: uaShort(), src: srcTag(), appUserHandle: device,
+          minuteKey: hk, ts: new Date().toISOString() });
       }
     };
+    /* Разбор раннего буфера: ошибки, случившиеся до объявления MDLOG (перехватчик в <head>).
+       Дальше перехватчик зовёт MDLOG.err напрямую — буфер больше не нужен. */
+    try {
+      const buf = window.__mdErrBuf || [];
+      for(let i = 0; i < buf.length; i++){
+        const o = buf[i];
+        api.err(o.t, o.m, o.f ? (o.f + (o.l ? ":" + o.l : "")) : "");
+      }
+      buf.length = 0;
+    } catch(e){}
+    return api;
   })();
 
   (function(){
@@ -4637,7 +4734,8 @@
         if(dirty) render();
         delete window[cb]; s.remove();
       };
-      s.onerror = () => { delete window[cb]; s.remove(); };
+      s.onerror = () => { delete window[cb]; s.remove();
+        window.MDLOG && window.MDLOG.err("net", "канал не ответил: копилка", "jsonp:withdraw"); };
       // токен обязателен с 2026-09-03: выводы копилки больше не отдаются по одному адресу ручки
       s.src = WITHDRAW_API + "?token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
       document.head.appendChild(s);
@@ -4979,7 +5077,8 @@
         }
         delete window[cb]; s.remove();
       };
-      s.onerror = () => { delete window[cb]; s.remove(); };
+      s.onerror = () => { delete window[cb]; s.remove();
+        window.MDLOG && window.MDLOG.err("net", "канал не ответил: продажи", "jsonp:sales"); };
       // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
       s.src = SHEET_API + "?type=sales&token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
       document.head.appendChild(s);
@@ -5142,7 +5241,8 @@
         }
         delete window[cb]; s.remove();
       };
-      s.onerror = () => { delete window[cb]; s.remove(); };
+      s.onerror = () => { delete window[cb]; s.remove();
+        window.MDLOG && window.MDLOG.err("net", "канал не ответил: яма", "jsonp:yama"); };
       // токен обязателен: в ответе госномера машин, ручка не должна открываться случайному заходу
       s.src = SHEET_API + "?type=yama&token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
       document.head.appendChild(s);
@@ -5364,7 +5464,8 @@
         }
         delete window[cb]; s.remove();
       };
-      s.onerror = () => { delete window[cb]; s.remove(); };
+      s.onerror = () => { delete window[cb]; s.remove();
+        window.MDLOG && window.MDLOG.err("net", "канал не ответил: заметки", "jsonp:notes"); };
       // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
       s.src = SHEET_API + "?type=notes&token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
       document.head.appendChild(s);
@@ -5651,7 +5752,8 @@
         }                          // error (token/rate) — это не «старый скрипт», молча остаёмся на кэше
         delete window[cb]; s.remove();
       };
-      s.onerror = () => { delete window[cb]; s.remove(); };
+      s.onerror = () => { delete window[cb]; s.remove();
+        window.MDLOG && window.MDLOG.err("net", "канал не ответил: штрафы", "jsonp:fines"); };
       // токен: в ответе имена сотрудников и за что наказаны — ручка закрыта, как у «Ямы»
       s.src = SHEET_API + "?type=fines&token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
       document.head.appendChild(s);
@@ -6058,7 +6160,8 @@
         try { await navigator.clipboard.writeText(text); }
         catch(_){ const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed";
           ta.style.opacity="0"; document.body.appendChild(ta); ta.select();
-          try{ document.execCommand("copy"); }catch(__){} ta.remove(); }
+          let ok=false; try{ ok = document.execCommand("copy"); }catch(__){} ta.remove();
+          if(!ok) window.MDLOG && window.MDLOG.err("ui", "копирование в буфер не сработало", "kit-copy"); }
         if(!btn.classList.contains("ok")) btn.dataset.copyLabel = btn.innerHTML;
         btn.innerHTML = ICO.check + " Вставьте в WhatsApp"; btn.classList.add("ok"); // мостик к следующему шагу (как в Шаблонах)
         clearTimeout(btn._copyT);
@@ -6194,7 +6297,8 @@
         } else if(data){ warnOld = true; updateAll(); }   // старый скрипт — записи живут локально
         delete window[cb]; s.remove();
       };
-      s.onerror = () => { delete window[cb]; s.remove(); };
+      s.onerror = () => { delete window[cb]; s.remove();
+        window.MDLOG && window.MDLOG.err("net", "канал не ответил: двигатели ТО", "jsonp:engines"); };
       // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
       s.src = SHEET_API + "?type=engines&token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
       document.head.appendChild(s);
@@ -6290,7 +6394,9 @@
       catch(e){
         const ta = document.createElement("textarea"); ta.value = text;
         ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta);
-        ta.select(); try { document.execCommand("copy"); } catch(_){} ta.remove();
+        ta.select();
+        let ok=false; try { ok = document.execCommand("copy"); } catch(_){} ta.remove();
+        if(!ok) window.MDLOG && window.MDLOG.err("ui", "копирование в буфер не сработало", "copyTo");
       }
       if(btn){
         if(!btn.classList.contains("ok")) btn.dataset.copyLabel = btn.innerHTML;
@@ -6588,6 +6694,13 @@
           : vin.err === "net" ? "Не дозвонился до сервера. Смета собирается как обычно, фильтры — руками."
           : "Каталог не ответил. Смета собирается как обычно, фильтры — руками.";
         vinBox.innerHTML = `<div class="to-note">${esc(msg)}</div>`;
+        /* Человек упёрся в видимый отказ → в журнал ошибок КОД причины (сам VIN не пишем:
+           чужая машина). Только то, что чиним МЫ: обрыв, таймаут, лимит, логин каталога.
+           «Каталог не знает этот VIN» и «это не похоже на VIN» сюда не идут — первое считает
+           метрика пробелов, второе просто опечатка в семнадцати знаках. Иначе оба вылезут
+           в дайджесте на первое место (случаются у всех), а чинить в них нечего. */
+        if(vin.err !== "notfound" && vin.err !== "vin")
+          window.MDLOG && window.MDLOG.err("ui", "подбор по VIN не дал машину: " + (vin.err || "?"), "to:vin");
         return;
       }
       const c = vin.car || {};
