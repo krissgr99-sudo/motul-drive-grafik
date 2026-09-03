@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>MOTUL-DRIVE · Яма</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='9%25' y1='21%25' x2='91%25' y2='79%25'><stop offset='50%25' stop-color='%23d11f2d'/><stop offset='50%25' stop-color='%23141414'/></linearGradient></defs><circle cx='32' cy='32' r='31' fill='url(%23g)'/><text x='32' y='34' font-family='Arial,Helvetica,sans-serif' font-size='26' font-weight='800' fill='%23fff' text-anchor='middle' dominant-baseline='central' letter-spacing='0.5'>MD</text></svg>">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#d11f2d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Яма">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* =========================================================
+     СТРАНИЦА МАСТЕРОВ ЯМЫ — отдельный адрес /yama/, отдельный ключ доступа.
+     Здесь НЕТ цен, продаж, копилки, штрафов и общего токена портала: мастеру нужно
+     ровно одно действие — поставить имя напротив машины, и видеть он должен ровно
+     столько же. Токены и компоненты повторяют портал (дизайн-система), но живут
+     своей копией: страница обязана открываться и работать сама по себе.
+     ========================================================= */
+  :root{
+    --font-disp:'Space Grotesk','Manrope',system-ui,sans-serif;
+    --font-text:'Manrope',system-ui,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,monospace;
+    --brand:#d11f2d; --brand-hover:#e6232f;
+  }
+  [data-theme="dark"]{
+    --bg:#0a0b0e; --card:#13151b; --card2:#1a1d24;
+    --line:rgba(255,255,255,.08);
+    --text:#f1f3f6; --muted:#8a909c;
+    --chip-bg:rgba(255,255,255,.06); --chip-text:#c2c7d0;
+    --fill:rgba(255,255,255,.04); --fill-hover:rgba(255,255,255,.07); --fill-soft:rgba(255,255,255,.03);
+    --shadow:0 16px 40px rgba(0,0,0,.5);
+    --accent-soft:#ff6b75; --open-border:rgba(255,75,87,.35);
+    --nav-hover:rgba(255,255,255,.05); --ok:#4cc38a; --ok-bg:rgba(76,195,138,.13);
+    --gate-bg:radial-gradient(900px 500px at 50% -10%, rgba(209,31,45,.28), transparent 60%), linear-gradient(165deg,#08090c,#11131a);
+  }
+  [data-theme="light"]{
+    --bg:#eef0f3; --card:#ffffff; --card2:#f6f7f9;
+    --line:#e6e8ec;
+    --text:#1f2430; --muted:#646b78;
+    --chip-bg:#f2f4f7; --chip-text:#5a6170;
+    --fill:#ffffff; --fill-hover:#eef1f5; --fill-soft:#f6f7f9;
+    --shadow:0 8px 24px rgba(20,25,40,.06);
+    --accent-soft:#d11f2d; --open-border:rgba(209,31,45,.4);
+    --nav-hover:#f2f4f7; --ok:#1a7f4b; --ok-bg:rgba(26,127,75,.1);
+    --gate-bg:radial-gradient(900px 500px at 50% -10%, rgba(209,31,45,.28), transparent 60%), linear-gradient(165deg,#08090c,#11131a);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-text);
+    font-size:14px;line-height:1.5;-webkit-text-size-adjust:100%}
+  body.locked{overflow:hidden}
+  body.locked #app{filter:blur(8px);pointer-events:none;user-select:none}
+
+  /* ---------- Экран ключа ---------- */
+  /* Пароля на клиенте здесь нет намеренно: гейт — это САМ ключ доступа. Проверяет его
+     сервер (Apps Script), а не JS страницы, поэтому «подобрать в исходнике» нечего. */
+  #gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+    padding:20px;background:var(--gate-bg)}
+  body:not(.locked) #gate{display:none}
+  .gate-card{width:100%;max-width:380px;background:#13151b;border:1px solid #242831;border-radius:20px;
+    padding:34px 28px;box-shadow:0 24px 70px rgba(0,0,0,.7),0 0 60px rgba(209,31,45,.12);text-align:center;color:#e9ecf1}
+  .badge{position:relative;width:46px;height:46px;border-radius:50%;flex:none;
+    background:linear-gradient(125deg,#d11f2d 0 49.5%,#141414 50.5% 100%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 20px rgba(209,31,45,.35),inset 0 0 0 1px rgba(255,255,255,.14)}
+  .badge span{font-weight:800;font-size:16px;letter-spacing:.5px;color:#fff;font-family:var(--font-disp)}
+  .gate-card .badge{width:60px;height:60px;margin:0 auto 18px}
+  .gate-card .badge span{font-size:21px}
+  .gate-title{font-family:var(--font-disp);margin:0 0 6px;font-size:21px;font-weight:600}
+  .gate-sub{margin:0 0 24px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8b93a1}
+  #gate-key{width:100%;padding:14px;border-radius:12px;border:1px solid #2f3542;background:#0d0f14;color:#fff;
+    font-size:15px;font-family:inherit;outline:none;margin-bottom:12px;transition:border-color .15s}
+  #gate-key:focus{border-color:var(--brand)}
+  #gate-btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--brand);color:#fff;
+    font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;letter-spacing:.3px;
+    transition:background .15s,box-shadow .15s;box-shadow:0 0 20px rgba(209,31,45,.4)}
+  #gate-btn:hover{background:var(--brand-hover);box-shadow:0 0 28px rgba(209,31,45,.55)}
+  #gate-btn:active{transform:scale(.97)}
+  .gate-err{color:#ff6b73;font-size:13px;font-weight:600;margin-top:12px;min-height:16px}
+  .gate-foot{margin-top:22px;font-size:11px;font-weight:600;letter-spacing:.5px;color:#5b6270}
+
+  /* ---------- Шапка ---------- */
+  .top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:13px;
+    padding:12px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+  .top .tt{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .top .t1{font-family:var(--font-disp);font-weight:700;font-size:16px;letter-spacing:.2px}
+  .top .t2{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .theme-btn{margin-left:auto;flex:none;width:38px;height:38px;border-radius:11px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--fill);border:1px solid var(--line);color:var(--muted);transition:background .15s,color .15s}
+  .theme-btn:hover{background:var(--fill-hover);color:var(--text)}
+  .theme-btn:active{transform:scale(.95)}
+  .theme-btn svg{width:18px;height:18px}
+
+  .wrap{max-width:860px;margin:0 auto;padding:16px 16px 40px}
+
+  /* ---------- Строка состояния ---------- */
+  .bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .upd{font-size:12px;color:var(--muted)}
+  .sel{margin-left:auto;padding:8px 30px 8px 12px;border-radius:10px;font-size:13px;font-family:inherit;
+    color:var(--text);background:var(--fill);border:1px solid var(--line);cursor:pointer;
+    appearance:none;-webkit-appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+    background-position:calc(100% - 16px) 52%,calc(100% - 11px) 52%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+  .rfr{padding:8px 13px;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;
+    background:var(--fill);border:1px solid var(--line);color:var(--text);transition:background .15s}
+  .rfr:hover{background:var(--fill-hover)}
+  .rfr:active{transform:scale(.95)}
+  .rfr[disabled]{opacity:.5;cursor:default}
+
+  /* ---------- День ---------- */
+  .daycard{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    margin-bottom:12px;box-shadow:var(--shadow)}
+  .daycard.open{border-color:var(--open-border)}
+  .sday-btn{display:block;width:100%;padding:0;border:none;background:transparent;color:inherit;
+    font:inherit;text-align:left;cursor:pointer}
+  .sday-btn:hover .dhead{background:var(--nav-hover)}
+  .dhead{position:relative;display:flex;align-items:center;gap:9px;padding:13px 15px;
+    background:var(--card2);border-bottom:1px solid var(--line);transition:background .15s}
+  .dnum{font-family:var(--font-disp);font-weight:700;font-size:18px}
+  .dmon{font-weight:600;font-size:12px;color:var(--muted);margin-left:-3px}
+  .dbadge{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+    padding:2px 8px;border-radius:999px;background:var(--chip-bg);color:var(--muted)}
+  /* «без мастера» — единственный сигнал, который здесь нужен: что осталось дописать */
+  .dleft{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;background:rgba(209,31,45,.12);color:var(--accent-soft)}
+  .dvals{display:flex;gap:18px;margin-left:auto;align-items:baseline}
+  .dv{display:flex;flex-direction:column;align-items:flex-end;gap:1px;line-height:1.15}
+  .dv .k{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .dv .v{font-family:var(--font-disp);font-size:15px;font-weight:600;color:var(--text);white-space:nowrap}
+  .dv.pay .v{color:var(--accent-soft)}
+  .chev{flex:none;width:14px;height:14px;position:relative;color:var(--muted);transition:transform .25s,color .25s;margin-left:8px}
+  .chev::before{content:"";position:absolute;left:2px;top:3px;width:7px;height:7px;
+    border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);border-radius:1px}
+  .daycard.open .chev{transform:rotate(180deg);color:var(--accent-soft)}
+  .collapse{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}
+  .daycard.open .collapse{grid-template-rows:1fr}
+  .collapse-inner{overflow:hidden;min-height:0}
+
+  /* ---------- Машина ---------- */
+  .ycar{display:flex;align-items:center;gap:14px;padding:13px 15px;border-top:1px solid var(--line)}
+  .ycar:hover{background:var(--fill-soft)}
+  .ycar-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:7px}
+  .yname{font-weight:600;font-size:15px;color:var(--text)}
+  .yord{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-left:8px}
+  .ychips{display:flex;gap:6px;flex-wrap:wrap}
+  .ychip{display:inline-flex;align-items:center;gap:5px;background:var(--fill);border:1px solid var(--line);
+    border-radius:999px;padding:3px 10px;font-size:11px;color:var(--chip-text)}
+  .ychip b{color:var(--text);font-weight:600}
+  .ychip.other{border-color:var(--accent-soft);color:var(--accent-soft)}
+  .ysum{font-family:var(--font-mono);font-size:15px;font-weight:600;color:var(--text);white-space:nowrap}
+  .ymaster{flex:0 0 auto;min-width:132px;max-width:166px;padding:9px 30px 9px 11px;border-radius:10px;
+    font-size:14px;font-family:inherit;color:var(--text);background:var(--fill);border:1px solid var(--line);
+    cursor:pointer;appearance:none;-webkit-appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+    background-position:calc(100% - 16px) 52%,calc(100% - 11px) 52%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+  .ymaster:focus{outline:none;border-color:var(--accent-soft)}
+  .ymaster.is-empty{color:var(--muted);border-style:dashed}
+  .ymaster.saved{border-color:var(--ok);background:var(--ok-bg)}
+
+  /* ---------- Подвал ---------- */
+  .note{display:flex;gap:9px;margin-top:16px;font-size:12px;color:var(--muted);line-height:1.6}
+  .note .nd{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent-soft);margin-top:7px}
+  .foot{margin-top:26px;display:flex;justify-content:center}
+  .forget{background:none;border:none;font:inherit;font-size:12px;color:var(--muted);cursor:pointer;
+    text-decoration:underline;text-underline-offset:3px;padding:8px}
+  .forget:hover{color:var(--accent-soft)}
+  .empty{padding:34px 16px;text-align:center;color:var(--muted);font-size:14px}
+
+  @media (max-width:720px){
+    .wrap{padding:14px 12px 34px}
+    .dhead{flex-wrap:wrap;padding-right:40px}
+    .dvals{width:100%;margin-left:0;margin-top:9px;justify-content:space-between;gap:10px}
+    .dv{align-items:flex-start}
+    .chev{position:absolute;right:15px;top:15px;margin-left:0}
+    /* строка: машина и работы, ниже мастер и сумма в один ряд */
+    .ycar{flex-wrap:wrap;align-items:flex-start;gap:10px}
+    .ycar-main{flex:1 1 100%}
+    .ymaster{flex:1 1 auto;min-width:0;max-width:none;min-height:44px}
+    .ysum{margin-left:auto;align-self:center}
+    .sel,.rfr{min-height:40px}
+  }
+</style>
+<script>(function(){try{var t=localStorage.getItem('md_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+</head>
+<body class="locked">
+
+<!-- ЭКРАН КЛЮЧА -->
+<div id="gate">
+  <form id="gate-form" class="gate-card" autocomplete="off">
+    <div class="badge"><span>MD</span></div>
+    <h1 class="gate-title">Яма</h1>
+    <p class="gate-sub">Журнал работ · введите ключ</p>
+    <input id="gate-key" type="text" placeholder="Ключ доступа" autocomplete="off"
+           autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text">
+    <button id="gate-btn" type="submit">Войти</button>
+    <div class="gate-err" id="gate-err" role="alert" aria-live="assertive"></div>
+    <div class="gate-foot">Ключ выдаёт владелец сервиса</div>
+  </form>
+</div>
+
+<main id="app">
+  <header class="top">
+    <div class="badge"><span>MD</span></div>
+    <div class="tt">
+      <span class="t1">Яма</span>
+      <span class="t2">Кто делал машину</span>
+    </div>
+    <button class="theme-btn" id="theme-btn" type="button" aria-label="Сменить тему"></button>
+  </header>
+
+  <div class="wrap">
+    <div class="bar">
+      <span class="upd" id="upd"></span>
+      <select class="sel" id="month" aria-label="Месяц" hidden></select>
+      <button class="rfr" id="refresh" type="button">Обновить</button>
+    </div>
+
+    <div id="days"></div>
+
+    <div class="note"><span class="nd"></span><span id="note"></span></div>
+
+    <div class="foot">
+      <button class="forget" id="forget" type="button">Забыть ключ на этом устройстве</button>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ===================== ЖУРНАЛ ЯМЫ ДЛЯ МАСТЕРОВ =====================
+   Что здесь есть: дни смен, машины с работами, сумма дня и доля мастеров, выбор мастера
+   напротив машины. Чего здесь нет и не будет: цены, продажи, копилка, штрафы, заметки —
+   ради этого страница и отделена от портала.
+
+   Доступ. Ключ (YAMA_KEY) вводится один раз и живёт в localStorage этого браузера; он же
+   уходит на бэкенд в каждом запросе. Проверяет его Apps Script: неверный ключ — не «пустой
+   экран», а честный ответ {error:"key"}, после которого страница снова просит ключ.
+   Ключ можно передать ссылкой …/yama/#k=КЛЮЧ — хэш подхватывается и стирается из адреса,
+   чтобы не остался в истории браузера и на глазах у соседа.
+
+   Мастер выбирается СПИСКОМ, а не кнопкой «это я» (решение владельца): телефон в смене
+   может быть один на всех, и заполняет кто-то один за всю бригаду.
+
+   Данные: тот же doGet?type=yama, что у портала — источник один, вторых расчётов нет.
+   Кэш md_yama (журнал) и md_yama_local (имя, поставленное здесь, но ещё не подтверждённое
+   таблицей) совпадают по формату с порталом намеренно: это те же данные того же вида. */
+(function(){
+  var API     = "https://script.google.com/macros/s/AKfycbwGxC7-EvzNs9Fv47tcR5iDUwCFEUVz_Y3ToWld1tOXR8pip2rHLeCThUm2yL0f5tie/exec";
+  var MASTERS = ["Ориф", "Вугар", "Намиг"];      // мастера ямы; новый человек — одна строка здесь
+  var UI_ORDER = ["КПП","Раздатка","Передний","Задний","Халдекс","ДВС",
+                  "Воздушный","Салонный","Топливный","Тормозная"];   // порядок как в журнале
+  var KKEY = "md_yama_key", CKEY = "md_yama", LKEY = "md_yama_local", DKEY = "md_device";
+  var WD   = ["вс","пн","вт","ср","чт","пт","сб"];
+  var MON  = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+  var MONF = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль",
+              "Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+
+  var daysEl = document.getElementById("days");
+  var updEl  = document.getElementById("upd");
+  var noteEl = document.getElementById("note");
+  var monEl  = document.getElementById("month");
+  var rfrEl  = document.getElementById("refresh");
+  var keyInp = document.getElementById("gate-key");
+  var errEl  = document.getElementById("gate-err");
+
+  var data = null, local = {}, seq = 0, selMonth = null, busy = false, lastLoad = 0;
+  var reloadT1 = null, reloadT2 = null;      // перечитка после отметок — общая на серию
+  var nf = new Intl.NumberFormat("ru-RU");
+  function money(v){ return nf.format(Math.round(v)) + " ₽"; }
+  function esc(s){ return String(s).replace(/[&<>"']/g, function(c){
+    return ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[c]; }); }
+  function parse(ds){ var p = String(ds).split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function ls(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+  function lsSet(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+  function lsDel(k){ try { localStorage.removeItem(k); } catch(e){} }
+
+  try { var j0 = JSON.parse(ls(CKEY) || "null"); if(j0 && Array.isArray(j0.days)) data = j0; } catch(e){}
+  try { var l0 = JSON.parse(ls(LKEY) || "null"); if(l0 && typeof l0 === "object") local = l0; } catch(e){}
+
+  /* ---------- ключ доступа ---------- */
+  function keyGet(){ return ls(KKEY) || ""; }
+  function keySet(v){ if(v) lsSet(KKEY, v); else lsDel(KKEY); }
+
+  // ссылка вида …/yama/#k=КЛЮЧ: подхватываем и сразу стираем хэш из адресной строки
+  (function(){
+    var m = String(location.hash || "").match(/[#&]k=([^&]+)/);
+    if(!m) return;
+    var v = m[1];
+    try { v = decodeURIComponent(v); } catch(e){}
+    keySet(v.trim());
+    try { history.replaceState(null, "", location.pathname + location.search); }
+    catch(e){ location.hash = ""; }
+  })();
+
+  var GATE_MSG = {
+    key:    "Ключ не подошёл. Проверьте — его выдаёт владелец.",
+    keyoff: "Доступ пока не включён на стороне сервиса. Скажите владельцу.",
+    rate:   "Сервис на паузе из-за частых запросов. Попробуйте через час."
+  };
+  function lock(msg){
+    document.body.classList.add("locked");
+    errEl.textContent = msg || "";
+    setTimeout(function(){ try { keyInp.focus(); } catch(e){} }, 60);
+  }
+  function unlock(){ document.body.classList.remove("locked"); errEl.textContent = ""; }
+
+  document.getElementById("gate-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var v = keyInp.value.trim();
+    if(!v){ errEl.textContent = "Введите ключ."; return; }
+    keySet(v);
+    errEl.textContent = "Проверяем…";
+    load(true);
+  });
+
+  document.getElementById("forget").addEventListener("click", function(){
+    if(!confirm("Забыть ключ на этом устройстве? Чтобы вернуться, ключ придётся ввести заново.")) return;
+    keySet("");
+    keyInp.value = "";
+    lock("");
+  });
+
+  /* ---------- данные ---------- */
+  function save(){ try { lsSet(CKEY, JSON.stringify(data)); } catch(e){} }
+  function saveLocal(){ try { lsSet(LKEY, JSON.stringify(local)); } catch(e){} }
+  // имя мастера: локальная отметка выигрывает, пока таблица её не подтвердила
+  function masterOf(row){ return (local[row.order] != null ? local[row.order] : (row.master || "")); }
+
+  function deviceId(){
+    var v = "";
+    try { v = JSON.parse(ls(DKEY) || '""'); } catch(e){ v = ""; }
+    if(typeof v !== "string" || !v){
+      v = "d" + Math.random().toString(36).slice(2, 10);
+      lsSet(DKEY, JSON.stringify(v));
+    }
+    return v;
+  }
+
+  function load(fromGate){
+    var key = keyGet();
+    if(!key){ lock(""); return; }
+    if(busy) return;
+    busy = true; lastLoad = Date.now();
+    rfrEl.disabled = true;
+    var cb = "__yama_" + (++seq);
+    var s = document.createElement("script");
+    var done = false;
+    function finish(){
+      done = true; busy = false; rfrEl.disabled = false;
+      try { delete window[cb]; } catch(e){ window[cb] = undefined; }
+      if(s.parentNode) s.parentNode.removeChild(s);
+    }
+    // Сеть не ответила или ответ невнятный. Три разных положения — три разных ответа
+    // человеку, и ни одно из них не «пустой экран без объяснений»:
+    function noAnswer(){
+      if(fromGate) lock("Сервис не отвечает. Проверьте интернет и попробуйте ещё раз.");
+      else if(data) noteEl.textContent = "Связи нет — журнал показан из памяти телефона. Имя сохранится и уйдёт позже.";
+      else {
+        daysEl.innerHTML = '<div class="empty">Журнала на телефоне ещё нет, а связи нет.<br>Откройте страницу, когда появится интернет.</div>';
+        noteEl.textContent = "";
+      }
+    }
+    function fail(){
+      if(done) return;
+      finish();
+      noAnswer();
+    }
+    window[cb] = function(j){
+      if(done) return;
+      finish();
+      if(j && j.error){
+        // ключ не подошёл — на устройстве его не держим: иначе «просто не работает» без причины
+        if(j.error === "key" || j.error === "keyoff"){ keySet(""); lock(GATE_MSG[j.error]); return; }
+        // всё остальное (автостоп API «rate», незнакомый ответ) ключа не касается: запирать
+        // за это экран нельзя — журнал из памяти телефона остаётся рабочим, а имена копятся
+        if(data){ noteEl.textContent = GATE_MSG[j.error] || "Сервис временно недоступен — журнал из памяти телефона."; return; }
+        lock(GATE_MSG[j.error] || "Сервис временно недоступен. Попробуйте позже.");
+        return;
+      }
+      // ответ пришёл, но не журнал (мусор, чужая версия бэкенда): молчать нельзя —
+      // fail() здесь уже не сработает, done выставлен, поэтому говорим напрямую
+      if(!j || !Array.isArray(j.days)){ noAnswer(); return; }
+      data = j;
+      // имя, подтверждённое таблицей, из локальных снимаем — источник правды один
+      j.days.forEach(function(d){ d.rows.forEach(function(r){
+        if(local[r.order] != null && local[r.order] === r.master) delete local[r.order]; }); });
+      saveLocal(); save(); unlock(); render();
+    };
+    s.onerror = fail;
+    setTimeout(fail, 15000);      // JSONP не умеет таймаутов сам
+    s.src = API + "?type=yama&key=" + encodeURIComponent(key) + "&callback=" + cb + "&t=" + Date.now();
+    document.head.appendChild(s);
+  }
+
+  function sendMaster(order, master, sel){
+    var key = keyGet();
+    if(!key) return;
+    var body = JSON.stringify({ key: key, kind: "yama-master", order: order,
+                                master: master, device: deviceId() });
+    fetch(API, { method: "POST", mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" }, body: body })
+      .then(function(){
+        // ответ no-cors прочитать нельзя — правду приносит перечитка журнала
+        if(sel){ sel.classList.add("saved"); setTimeout(function(){ sel.classList.remove("saved"); }, 1600); }
+        scheduleReload();
+      })
+      .catch(function(){});
+  }
+
+  /* Перечитка после отметки — ОДНА на серию, а не пара на каждую машину. Смена закрывает
+     журнал пачкой: тринадцать машин подряд дали бы 26 чтений и упёрлись в потолок канала
+     (RL_YAMA_MAX), после которого бэкенд молчит час — ровно в разгар работы. Таймеры
+     сдвигаются на последнюю отметку: две попытки, ближняя и запасная. */
+  function scheduleReload(){
+    clearTimeout(reloadT1); clearTimeout(reloadT2);
+    reloadT1 = setTimeout(function(){ load(); }, 4000);
+    reloadT2 = setTimeout(function(){ load(); }, 12000);
+  }
+
+  /* ---------- отрисовка ---------- */
+  function render(){
+    var days = (data && data.days) || [];
+    var months = [];
+    days.forEach(function(d){ var k = d.date.slice(0, 7); if(months.indexOf(k) === -1) months.push(k); });
+    months.sort().reverse();
+    if(selMonth == null || months.indexOf(selMonth) === -1) selMonth = months[0] || null;
+    monEl.hidden = months.length < 2;
+    monEl.innerHTML = months.map(function(k){
+      return '<option value="' + k + '"' + (k === selMonth ? " selected" : "") + ">"
+           + MONF[Number(k.slice(5, 7)) - 1] + " " + k.slice(0, 4) + "</option>"; }).join("");
+
+    var shown = days.filter(function(d){ return !selMonth || d.date.slice(0, 7) === selMonth; }).slice().reverse();
+
+    daysEl.innerHTML = shown.map(function(d, i){
+      var dt = parse(d.date);
+      var total = d.rows.reduce(function(s, r){ return s + r.sum; }, 0);
+      var left  = d.rows.filter(function(r){ return !masterOf(r); }).length;
+      var cars = d.rows.map(function(r){
+        var chips = UI_ORDER.map(function(name){
+          var idx = (data.columns || []).indexOf(name);
+          var v = idx >= 0 ? (r.cols[idx] || 0) : 0;
+          return v ? '<span class="ychip">' + name + " <b>" + nf.format(v) + "</b></span>" : "";
+        }).join("") + (r.other ? '<span class="ychip other">Прочее <b>' + nf.format(r.other) + "</b></span>" : "");
+        var m = masterOf(r);
+        return '<div class="ycar">'
+          + '<div class="ycar-main">'
+          +   '<span class="yname">' + esc(r.car) + '<span class="yord">' + esc(r.order) + "</span></span>"
+          +   '<span class="ychips">' + chips + "</span>"
+          + "</div>"
+          + '<select class="ymaster' + (m ? "" : " is-empty") + '" data-order="' + esc(r.order) + '" aria-label="Кто делал">'
+          +   '<option value=""' + (m ? "" : " selected") + ">— кто делал —</option>"
+          +   MASTERS.map(function(n){ return "<option" + (n === m ? " selected" : "") + ">" + n + "</option>"; }).join("")
+          + "</select>"
+          + '<span class="ysum">' + money(r.sum) + "</span>"
+          + "</div>";
+      }).join("");
+      return '<div class="daycard' + (i === 0 ? " open" : "") + '">'
+        + '<button class="sday-btn" type="button" aria-expanded="' + (i === 0) + '">'
+        +   '<div class="dhead">'
+        +     '<span class="dnum">' + dt.getDate() + '</span><span class="dmon">' + MON[dt.getMonth()] + "</span>"
+        +     '<span class="dbadge">' + WD[dt.getDay()] + "</span>"
+        +     (left ? '<span class="dleft">без мастера: ' + left + "</span>" : "")
+        +     '<span class="dvals">'
+        +       '<span class="dv"><span class="k">машин</span><span class="v">' + d.rows.length + "</span></span>"
+        +       '<span class="dv"><span class="k">работы</span><span class="v">' + money(total) + "</span></span>"
+        +       '<span class="dv pay"><span class="k">мастерам</span><span class="v">' + money(total / 2) + "</span></span>"
+        +     "</span>"
+        +     '<span class="chev"></span>'
+        +   "</div>"
+        + "</button>"
+        + '<div class="collapse"><div class="collapse-inner">' + cars + "</div></div>"
+        + "</div>";
+    }).join("");
+
+    if(!shown.length) daysEl.innerHTML = '<div class="empty">За этот месяц работ пока нет.</div>';
+
+    var upd = data && data.updated ? parse(data.updated) : null;
+    updEl.textContent = upd && !isNaN(upd.getTime())
+      ? "Обновлено " + upd.getDate() + " " + MON[upd.getMonth()] + " " + upd.getFullYear() : "";
+    noteEl.textContent = shown.length
+      ? "Машины и работы приходят из заказ-нарядов сами. Руками — только имя того, кто делал."
+      : "Журнал заполняется автоматически: как появятся заказы, машины будут здесь.";
+  }
+
+  /* ---------- события ---------- */
+  daysEl.addEventListener("click", function(e){
+    var btn = e.target.closest(".sday-btn");
+    if(!btn) return;
+    var card = btn.closest(".daycard");
+    var open = !card.classList.contains("open");
+    card.classList.toggle("open", open);
+    btn.setAttribute("aria-expanded", open);
+  });
+
+  daysEl.addEventListener("change", function(e){
+    var sel = e.target.closest(".ymaster");
+    if(!sel) return;
+    var order = sel.dataset.order, master = sel.value;
+    local[order] = master; saveLocal();           // оптимистично: видно сразу и офлайн
+    sel.classList.toggle("is-empty", !master);
+    // счётчик «без мастера» в шапке дня полной перерисовкой не трогаем: она закрыла бы
+    // раскрытый день прямо под пальцем. Обновится при ближайшей перечитке журнала.
+    sendMaster(order, master, sel);
+  });
+
+  monEl.addEventListener("change", function(){ selMonth = monEl.value; render(); });
+  rfrEl.addEventListener("click", function(){ load(); });
+
+  // вернулись во вкладку — тихо подтянуть свежее (не чаще раза в минуту: лимит API общий)
+  document.addEventListener("visibilitychange", function(){
+    if(document.visibilityState === "visible" && keyGet() && Date.now() - lastLoad > 60000) load();
+  });
+
+  /* ---------- старт ---------- */
+  if(data) render();                    // из кэша — мгновенно и офлайн
+  if(keyGet()){ unlock(); load(); }     // ключ есть: показываем журнал, свежесть догонит
+  else lock("");
+})();
+
+/* ---------- тема ---------- */
+(function(){
+  var root = document.documentElement, btn = document.getElementById("theme-btn");
+  var ICON = {
+    dark:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg>',
+    light: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 13.2A8.4 8.4 0 1 1 10.8 3.5 6.6 6.6 0 0 0 20.5 13.2z"/></svg>'
+  };
+  function apply(t){
+    root.setAttribute("data-theme", t);
+    try { localStorage.setItem("md_theme", t); } catch(e){}
+    btn.innerHTML = ICON[t] || ICON.dark;
+    btn.setAttribute("aria-label", t === "dark" ? "Включить светлую тему" : "Включить тёмную тему");
+  }
+  var theme = root.getAttribute("data-theme") || "light";
+  try { var s = localStorage.getItem("md_theme"); if(s === "light" || s === "dark") theme = s; } catch(e){}
+  apply(theme);
+  btn.addEventListener("click", function(){ apply(root.getAttribute("data-theme") === "dark" ? "light" : "dark"); });
+})();
+
+/* PWA: свой service worker в своей папке (scope /yama/) — офлайн и ярлык на телефоне.
+   Имя кэша НЕ начинается с "motul-drive-": SW портала при активации сносит все кэши с этим
+   префиксом, кроме своего, и снёс бы заодно наш. */
+if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
