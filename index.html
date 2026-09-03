@@ -103,7 +103,9 @@
   body.locked{overflow:hidden}
 
   /* ===================== ВЕРХНЕЕ МЕНЮ (липкая панель) ===================== */
-  .logo{display:flex;align-items:center;gap:13px;min-width:0;
+  /* flex:none — логотип не ужимается под меню: иначе строка «ЦЕНТР ЗАМЕНЫ МАСЛА» (nowrap)
+     вылезала из своей коробки и уезжала под пункты меню */
+  .logo{display:flex;align-items:center;gap:13px;flex:none;
     background:none;border:none;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer;transition:opacity .15s}
   .logo:hover{opacity:.85}
   .logo:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:12px}
@@ -1103,11 +1105,14 @@
     .tpl-search input,#fb-text,.sales-month-sel{font-size:16px}
   }
 
-  /* планшетная полоса (721–900px, вкл. iPad-портрет 768px): все пункты меню в одну строку
-     уже не влезают между логотипом и кнопкой темы → переносим меню во вторую строку с
-     горизонтальным скроллом (как на телефоне), но БЕЗ телефонной типографики/отступов.
-     Без этого 7-й пункт давал горизонтальный скролл страницы / наложение значка на «Главную». */
-  @media(min-width:721px) and (max-width:900px){
+  /* узкая полоса (721–1120px, вкл. iPad-портрет 768px и окно ноутбука в половину экрана):
+     все пункты меню в одну строку уже не влезают между логотипом и кнопкой темы →
+     переносим меню во вторую строку с горизонтальным скроллом (как на телефоне), но БЕЗ
+     телефонной типографики/отступов.
+     Без этого 7-й пункт давал горизонтальный скролл страницы / наложение значка на «Главную».
+     Верхняя граница считается, а не угадывается: полоса `.wrap` ≤1080px, в неё должны лечь
+     логотип 211 + меню 765 (10 пунктов) + кнопка темы 44 + два зазора 16 = 1052px. */
+  @media(min-width:721px) and (max-width:1120px){
     .topnav-inner{flex-wrap:wrap}
     .logo{margin-right:auto}
     .theme-btn{order:1}
@@ -1115,6 +1120,16 @@
       scrollbar-width:none;-webkit-overflow-scrolling:touch}
     .mainnav::-webkit-scrollbar{display:none}
     .mainnav .nav-item{flex:none}
+  }
+
+  /* широкий экран (≥1121px): все 10 пунктов помещаются в одну строку — но только слегка
+     ужатыми (пилюли 11px по бокам, зазор 2px), иначе меню не влезает в 1080px и наезжает
+     на логотип. Появится 11-й раздел — меню поедет горизонтальным скроллом, а не поверх
+     логотипа (overflow-x:auto), но лучше сразу пересчитать границу выше. */
+  @media(min-width:1121px){
+    .mainnav{gap:2px;min-width:0;overflow-x:auto;scrollbar-width:none}
+    .mainnav::-webkit-scrollbar{display:none}
+    .nav-item{padding:9px 11px;flex:none}
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
