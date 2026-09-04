@@ -1744,7 +1744,7 @@
 
      PRICE     — позиции и цены. ЕДИНСТВЕННОЕ место с суммами.
                  Поменял число → пересчитаются и строки, и «Итого» (складывается само).
-     DIFFS     — доплата за мосты/раздатку (без блокировки / с блокировкой).
+     DIFFS     — мосты/раздатка (без блокировки / с блокировкой — задний мост на LSD-масле).
      BOXES     — из каких позиций состоит услуга по каждой коробке.
      TEMPLATES — комбинации (марка/коробка/тип/гибрид/блокировка). Заголовок,
                  теги, текст, бейджи и фильтры строятся из них автоматически.
@@ -1817,8 +1817,12 @@
     diff_oil_rear:    ["Трансмиссионное масло Motul Gear 300 LS 75W90 синтетическое 105778 1.1л", perL(RATES.gear300_ls, 1.1)],
     diff_work_rear3:  ["Замена масла в заднем дифференциале (трёхсекционный)", 3000],
     bmw_g_oil:        ["Оригинальное трансмиссионное масло BMW G OIL 1л", 10000],   // оригинал в мост (перёд/зад), по 1 л
-    diff_lock_motul:  ["Доплата за блокировку дифференциала", 900],    // Motul: доп. за LSD-масло зада (11550→12450)
-    diff_lock_orig:   ["Доплата за блокировку дифференциала", 3000],   // оригинал: доп. за LSD-масло зада (28500→31500)
+    // С БЛОКИРОВКОЙ дифференциала «доплаты» нет: работы те же (1000×3), дороже само масло заднего моста —
+    // ему нужен LSD-спек (решение владельца 04.09.2026). Motul: те же 1,5 л, но раздельно — 0,6 л перёд (Gear 300)
+    // + 0,9 л зад (Gear 300 LS). Оригинал: перёд G OIL 10000, зад LSD 13000. Итоги прежние: 12450 / 31500.
+    diff_oil_front_lock: ["Трансмиссионное масло Motul Gear 300 75W90 105777 0.6л (передний дифференциал)", perL(RATES.gear300, 0.6)],
+    diff_oil_rear_lock:  ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 0.9л (задний дифференциал с блокировкой)", perL(RATES.gear300_ls, 0.9)],
+    bmw_g_oil_lsd:       ["Оригинальное трансмиссионное масло BMW для дифференциала с блокировкой 1л", 13000],  // название без «LSD» — решение владельца 04.09.2026
     // Комплект (запчасти без работ) для мостов/раздатки — апсел в «Комплектах» (блок DIFFS_KIT). Раздатка — transfer_oil_*.
     kit_diff_motul:   ["Трансмиссионное масло Motul Gear 300 75W90 105777 2л (в мосты)", perL(RATES.gear300, 2)],  // 9000
     kit_diff_orig:    ["Оригинальное трансмиссионное масло BMW G OIL (в мосты, 4 шт)", 20000],                     // оригинал в мосты, набором
@@ -2099,7 +2103,7 @@
       "diffs_motul_nolock", "diffs_orig_nolock", "diffs_motul_lock", "diffs_orig_lock", "axles_x1_motul", "axles_torsen_motul",
       "axles_torsen_orig_g055", "axles_torsen_orig_g060",
       // поузловые мосты/раздатка — состав сверен владельцем (скрин: обычный мост + оригинал по 1 л) (первая сверка 19.07.2026)
-      "diff_work_rear", "bmw_g_oil", "diff_lock_motul", "diff_lock_orig", "kit_diff_motul", "kit_diff_orig",
+      "diff_work_rear", "bmw_g_oil", "kit_diff_motul", "kit_diff_orig",
       // комплект С БЛОКИРОВКОЙ — оригинал 4 шт = 2×6500 (LSD) + 2×5000 = 23000, сверено владельцем (DIFFS_KIT_LOCK) (первая сверка 22.07.2026)
       "kit_diff_orig_lock", "to_work_oil", "to_work_air", "to_work_cabin", "to_work_fuel",
       // ставки моторных масел 0W=2200/л, 5W=2000/л (страница «Цены», ТО) — продиктованы владельцем (первая сверка 23.07.2026)
@@ -2113,6 +2117,11 @@
     // масла 8000 / 1500 / 9000 прежние, работы пакетом 3000. Motul-вариант не менялся (Итого 14000).
     "2026-08-31": ["mb_235_7", "mb_239_71", "mb_236_15_sm", "mb_diff_front_orig", "mb_diff_rear_orig",
                    "mb_diff_work_all", "mb_transf_oil"],
+    // мосты с блокировкой: владелец подтвердил раскладку вместо «доплаты» — Motul 0,6 л Gear 300 (2700)
+    // + 0,9 л Gear 300 LS (4950) и оригинал BMW «для дифференциала с блокировкой» 1 л (13000).
+    // Суммы прежние (12450 / 31500), но ключи новые — без этой даты 8 карточек подняли бы бейдж
+    // «Проверить цены» на ровном месте (в листе «Сверка цен» их ещё нет).
+    "2026-09-04": ["diff_oil_front_lock", "diff_oil_rear_lock", "bmw_g_oil_lsd"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -2154,15 +2163,18 @@
     return Math.floor((new Date() - new Date(iso)) / 864e5); };
 
   // 2) Мосты + раздатка ПОУЗЛОВО (diffsMultiBlock): 2 варианта (Motul / оригинал BMW), у каждого своё «Итого».
-  //    Обычный задний мост — Итого Motul 11550 / оригинал 28500. lockItem → доплата за блокировку (LSD-масло зада):
-  //    Motul 12450 / оригинал 31500. Меняешь только числа/состав в PRICE — тексты и «Итого» соберутся сами.
+  //    Обычный задний мост — Итого Motul 11550 / оригинал 28500. lockItems → тот же состав, но задний мост
+  //    на LSD-масле (работы те же, дороже масло): Motul 12450 / оригинал 31500. Строки «доплата за блокировку»
+  //    нет намеренно. Меняешь только числа/состав в PRICE — тексты и «Итого» соберутся сами.
   const DIFFS_REGULAR = {
     head:  "Также можем заменить масла в переднем, заднем дифференциале и раздаточной коробке.",
     intro: "2 варианта:",
     note:  "Motul ничем не уступает оригиналу",
     variants: [
-      { label: "Motul:",        items: ["diff_oil_front", "diff_oil_transf", "diff_work_front", "diff_work_rear", "diff_work_transf"], lockItem: "diff_lock_motul" },
-      { label: "Оригинал BMW:", items: ["bmw_g_oil", "bmw_g_oil", "transfer_oil_dtf1", "diff_work_front", "diff_work_rear", "diff_work_transf"], lockItem: "diff_lock_orig" },
+      { label: "Motul:",        items:     ["diff_oil_front", "diff_oil_transf", "diff_work_front", "diff_work_rear", "diff_work_transf"],
+                                lockItems: ["diff_oil_front_lock", "diff_oil_rear_lock", "diff_oil_transf", "diff_work_front", "diff_work_rear", "diff_work_transf"] },
+      { label: "Оригинал BMW:", items:     ["bmw_g_oil", "bmw_g_oil", "transfer_oil_dtf1", "diff_work_front", "diff_work_rear", "diff_work_transf"],
+                                lockItems: ["bmw_g_oil", "bmw_g_oil_lsd", "transfer_oil_dtf1", "diff_work_front", "diff_work_rear", "diff_work_transf"] },
     ],
   };
 
@@ -2755,9 +2767,10 @@
     return vs.map((v, i) =>                                    // будет несколько (масла) — метка уточнится
       ({ label: vs.length > 1 ? `${label} · вариант ${i + 1}` : label, items: v.items }));
   });
-  // Мосты + раздатка ПОУЗЛОВО: у каждого варианта (Motul / оригинал) свой «Итого». lock=true → строка доплаты за блокировку.
+  // Мосты + раздатка ПОУЗЛОВО: у каждого варианта (Motul / оригинал) свой «Итого». lock=true → состав с LSD-маслом
+  // заднего моста (lockItems), а не строка «доплата»: работы одинаковые, дороже само масло.
   const diffsMultiBlock = (b, lock, sink) => CDOC.block({ head: b.head, intro: b.intro, note: b.note,
-    variants: b.variants.map(v => priceVariant(v.label, (lock && v.lockItem) ? [...v.items, v.lockItem] : v.items, sink)) });
+    variants: b.variants.map(v => priceVariant(v.label, (lock && v.lockItems) ? v.lockItems : v.items, sink)) });
   // Детальные мосты/раздатка: один поузловой список с собственным «Итого».
   const diffsDetailedBlock = (d, sink) => CDOC.block({ head: d.head, variants: [priceVariant(null, d.items, sink)] });
   // Простые мосты (X1 F48 / Торсен): Motul и Оригинал — АЛЬТЕРНАТИВЫ (у X1 origKey нет), «Итого» нет.
@@ -2784,7 +2797,7 @@
     const seen = [];                                                        // все позиции сметы → флаги свежести
     const blocks = [serviceBlock(combo ? comboVariants(svc, combo.pans)     // заголовок услуги = шапка документа (CDOC.doc)
                                        : svc.variants(filterKey), seen)];
-    if(t.diffs)         blocks.push(diffsMultiBlock(DIFFS_REGULAR, t.lock, seen)); // ZF: мосты + раздатка поузлово (Motul/оригинал), блокировка = доплата
+    if(t.diffs)         blocks.push(diffsMultiBlock(DIFFS_REGULAR, t.lock, seen)); // ZF: мосты + раздатка поузлово (Motul/оригинал), блокировка = LSD-масло зада
     if(t.diffsDetailed) blocks.push(diffsDetailedBlock(DIFFS_DETAILED, seen));     // поузловой расчёт мостов
     if(box.diffsBlock)  blocks.push(box.diffsBlock.variants               // сноска мостов на уровне коробки (Mercedes 9G/7G):
       ? diffsMultiBlock(box.diffsBlock, false, seen)                      //   2 варианта с «Итого» у каждого
@@ -6044,8 +6057,9 @@
   function kitAddonVariants(ad){
     if(!ad || !ad.block) return null;
     return (ad.block.variants || []).map(v => {
-      const keys = (ad.lock && v.lockItem) ? [...v.items, v.lockItem] : v.items;
-      const lines = keys.map(key => kitLine({ ref:key }));
+      // Состав берём как есть: у комплекта с блокировкой свой блок (DIFFS_KIT_LOCK), LSD-масло уже
+      // в его позициях. ad.lock здесь отвечает ТОЛЬКО за бейдж «Блокировка» на карточке.
+      const lines = v.items.map(key => kitLine({ ref:key }));
       return { label: v.label, lines,
                sum:   lines.reduce((a,l) => a + (l.price || 0), 0),
                stale: lines.some(l => l.stale) };
