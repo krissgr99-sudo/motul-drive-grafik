@@ -4368,29 +4368,79 @@
   const SHEET_API   = "https://script.google.com/macros/s/AKfycbwGxC7-EvzNs9Fv47tcR5iDUwCFEUVz_Y3ToWld1tOXR8pip2rHLeCThUm2yL0f5tie/exec";
   const SHEET_TOKEN = "749ee6f82c31d87dfd00e2d5"; // клиентский фильтр (в статике не секретен) — основную защиту держим на стороне Apps Script
 
+  /* ===== Один загрузчик на все каналы Apps Script =====
+     Читаем через JSONP: у Google нет CORS. Обвязка у всех разделов была одинаковой
+     (имя колбэка → <script> → onerror → src → appendChild), различались тело колбэка и адрес.
+
+     ТАЙМАУТ. JSONP не умеет его сам: onerror ловит обрыв, но МОЛЧАЩИЙ бэкенд (соединение
+     принято, ответа нет — автостоп квоты, зависший скрипт) не даёт ни ответа, ни ошибки.
+     Раздел молча оставался на кэше, и в журнал ошибок не попадало ничего: самый неприятный
+     сбой был единственным невидимым (аудит 05.09.2026). Молчание дольше API_WAIT_MS
+     считаем отказом и делаем ровно то же, что при onerror — пишем "net" в журнал; на экране
+     всё как раньше, раздел живёт на кэше. Текст у двух отказов разный не для красоты:
+     «не ответил» чинят у сети, «молчит» — у Apps Script.
+
+     ПОЗДНИЙ ОТВЕТ. Удаление <script> запрос не отменяет — ответ придёт и позовёт колбэк.
+     Имя из window поэтому не удаляем: во-первых, у удалённого выйдет ReferenceError, а из
+     чужого (cross-origin) origin браузер отдаст его как «Script error.» без файла и строки —
+     журнал копил бы мусор вместо настоящих багов (проверено на стенде). Во-вторых, данные,
+     если доедут, применяем как раньше: до таймаутов раздел ждал ответа сколько угодно и брал
+     его. Таймаут добавляет наблюдаемость, а не отнимает ответ. */
+  const API_WAIT_MS = 30000;   // одно «сколько ждём Apps Script» на весь портал: чтение, запись и модуль ТО
+  let jsonpSeq = 0;
+  function jsonpChannel(url, name, tag, onData){
+    const cb = "__mdj_" + tag + "_" + (++jsonpSeq);
+    const s = document.createElement("script");
+    let done = false;
+    const finish = () => { done = true; clearTimeout(timer); s.remove(); };
+    const failed = why => { window.MDLOG && window.MDLOG.err("net", why + ": " + name, "jsonp:" + tag); };
+    const timer = setTimeout(() => {
+      if(done) return;
+      finish();
+      window[cb] = data => { delete window[cb]; onData(data); };   // поздний ответ — см. выше
+      failed("канал молчит " + Math.round(API_WAIT_MS / 1000) + " с");
+    }, API_WAIT_MS);
+    window[cb] = data => { if(done) return; finish(); delete window[cb]; onData(data); };
+    s.onerror = () => { if(done) return; finish(); delete window[cb]; failed("канал не ответил"); };
+    s.src = url + "&callback=" + cb + "&t=" + Date.now();
+    document.head.appendChild(s);
+  }
+
+  /* ===== Запись в таблицу: тот же адрес, POST, ответ не читаем =====
+     mode:"no-cors" обязателен (Apps Script не отдаёт CORS-заголовков), а значит ответ
+     непрозрачен: успех подтверждает не он, а перечитка канала следом. Таймаута у fetch тоже
+     нет — молчащий бэкенд оставляет обещание висеть без конца: перечитка не запускается,
+     человек остаётся с надписью «не сохранено», и в журнале об этом ни строки. Та же
+     слепота, что была у чтения (см. jsonpChannel).
+     Доставку НЕ трогаем: обещание не прерываем и повтор не шлём. Прерванная запись могла
+     уже лечь в таблицу, и слепой повтор раздвоил бы её там, где дедупа по id нет; хвосты
+     и так досылаются при следующей загрузке и по возврату сети. Здесь только замечаем
+     молчание и пишем "net" — чтобы «не сохранилось» стало цифрой, а не устным рассказом. */
+  function postChannel(url, body, name, tag){
+    const t = setTimeout(() => {
+      window.MDLOG && window.MDLOG.err("net", "запись молчит " + Math.round(API_WAIT_MS / 1000) + " с: " + name, "post:" + tag);
+    }, API_WAIT_MS);
+    return fetch(url, { method:"POST", mode:"no-cors",
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify(body) })
+      .finally(() => clearTimeout(t));
+  }
+
   /* ===== Сверка цен: даты подтверждения из листа «Сверка цен» (см. прайс-ядро, applyCheckedDates).
      Кэш уже прочитан синхронно ДО отрисовки; здесь — дозагрузка по сети и перерисовка тех разделов,
      где висит бейдж «Проверить цены». JSONP — как «Заметки»/«ТО» (Apps Script не отдаёт CORS). ===== */
-  let checkedSeq = 0;
   function loadCheckedDates(){
     if(!SHEET_API) return;
-    const cb = "__pchk_" + (++checkedSeq);
-    const s = document.createElement("script");
-    window[cb] = data => {
+    // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
+    jsonpChannel(SHEET_API + "?type=prices&token=" + encodeURIComponent(SHEET_TOKEN),
+                 "сверка цен", "prices", data => {
       if(data && data.prices && applyCheckedDates(data.prices)){
         try { localStorage.setItem(PRICE_CHECK_CKEY, JSON.stringify(data.prices)); } catch(e){}
         rerenderFreshness();
       } else if(data && data.prices){
         try { localStorage.setItem(PRICE_CHECK_CKEY, JSON.stringify(data.prices)); } catch(e){}
       }
-      delete window[cb]; s.remove();
-    };
-    // канал не ответил (сеть, автостоп, упавший Apps Script) → в журнал ошибок: молчаливый сбой станет цифрой
-    s.onerror = () => { delete window[cb]; s.remove();
-      window.MDLOG && window.MDLOG.err("net", "канал не ответил: сверка цен", "jsonp:prices"); };
-    // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
-    s.src = SHEET_API + "?type=prices&token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
-    document.head.appendChild(s);
+    });
   }
   // Перерисовать разделы, показывающие бейдж «Проверить цены». Хуки опциональны и каждый в своём
   // try: раздел, который не успел объявиться (или его сняли), не должен ронять остальные.
@@ -4413,9 +4463,8 @@
     let device = "";
     try { const v = JSON.parse(localStorage.getItem("md_device")); if(typeof v === "string") device = v; } catch(e){}
     for(let i = 0; i < keys.length; i += 200){
-      fetch(SHEET_API, { method:"POST", mode:"no-cors",
-        headers:{ "Content-Type":"text/plain;charset=utf-8" },
-        body: JSON.stringify({ token: SHEET_TOKEN, kind:"price-check", date, keys: keys.slice(i, i + 200), device }) })
+      postChannel(SHEET_API, { token: SHEET_TOKEN, kind:"price-check", date, keys: keys.slice(i, i + 200), device },
+                  "подтверждение цен", "price-check")
         .catch(() => {});
     }
   }
@@ -4467,6 +4516,10 @@
     let sentKeys = load(SKEY, []);
     const remember = mk => { sentKeys.push(mk); if(sentKeys.length>MAXSENT) sentKeys = sentKeys.slice(-MAXSENT); save(SKEY, sentKeys); };
     let flushing = false;
+    /* Единственная запись в обход postChannel — и намеренно: это транспорт САМОГО журнала.
+       Сообщить «журнал не отправился» он мог бы только в себя же, то есть в ту очередь,
+       которая и не уезжает. Молчание этого канала видно иначе: события копятся в md_events
+       и приезжают позже — с честным временем сбоя (ts), а не временем досыла. */
     function flush(){
       if(flushing || !queue.length) return;
       flushing = true;
@@ -4688,9 +4741,8 @@
         const p = q[i++];
         if(Date.now() - parse(p.date).getTime() > 62 * 86400000) return next(); // окно дат сервера прошло — не шлём (висит как «не записано»)
         sentAny = true;
-        fetch(WITHDRAW_API, { method:"POST", mode:"no-cors",
-          headers:{ "Content-Type":"text/plain;charset=utf-8" },
-          body: JSON.stringify({ token: WITHDRAW_TOKEN, kind:"oil-op", opId:p.id, date:p.date, amount:p.amount, op:p.kind, note:p.note || "", time:p.time || "" }) })
+        postChannel(WITHDRAW_API, { token: WITHDRAW_TOKEN, kind:"oil-op", opId:p.id, date:p.date, amount:p.amount, op:p.kind, note:p.note || "", time:p.time || "" },
+                    "операции масла", "oil-op")
           .then(next)
           .catch(() => { oilSending = false; });  // офлайн — очередь остаётся, повтор при online/загрузке
       };
@@ -4723,12 +4775,12 @@
     }
 
     // читаем выводы владельца + операции масла из таблицы (JSONP — обходит CORS у Apps Script)
-    let wdSeq = 0, oilRecheck = 0;
+    let oilRecheck = 0;
     function loadOps(){
       if(!WITHDRAW_API) return;
-      const cb = "__wd_" + (++wdSeq);
-      const s = document.createElement("script");
-      window[cb] = data => {
+      // токен обязателен с 2026-09-03: выводы копилки больше не отдаются по одному адресу ручки
+      jsonpChannel(WITHDRAW_API + "?token=" + encodeURIComponent(SHEET_TOKEN),
+                   "копилка", "withdraw", data => {
         let dirty = false;
         if(data && Array.isArray(data.withdrawals)){ CH.flush.ops = data.withdrawals; saveLS("md_withdrawals", data.withdrawals); dirty = true; }
         if(data && Array.isArray(data.oilOps)){    // поле есть ТОЛЬКО у нового бэкенда: отсутствие ≠ «пусто», кэш не трогаем
@@ -4743,13 +4795,7 @@
           dirty = true;
         }
         if(dirty) render();
-        delete window[cb]; s.remove();
-      };
-      s.onerror = () => { delete window[cb]; s.remove();
-        window.MDLOG && window.MDLOG.err("net", "канал не ответил: копилка", "jsonp:withdraw"); };
-      // токен обязателен с 2026-09-03: выводы копилки больше не отдаются по одному адресу ручки
-      s.src = WITHDRAW_API + "?token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
-      document.head.appendChild(s);
+      });
     }
 
     // сумма из prompt: терпим пробелы, «₽»/«р» и запятую как разделитель; общая для вывода и расхода
@@ -4800,9 +4846,8 @@
       saveLS("md_withdrawals", ch.ops);
       render();
       // no-cors сохраняем (ответ Apps Script непрозрачен, CORS-заголовков не отдаёт); подтверждение — перечиткой loadOps.
-      fetch(WITHDRAW_API, { method:"POST", mode:"no-cors",
-        headers:{ "Content-Type":"text/plain;charset=utf-8" },
-        body: JSON.stringify({ token: WITHDRAW_TOKEN, withdrawalId: withdrawalId, date: today, amount: amount }) })
+      postChannel(WITHDRAW_API, { token: WITHDRAW_TOKEN, withdrawalId: withdrawalId, date: today, amount: amount },
+                  "вывод копилки", "withdraw")
         .then(() => setTimeout(loadOps, 1500))
         .catch(() => alert("Не удалось сохранить вывод — проверь интернет и обнови страницу."))
         .finally(() => setTimeout(() => { ch.busy = false; }, 1600)); // окно debounce: гасит двойной клик, затем снова можно
@@ -5075,10 +5120,10 @@
        вместе с номерами заказов и суммами чеков. Отметку settled оставляем здесь: у промывки
        есть встроенный резерв, и вывод не должен ждать ответа Apps Script. */
     CH.flush.settled = true; render();
-    (function loadSalesApi(){ // JSONP — обходит CORS у Apps Script
-      const cb = "__sales_" + Date.now();
-      const s = document.createElement("script");
-      window[cb] = j => {
+    (function loadSalesApi(){
+      // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
+      jsonpChannel(SHEET_API + "?type=sales&token=" + encodeURIComponent(SHEET_TOKEN),
+                   "продажи", "sales", j => {
         if(j && Array.isArray(j.days)){
           if(applySales(CH.flush, j, 3)){
             const snap = Object.assign({}, j); delete snap.oil;  // кэш промывки — без чужого канала
@@ -5087,13 +5132,7 @@
           if(j.oil && Array.isArray(j.oil.days) && applySales(CH.oil, j.oil, 3))
             saveLS("md_sales_oil", j.oil); // кэш пишем один раз — при приходе свежих данных
         }
-        delete window[cb]; s.remove();
-      };
-      s.onerror = () => { delete window[cb]; s.remove();
-        window.MDLOG && window.MDLOG.err("net", "канал не ответил: продажи", "jsonp:sales"); };
-      // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
-      s.src = SHEET_API + "?type=sales&token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
-      document.head.appendChild(s);
+      });
     })();
     loadOps();     // свежие выводы владельца + операции масла из Google-таблицы
     sendPending(); // досыл очереди операций масла, накопленной офлайн
@@ -5137,7 +5176,7 @@
     const monthEl = document.getElementById("yama-month");
     if(!daysEl) return;
 
-    let data = null, local = {}, seq = 0, selMonth = null;
+    let data = null, local = {}, selMonth = null;
     const nf = new Intl.NumberFormat("ru-RU");
     const money = v => nf.format(Math.round(v)) + " ₽";
     const parse = ds => { const [y,m,d] = String(ds).split("-").map(Number); return new Date(y, m-1, d); };
@@ -5242,22 +5281,16 @@
 
     function load(){
       if(!SHEET_API) return;
-      const cb = "__yama_" + (++seq);
-      const s = document.createElement("script");
-      window[cb] = j => {
+      // токен обязателен: в ответе госномера машин, ручка не должна открываться случайному заходу
+      jsonpChannel(SHEET_API + "?type=yama&token=" + encodeURIComponent(SHEET_TOKEN),
+                   "яма", "yama", j => {
         if(j && Array.isArray(j.days)){
           data = j;
           // имя, подтверждённое таблицей, из локальных снимаем — источник правды один
           j.days.forEach(d => d.rows.forEach(r => { if(local[r.order] != null && local[r.order] === r.master) delete local[r.order]; }));
           saveLocal(); save(); render();
         }
-        delete window[cb]; s.remove();
-      };
-      s.onerror = () => { delete window[cb]; s.remove();
-        window.MDLOG && window.MDLOG.err("net", "канал не ответил: яма", "jsonp:yama"); };
-      // токен обязателен: в ответе госномера машин, ручка не должна открываться случайному заходу
-      s.src = SHEET_API + "?type=yama&token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
-      document.head.appendChild(s);
+      });
     }
 
     // раскрытие дня гармошкой (селект мастера лежит вне кнопки — его клики день не трогают)
@@ -5280,9 +5313,8 @@
       if(SHEET_API){
         let device = "";
         try { const v = JSON.parse(localStorage.getItem("md_device")); if(typeof v === "string") device = v; } catch(err){}
-        fetch(SHEET_API, { method:"POST", mode:"no-cors",
-          headers:{ "Content-Type":"text/plain;charset=utf-8" },
-          body: JSON.stringify({ token: SHEET_TOKEN, kind:"yama-master", order, master, device }) })
+        postChannel(SHEET_API, { token: SHEET_TOKEN, kind:"yama-master", order, master, device },
+                    "имя мастера (яма)", "yama-master")
           .then(() => { setTimeout(load, 2500); setTimeout(load, 9000); })
           .catch(() => {});
       }
@@ -5349,7 +5381,7 @@
 
     let notes = [];    // подтверждённые (из таблицы или кэша)
     let pending = [];  // отправленные, ещё не увиденные в таблице
-    let author = null, cat = null, urg = URG_DEF, ntSeq = 0, hintTimer = 0;
+    let author = null, cat = null, urg = URG_DEF, hintTimer = 0;
     let view = "active";   // какой список показываем: "active" | "archive"
     const saveCache = () => { try { localStorage.setItem("md_notes", JSON.stringify([...pending, ...notes])); } catch(e){} };
 
@@ -5449,9 +5481,9 @@
     // читаем заметки из таблицы (JSONP — обходит CORS у Apps Script)
     function loadNotes(){
       if(!SHEET_API) return;
-      const cb = "__nt_" + (++ntSeq);
-      const s = document.createElement("script");
-      window[cb] = data => {
+      // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
+      jsonpChannel(SHEET_API + "?type=notes&token=" + encodeURIComponent(SHEET_TOKEN),
+                   "заметки", "notes", data => {
         if(data && Array.isArray(data.notes)){
           notes = data.notes;
           // из pending убираем то, что уже долетело до таблицы
@@ -5474,13 +5506,7 @@
         } else if(data){
           warnEl.hidden = false; // скрипт таблицы старый — заметок не отдаёт
         }
-        delete window[cb]; s.remove();
-      };
-      s.onerror = () => { delete window[cb]; s.remove();
-        window.MDLOG && window.MDLOG.err("net", "канал не ответил: заметки", "jsonp:notes"); };
-      // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
-      s.src = SHEET_API + "?type=notes&token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
-      document.head.appendChild(s);
+      });
     }
 
     // отправка: сразу показываем в ленте (оптимистично) и шлём в таблицу фоном
@@ -5499,9 +5525,8 @@
       urg = URG_DEF; pick(urgsEl, urgsEl.querySelector(`.fb-chip[data-urg="${URG_DEF.id}"]`));  // срочность не прилипает
       hint("Заметка сохранена", true);
       if(SHEET_API){
-        fetch(SHEET_API, { method:"POST", mode:"no-cors",
-          headers:{ "Content-Type":"text/plain;charset=utf-8" },
-          body: JSON.stringify({ token: SHEET_TOKEN, kind:"note", cat: cat.label, author: author.name, text, urg: urgLabel }) })
+        postChannel(SHEET_API, { token: SHEET_TOKEN, kind:"note", cat: cat.label, author: author.name, text, urg: urgLabel },
+                    "новая заметка", "note")
           .then(() => { setTimeout(loadNotes, 2500); setTimeout(loadNotes, 9000); })
           .catch(() => {});
       }
@@ -5532,10 +5557,9 @@
       override[keyOf(n)] = status;                 // оптимистично: карточка сразу гаснет/оживает/исчезает
       saveOverride(); render();
       if(SHEET_API){
-        fetch(SHEET_API, { method:"POST", mode:"no-cors",
-          headers:{ "Content-Type":"text/plain;charset=utf-8" },
-          body: JSON.stringify({ token: SHEET_TOKEN, kind:"note-status",
-            created: n.created, author: n.author, text: n.text, status }) })
+        postChannel(SHEET_API, { token: SHEET_TOKEN, kind:"note-status",
+                      created: n.created, author: n.author, text: n.text, status },
+                    "статус заметки", "note-status")
           .then(() => { setTimeout(loadNotes, 2500); setTimeout(loadNotes, 9000); })
           .catch(() => {});
       }
@@ -5608,7 +5632,7 @@
     let fines = [];      // подтверждённые таблицей (или из кэша)
     let out   = [];      // записанные здесь, таблицей ещё не подтверждённые
     let override = {};   // локальная отметка «отменён» по id — до подтверждения таблицей
-    let who = null, boss = null, fnSeq = 0, hintTimer = 0;
+    let who = null, boss = null, hintTimer = 0;
     let month = "", shown = [];
 
     const save     = () => { try { localStorage.setItem("md_fines", JSON.stringify(fines)); } catch(e){} };
@@ -5736,9 +5760,7 @@
     /* ---- сеть: чтение листа и отправка ---- */
     function post(body){
       if(!SHEET_API) return Promise.resolve();
-      return fetch(SHEET_API, { method:"POST", mode:"no-cors",
-        headers:{ "Content-Type":"text/plain;charset=utf-8" },
-        body: JSON.stringify(body) }).catch(() => {});
+      return postChannel(SHEET_API, body, "штрафы", "fine").catch(() => {});
     }
     // досыл очереди: повтор безопасен — таблица дедуплицирует по id
     function flushOut(){
@@ -5747,9 +5769,9 @@
     }
     function loadFines(){
       if(!SHEET_API) return;
-      const cb = "__fn_" + (++fnSeq);
-      const s = document.createElement("script");
-      window[cb] = data => {
+      // токен: в ответе имена сотрудников и за что наказаны — ручка закрыта, как у «Ямы»
+      jsonpChannel(SHEET_API + "?type=fines&token=" + encodeURIComponent(SHEET_TOKEN),
+                   "штрафы", "fines", data => {
         if(data && Array.isArray(data.fines)){
           fines = data.fines;
           const ids = {}; fines.forEach(f => { if(f.id) ids[f.id] = 1; });
@@ -5762,13 +5784,7 @@
         } else if(data && !data.blocked && !data.error){
           warnEl.hidden = false;   // таблица ответила, но штрафов не отдаёт — скрипт ещё не обновлён
         }                          // error (token/rate) — это не «старый скрипт», молча остаёмся на кэше
-        delete window[cb]; s.remove();
-      };
-      s.onerror = () => { delete window[cb]; s.remove();
-        window.MDLOG && window.MDLOG.err("net", "канал не ответил: штрафы", "jsonp:fines"); };
-      // токен: в ответе имена сотрудников и за что наказаны — ручка закрыта, как у «Ямы»
-      s.src = SHEET_API + "?type=fines&token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
-      document.head.appendChild(s);
+      });
     }
 
     function send(){
@@ -6302,26 +6318,19 @@
     const byId = id => (vinEngine && id === vinEngine.id) ? vinEngine
       : (view().find(e => e.id === id) || null);
 
-    // читаем двигатели из таблицы (JSONP — обходит CORS у Apps Script, как Заметки)
-    let seq = 0;
+    // читаем двигатели из таблицы (общий загрузчик каналов, как Заметки)
     function loadEngines(){
       if(!SHEET_API) return;
-      const cb = "__toe_" + (++seq);
-      const s = document.createElement("script");
-      window[cb] = data => {
+      // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
+      jsonpChannel(SHEET_API + "?type=engines&token=" + encodeURIComponent(SHEET_TOKEN),
+                   "двигатели ТО", "engines", data => {
         if(data && Array.isArray(data.engines)){
           engines = data.engines;
           pending = pending.filter(p => !engines.some(n => n.id === p.id && n.updated === p.updated));
           warnOld = false;
           saveCache(); updateAll();
         } else if(data){ warnOld = true; updateAll(); }   // старый скрипт — записи живут локально
-        delete window[cb]; s.remove();
-      };
-      s.onerror = () => { delete window[cb]; s.remove();
-        window.MDLOG && window.MDLOG.err("net", "канал не ответил: двигатели ТО", "jsonp:engines"); };
-      // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
-      s.src = SHEET_API + "?type=engines&token=" + encodeURIComponent(SHEET_TOKEN) + "&callback=" + cb + "&t=" + Date.now();
-      document.head.appendChild(s);
+      });
     }
 
     // upsert записи: оптимистично локально + POST в таблицу (no-cors), затем перечитка
@@ -6330,11 +6339,10 @@
       pending.push(rec);
       saveCache(); updateAll();
       if(SHEET_API){
-        fetch(SHEET_API, { method:"POST", mode:"no-cors",
-          headers:{ "Content-Type":"text/plain;charset=utf-8" },
-          body: JSON.stringify({ token: SHEET_TOKEN, kind:"engine", id: rec.id, name: rec.name,
-            fuel: rec.fuel, oilKey: rec.oilKey, litres: rec.litres, filterName: rec.filterName,
-            filterPrice: rec.filterPrice, status: rec.status || "", updated: rec.updated }) })
+        postChannel(SHEET_API, { token: SHEET_TOKEN, kind:"engine", id: rec.id, name: rec.name,
+                      fuel: rec.fuel, oilKey: rec.oilKey, litres: rec.litres, filterName: rec.filterName,
+                      filterPrice: rec.filterPrice, status: rec.status || "", updated: rec.updated },
+                    "двигатель ТО", "engine")
           .then(() => { setTimeout(loadEngines, 2500); setTimeout(loadEngines, 9000); })
           .catch(() => {});
       }
@@ -6488,18 +6496,23 @@
        в лист «VIN» навсегда, но на экране это выглядело поломкой: первое нажатие «каталог
        не ответил», второе — мгновенный правильный разбор из листа (02.09.2026).
        Потолок самого Apps Script — 6 минут, так что 75 секунд он переживает. */
-    const JSONP_MS     = 30000;
+    const JSONP_MS     = API_WAIT_MS;   // сколько ждём Apps Script — число общее с jsonpChannel
     const JSONP_VIN_MS = 75000;
     function jsonp(params, ms){
       return new Promise((resolve, reject) => {
         if(!SHEET_API){ reject(new Error("no-api")); return; }
         const cb = "__tov_" + (++jseq);
         const s = document.createElement("script");
-        const cleanup = () => { clearTimeout(timer);
-          try { delete window[cb]; } catch(e){ window[cb] = undefined; } s.remove(); };
-        const timer = setTimeout(() => { cleanup(); reject(new Error("timeout")); }, ms || JSONP_MS);
-        window[cb] = d => { cleanup(); resolve(d || {}); };
-        s.onerror = () => { cleanup(); reject(new Error("net")); };
+        const drop = () => { try { delete window[cb]; } catch(e){ window[cb] = undefined; } };
+        const cleanup = () => { clearTimeout(timer); s.remove(); };
+        /* Таймаут имя колбэка НЕ удаляет, а подменяет заглушкой: запрос жив (удаление <script>
+           его не отменяет), ответ придёт позже и позовёт это имя. У удалённого вышел бы
+           ReferenceError, а из чужого origin браузер отдаёт его как «Script error.» — журнал
+           копил бы мусор вместо настоящих багов. Здесь это не теория: у разбора VIN таймаут
+           штатный (75 с, дальше повтор с cached=1). */
+        const timer = setTimeout(() => { cleanup(); window[cb] = drop; reject(new Error("timeout")); }, ms || JSONP_MS);
+        window[cb] = d => { cleanup(); drop(); resolve(d || {}); };
+        s.onerror = () => { cleanup(); drop(); reject(new Error("net")); };
         s.src = SHEET_API + "?" + params + "&callback=" + cb + "&t=" + Date.now();
         document.head.appendChild(s);
       });
