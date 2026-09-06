@@ -1028,6 +1028,10 @@
   .to-pick-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 0;border-bottom:1px dashed var(--line)}
   .to-pick-row:last-child{border-bottom:none}
   .to-pick-cap{min-width:96px;font-size:12.5px;color:var(--muted);font-weight:700}
+  /* Откуда номер: подтверждён каталогом производителя или взят из кросс-таблицы. */
+  .to-src{flex:none;padding:2px 7px;border-radius:7px;font-size:10.5px;font-weight:700;letter-spacing:.2px;
+    text-transform:uppercase;color:var(--ok);background:var(--ok-bg);border:1px solid transparent;cursor:help}
+  .to-src--warn{color:var(--warn);background:transparent;border-color:var(--warn)}
   .to-alt{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:10px;cursor:pointer;
     border:1px solid var(--line);background:var(--fill);color:var(--text);font:inherit;font-size:12px;font-weight:600;
     transition:border-color .15s,background .15s,color .15s,transform .15s}
@@ -6525,6 +6529,17 @@
       const list = [p.picked].concat(p.alts || []);
       return list[(vin.sel && vin.sel[slot]) || 0] || p.picked;
     }
+    /* Якорь слота — номер, от которого пляшет весь подбор цены. Сначала подтверждённый
+       каталогом производителя (он привязан к ЭТОЙ машине), и только если каталог промолчал —
+       первый из кросс-таблицы, как было до 06.09.2026. Разница не косметическая: на Infiniti
+       QX80 кросс-таблица давала семь разных MAHLE, и правильного среди них не было вовсе. */
+    function vinAnchor(f){
+      if(!f) return null;
+      const c = (f.confirmed || [])[0];
+      if(c && c.num) return { brand: c.brand, num: c.num, src: c.src || "vin" };
+      const o = (f.ours || [])[0];
+      return o ? { brand: o.brand, num: o.num, src: "" } : null;
+    }
     // имя записи: марка + код двигателя + объём. Модель и кузов НЕ включаем — один двигатель
     // стоит в разных машинах, иначе каталог зарастёт дублями (B57 в X5, X6, X7 — одна запись)
     function vinEngineName(){
@@ -6621,12 +6636,12 @@
       catOpen = false;                                 // машина пришла из VIN — каталог не нужен, не разводим смету и фильтры
       updateVin(); updateList(); updateCard();
       for(const s of VIN_SLOTS){                       // цены — по одному запросу на слот, параллельно
-        const f = cur.filters[s.id];
-        if(!f || !f.ours || !f.ours.length) continue;
+        const a = vinAnchor(cur.filters[s.id]);
+        if(!a) continue;
         cur.price[s.id] = { status:"load" };
         jsonp("type=part&token=" + encodeURIComponent(SHEET_TOKEN) +
               "&key=" + encodeURIComponent(key) +
-              "&art=" + encodeURIComponent(f.ours[0].brand + " " + f.ours[0].num))
+              "&art=" + encodeURIComponent(a.brand + " " + a.num))
           .then(r => { cur.price[s.id] = (r && !r.error && r.picked)
               ? { status:"ok", picked:r.picked, alts:r.alts || [] } : { status:"err" };
             if(vin !== cur) return;                    // машину сменили — экран уже не наш
@@ -6745,18 +6760,28 @@
       const rows = VIN_SLOTS.map(s => {
         const f = (vin.filters || {})[s.id];
         if(!f) return "";
+        const a = vinAnchor(f);
         const p = vin.price[s.id];
+        /* Откуда номер. Менеджеру важно различать «каталог производителя сказал, что этот
+           фильтр стоит на этой машине» и «похожее из кросс-таблицы»: во втором случае перед
+           отправкой клиенту номер стоит проверить. Пометка молчит только когда показывать
+           нечего — там и так написано «уточню». */
+        const anchorTxt = a ? esc(a.brand + " " + a.num) : "";
+        const mark = !a ? ""
+          : a.src === "vin"  ? `<span class="to-src" title="Каталог производителя подтвердил по VIN: ${anchorTxt}. Варианты ниже подобраны от этого номера">каталог</span>`
+          : a.src === "oem"  ? `<span class="to-src" title="Каталог производителя подтвердил по оригинальному номеру: ${anchorTxt}. Варианты ниже подобраны от него">по оригиналу</span>`
+          : `<span class="to-src to-src--warn" title="Каталог машину не подтвердил — ${anchorTxt} взят из кросс-таблицы. Проверьте номер перед отправкой клиенту">аналог</span>`;
         let body;
-        if(!f.ours || !f.ours.length){
-          // наших брендов нет — отдаём оригинальный номер и «уточню» (решение владельца)
+        if(!a){
+          // ни каталог, ни кроссы ничего не дали — оригинальный номер и «уточню» (решение владельца)
           const oem = (f.oem || []).slice(0, 2).map(o =>
             `<button class="pr-art to-code" type="button" data-act="vin-code" data-code="${esc(o.num)}"
               title="Копировать номер">${esc(o.brand)} ${esc(o.num)}</button>`).join(" ");
           body = `<span class="to-note">наших нет — уточню${oem ? ", оригинал: " : ""}</span>${oem}`;
         } else if(!p || p.status === "load"){
-          body = `<span class="to-note">${esc(f.ours[0].brand)} ${esc(f.ours[0].num)} — узнаю цену…</span>`;
+          body = `<span class="to-note">${esc(a.brand)} ${esc(a.num)} — узнаю цену…</span>`;
         } else if(p.status !== "ok"){
-          body = `<span class="to-note">${esc(f.ours[0].brand)} ${esc(f.ours[0].num)} — цена не пришла, уточню</span>`;
+          body = `<span class="to-note">${esc(a.brand)} ${esc(a.num)} — цена не пришла, уточню</span>`;
         } else {
           const list = [p.picked].concat(p.alts || []);
           const cur = (vin.sel && vin.sel[s.id]) || 0;
@@ -6766,7 +6791,7 @@
               ${i === cur ? ICO.check : ""}${esc(v.brand)} ${esc(v.num)} <span class="p">${rub(v.sell)}</span>
               <span class="q">${Number(v.qty) || 0} шт · ${Number(v.days) || 0} дн</span></button>`).join("");
         }
-        return `<div class="to-pick-row"><span class="to-pick-cap">${esc(s.cap)}</span>${body}</div>`;
+        return `<div class="to-pick-row"><span class="to-pick-cap">${esc(s.cap)}</span>${mark}${body}</div>`;
       }).join("");
 
       vinBox.innerHTML =
