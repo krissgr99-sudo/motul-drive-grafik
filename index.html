@@ -1032,6 +1032,10 @@
   .to-src{flex:none;padding:2px 7px;border-radius:7px;font-size:10.5px;font-weight:700;letter-spacing:.2px;
     text-transform:uppercase;color:var(--ok);background:var(--ok-bg);border:1px solid transparent;cursor:help}
   .to-src--warn{color:var(--warn);background:transparent;border-color:var(--warn)}
+  /* Свой номер из дилерского каталога: кнопка уходит вправо, поле ввода занимает её место. */
+  .to-own{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;margin-left:auto}
+  .to-own-inp{min-width:190px;font-family:var(--font-mono);font-size:12px}
+  .to-own-btn{margin-left:auto;font-family:var(--font-mono);font-size:11.5px;white-space:nowrap}
   .to-alt{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:10px;cursor:pointer;
     border:1px solid var(--line);background:var(--fill);color:var(--text);font:inherit;font-size:12px;font-weight:600;
     transition:border-color .15s,background .15s,color .15s,transform .15s}
@@ -6492,6 +6496,7 @@
        Внешний сервис здесь ускоритель, а не зависимость: не ответил — блок молчит,
        слоты и карточка заполняются руками ровно как раньше. */
     let vin = null;                                    // {status, car, filters, price:{slot}, sel:{slot}}
+    let vinOwnEdit = "";                               // слот, у которого сейчас открыто поле «свой номер»
     let jseq = 0;
     /* Сколько ждём ответа. Разбору VIN дано втрое больше остальных: на бэкенде это цепочка
        из пяти-шести запросов к чужому каталогу (проверка сессии, при протухшей — полный
@@ -6535,10 +6540,22 @@
        QX80 кросс-таблица давала семь разных MAHLE, и правильного среди них не было вовсе. */
     function vinAnchor(f){
       if(!f) return null;
+      /* Свой номер бьёт всё остальное. Его вписывает человек, посмотрев дилерский каталог по
+         VIN, — это единственный источник, который знает КОНКРЕТНУЮ машину, а не похожую.
+         Каталог фильтров держит европейский парк, кросс-таблица отвечает «что похоже на этот
+         ALCO»; на Infiniti QX80 06.09.2026 оба ошиблись, а верный номер у владельца был. */
+      if(f.pick && f.pick.num) return { brand: f.pick.brand || "", num: f.pick.num, src: "own" };
       const c = (f.confirmed || [])[0];
       if(c && c.num) return { brand: c.brand, num: c.num, src: c.src || "vin" };
       const o = (f.ours || [])[0];
       return o ? { brand: o.brand, num: o.num, src: "" } : null;
+    }
+    /* Все подтверждённые номера слота — «БРЕНД НОМЕР» через «|». Сервер по ним отсеет соседей
+       того же бренда: у воздушного QX80 рядом с подтверждённым FILTRON AP 003/7 в кроссах
+       лежат AP 003/2 и AP 003/3 — тот же бренд, другая машина. */
+    function vinConf(f){
+      return ((f && f.confirmed) || []).filter(c => c && c.brand && c.num)
+        .map(c => c.brand + " " + c.num).join("|");
     }
     // имя записи: марка + код двигателя + объём. Модель и кузов НЕ включаем — один двигатель
     // стоит в разных машинах, иначе каталог зарастёт дублями (B57 в X5, X6, X7 — одна запись)
@@ -6635,21 +6652,55 @@
       makeVinEngine();                                 // смета появляется сразу, цены дойдут следом
       catOpen = false;                                 // машина пришла из VIN — каталог не нужен, не разводим смету и фильтры
       updateVin(); updateList(); updateCard();
-      for(const s of VIN_SLOTS){                       // цены — по одному запросу на слот, параллельно
-        const a = vinAnchor(cur.filters[s.id]);
-        if(!a) continue;
-        cur.price[s.id] = { status:"load" };
-        jsonp("type=part&token=" + encodeURIComponent(SHEET_TOKEN) +
-              "&key=" + encodeURIComponent(key) +
-              "&art=" + encodeURIComponent(a.brand + " " + a.num))
-          .then(r => { cur.price[s.id] = (r && !r.error && r.picked)
-              ? { status:"ok", picked:r.picked, alts:r.alts || [] } : { status:"err" };
-            if(vin !== cur) return;                    // машину сменили — экран уже не наш
-            vinApplySlots(); updateVin(); })
-          .catch(() => { cur.price[s.id] = { status:"err" };
-            if(vin === cur) updateVin(); });
-      }
+      for(const s of VIN_SLOTS) vinAskPrice(cur, s.id);  // цены — по запросу на слот, параллельно
       updateVin();
+    }
+
+    /* Цена и наши бренды для одного слота. Вынесено из разбора, потому что спрашивать
+       приходится дважды: сразу после VIN и ещё раз, когда менеджер вписал свой номер.
+       При своём номере `conf` НЕ шлём: он собран из подтверждения каталога, а свой номер как
+       раз и появляется там, где каталог ошибся — фильтровать по нему значило бы отсечь
+       правильные позиции неправильным списком. */
+    function vinAskPrice(cur, slotId){
+      const f = cur.filters[slotId];
+      const a = vinAnchor(f);
+      if(!a) return;
+      const key = vinKey();
+      if(!key) return;
+      cur.price[slotId] = { status:"load" };
+      jsonp("type=part&token=" + encodeURIComponent(SHEET_TOKEN) +
+            "&key=" + encodeURIComponent(key) +
+            "&art=" + encodeURIComponent((a.brand ? a.brand + " " : "") + a.num) +
+            "&conf=" + encodeURIComponent(a.src === "own" ? "" : vinConf(f)))
+        .then(r => { cur.price[slotId] = (r && !r.error && r.picked)
+            ? { status:"ok", picked:r.picked, alts:r.alts || [], oem: r.oem || [] }
+            : { status:"err", oem:(r && r.oem) || [] };
+          if(vin !== cur) return;                    // машину сменили — экран уже не наш
+          vinApplySlots(); updateVin(); })
+        .catch(() => { cur.price[slotId] = { status:"err" };
+          if(vin === cur) updateVin(); });
+    }
+
+    /* Свой номер: запомнить на экране, спросить по нему цену и отправить в лист «VIN».
+       Запись «в фоне» — ответ Apps Script непрозрачен (no-cors), поэтому подтверждает не он,
+       а то, что при следующем разборе этой машины номер приезжает уже из листа. Пустая строка
+       снимает отметку: ошиблись — стёрли и вернулись к обычному подбору. */
+    function vinOwnSet(slotId, numRaw){
+      if(!vin || vin.status !== "ok") return;
+      const num = String(numRaw || "").trim().slice(0, 40);
+      const f = vin.filters[slotId] = vin.filters[slotId] || { alco:"", ours:[], oem:[] };
+      if(num) f.pick = { num: num, brand: "" };
+      else delete f.pick;
+      vinOwnEdit = "";
+      if(vin.sel) vin.sel[slotId] = 0;               // номер сменился — выбор варианта начинаем заново
+      if(slots[slotId]) slots[slotId].manual = false;
+      if(slotId === "oil" && vinEngine) vinEngine.priceManual = false;
+      delete vin.price[slotId];
+      updateVin();
+      vinAskPrice(vin, slotId);
+      postChannel(SHEET_API, { kind:"vin-pick", token: SHEET_TOKEN, vinkey: vinKey(),
+        vin: vin.vin, slot: slotId, num: num }, "свой номер фильтра", "vin-pick")
+        .catch(() => {});                            // не сохранилось — на экране номер всё равно работает
     }
 
     /* Временная запись двигателя из VIN — чтобы смета собиралась сразу, а не после заведения
@@ -6758,8 +6809,9 @@
         .filter(p => p[1]).map(p => `<span class="to-spec"><i>${esc(p[0])}</i><b>${esc(String(p[1]))}</b></span>`).join("");
 
       const rows = VIN_SLOTS.map(s => {
-        const f = (vin.filters || {})[s.id];
-        if(!f) return "";
+        // слот рисуем всегда, даже когда каталог о нём смолчал: именно туда менеджер и впишет
+        // свой номер из дилерского каталога, иначе вписывать было бы некуда
+        const f = (vin.filters || {})[s.id] || {};
         const a = vinAnchor(f);
         const p = vin.price[s.id];
         /* Откуда номер. Менеджеру важно различать «каталог производителя сказал, что этот
@@ -6767,9 +6819,15 @@
            отправкой клиенту номер стоит проверить. Пометка молчит только когда показывать
            нечего — там и так написано «уточню». */
         const anchorTxt = a ? esc(a.brand + " " + a.num) : "";
+        /* Зелёная пометка — ТОЛЬКО за подтверждение по VIN. Путь «по оригиналу» выглядел таким
+           же надёжным, но 06.09.2026 на Infiniti QX80 показал, чего стоит: оригинальные номера
+           мы берём из той же кросс-таблицы ALCO, которая и ошибается, — и каталог честно
+           подтвердил фильтр от Patrol 4.0 VQ40 для машины 5.6 VK56. Ошибка на входе,
+           подтверждение на выходе. Поэтому «по кроссу» теперь жёлтый, наравне с аналогом. */
         const mark = !a ? ""
+          : a.src === "own"  ? `<span class="to-src" title="Номер вписан вручную из дилерского каталога по VIN: ${anchorTxt}. Он запомнен для этой машины и бьёт любой подбор">свой номер</span>`
           : a.src === "vin"  ? `<span class="to-src" title="Каталог производителя подтвердил по VIN: ${anchorTxt}. Варианты ниже подобраны от этого номера">каталог</span>`
-          : a.src === "oem"  ? `<span class="to-src" title="Каталог производителя подтвердил по оригинальному номеру: ${anchorTxt}. Варианты ниже подобраны от него">по оригиналу</span>`
+          : a.src === "oem"  ? `<span class="to-src to-src--warn" title="Каталог эту машину по VIN НЕ знает. ${anchorTxt} получен кроссом от оригинального номера из кросс-таблицы — сверьте по машине перед отправкой клиенту">по кроссу</span>`
           : `<span class="to-src to-src--warn" title="Каталог машину не подтвердил — ${anchorTxt} взят из кросс-таблицы. Проверьте номер перед отправкой клиенту">аналог</span>`;
         let body;
         if(!a){
@@ -6791,7 +6849,20 @@
               ${i === cur ? ICO.check : ""}${esc(v.brand)} ${esc(v.num)} <span class="p">${rub(v.sell)}</span>
               <span class="q">${Number(v.qty) || 0} шт · ${Number(v.days) || 0} дн</span></button>`).join("");
         }
-        return `<div class="to-pick-row"><span class="to-pick-cap">${esc(s.cap)}</span>${mark}${body}</div>`;
+        /* Хвост строки — ручной номер. Открытое поле показываем вместо кнопки: строка и так
+           длинная, а два элемента об одном и том же сбивают. Номер уже вписан — кнопка
+           показывает его, чтобы менеджер видел, что подбор идёт не от каталога. */
+        const own = (f.pick && f.pick.num) ? String(f.pick.num) : "";
+        const tail = vinOwnEdit === s.id
+          ? `<span class="to-own"><input class="ui-input to-own-inp" id="to-own-${s.id}" type="text"
+               value="${esc(own)}" placeholder="номер из дилерского каталога" autocomplete="off"
+               spellcheck="false" aria-label="Свой номер фильтра" data-slot="${s.id}">
+             <button class="ui-btn ui-btn--primary ui-btn--sm" type="button"
+               data-act="vin-own-save" data-slot="${s.id}">${ICO.check} Запомнить</button></span>`
+          : `<button class="ui-btn ui-btn--ghost ui-btn--sm to-own-btn" type="button" data-act="vin-own"
+               data-slot="${s.id}" title="Вписать номер из дилерского каталога по VIN — портал запомнит его для этой машины навсегда"
+               >${ICO.edit} ${own ? esc(own) : "свой номер"}</button>`;
+        return `<div class="to-pick-row"><span class="to-pick-cap">${esc(s.cap)}</span>${mark}${body}${tail}</div>`;
       }).join("");
 
       vinBox.innerHTML =
@@ -7007,11 +7078,24 @@
       else if(act === "vin-clear"){ vin = null; vinInp.value = ""; updateVin(); }
       else if(act === "vin-code"){ copyTo(b.dataset.code, b, "Номер скопирован"); }
       else if(act === "vinkey-save"){ vinKeySave(); }
+      else if(act === "vin-own"){                 // открыть поле «свой номер» и сразу дать печатать
+        vinOwnEdit = b.dataset.slot; updateVin();
+        const inp = vinBox.querySelector("#to-own-" + vinOwnEdit);
+        if(inp){ inp.focus(); inp.select(); }
+      }
+      else if(act === "vin-own-save"){
+        const inp = vinBox.querySelector("#to-own-" + b.dataset.slot);
+        vinOwnSet(b.dataset.slot, inp ? inp.value : "");
+      }
     });
     // Enter в поле ключа — то же, что «Запомнить»: поле рисуется заново на каждой отрисовке,
     // поэтому слушаем не сам input, а контейнер
     vinBox.addEventListener("keydown", ev => {
       if(ev.key === "Enter" && ev.target && ev.target.id === "to-vinkey"){ ev.preventDefault(); vinKeySave(); }
+      // поле «свой номер»: Enter применяет, Esc закрывает не тронув запомненное
+      const own = ev.target && ev.target.classList && ev.target.classList.contains("to-own-inp");
+      if(own && ev.key === "Enter"){ ev.preventDefault(); vinOwnSet(ev.target.dataset.slot, ev.target.value); }
+      if(own && ev.key === "Escape"){ ev.preventDefault(); vinOwnEdit = ""; updateVin(); }
     });
     function vinKeySave(){
       const inp = vinBox.querySelector("#to-vinkey");
