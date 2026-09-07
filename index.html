@@ -1024,6 +1024,15 @@
   /* характеристики машины — плитками «метка сверху, значение снизу»: строка «Кузов: X · Двигатель: Y»
      читалась как сплошной текст, глазом не находилось нужное поле */
   .to-veh-spec{display:flex;flex-wrap:wrap;gap:8px}
+  /* Коробка машины — отдельная строка между спецификацией и фильтрами: это главные наши
+     деньги (две трети работ), а не ещё одна плитка характеристики. */
+  .to-box{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:10px 12px;border-radius:10px;
+    background:var(--fill-soft);border:1px solid var(--line)}
+  .to-box-cap{font-family:var(--font-mono);font-size:9.5px;font-weight:600;letter-spacing:.8px;
+    text-transform:uppercase;color:var(--muted)}
+  .to-box-name{font-family:var(--font-mono);font-size:13.5px;font-weight:700;color:var(--text);letter-spacing:.2px}
+  .to-box-go{margin-left:auto}
+  .to-box-note{margin-top:-2px}
   .to-spec{display:inline-flex;flex-direction:column;gap:2px;padding:6px 10px;border-radius:8px;
     background:var(--fill-soft);border:1px solid var(--line)}
   .to-spec i{font-family:var(--font-mono);font-size:9.5px;font-weight:600;letter-spacing:.8px;
@@ -1076,7 +1085,8 @@
     /* на телефоне марка — строкой над своими машинами: колонка в 104px съедала половину ширины */
     .to-grp{grid-template-columns:1fr;gap:6px}
     .to-grp-cap{padding-top:0}
-    .to-cat-top .ui-btn,.to-bar .ui-btn,.to-vin .ui-btn{min-height:44px}   /* хиты ≥44px (must-keep 7) */
+    .to-cat-top .ui-btn,.to-bar .ui-btn,.to-vin .ui-btn,.to-box .ui-btn{min-height:44px}   /* хиты ≥44px (must-keep 7) */
+    .to-box-go{margin-left:0;width:100%;justify-content:center}   /* на телефоне кнопка во всю строку, а не хвостиком справа */
     .to-form-grid{grid-template-columns:1fr}
     /* на телефоне три поля слота — каждое своей строкой, кнопки последней (хит ≥44px) */
     .to-slot-form{grid-template-columns:1fr auto auto}
@@ -3386,111 +3396,194 @@
     /* ---- Volkswagen ---- */
     { brand:"Volkswagen", model:"Golf", gen:"V / VI · 2003-2013 · DSG или Aisin", boxes:["DQ250","DQ-200","TF60/61 09G/K"], draft:true,
       match:["golf","гольф","golf 5","golf 6","гольф 5","гольф 6","golf v","golf vi"], allow:{base:true},
+      vin:{ model:["golf"], years:[2003,2013] },
       note:"Мокрый DQ250 (2.0), сухой DQ-200 (1.2/1.4 TSI) или гидромех. Aisin 09G. Решает мотор — сверьте по VIN." },
     { brand:"Volkswagen", model:"Golf", gen:"VII · 2012-2020 · DSG", boxes:["DQ250","DQ-200"], draft:true,
       match:["golf","гольф","golf 7","гольф 7","golf vii"], allow:{base:true},
+      vin:{ model:["golf"], years:[2012,2020] },
       note:"DQ250 (мокрый) или DQ-200 (сухой). Golf R / GTI Performance могли идти на DQ381 — её у нас нет." },
     { brand:"Volkswagen", model:"Passat", gen:"B6 / B7 · 2005-2015 · DSG или Aisin", boxes:["DQ250","DQ-200","TF60/61 09G/K"], draft:true,
       match:["passat","пассат","passat b6","passat b7","пассат b6","пассат b7","passat cc","cc"], allow:{base:true},
+      vin:{ model:["passat","cc"], years:[2005,2015] },
       note:"Как у Golf: мокрый DQ250, сухой DQ-200 или гидромех. Aisin 09G. Решает мотор." },
     { brand:"Volkswagen", model:"Passat", gen:"B8 · 2014+ · DSG", boxes:["DQ250","DQ-200"], draft:true,
       match:["passat","пассат","passat b8","пассат b8","arteon","артеон"], allow:{base:true},
+      vin:{ model:["passat","arteon"], years:[2014,null] },
       note:"Мощные версии могли идти на DQ381 — карточки для неё нет, сверьте код коробки." },
     { brand:"Volkswagen", model:"Tiguan", gen:"I · 2007-2016 · DSG или Aisin", boxes:["DQ250","TF60/61 09G/K"], draft:true,
       match:["tiguan 1","тигуан 1","tiguan nf"], allow:{base:true},
+      vin:{ model:["tiguan"], years:[2007,2016] },
       note:"Чаще мокрый DQ250; часть версий — гидромеханика Aisin 09G." },
     { brand:"Volkswagen", model:"Tiguan", gen:"II · 2016+ · DSG", boxes:["DQ500","DQ250"], draft:true,
       match:["tiguan 2","тигуан 2","tiguan ad"], allow:{base:true},
+      vin:{ model:["tiguan"], years:[2016,null] },
       note:"2.0 TSI 4motion — DQ500. Слабые версии — DQ250/DQ381. Сверьте код коробки." },
     { brand:"Volkswagen", model:"Tiguan", gen:"— уточните поколение", boxes:["DQ500","DQ250","TF60/61 09G/K"], draft:true,
       match:["tiguan","тигуан"], allow:{base:true},
       note:"Год выпуска решает: до 2016 — DQ250/Aisin 09G, после — DQ500/DQ250." },
     { brand:"Volkswagen", model:"Touareg", gen:"7L · 2002-2010 · Aisin TR-60SN", boxes:["TR60SN 09D"],
-      match:["touareg 7l","туарег 7l","туарег 1"], allow:{base:true} },
+      match:["touareg 7l","туарег 7l","туарег 1"], allow:{base:true},
+      vin:{ model:["touareg"], years:[2002,2010] } },
     { brand:"Volkswagen", model:"Touareg", gen:"7P · 2010-2018 · Aisin TR-80SD", boxes:["TR80SD 0C8"], draft:true,
       match:["touareg 7p","туарег 7p","туарег 2"], allow:{base:true},
+      vin:{ model:["touareg"], years:[2010,2018] },
       note:"8-ступенчатая Aisin 0C8 (3.0 TFSI / 3.6 FSI / 4.2 FSI, 2010-2018)." },
+    /* Третий Touareg до 07.09.2026 в карте отсутствовал: были только 7L и 7P, а по слову
+       «туарег» подбор отдавал их обоих — то есть Aisin вместо ZF. Разбор по VIN сделал это
+       опасным (кузов CR7, 2021 год приезжали в сентябре), поэтому поколение заведено явно.
+       Коробка — та, что владелец уже записал строкой ниже: ZF 8HP, готовой карточки нет. */
+    { brand:"Volkswagen", model:"Touareg", gen:"CR · 2018+ · ZF 8HP", boxes:[], nocard:"ZF 8HP", draft:true,
+      match:["touareg cr","туарег cr","туарег 3"], allow:{base:false},
+      vin:{ model:["touareg"], years:[2018,null], body:["cr7"] },
+      note:"MLBevo, 8-ступенчатая ZF (код коробки 0D5). Готовой карточки нет — смета вручную." },
     { brand:"Volkswagen", model:"Touareg", gen:"— уточните поколение", boxes:["TR60SN 09D","TR80SD 0C8"], draft:true,
       match:["touareg","туарег"], allow:{base:true},
       note:"До 2010 — 6-ст. TR-60SN 09D; 2010-2018 — 8-ст. TR-80SD 0C8. Новый CR (с 2018) — ZF 8HP, карточки нет." },
     { brand:"Volkswagen", model:"Multivan / Transporter", gen:"T5 / T6 · DSG DQ500", boxes:["DQ500"], draft:true,
       match:["multivan","мультивен","transporter","транспортер","t5","t6","caravelle","каравелла"], allow:{base:true},
+      vin:{ model:["multivan","transporter","caravelle"] },
       note:"Роботы DQ500 (мокрый, 7 ступеней). На части версий — механика." },
     { brand:"Volkswagen", model:"Amarok", gen:"2010-2020 · Aisin TR-80SD", boxes:["TR80SD 0C8"], draft:true,
-      match:["amarok","амарок"], allow:{base:true}, note:"8-ст. Aisin 0C8 (V6 и 2.0 BiTDI). Механику не считаем." },
+      match:["amarok","амарок"], allow:{base:true}, note:"8-ст. Aisin 0C8 (V6 и 2.0 BiTDI). Механику не считаем.",
+      vin:{ model:["amarok"], years:[2010,2020], body:["2h"] } },
     { brand:"Volkswagen", model:"Polo / Jetta / Caddy / Touran", gen:"DSG или Aisin", boxes:["DQ-200","DQ250","TF60/61 09G/K"], draft:true,
       match:["polo","поло","jetta","джетта","caddy","кадди","touran","туран"], allow:{base:true},
+      vin:{ model:["polo","jetta","caddy","touran"] },
       note:"Массовый набор VAG: сухой DQ-200 (1.2/1.4/1.6), мокрый DQ250 (2.0) или гидромех. Aisin 09G. Решает мотор." },
 
     /* ---- Audi ---- */
     { brand:"Audi", model:"A4 / A5", gen:"B8 / 8T · 2007-2016 · ZF 8HP55 или S tronic DL501", boxes:["8HP55","DL501 0B5"], draft:true,
       match:["a4 b8","a5 8t","ауди a4 b8","ауди b8"], allow:{base:true},
+      vin:{ model:["a4","a5"], years:[2007,2016] },
       note:"Автомат — 0BK/8HP55 (фильтр Mahle HX189KIT). S tronic — DL501 0B5 (робот). Переднеприводные могли идти на multitronic (вариатор) — его не обслуживаем." },
     { brand:"Audi", model:"A4 / A5", gen:"B9 / F5 · 2015+ · ZF 8HP65A или S tronic DL-382", boxes:["8HP65","8HP65A","DL-382"], draft:true,
       match:["a4 b9","a5 f5","ауди a4 b9","ауди b9"], allow:{base:true},
+      vin:{ model:["a4","a5"], years:[2015,null] },
       note:"Мягкий гибрид 48V → 8HP65A, без него → обычная 8HP65 (у них разный фильтр-поддон). Робот S tronic — DL-382: сверьте, автомат у машины или S tronic." },
     { brand:"Audi", model:"A6 / A7", gen:"C7 · 2011-2018 · ZF 8HP55 или S tronic DL501", boxes:["8HP55","DL501 0B5"], draft:true,
       match:["a6 c7","a7 c7","ауди a6 c7","ауди c7"], allow:{base:true},
+      vin:{ model:["a6","a7"], years:[2011,2018] },
       note:"Как у B8: 0BK/8HP55 либо DL501. Переднеприводные — multitronic, его не обслуживаем." },
     { brand:"Audi", model:"A6 / A7", gen:"C8 · 2018+ · ZF 8HP65A или S tronic DL-382", boxes:["8HP65","8HP65A","DL-382"], draft:true,
       match:["a6 c8","a7 c8","ауди a6 c8","ауди c8"], allow:{base:true},
+      vin:{ model:["a6","a7"], years:[2018,null], body:["4ka"] },
       note:"Мягкий гибрид 48V → 8HP65A, без него → обычная 8HP65 (у них разный фильтр-поддон). На 3.0 TFSI/TDI 48V встречается часто. Робот S tronic — DL-382." },
     { brand:"Audi", model:"A8", gen:"D4 · 2010-2017 · ZF 8HP55", boxes:["8HP55"], draft:true,
-      match:["a8 d4","ауди a8 d4","ауди d4"], allow:{base:true}, note:"W12 — отдельная коробка, сверьте по мотору." },
+      match:["a8 d4","ауди a8 d4","ауди d4"], allow:{base:true}, note:"W12 — отдельная коробка, сверьте по мотору.",
+      vin:{ model:["a8"], years:[2010,2017] } },
     { brand:"Audi", model:"A8", gen:"D5 · 2017+ · ZF 8HP65 / 8HP65A", boxes:["8HP65","8HP65A"], draft:true,
       match:["a8 d5","ауди a8 d5","ауди d5"], allow:{base:true},
+      vin:{ model:["a8"], years:[2017,null] },
       note:"Мягкий гибрид 48V → 8HP65A, без него → обычная 8HP65 (у них разный фильтр-поддон). У D5 мягкий гибрид штатный на большинстве версий — сверьте по машине." },
     { brand:"Audi", model:"Q5", gen:"8R · 2008-2017 · ZF 8HP55 или S tronic DL501", boxes:["8HP55","DL501 0B5"], draft:true,
-      match:["q5 8r","ку5 8r"], allow:{base:true}, note:"SQ5 — тоже 0BK/8HP55." },
+      match:["q5 8r","ку5 8r"], allow:{base:true}, note:"SQ5 — тоже 0BK/8HP55.",
+      vin:{ model:["q5"], years:[2008,2017] } },
     { brand:"Audi", model:"Q5", gen:"FY · 2017+ · ZF 8HP65A или S tronic DL-382", boxes:["8HP65","8HP65A","DL-382"], draft:true,
       match:["q5 fy"], allow:{base:true},
+      vin:{ model:["q5"], years:[2017,null] },
       note:"Мягкий гибрид 48V → 8HP65A, без него → обычная 8HP65 (у них разный фильтр-поддон). Робот S tronic — DL-382. SQ5 — автомат." },
     { brand:"Audi", model:"Q7", gen:"4L · 2005-2015 · Aisin TR-60SN / TR-80SD", boxes:["TR60SN 09D","TR80SD 0C8"], draft:true,
       match:["q7 4l","ку7 4l"], allow:{base:true},
+      vin:{ model:["q7"], years:[2005,2015] },
       note:"Ранние — 6-ст. 09D, с 2010 — 8-ст. 0C8. Решает год." },
     { brand:"Audi", model:"Q7 / Q8", gen:"4M · 2015+ · ZF 8HP65A", boxes:["8HP65","8HP65A"], draft:true,
       match:["q7 4m","q8","ку8"], allow:{base:true},
+      vin:{ model:["q7","q8"], years:[2015,null], body:["4mb"] },
       note:"Мягкий гибрид 48V → 8HP65A, без него → обычная 8HP65 (у них разный фильтр-поддон). Подключаемый гибрид (PHEV) — отдельная история, сверяйте по машине." },
     { brand:"Audi", model:"A4 / A6 / Q5 / Q7 (поколение не указано)", gen:"— уточните поколение или год", boxes:["8HP55","8HP65","8HP65A","DL501 0B5"], draft:true,
       match:["a4","a5","a6","a7","a8","q5","q7","ауди"], allow:{base:true},
       note:"Год решает: до ~2015 — 8HP55 (0BK) / DL501; после — 8HP65 или 8HP65A / DL-382. Мягкий гибрид 48V → 8HP65A, без него → обычная 8HP65 (у них разный фильтр-поддон). Уточните год, 48V и есть ли S tronic." },
     { brand:"Audi", model:"A3", gen:"8P / 8V · 2003-2020 · DSG", boxes:["DQ250","DQ-200","TF60/61 09G/K"], draft:true,
       match:["a3 8p","a3 8v","ауди a3","a3"], allow:{base:true},
+      vin:{ model:["a3"], years:[2003,2020] },
       note:"Поперечная платформа: мокрый DQ250, сухой DQ-200 или гидромех. Aisin 09G — по мотору." },
     { brand:"Audi", model:"Q3 / TT", gen:"8U / 8S · DSG", boxes:["DQ250","DQ500"], draft:true,
       match:["q3","ку3","tt","ттшка"], allow:{base:true},
+      vin:{ model:["q3","tt"] },
       note:"Мокрый DQ250; RS-версии (TT RS, RS Q3) — DQ500." },
 
     /* ---- Skoda ---- */
     { brand:"Skoda", model:"Octavia", gen:"A5 / A7 · 2004-2020 · DSG или Aisin", boxes:["DQ250","DQ-200","TF60/61 09G/K"], draft:true,
       match:["octavia","октавия","октавиа"], allow:{base:true},
+      vin:{ model:["octavia"] },
       note:"Мокрый DQ250 (1.8/2.0 TSI), сухой DQ-200 (1.2/1.4) или гидромех. Aisin 09G. RS — чаще DQ250." },
     { brand:"Skoda", model:"Superb", gen:"II / III · 2008+ · DSG", boxes:["DQ250","DQ-200"], draft:true,
       match:["superb","суперб"], allow:{base:true},
+      vin:{ model:["superb"] },
       note:"Мокрый DQ250 (1.8/2.0 TSI) или сухой DQ-200 (1.4). Решает мотор." },
     { brand:"Skoda", model:"Kodiaq / Karoq", gen:"2016+ · DSG", boxes:["DQ500","DQ250"], draft:true,
       match:["kodiaq","кодиак","karoq","карок"], allow:{base:true},
+      vin:{ model:["kodiaq","karoq"] },
       note:"4×4 2.0 TSI — DQ500; слабые версии — DQ250/DQ381." },
     { brand:"Skoda", model:"Yeti / Rapid / Fabia", gen:"DSG", boxes:["DQ250","DQ-200"], draft:true,
       match:["yeti","йети","rapid","рапид","fabia","фабия"], allow:{base:true},
+      vin:{ model:["yeti","rapid","fabia"] },
       note:"Rapid и Fabia — почти всегда сухой DQ-200; Yeti — DQ250 на 1.8 TSI." },
 
     /* ---- Porsche ---- */
     { brand:"Porsche", model:"Cayenne", gen:"955 / 957 · 2002-2010 · Aisin TR-60SN", boxes:["TR60SN 09D"],
-      match:["cayenne 955","cayenne 957","кайен 955","кайен 957","кайен 1"], allow:{base:true} },
+      match:["cayenne 955","cayenne 957","кайен 955","кайен 957","кайен 1"], allow:{base:true},
+      vin:{ model:["cayenne"], years:[2002,2010] } },
     { brand:"Porsche", model:"Cayenne", gen:"92A · 2010-2018 · Aisin TR-80SD", boxes:["TR80SD 0C8"], draft:true,
       match:["cayenne 92a","кайен 92a","кайен 2"], allow:{base:true},
+      vin:{ model:["cayenne"], years:[2010,2018] },
       note:"8-ст. Tiptronic S = Aisin 0C8. Гибрид S E-Hybrid сверяйте отдельно." },
     { brand:"Porsche", model:"Cayenne", gen:"— уточните поколение", boxes:["TR60SN 09D","TR80SD 0C8"], draft:true,
       match:["cayenne","кайен","кайенн"], allow:{base:true},
       note:"До 2010 — 09D, 2010-2018 — 0C8. Новый 9YA (с 2017) — ZF 8HP, готовой карточки нет." },
     { brand:"Porsche", model:"Cayenne", gen:"9YA / 9YB · 2017+ · ZF 8HP", boxes:[], nocard:"ZF 8HP (Tiptronic S)", draft:true,
       match:["cayenne 9y","кайен 3","cayenne 2018"], allow:{base:false},
+      vin:{ model:["cayenne"], years:[2017,null] },
       note:"MLBevo, 8-ст. ZF. У нас есть 8HP65 (обычная) и 8HP65A (мягкий гибрид) — совпадёт ли по фильтру-поддону, сверьте по артикулу; иначе считайте вручную." },
     { brand:"Porsche", model:"Macan / Panamera", gen:"PDK (робот)", boxes:[], nocard:"PDK", draft:true,
       match:["macan","макан","panamera","панамера"], allow:{base:false},
+      vin:{ model:["macan","panamera"] },
       note:"Оба идут на PDK — роботе с двумя сцеплениями (Macan 7 ступеней, Panamera 7/8), а не на нашем автомате. Уточните у мастера, берём ли." },
   ];
+
+  /* ===== Поиск по карте машин — рядом с данными, а не внутри «Шаблонов» =====
+     Спрашивают CARS теперь двое: поиск в «Шаблонах» (человек набирает «x5», «w205») и разбор
+     по VIN в «ТО» (каталог отдаёт код кузова «G05»). Обе стороны обязаны понимать запрос
+     ОДИНАКОВО: разойдись они — менеджер увидел бы в «ТО» одну коробку, а в «Шаблонах» по той
+     же машине другую. Поэтому поиск живёт при данных, как PRICE при ценах. */
+
+  // Кир. буквы, похожие на латиницу → латиница. Чтобы «Х5»=«X5», «Е90»=«E90», «Г05»≈«g05».
+  const foldLat = s => s
+    .replace(/е|ё/g,"e").replace(/х/g,"x").replace(/а/g,"a").replace(/о/g,"o")
+    .replace(/р/g,"p").replace(/с/g,"c").replace(/у/g,"y").replace(/к/g,"k")
+    .replace(/м/g,"m").replace(/т/g,"t").replace(/в/g,"b").replace(/н/g,"h").replace(/г/g,"g");
+  /* Совпадение по ГРАНИЦЕ токена, а не по подстроке. Простой includes ловил чужие машины:
+     запрос «x253» (Mercedes GLC) содержит «x2» и притаскивал BMW X2, «w205» → «w20» и т.п.
+     Чем больше марок в CARS, тем чаще такие пересечения, поэтому требуем, чтобы слева и справа
+     от совпадения не было буквы или цифры (пробел, дефис, точка, край строки — годятся). */
+  const CARS_BOUND = /[a-zа-яё0-9]/;
+  const carsToken = (hay, m) => {
+    let i = -1;
+    while((i = hay.indexOf(m, i + 1)) !== -1){
+      const before = i === 0 ? "" : hay[i - 1];
+      const after  = hay[i + m.length] || "";
+      if(!CARS_BOUND.test(before) && !CARS_BOUND.test(after)) return true;
+    }
+    return false;
+  };
+  /* Машины, совпавшие с запросом. Сверяем и «сырой» запрос (кир. слова «серии»/«бмв»), и
+     свёрнутый (коды кузова). Выигрывает САМОЕ ТОЧНОЕ совпадение: «a8 d5» не должен тащить за
+     собой общую строку Audi, совпавшую всего по «a8», иначе к верной 8HP65A подмешаются чужие
+     8HP55 и DL501 — а это чужая смета клиенту. Запрос без уточнения («x5», «a4») по-прежнему
+     показывает все поколения: там длина совпадения у всех одинаковая. */
+  function carsMatching(q){
+    const raw = String(q || "").trim().toLowerCase();
+    if(!raw) return [];
+    const lat = foldLat(raw), hits = [];
+    for(const c of CARS){
+      let best = 0;
+      for(const m of c.match) if(carsToken(raw, m) || carsToken(lat, m)) best = Math.max(best, m.length);
+      if(best) hits.push({ c, best });
+    }
+    if(!hits.length) return [];
+    const top = Math.max(...hits.map(h => h.best));
+    return hits.filter(h => h.best === top).map(h => h.c);
+  }
 
   // Значки семейств коробок (inline SVG — работает офлайн). Ключ = brand из TEMPLATES.
   //    Единый стиль: тёмный кружок + серебряная монограмма (#c7ccd1). Новое семейство → добавь сюда.
@@ -3598,43 +3691,8 @@
       facetsBox.innerHTML = html;
     }
 
-    // Кир. буквы, похожие на латиницу → латиница. Чтобы «Х5»=«X5», «Е90»=«E90», «Г05»≈«g05».
-    const foldLat = s => s
-      .replace(/е|ё/g,"e").replace(/х/g,"x").replace(/а/g,"a").replace(/о/g,"o")
-      .replace(/р/g,"p").replace(/с/g,"c").replace(/у/g,"y").replace(/к/g,"k")
-      .replace(/м/g,"m").replace(/т/g,"t").replace(/в/g,"b").replace(/н/g,"h").replace(/г/g,"g");
-    /* Совпадение по ГРАНИЦЕ токена, а не по подстроке. Простой includes ловил чужие машины:
-       запрос «x253» (Mercedes GLC) содержит «x2» и притаскивал BMW X2, «w205» → «w20» и т.п.
-       Чем больше марок в CARS, тем чаще такие пересечения, поэтому требуем, чтобы слева и справа
-       от совпадения не было буквы или цифры (пробел, дефис, точка, край строки — годятся). */
-    const BOUND = /[a-zа-яё0-9]/;
-    const hasToken = (hay, m) => {
-      let i = -1;
-      while((i = hay.indexOf(m, i + 1)) !== -1){
-        const before = i === 0 ? "" : hay[i - 1];
-        const after  = hay[i + m.length] || "";
-        if(!BOUND.test(before) && !BOUND.test(after)) return true;
-      }
-      return false;
-    };
-    /* Поиск по машине: сверяем и «сырой» запрос (кир. слова «серии»/«бмв»), и свёрнутый (коды кузова).
-       Выигрывает САМОЕ ТОЧНОЕ совпадение: «a8 d5» не должен тащить за собой общую строку Audi,
-       совпавшую всего по «a8», иначе к верной 8HP65A подмешаются чужие 8HP55 и DL501 — а это
-       чужая смета клиенту. Запрос без уточнения («x5», «a4») по-прежнему показывает все поколения:
-       там длина совпадения у всех одинаковая. */
-    const carsForQuery = () => {
-      if(!query) return [];
-      const raw = query, lat = foldLat(query);
-      const hits = [];
-      for(const c of CARS){
-        let best = 0;
-        for(const m of c.match) if(hasToken(raw, m) || hasToken(lat, m)) best = Math.max(best, m.length);
-        if(best) hits.push({ c, best });
-      }
-      if(!hits.length) return [];
-      const top = Math.max(...hits.map(h => h.best));
-      return hits.filter(h => h.best === top).map(h => h.c);
-    };
+    // Поиск по машине — общий с разбором по VIN: carsMatching живёт при данных CARS (см. там же).
+    const carsForQuery = () => carsMatching(query);
 
     // Какие ВАРИАНТЫ карточек коробки уместны конкретной машине (c.allow). База — всегда; гибрид/
     // блокировку/раздатку показываем, только если машина их разрешает. Нет c.allow → старое поведение (всё).
@@ -6710,6 +6768,147 @@
       return d;
     }
 
+    /* ===== Какая у этой машины коробка =====
+       Разбор по VIN кормил только смету ТО — масло, фильтры, двигатель, — хотя КПП это две трети
+       наших работ. Каталог называет и кузов, и код коробки; связываем это с картой CARS, чтобы
+       менеджер не искал коробку руками после того, как машина уже разобрана.
+
+       КРАСНАЯ ЛИНИЯ: неверная коробка = неверная цена клиенту. Поэтому здесь НЕТ ни одной
+       догадки — только два проверяемых пути:
+         • кузов из VIN («G05») совпал со строкой карты CARS, выверенной аудитом;
+         • код КПП из VIN («0C8») БУКВАЛЬНО входит в имя нашей коробки («TR80SD 0C8»).
+       Путь «по модели» сознательно не используется: модель без поколения врёт. Живой пример —
+       Touareg CR7 (2018+, ZF 8HP): по слову «touareg» карта отдаёт 7L и 7P, то есть Aisin,
+       и менеджер получил бы не ту цену. Не сошлось — молчим, менеджер ищет как раньше. */
+    /* Как марку пишет каталог → как она записана в CARS. Написание у каталога своё и не
+       всегда одно и то же («MERCEDES-BENZ», «MERCEDES BENZ»), поэтому дефисы и пробелы
+       перед сверкой схлопываем: незнакомое написание молчит, а молчание здесь — потеря
+       коробки на ровном месте. */
+    const VIN_CAR_BRANDS = {
+      "BMW":"BMW", "AUDI":"Audi", "VOLKSWAGEN":"Volkswagen", "VW":"Volkswagen",
+      "SKODA":"Skoda", "ŠKODA":"Skoda", "PORSCHE":"Porsche",
+      "MERCEDESBENZ":"Mercedes-Benz", "MERCEDES":"Mercedes-Benz"
+    };
+    const vinBrandKey = s => String(s || "").toUpperCase().replace(/[^A-ZŠ]/g, "");
+    /* Запрос, который откроет в «Шаблонах» ровно эту машину. Берём САМЫЙ ДЛИННЫЙ токен её
+       строки («q7 4m», а не «q7»): поиск там выбирает самое точное совпадение, и короткий
+       токен вытащил бы заодно соседние поколения с чужой коробкой. Машин несколько —
+       общего точного запроса нет, отдаём модель как есть: пусть менеджер выберет глазами. */
+    const carsQuery = (list, prefer) => {
+      if(list.length !== 1) return "";
+      // латиница в приоритете: в строке поиска «a6 c8» понятнее, чем «ауди a6 c8», хотя
+      // работают оба — кириллические токены в карте есть для тех, кто набирает по-русски
+      const lat = list[0].match.filter(m => !/[а-яё]/.test(m));
+      const pool = lat.length ? lat : list[0].match;
+      // одна строка карты часто описывает две модели («A6 / A7»): для A7 показываем «a7 c8»,
+      // а не «a6 c8» — карточки те же, но менеджер не должен гадать, ту ли машину открыли
+      const mine = prefer ? pool.filter(m => m.split(/\s+/)[0] === prefer) : [];
+      return (mine.length ? mine : pool).reduce((a, b) => b.length > a.length ? b : a, "");
+    };
+    function vinBoxInfo(){
+      const c = (vin && vin.status === "ok" && vin.car) || null;
+      if(!c) return null;
+      const brand = VIN_CAR_BRANDS[vinBrandKey(c.brand)] || "";
+      const body  = String(c.body || "").trim();
+      const model = String(c.model || "").toLowerCase();
+      // «Q7 QUATTRO 3.0 TDI» → «q7»: запасной запрос к «Шаблонам», когда точного нет
+      const modelWord = model.split(/[\s,\/]+/)[0] || "";
+
+      /* Чем нашли машину — идёт в метку под коробкой и в запрос к «Шаблонам». Кузов точнее
+         модели, поэтому у него и запрос свой: «g05» покажет одно поколение, а «bmw x5» — все. */
+      let via = "", q = "";
+
+      // A) кузов → строки карты. Марку сверяем отдельно: короткий код кузова («DM», «BT»)
+      //    иначе цепляет чужую машину — у Hyundai и BMW бывают похожие обозначения.
+      let cars = (brand && body) ? carsMatching(body).filter(x => x.brand === brand) : [];
+      if(cars.length){ via = "кузов " + body; q = body; }
+
+      /* A2) кузов, КАК ЕГО ПИШЕТ КАТАЛОГ. У BMW и Mercedes код кузова из VIN («G05», «W205»)
+         совпадает с языком менеджера и уже лежит в match. У VAG он свой: каталог отдаёт «4MB»,
+         «CR7», «4KA», а менеджер ищет «q7 4m» и «туарег». Мешать их в match нельзя — поиск в
+         «Шаблонах» по «q7» обязан показывать ВСЕ поколения, — поэтому такие коды живут
+         отдельным полем vin.body и сверяются точным равенством, без границ токена. */
+      if(!cars.length && brand && body){
+        const b = body.toLowerCase();
+        cars = CARS.filter(x => x.brand === brand && x.vin && (x.vin.body || []).includes(b));
+        if(cars.length){ via = "кузов " + body; q = carsQuery(cars, modelWord) || modelWord; }
+      }
+
+      /* B) модель + ГОД. Кодов кузова у каталога сотни, и заранее их не выпишешь, а модель и
+         год он отдаёт всегда. Годы поколений уже стоят в карте (поле gen) — здесь они просто
+         в машиночитаемом виде. Год попал на стык поколений (Q7 4L «2005-2015» и 4M «2015+») —
+         остаются обе строки, и менеджер видит «сверить»: угадывать за него мы не будем. */
+      if(!cars.length && brand){
+        const year = Number(String(c.year || "").slice(0, 4)) || 0;
+        let byModel = model
+          ? CARS.filter(x => x.brand === brand && x.vin &&
+              (x.vin.model || []).some(m => carsToken(model, m)))
+          : [];
+        if(byModel.length > 1 && year){
+          const fit = byModel.filter(x => x.vin.years &&
+            year >= x.vin.years[0] && (x.vin.years[1] == null || year <= x.vin.years[1]));
+          if(fit.length) byModel = fit;
+        }
+        cars = byModel;
+        if(cars.length){ via = year ? "модель и год " + year : "модель"; q = carsQuery(cars, modelWord) || modelWord; }
+      }
+
+      // C) код коробки VAG из строки КПП («SUQ - 0D5» → 0D5). Считаем попаданием ТОЛЬКО
+      //    однозначное совпадение с именем коробки: два имени на один код — уже развилка.
+      let codeBox = "", code = "";
+      for(const m of (String(c.gearbox || "").toUpperCase().match(/\b0[A-Z0-9]{2}\b/g) || [])){
+        const hit = Object.keys(BOXES).filter(n => n.toUpperCase().includes(m));
+        if(hit.length === 1){ codeBox = hit[0]; code = m; break; }
+      }
+
+      if(!cars.length){
+        // машины в карте нет: код коробки — единственная опора, и он либо есть, либо молчим
+        return codeBox ? { boxes:[codeBox], sure:true, why:"код КПП " + code, q:codeBox } : null;
+      }
+
+      const boxes  = [...new Set(cars.flatMap(x => x.boxes || []))];
+      /* draft в карте — это НЕ «коробка под вопросом». У BMW G05 коробка одна (8HP45-76),
+         а draft стоит потому, что от версии зависит ВАРИАНТ карточки: 48V, блокировка диффа.
+         Поэтому уверенность считаем по числу коробок, а draft превращаем в примечание —
+         именно там менеджер и ошибается, выбирая карточку. */
+      const draft  = cars.some(x => x.draft);
+      /* Совпало несколько поколений (год на стыке) — вместо примечания одной строки
+         перечисляем их подписи: менеджеру важно не «что-то уточнить», а МЕЖДУ ЧЕМ выбирать. */
+      const noteAny = cars.length === 1 ? (cars[0].note || "")
+        : "Год попал на стык поколений: " + cars.map(x => x.gen).join(" / ") + ". Сверь по машине.";
+      // в обычной строке примечание нужно, только когда есть что решать: одна коробка без
+      // развилок говорит сама за себя, а лишний текст под каждой машиной перестают читать
+      const note   = (draft || boxes.length > 1 || cars.length > 1) ? noteAny : "";
+      const nocard = (cars.find(x => x.nocard) || {}).nocard || "";
+      /* Поколение, которое мы обслуживаем БЕЗ готовой карточки (nocard), в общий список
+         коробок не попадает — у него boxes пустой. Молча раствориться оно не должно:
+         Touareg 2018 — это и 7P на Aisin, и CR на ZF, и уверенное «TR80SD 0C8» здесь
+         означало бы не ту цену. Поэтому имя такой коробки встаёт в список наравне,
+         а уверенность снимается. То же с «не наша» вперемешку с нашими. */
+      const extra  = cars.filter(x => x.nocard && (x.boxes || []).length === 0).map(x => x.nocard);
+      const mixed  = (extra.length && boxes.length) || (cars.some(x => x.noservice) && !cars.every(x => x.noservice));
+      // «коробка не наша» — только когда ВСЕ совпавшие строки об этом говорят: одна машина
+      // из двух с роботом не повод отказывать клиенту, у которого автомат.
+      // Отказ и «карточки нет» показываем С примечанием всегда: менеджеру нужно, что сказать клиенту.
+      if(cars.every(x => x.noservice))
+        return { boxes:[], noservice:true, why:via, note:noteAny, q };
+      if(!boxes.length)
+        return { boxes:[], nocard, why:via, note:noteAny, q };
+
+      // код и карта сошлись — код ставит точку там, где карта давала развилку
+      if(codeBox && boxes.includes(codeBox) && !mixed)
+        return { boxes:[codeBox], sure:true, why:via + " + код " + code, note, q };
+      // поколения разной природы в одном году — показываем все и не выбираем за менеджера
+      if(mixed)
+        return { boxes: boxes.concat(extra), sure:false, why:via, note:noteAny, q };
+      // разошлись — не выбираем за менеджера: код встаёт в тот же список, метка «сверить»
+      if(codeBox)
+        return { boxes: boxes.concat([codeBox]), sure:false, why:via,
+                 note:"Каталог назвал код " + code + " (" + codeBox + "), а карта — другое. Сверь по поддону.", q };
+
+      return { boxes, sure: boxes.length === 1, why:via, note, q };
+    }
+
     /* Ключ подбора. Общий SHEET_TOKEN лежит открытым текстом в статике сайта, поэтому ручки
        vin и part закрыты ОТДЕЛЬНЫМ ключом (VIN_KEY в свойствах скрипта). Здесь он живёт только
        в localStorage конкретного устройства: менеджер вводит его один раз, дальше подставляется
@@ -6968,6 +7167,34 @@
       }
       const c = vin.car || {};
       const eSel = selId && byId(selId);              // запись этой машины в каталоге (заведена сама)
+      /* Строка «Коробка» стоит между машиной и фильтрами: сначала что за машина, потом её
+         коробка со шаблоном, потом расходники ТО. Молчит целиком, когда коробка не определена
+         (см. vinBoxInfo) — пустая строка «не знаю» только мешала бы. */
+      const vinBoxRow = () => {
+        const b = vinBoxInfo();
+        if(!b) return "";
+        const note = b.note ? `<div class="to-note to-box-note">${esc(b.note)}</div>` : "";
+        if(b.noservice)
+          return `<div class="to-box"><span class="to-box-cap">Коробка</span>
+            <b class="to-box-name">не наша</b>
+            <span class="to-src to-src--warn" title="Робот, электро или коробка вне ассортимента — по карте машин (${esc(b.why)})">не обслуживаем</span></div>${note}`;
+        if(!b.boxes.length)
+          return `<div class="to-box"><span class="to-box-cap">Коробка</span>
+            <b class="to-box-name">${esc(b.nocard || "уточнить")}</b>
+            <span class="to-src to-src--warn" title="Коробку обслуживаем, но готовой карточки нет — смета вручную">карточки нет</span></div>${note}`;
+        const names = b.boxes.map(esc).join(" · ");
+        const mark = b.sure
+          ? `<span class="to-src" title="Определено по разбору VIN: ${esc(b.why)}">${esc(b.why)}</span>`
+          : `<span class="to-src to-src--warn" title="Карта сузила круг, но точку ставит мотор или версия — сверь перед отправкой клиенту">сверить</span>`;
+        // без запроса кнопка открыла бы «Шаблоны» пустыми — тогда лучше её не рисовать вовсе
+        const go = !b.q ? "" :
+          `<button class="ui-btn ui-btn--secondary ui-btn--sm to-box-go" type="button" data-act="vin-tpl"
+            data-q="${esc(b.q)}" title="Открыть «Шаблоны» с ценой замены для этой машины"
+            >${ICO.arrow} ${b.boxes.length > 1 ? "Показать шаблоны" : "Открыть шаблон"}</button>`;
+        return `<div class="to-box"><span class="to-box-cap">Коробка</span>
+          <b class="to-box-name">${names}</b>${mark}${go}</div>${note}`;
+      };
+
       const spec = [["Кузов", c.body], ["Двигатель", c.engineFull || c.engine],
         ["Объём", Number(c.cc) > 0 ? (Number(c.cc) / 1000).toFixed(1) + " л" : ""],
         ["Топливо", vinFuel()], ["КПП", vinGearbox()], ["Привод", vinDrive()], ["Год", c.year]]
@@ -7040,6 +7267,7 @@
               aria-label="Убрать">${ICO.close}</button>
           </div>
           <div class="to-veh-spec">${spec}</div>
+          ${vinBoxRow()}
           <div class="to-pick">${rows}</div>
           <div class="to-note">Смета собрана ниже, машина уже в каталоге — заводить её руками не надо.
             ${Number(eSel && eSel.litres) > 0
@@ -7287,6 +7515,15 @@
       }
       else if(act === "vin-clear"){ vin = null; vinRecId = null; vinInp.value = ""; updateVin(); }
       else if(act === "vin-code"){ copyTo(b.dataset.code, b, "Номер скопирован"); }
+      /* Коробка этой машины → «Шаблоны» с её запросом. Тем же приёмом, что поиск цены на
+         Главной: переключаем вкладку и кладём запрос в общий #tpl-search — вся логика подбора
+         (варианты по c.allow, фильтры, «Итого») остаётся одна на портал. Фокус в поле НЕ ставим:
+         на телефоне он выбросил бы клавиатуру поверх только что открытых карточек. */
+      else if(act === "vin-tpl"){
+        showPage("shablony");
+        const ts = document.getElementById("tpl-search");
+        if(ts){ ts.value = b.dataset.q || ""; ts.dispatchEvent(new Event("input", { bubbles:true })); }
+      }
       else if(act === "vinkey-save"){ vinKeySave(); }
       else if(act === "vin-own"){                 // открыть поле «свой номер» и сразу дать печатать
         vinOwnEdit = b.dataset.slot; updateVin();
