@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>MOTUL-DRIVE · Касса</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='9%25' y1='21%25' x2='91%25' y2='79%25'><stop offset='50%25' stop-color='%23d11f2d'/><stop offset='50%25' stop-color='%23141414'/></linearGradient></defs><circle cx='32' cy='32' r='31' fill='url(%23g)'/><text x='32' y='34' font-family='Arial,Helvetica,sans-serif' font-size='26' font-weight='800' fill='%23fff' text-anchor='middle' dominant-baseline='central' letter-spacing='0.5'>MD</text></svg>">
+<meta name="theme-color" content="#d11f2d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  /* Тема до первой отрисовки — иначе светлая мигает перед тёмной (как в портале).
+     Ключ тот же, md_theme: домен один, выбор человека переезжает сюда сам. */
+  try { var t = localStorage.getItem("md_theme");
+        document.documentElement.setAttribute("data-theme", t === "dark" ? "dark" : "light"); } catch(e){}
+</script>
+<style>
+  /* =========================================================
+     КАССА — закрытый адрес /k/ для владельца и Алексея.
+     Здесь только продажи и копилки: владельцу оба канала, Алексею его «Масло».
+     Ни прайса, ни штрафов, ни заметок, ни общего токена портала — как на странице ямы,
+     и по той же причине: портал уезжает в браузер целиком, кому бы его ни дали.
+     Токены и компоненты повторяют дизайн-систему, но живут своей копией: страница
+     обязана открываться и работать сама по себе.
+     ========================================================= */
+  :root{
+    --font-disp:'Space Grotesk','Manrope',system-ui,sans-serif;
+    --font-text:'Manrope',system-ui,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,monospace;
+    --brand:#d11f2d; --brand-hover:#e6232f;
+  }
+  [data-theme="dark"]{
+    --bg:#0a0b0e; --card:#13151b; --card2:#1a1d24;
+    --line:rgba(255,255,255,.08);
+    --text:#f1f3f6; --muted:#8a909c;
+    --chip-bg:rgba(255,255,255,.06); --chip-text:#c2c7d0;
+    --fill:rgba(255,255,255,.04); --fill-hover:rgba(255,255,255,.07); --fill-soft:rgba(255,255,255,.03);
+    --shadow:0 16px 40px rgba(0,0,0,.5);
+    --accent-soft:#ff6b75; --open-border:rgba(255,75,87,.35);
+    --ok:#4cc38a; --ok-bg:rgba(76,195,138,.13);
+    --gate-bg:radial-gradient(900px 500px at 50% -10%, rgba(209,31,45,.28), transparent 60%), linear-gradient(165deg,#08090c,#11131a);
+  }
+  [data-theme="light"]{
+    --bg:#eef0f3; --card:#ffffff; --card2:#f6f7f9;
+    --line:#e6e8ec;
+    --text:#1f2430; --muted:#646b78;
+    --chip-bg:#f2f4f7; --chip-text:#5a6170;
+    --fill:#ffffff; --fill-hover:#eef1f5; --fill-soft:#f6f7f9;
+    --shadow:0 8px 24px rgba(20,25,40,.06);
+    --accent-soft:#d11f2d; --open-border:rgba(209,31,45,.4);
+    --ok:#1a7f4b; --ok-bg:rgba(26,127,75,.1);
+    --gate-bg:radial-gradient(900px 500px at 50% -10%, rgba(209,31,45,.28), transparent 60%), linear-gradient(165deg,#08090c,#11131a);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-text);
+    font-size:14px;line-height:1.5;-webkit-text-size-adjust:100%}
+  body.locked{overflow:hidden}
+  body.locked #app{filter:blur(8px);pointer-events:none;user-select:none}
+
+  /* ---------- Экран ключа ---------- */
+  /* Пароля на клиенте нет намеренно: гейт — это САМ ключ. Проверяет его сервер, а не JS
+     страницы, поэтому «подобрать в исходнике» тут нечего. */
+  #gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+    padding:20px;background:var(--gate-bg)}
+  body:not(.locked) #gate{display:none}
+  .gate-card{width:100%;max-width:380px;background:#13151b;border:1px solid #242831;border-radius:20px;
+    padding:34px 28px;box-shadow:0 24px 70px rgba(0,0,0,.7),0 0 60px rgba(209,31,45,.12);text-align:center;color:#e9ecf1}
+  .badge{position:relative;width:46px;height:46px;border-radius:50%;flex:none;
+    background:linear-gradient(125deg,#d11f2d 0 49.5%,#141414 50.5% 100%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 20px rgba(209,31,45,.35),inset 0 0 0 1px rgba(255,255,255,.14)}
+  .badge span{font-weight:800;font-size:16px;letter-spacing:.5px;color:#fff;font-family:var(--font-disp)}
+  .gate-card .badge{width:60px;height:60px;margin:0 auto 18px}
+  .gate-card .badge span{font-size:21px}
+  .gate-title{font-family:var(--font-disp);margin:0 0 6px;font-size:21px;font-weight:600}
+  .gate-sub{margin:0 0 24px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8b93a1}
+  #gate-key{width:100%;padding:14px;border-radius:12px;border:1px solid #2f3542;background:#0d0f14;color:#fff;
+    font-size:15px;font-family:inherit;outline:none;margin-bottom:12px;transition:border-color .15s}
+  #gate-key:focus{border-color:var(--brand)}
+  #gate-btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--brand);color:#fff;
+    font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;letter-spacing:.3px;
+    transition:background .15s,box-shadow .15s;box-shadow:0 0 20px rgba(209,31,45,.4)}
+  #gate-btn:hover{background:var(--brand-hover);box-shadow:0 0 28px rgba(209,31,45,.55)}
+  #gate-btn:active{transform:scale(.97)}
+  .gate-err{color:#ff6b73;font-size:13px;font-weight:600;margin-top:12px;min-height:16px}
+  .gate-foot{margin-top:22px;font-size:11px;font-weight:600;letter-spacing:.5px;color:#5b6270}
+
+  /* ---------- Шапка ---------- */
+  .top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:13px;
+    padding:12px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+  .top .tt{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .top .t1{font-family:var(--font-disp);font-weight:700;font-size:16px;letter-spacing:.2px}
+  .top .t2{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .theme-btn{margin-left:auto;flex:none;width:38px;height:38px;border-radius:11px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--fill);border:1px solid var(--line);color:var(--muted);transition:background .15s,color .15s}
+  .theme-btn:hover{background:var(--fill-hover);color:var(--text)}
+  .theme-btn:active{transform:scale(.95)}
+  .theme-btn svg{width:18px;height:18px}
+
+  .wrap{max-width:760px;margin:0 auto;padding:16px 16px 40px}
+
+  /* ---------- Строка состояния ---------- */
+  .bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .upd{font-size:12px;color:var(--muted)}
+  .rfr,.sel{font-family:inherit;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;
+    background:var(--fill);border:1px solid var(--line);border-radius:12px;padding:8px 14px;min-height:44px;
+    transition:background .15s}
+  .rfr:hover,.sel:hover{background:var(--fill-hover)}
+  .rfr:active{transform:scale(.95)}
+  .rfr[disabled]{opacity:.5;cursor:default}
+  .sel{margin-left:auto}
+
+  /* ---------- Вкладки каналов (у владельца их две, у Алексея одна и они скрыты) ---------- */
+  .tabs{display:flex;gap:8px;margin-bottom:14px}
+  .tab{flex:1;font-family:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;
+    background:var(--fill);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:44px;
+    transition:background .15s,color .15s,border-color .15s}
+  .tab:hover{background:var(--fill-hover)}
+  .tab.on{color:var(--text);border-color:var(--open-border);background:var(--card)}
+  .tab:active{transform:scale(.98)}
+
+  /* ---------- Копилка ---------- */
+  .kop{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;
+    box-shadow:var(--shadow);margin-bottom:16px}
+  .kop-k{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  /* Цифра копилки — она же скрытая калитка: долгое нажатие открывает действия, которые
+     прислал сервер. Выделение и системное меню на ней гасим, иначе долгий тап на телефоне
+     превращается в «копировать/поделиться». */
+  .kop-v{font-family:var(--font-disp);font-size:34px;font-weight:800;letter-spacing:-.5px;margin:2px 0 4px;
+    user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:default}
+  .kop-v.neg{color:var(--accent-soft)}
+  .kop.empty .kop-v{color:var(--muted)}
+  .kop-sub{font-size:12px;color:var(--muted)}
+
+  /* Панель действий: пустая и невидимая, пока сервер не пришлёт список и пока его не позвали. */
+  .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .acts[hidden]{display:none}
+  .act{font-family:inherit;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;
+    background:var(--fill-soft);border:1px solid var(--line);border-radius:12px;padding:10px 14px;min-height:44px;
+    transition:background .15s}
+  .act:hover{background:var(--fill-hover)}
+  .act:active{transform:scale(.96)}
+  .act-note{width:100%;font-size:12px;color:var(--muted);min-height:16px}
+  .act-note.ok{color:var(--ok)}
+  .act-note.bad{color:var(--accent-soft)}
+
+  /* ---------- Лента ---------- */
+  .row{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--card);
+    border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+  .row .d{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--muted);flex:none;width:64px}
+  .row .q{font-size:12px;color:var(--muted);flex:none}
+  .row .s{margin-left:auto;font-family:var(--font-disp);font-weight:700;font-size:15px}
+  .row.we{background:var(--fill-soft)}
+  .op{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;margin-bottom:8px;
+    background:rgba(209,31,45,.06);border:1px solid var(--open-border);
+    font-weight:700;font-size:13px;color:var(--accent-soft)}
+  .op.spend{background:var(--fill-soft);border-color:var(--line);color:var(--text)}
+  .op .when{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;
+    text-transform:uppercase;color:var(--muted);font-weight:600}
+  .empty{padding:26px 16px;text-align:center;color:var(--muted);font-size:13px;
+    background:var(--card);border:1px solid var(--line);border-radius:12px}
+  .note{margin-top:14px;font-size:12px;color:var(--muted);min-height:18px}
+  .foot{margin-top:28px;text-align:center}
+  .forget{font-family:inherit;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;
+    background:none;border:none;text-decoration:underline;padding:8px}
+  .forget:hover{color:var(--text)}
+</style>
+</head>
+<body class="locked">
+
+<div id="gate">
+  <div class="gate-card">
+    <div class="badge"><span>MD</span></div>
+    <h1 class="gate-title">Касса</h1>
+    <p class="gate-sub">Доступ по ключу</p>
+    <form id="gate-form" autocomplete="off">
+      <input id="gate-key" type="password" inputmode="text" placeholder="Ключ доступа" autocomplete="off">
+      <button id="gate-btn" type="submit">Войти</button>
+    </form>
+    <div class="gate-err" id="gate-err"></div>
+    <div class="gate-foot">MOTUL-DRIVE</div>
+  </div>
+</div>
+
+<main id="app">
+  <header class="top">
+    <div class="badge"><span>MD</span></div>
+    <div class="tt">
+      <span class="t1">Касса</span>
+      <span class="t2" id="sub">Продажи и копилка</span>
+    </div>
+    <button class="theme-btn" id="theme-btn" type="button" aria-label="Сменить тему"></button>
+  </header>
+
+  <div class="wrap">
+    <div class="tabs" id="tabs" hidden></div>
+
+    <div class="kop" id="kop" hidden>
+      <div class="kop-k" id="kop-k"></div>
+      <div class="kop-v" id="kop-v"></div>
+      <div class="kop-sub" id="kop-sub"></div>
+      <div class="acts" id="acts" hidden></div>
+    </div>
+
+    <div class="bar">
+      <span class="upd" id="upd"></span>
+      <select class="sel" id="month" aria-label="Месяц" hidden></select>
+      <button class="rfr" id="refresh" type="button">Обновить</button>
+    </div>
+
+    <div id="list"></div>
+    <div class="note" id="note"></div>
+
+    <div class="foot">
+      <button class="forget" id="forget" type="button">Забыть ключ на этом устройстве</button>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ===================== КАССА — закрытый адрес /k/ =====================
+   Что здесь есть: продажи по дням, копилка «К выводу», выводы и расходы. Владельцу —
+   оба канала, Алексею — только его «Масло». Чего здесь нет: прайса, штрафов, заметок,
+   ямы и общего токена портала.
+
+   Доступ. Ключ вводится один раз и живёт в localStorage этого браузера; он же уходит на
+   бэкенд в каждом запросе. Проверяет его Apps Script — неверный ключ получает честный
+   {error:"key"}, после которого страница снова просит ключ. Ссылка вида …/k/#k=КЛЮЧ
+   подхватывается и стирается из адреса, чтобы не осела в истории браузера.
+
+   Состав страницы приходит С СЕРВЕРА: какие каналы показать и какие действия существуют.
+   Поэтому в этом файле нет ни одной кнопки корректировки — есть только рендер того, что
+   прислали. Файл читается любым, кто нашёл адрес; знать из него, что бывает иначе, нельзя.
+
+   Данные на устройстве НЕ кэшируем (в отличие от портала и ямы): страница нужна редко и
+   всегда онлайн, а деньги двух каналов в localStorage чужого телефона — лишний след. Нет
+   связи — честно говорим об этом, а не показываем вчерашние суммы. */
+(function(){
+  var API  = "https://script.google.com/macros/s/AKfycbwGxC7-EvzNs9Fv47tcR5iDUwCFEUVz_Y3ToWld1tOXR8pip2rHLeCThUm2yL0f5tie/exec";
+  var KKEY = "md_cash_key";
+  var WD   = ["вс","пн","вт","ср","чт","пт","сб"];
+  var MON  = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+  var MONF = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль",
+              "Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+
+  var tabsEl = document.getElementById("tabs");
+  var kopEl  = document.getElementById("kop");
+  var kopK   = document.getElementById("kop-k");
+  var kopV   = document.getElementById("kop-v");
+  var kopS   = document.getElementById("kop-sub");
+  var actsEl = document.getElementById("acts");
+  var listEl = document.getElementById("list");
+  var updEl  = document.getElementById("upd");
+  var monEl  = document.getElementById("month");
+  var rfrEl  = document.getElementById("refresh");
+  var noteEl = document.getElementById("note");
+  var subEl  = document.getElementById("sub");
+  var keyInp = document.getElementById("gate-key");
+  var errEl  = document.getElementById("gate-err");
+
+  var data = null, seq = 0, busy = false, curCh = 0, selMonth = null, actsOn = false;
+  var nf = new Intl.NumberFormat("ru-RU");
+  function money(v){ return nf.format(Math.round(v)) + " ₽"; }
+  function esc(s){ return String(s).replace(/[&<>"']/g, function(c){
+    return ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[c]; }); }
+  function parse(ds){ var p = String(ds).split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function mkey(dt){ return dt.getFullYear() * 12 + dt.getMonth(); }
+  function ls(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+  function lsSet(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+  function lsDel(k){ try { localStorage.removeItem(k); } catch(e){} }
+
+  /* ---------- тема ---------- */
+  var ICO_SUN  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  var ICO_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+  function paintTheme(){
+    var dark = document.documentElement.getAttribute("data-theme") === "dark";
+    document.getElementById("theme-btn").innerHTML = dark ? ICO_SUN : ICO_MOON;
+  }
+  document.getElementById("theme-btn").addEventListener("click", function(){
+    var dark = document.documentElement.getAttribute("data-theme") === "dark";
+    document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+    lsSet("md_theme", dark ? "light" : "dark");
+    paintTheme();
+  });
+  paintTheme();
+
+  /* ---------- ключ доступа ---------- */
+  function keyGet(){ return ls(KKEY) || ""; }
+  function keySet(v){ if(v) lsSet(KKEY, v); else lsDel(KKEY); }
+
+  // ссылка вида …/k/#k=КЛЮЧ: подхватываем и сразу стираем хэш из адресной строки
+  (function(){
+    var m = String(location.hash || "").match(/[#&]k=([^&]+)/);
+    if(!m) return;
+    var v = m[1];
+    try { v = decodeURIComponent(v); } catch(e){}
+    keySet(v.trim());
+    try { history.replaceState(null, "", location.pathname + location.search); }
+    catch(e){ location.hash = ""; }
+  })();
+
+  var GATE_MSG = {
+    key:    "Ключ не подошёл.",
+    keyoff: "Доступ пока не включён на стороне сервиса.",
+    rate:   "Сервис на паузе из-за частых запросов. Попробуйте через час."
+  };
+  function lock(msg){
+    document.body.classList.add("locked");
+    errEl.textContent = msg || "";
+    setTimeout(function(){ try { keyInp.focus(); } catch(e){} }, 60);
+  }
+  function unlock(){ document.body.classList.remove("locked"); errEl.textContent = ""; }
+
+  document.getElementById("gate-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var v = keyInp.value.trim();
+    if(!v){ errEl.textContent = "Введите ключ."; return; }
+    keySet(v);
+    errEl.textContent = "Проверяем…";
+    load(true);
+  });
+  document.getElementById("forget").addEventListener("click", function(){
+    if(!confirm("Забыть ключ на этом устройстве? Чтобы вернуться, ключ придётся ввести заново.")) return;
+    keySet(""); keyInp.value = ""; data = null; lock("");
+  });
+  document.getElementById("refresh").addEventListener("click", function(){ load(false); });
+
+  /* ---------- счёт ---------- */
+  // «К выводу» считается ровно как в портале: старт + все продажи (дни + агрегаты) −
+  // выводы и расходы. Старт приходит с сервера уже с учётом корректировок.
+  function daysOf(ch){
+    var names = (ch.sales && ch.sales.names) || null;
+    return ((ch.sales && ch.sales.days) || []).map(function(d){
+      var orders = (d.orders || []).map(function(o){
+        return (names && o.length > 4 && typeof o[4] === "number") ? [o[0], o[1], o[2], o[3], names[o[4]] || ""] : o;
+      });
+      var qty = 0, sum = 0;
+      orders.forEach(function(o){ qty += Number(o[1]) || 0; sum += Number(o[2]) || 0; });
+      return { dt: parse(d.date), orders: orders, qty: qty, sum: sum };
+    }).filter(function(d){ return !isNaN(d.dt.getTime()); });
+  }
+  function aggOf(ch){
+    return ((ch.sales && ch.sales.agg) || []).map(function(a){
+      return { m: String(a.m || ""), qty: Number(a.qty) || 0, sum: Number(a.sum) || 0 };
+    }).filter(function(a){ return /^\d{4}-\d{2}$/.test(a.m); });
+  }
+  function opsOf(ch){
+    return (ch.ops || []).map(function(o){
+      return { dt: parse(o.date), amount: Number(o.amount) || 0, time: o.time || "",
+               kind: (o.kind === "spend" ? "spend" : "wd"), note: String(o.note || "") };
+    }).filter(function(o){ return !isNaN(o.dt.getTime()); }).sort(function(a,b){ return a.dt - b.dt; });
+  }
+  function potOf(ch){
+    var sum = 0;
+    daysOf(ch).forEach(function(d){ sum += d.sum; });
+    aggOf(ch).forEach(function(a){ sum += a.sum; });
+    opsOf(ch).forEach(function(o){ sum -= o.amount; });
+    var pot = Math.round((Number(ch.opening) || 0) + sum);
+    return ch.key === "flush" ? Math.max(0, pot) : pot;   // у промывки минуса не бывает, как в портале
+  }
+
+  /* ---------- рендер ---------- */
+  function render(){
+    if(!data || !data.channels || !data.channels.length){
+      kopEl.hidden = true; tabsEl.hidden = true; monEl.hidden = true;
+      listEl.innerHTML = '<div class="empty">Данных нет.</div>';
+      return;
+    }
+    if(curCh >= data.channels.length) curCh = 0;
+    var ch = data.channels[curCh];
+    subEl.textContent = data.channels.length > 1 ? "Продажи и копилки" : ("Продажи · " + (ch.title || ""));
+
+    // вкладки — только когда каналов больше одного
+    tabsEl.hidden = data.channels.length < 2;
+    if(!tabsEl.hidden){
+      tabsEl.innerHTML = data.channels.map(function(c, i){
+        return '<button class="tab' + (i === curCh ? " on" : "") + '" type="button" data-i="' + i + '">' +
+               esc(c.title || c.key) + (c.person ? " · " + esc(c.person) : "") + '</button>';
+      }).join("");
+    }
+
+    // копилка
+    var pot = potOf(ch);
+    var ops = opsOf(ch);
+    var wds = ops.filter(function(o){ return o.kind === "wd"; });
+    var lastW = wds.length ? wds[wds.length - 1] : null;
+    kopEl.hidden = false;
+    kopEl.className = "kop" + (pot === 0 ? " empty" : "");
+    kopK.textContent = "К выводу на сегодня" + (ch.person ? " · " + ch.person : "");
+    kopV.textContent = money(pot);
+    kopV.className = "kop-v" + (pot < 0 ? " neg" : "");
+    kopS.textContent = lastW
+      ? ("Прошлый вывод: " + when(lastW) + " — " + money(lastW.amount) + ".")
+      : "Выводов ещё не было.";
+    renderActs(ch);
+
+    updEl.textContent = (ch.sales && ch.sales.updated) ? ("Обновлено: " + ch.sales.updated) : "";
+
+    // месяцы: продажи + операции + агрегаты + текущий
+    var days = daysOf(ch), agg = aggOf(ch), map = {};
+    days.forEach(function(d){ map[mkey(d.dt)] = { y:d.dt.getFullYear(), m:d.dt.getMonth() }; });
+    ops.forEach(function(o){ map[mkey(o.dt)] = { y:o.dt.getFullYear(), m:o.dt.getMonth() }; });
+    agg.forEach(function(a){ map[Number(a.m.slice(0,4)) * 12 + (Number(a.m.slice(5,7)) - 1)] =
+      { y:Number(a.m.slice(0,4)), m:Number(a.m.slice(5,7)) - 1 }; });
+    var now = new Date(); map[mkey(now)] = { y:now.getFullYear(), m:now.getMonth() };
+    var keys = Object.keys(map).map(Number).sort(function(a,b){ return b - a; });
+    if(selMonth == null || !map[selMonth]) selMonth = keys[0];
+    monEl.hidden = false;
+    monEl.innerHTML = keys.map(function(k){
+      return '<option value="' + k + '"' + (k === selMonth ? " selected" : "") + '>' +
+             MONF[map[k].m] + " " + map[k].y + '</option>';
+    }).join("");
+
+    // лента выбранного месяца: дни продаж и операции того же дня после них
+    var unit = ch.unit || "шт";
+    var items = days.filter(function(d){ return mkey(d.dt) === selMonth; })
+      .map(function(d){ return { t:"day", dt:d.dt, d:d }; })
+      .concat(ops.filter(function(o){ return mkey(o.dt) === selMonth; })
+        .map(function(o){ return { t:o.kind, dt:o.dt, o:o }; }))
+      .sort(function(a,b){ return (a.dt - b.dt) || ((a.t === "day" ? 0 : 1) - (b.t === "day" ? 0 : 1)); });
+
+    var aggSel = agg.filter(function(a){
+      return Number(a.m.slice(0,4)) * 12 + (Number(a.m.slice(5,7)) - 1) === selMonth; })[0];
+
+    if(!items.length && !aggSel){
+      listEl.innerHTML = '<div class="empty">В этом месяце продаж не было.</div>';
+      return;
+    }
+    var html = items.map(function(it){
+      if(it.t === "day"){
+        var d = it.d, wd = d.dt.getDay();
+        return '<div class="row' + (wd === 0 || wd === 6 ? " we" : "") + '">' +
+               '<span class="d">' + d.dt.getDate() + " " + MON[d.dt.getMonth()] + " · " + WD[wd] + '</span>' +
+               '<span class="q">' + nf.format(d.qty) + " " + esc(unit) + '</span>' +
+               '<span class="s">' + money(d.sum) + '</span></div>';
+      }
+      var o = it.o;
+      return '<div class="op' + (o.kind === "spend" ? " spend" : "") + '">' +
+             '<span>' + (o.kind === "spend" ? "Расход — −" : "Вывод — ") + money(o.amount) + '</span>' +
+             (o.note ? '<span class="q">' + esc(o.note) + '</span>' : "") +
+             '<span class="when">' + when(o) + '</span></div>';
+    }).join("");
+    if(aggSel) html = '<div class="row"><span class="d">за месяц</span><span class="q">' +
+      nf.format(aggSel.qty) + " " + esc(unit) + '</span><span class="s">' + money(aggSel.sum) + '</span></div>' + html;
+    listEl.innerHTML = html;
+  }
+  function when(o){
+    return o.dt.getDate() + " " + MON[o.dt.getMonth()] + (o.time ? " · " + o.time : "");
+  }
+
+  tabsEl.addEventListener("click", function(e){
+    var b = e.target.closest(".tab"); if(!b) return;
+    curCh = Number(b.getAttribute("data-i")) || 0;
+    selMonth = null; hideActs();
+    render();
+  });
+  monEl.addEventListener("change", function(){ selMonth = Number(monEl.value); render(); });
+
+  /* ---------- действия (то, что прислал сервер) ----------
+     Кнопки не висят на экране: их открывает долгое нажатие на цифру копилки. Нет прав —
+     нет и списка действий, поэтому жест не делает ровно ничего. */
+  function renderActs(ch){
+    var acts = (data && data.actions) || [];
+    if(!acts.length || !actsOn){ actsEl.hidden = true; actsEl.innerHTML = ""; return; }
+    actsEl.hidden = false;
+    actsEl.innerHTML = acts.map(function(a){
+      return '<button class="act" type="button" data-id="' + esc(a.id) + '">' + esc(a.label || a.id) + '</button>';
+    }).join("") + '<div class="act-note" id="act-note"></div>';
+  }
+  function hideActs(){ actsOn = false; actsEl.hidden = true; actsEl.innerHTML = ""; }
+  function actNote(msg, cls){
+    var el = document.getElementById("act-note");
+    if(el){ el.textContent = msg || ""; el.className = "act-note" + (cls ? " " + cls : ""); }
+  }
+
+  (function(){
+    var timer = null;
+    function start(){
+      if(timer) return;
+      timer = setTimeout(function(){
+        timer = null;
+        if(!data || !(data.actions || []).length) return;   // прав нет — жест немой
+        actsOn = !actsOn;
+        renderActs(data.channels[curCh]);
+      }, 700);
+    }
+    function stop(){ if(timer){ clearTimeout(timer); timer = null; } }
+    kopV.addEventListener("mousedown", start);
+    kopV.addEventListener("touchstart", start, { passive:true });
+    ["mouseup","mouseleave","touchend","touchcancel","touchmove"].forEach(function(ev){
+      kopV.addEventListener(ev, stop);
+    });
+    kopV.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+  })();
+
+  actsEl.addEventListener("click", function(e){
+    var b = e.target.closest(".act"); if(!b) return;
+    var id = b.getAttribute("data-id");
+    var ch = data.channels[curCh];
+    if(id === "in")   return askAdj(ch, "in");
+    if(id === "back") return askAdj(ch, "back");
+  });
+
+  function askAdj(ch, op){
+    var back = op === "back";
+    var can  = Number(ch.adjSum) || 0;
+    if(back && can <= 0){ actNote("Возвращать нечего.", "bad"); return; }
+    var s = prompt(back ? ("Вернуть обратно, ₽ (доступно " + money(can) + "):")
+                        : "Внести в копилку «" + (ch.title || ch.key) + "», ₽:",
+                   back ? String(can) : "");
+    if(s == null) return;
+    var amount = Math.round(Number(String(s).replace(/[^\d.-]/g, "")));
+    if(!isFinite(amount) || amount <= 0){ actNote("Сумма не понята.", "bad"); return; }
+    if(back && amount > can){ actNote("Больше внесённого вернуть нельзя.", "bad"); return; }
+    var was = potOf(ch);
+    var will = back ? was - amount : was + amount;
+    if(!confirm((back ? "Вернуть " : "Внести ") + money(amount) + " — «" + (ch.title || ch.key) + "».\n" +
+                "Копилка: " + money(was) + " → " + money(will) + "."))  return;
+    sendAdj(ch, op, amount, will);
+  }
+
+  /* Отправка: ответ no-cors прочитать нельзя (как в портале и на странице ямы), поэтому
+     правду приносит перечитка — сверяем копилку с ожидаемой. adjId постоянный на одну
+     операцию: сервер дедуплицирует, повтор при обрыве связи не удваивает сумму. */
+  function sendAdj(ch, op, amount, will){
+    var key = keyGet(); if(!key) return;
+    var adjId = "a" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    actNote("Отправляю…");
+    fetch(API, { method:"POST", mode:"no-cors",
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify({ key:key, kind:"cash-adj", ch:ch.key, op:op, amount:amount, adjId:adjId }) })
+      .then(function(){ setTimeout(function(){ load(false, function(){
+        var now = potOf(data.channels[curCh]);
+        if(now === will) actNote("Готово: " + money(now) + ".", "ok");
+        else actNote("Не прошло — копилка прежняя (" + money(now) + ").", "bad");
+      }); }, 2500); })
+      .catch(function(){ actNote("Связи нет — не отправлено.", "bad"); });
+  }
+
+  /* ---------- загрузка (JSONP: Apps Script не отдаёт CORS) ---------- */
+  function load(fromGate, after){
+    var key = keyGet();
+    if(!key){ lock(""); return; }
+    if(busy) return;
+    busy = true; rfrEl.disabled = true;
+    var cb = "__cash_" + (++seq);
+    var s = document.createElement("script");
+    var done = false;
+    function finish(){
+      done = true; busy = false; rfrEl.disabled = false;
+      try { delete window[cb]; } catch(e){ window[cb] = undefined; }
+      if(s.parentNode) s.parentNode.removeChild(s);
+    }
+    function fail(){
+      if(done) return;
+      finish();
+      // поздний ответ позовёт колбэк, которого уже нет — оставляем заглушку, убирающую себя
+      window[cb] = function(){ try { delete window[cb]; } catch(e){ window[cb] = undefined; } };
+      if(fromGate) lock("Сервис не отвечает. Проверьте интернет и попробуйте ещё раз.");
+      else noteEl.textContent = "Связи нет — данные не обновились.";
+    }
+    window[cb] = function(j){
+      if(done) return;
+      finish();
+      if(j && j.error){
+        // ключ не подошёл — на устройстве его не держим: иначе «просто не работает» без причины
+        if(j.error === "key" || j.error === "keyoff"){ keySet(""); data = null; lock(GATE_MSG[j.error]); return; }
+        if(data){ noteEl.textContent = GATE_MSG[j.error] || "Сервис временно недоступен."; return; }
+        lock(GATE_MSG[j.error] || "Сервис временно недоступен. Попробуйте позже.");
+        return;
+      }
+      if(!j || !Array.isArray(j.channels)){
+        if(fromGate) lock("Сервис ответил непонятным. Попробуйте позже.");
+        else noteEl.textContent = "Сервис ответил непонятным.";
+        return;
+      }
+      data = j; noteEl.textContent = "";
+      unlock(); render();
+      if(after) after();
+    };
+    s.onerror = fail;
+    setTimeout(fail, 15000);      // JSONP не умеет таймаутов сам
+    s.src = API + "?type=cash&key=" + encodeURIComponent(key) + "&callback=" + cb + "&t=" + Date.now();
+    document.head.appendChild(s);
+  }
+
+  if(keyGet()) load(false); else lock("");
+})();
+</script>
+</body>
+</html>

@@ -4824,7 +4824,9 @@
 
     /* ==== Каналы: «Промывка» (владелец) и «Масло» (Алексей). Канал — параметр рендера.
        У каждого свои данные, копилка, settled/busy-гейты, выбранный месяц и кэши.
-       opening — старт копилки (касса до системы, спишется первым выводом; 0 = выкл). ==== */
+       opening — старт копилки (касса до системы, спишется первым выводом; 0 = выкл). Живёт
+       на сервере (OPENING_BASE в копилка-apps-script.gs) и приходит ответом копилки; числа
+       ниже — фолбэк на первый запуск без сети и без кэша, держи их равными серверным. ==== */
     const CH = {
       flush: {
         key:"flush", person:null, opening:17600, allowSpend:false, clampZero:true, unit:"шт",
@@ -4953,6 +4955,15 @@
                    "копилка", "withdraw", data => {
         let dirty = false;
         if(data && Array.isArray(data.withdrawals)){ CH.flush.ops = data.withdrawals; saveLS("md_withdrawals", data.withdrawals); dirty = true; }
+        // старт копилок («касса до системы») живёт на сервере и приходит этим ответом;
+        // поля нет (старый бэкенд) — остаёмся на своём числе, мусор не берём: NaN обнулил бы «К выводу»
+        if(data && data.opening && typeof data.opening === "object"){
+          const so = Number(data.opening.flush), oo = Number(data.opening.oil);
+          if(isFinite(so)) CH.flush.opening = so;
+          if(isFinite(oo)) CH.oil.opening   = oo;
+          saveLS("md_opening", { flush: CH.flush.opening, oil: CH.oil.opening });
+          dirty = true;
+        }
         if(data && Array.isArray(data.oilOps)){    // поле есть ТОЛЬКО у нового бэкенда: отсутствие ≠ «пусто», кэш не трогаем
           CH.oil.ops = data.oilOps; saveLS("md_oil_ops", data.oilOps);
           if(!CH.oil.connected){ CH.oil.connected = true; try { localStorage.setItem("md_oil_connected", "1"); } catch(e){} }
@@ -5270,6 +5281,10 @@
     try { const c = JSON.parse(localStorage.getItem("md_withdrawals") || "null"); if(Array.isArray(c)) CH.flush.ops = c; } catch(e){}
     try { const c = JSON.parse(localStorage.getItem("md_oil_ops") || "null"); if(Array.isArray(c)) CH.oil.ops = c; } catch(e){}
     try { const c = JSON.parse(localStorage.getItem("md_oil_pending") || "null"); if(Array.isArray(c)) CH.oil.pend = c; } catch(e){} // не усекаем: молча терять денежные записи нельзя
+    // старт копилок из прошлого ответа сервера: до первой загрузки копилка считается по нему, а не по константам
+    try { const c = JSON.parse(localStorage.getItem("md_opening") || "null");
+          if(c && typeof c === "object"){ const s = Number(c.flush), o = Number(c.oil);
+            if(isFinite(s)) CH.flush.opening = s; if(isFinite(o)) CH.oil.opening = o; } } catch(e){}
     // без этого кэша первый кадр каждой перезагрузки — июльский снимок (резерв SALES заморожен 04.07.2026)
     try { const j = JSON.parse(localStorage.getItem("md_sales_flush") || "null"); if(j && Array.isArray(j.days)){ CH.flush.data = j; CH.flush.rank = 2; } } catch(e){}
     try { const j = JSON.parse(localStorage.getItem("md_sales_oil") || "null"); if(j && Array.isArray(j.days)){ CH.oil.data = j; CH.oil.rank = 2; } } catch(e){}
