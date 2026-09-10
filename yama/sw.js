@@ -7,15 +7,19 @@
    кэши с этим префиксом, кроме своего, — и снёс бы заодно наш.
 
    Стратегия та же, что у портала: network-first (свежий деплой доходит до онлайн-мастера),
-   кэш — страховка на офлайн. Меняешь yama.html — подними версию ниже. */
-const CACHE = "md-yama-v3";
+   кэш — страховка на офлайн. Меняешь yama.html — подними версию ниже.
+
+   Версия семантическая, как у портала: МАЖОР.МИНОР.ПАТЧ (мелкое / заметное / крупное),
+   у ямы свой счёт. Литералом в одну строку — deploy.ps1 ищет её регуляркой в тексте файла.
+   NOTE — строка «что нового» для плашки обновления, меняется вместе с версией. */
+const CACHE = "md-yama-v1.0.0";
+const VERSION = CACHE.replace("md-yama-v", "");
+const NOTE = "Страница сама сообщает о новых версиях";
 
 self.addEventListener("install", e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.add("./"))
-      .then(() => self.skipWaiting())
-      .catch(() => self.skipWaiting())
-  );
+  /* Без skipWaiting намеренно: мастер обновляется сам, кнопкой в плашке, а не посреди работы.
+     Первую установку это не задерживает — вытеснять пока некого. */
+  e.waitUntil(caches.open(CACHE).then(c => c.add("./")).catch(() => {}));
 });
 
 self.addEventListener("activate", e => {
@@ -24,6 +28,18 @@ self.addEventListener("activate", e => {
       .then(keys => Promise.all(keys.filter(k => k.startsWith("md-yama-") && k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
+});
+
+/* Разговор со страницей (плашка обновления), один в один с порталом:
+   version → кто мы по версии и что нового; apply-update → мастер нажал «Обновить». */
+self.addEventListener("message", e => {
+  const type = e.data && e.data.type;
+  if (type === "version") {
+    const port = e.ports && e.ports[0];
+    if (port) port.postMessage({ version: VERSION, note: NOTE });
+  } else if (type === "apply-update") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("fetch", e => {

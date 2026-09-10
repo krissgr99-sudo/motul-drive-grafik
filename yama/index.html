@@ -95,6 +95,24 @@
   .theme-btn:active{transform:scale(.95)}
   .theme-btn svg{width:18px;height:18px}
 
+  /* Плашка «вышло обновление» — то же, что в портале (класс тот же, .newver), но НЕ липкая:
+     шапка .top здесь сама липкая и однострочная, вставить плашку внутрь нечем, а два липких
+     элемента подряд наезжают друг на друга. Стоит первой строкой над шапкой: мастер видит её,
+     когда открывает страницу и когда возвращается к её началу — и не видит, пока листает журнал. */
+  .newver{background:var(--card2);border-bottom:1px solid var(--line)}
+  .newver[hidden]{display:none}
+  .newver-inner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    max-width:860px;margin:0 auto;padding:10px 16px;font-size:13px}
+  .newver-ico{display:flex;flex:none;color:var(--accent-soft)}
+  .newver-ico svg{width:17px;height:17px;display:block}
+  /* Одна строка: лишнее режет «что нового» многоточием, а не переносит плашку на второй этаж. */
+  .newver-text{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:nowrap;overflow:hidden}
+  .newver-text b{font-weight:700;color:var(--text);white-space:nowrap;flex:none}
+  .newver-ver{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;flex:none}
+  .newver-note{color:var(--muted);flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .newver-go{margin-left:auto;background:var(--brand);border-color:var(--brand);color:#fff}
+  .newver-go:hover{background:var(--brand-hover)}
+
   .wrap{max-width:860px;margin:0 auto;padding:16px 16px 40px}
 
   /* ---------- Строка состояния ---------- */
@@ -182,6 +200,12 @@
     .ymaster{flex:1 1 auto;min-width:0;max-width:none;min-height:44px}
     .ysum{margin-left:auto;align-self:center}
     .sel,.rfr{min-height:40px}
+    /* плашка обновления: в 375px строка «что нового» вытесняет кнопки — прячем её,
+       кнопки держим хитом ≥44px (мастер жмёт в перчатке) */
+    .newver-inner{padding:10px 12px;gap:8px;flex-wrap:nowrap}
+    .newver-note{display:none}
+    .newver-text{flex-direction:column;align-items:flex-start;gap:1px}
+    .newver-go,.newver-later{min-height:44px}
   }
 </style>
 <script>(function(){try{var t=localStorage.getItem('md_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
@@ -222,6 +246,23 @@
 </div>
 
 <main id="app">
+
+  <!-- Плашка «вышло обновление»: страница не перезагружается сама — мастер дожимает свою
+       машину и жмёт кнопку. Кнопка короткая: в 375px «Обновить страницу» ломалось на две строки, а спутать её с
+       «Обновить» из строки состояния не даёт заголовок «Вышло обновление» над ней. -->
+  <div class="newver" id="newver" hidden role="status" aria-live="polite">
+    <div class="newver-inner">
+      <span class="newver-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.6 8a5.6 5.6 0 1 1-1.7-4"/><path d="M13.8 1.8v3.4h-3.4"/></svg></span>
+      <span class="newver-text">
+        <b>Вышло обновление</b>
+        <span class="newver-ver" id="newver-ver"></span>
+        <span class="newver-note" id="newver-note"></span>
+      </span>
+      <button class="rfr newver-go" id="newver-go" type="button">Обновить</button>
+      <button class="rfr newver-later" id="newver-later" type="button">Позже</button>
+    </div>
+  </div>
+
   <header class="top">
     <div class="badge"><span>MD</span></div>
     <div class="tt">
@@ -618,12 +659,99 @@
 
 /* PWA: свой service worker в своей папке (scope /yama/) — офлайн и ярлык на телефоне.
    Имя кэша НЕ начинается с "motul-drive-": SW портала при активации сносит все кэши с этим
-   префиксом, кроме своего, и снёс бы заодно наш. */
-if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
-  window.addEventListener("load", function(){
-    navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(function(){});
+   префиксом, кроме своего, и снёс бы заодно наш.
+
+   Он же — плашка «вышло обновление» (09.09.2026), код тот же, что в портале: держим их синхронно.
+   Новая версия страницы приезжает вместе с новым sw.js (пара килобайт — дёшево перепроверять).
+   По стандарту она ждёт в очереди (registration.waiting) и вытесняет работающую только по нашей
+   команде: мастера нельзя выдёргивать посреди машины. Спрашиваем у обеих версий их номер (семвер
+   в sw.js), показываем «было → стало», перезагружаемся ТОЛЬКО по кнопке. */
+(function(){
+  if(!("serviceWorker" in navigator) || location.protocol.indexOf("http") !== 0) return;
+
+  var bar = document.getElementById("newver");
+  var elVer = document.getElementById("newver-ver"), elNote = document.getElementById("newver-note");
+  var btnGo = document.getElementById("newver-go"), btnLater = document.getElementById("newver-later");
+  if(!bar || !btnGo || !btnLater) return;
+
+  var CHECK_MS = 30 * 60 * 1000;   // страница висит всю смену — сами перепроверяем sw.js раз в полчаса
+  var CALM_MS  =  5 * 60 * 1000;   // и не чаще раза в 5 минут, сколько бы ни щёлкали вкладками
+  var reg = null, shown = "", skipped = "", asked = false, reloading = false, lastCheck = 0;
+
+  /* Спросить у конкретной версии, кто она. Ответ идёт в свой одноразовый порт, поэтому ответы
+     работающей и ждущей не путаются. Старый sw.js (до 09.09.2026) вопроса не понимает и
+     промолчит — ждём не дольше трёх секунд и обходимся без «было». */
+  function ask(sw){
+    return new Promise(function(res){
+      if(!sw) return res(null);
+      var ch = new MessageChannel(), done = false;
+      var end = function(v){ if(!done){ done = true; res(v); } };
+      ch.port1.onmessage = function(ev){ end(ev.data || null); };
+      setTimeout(function(){ end(null); }, 3000);
+      try { sw.postMessage({ type: "version" }, [ch.port2]); } catch(e){ end(null); }
+    });
+  }
+
+  function reload(){ if(reloading) return; reloading = true; location.reload(); }
+
+  function offer(){
+    var next = reg && reg.waiting;
+    // Контроллера нет — страницу открыли впервые: обновлять нечего, первая версия встаёт сама.
+    if(!next || !navigator.serviceWorker.controller) return;
+    ask(next).then(function(to){
+      var v = (to && to.version) || "";
+      if(!v || v === shown || v === skipped) return;   // эту версию уже показали или отложили
+      ask(navigator.serviceWorker.controller).then(function(from){
+        shown = v;
+        elVer.textContent = (from && from.version) ? from.version + " → " + v : "версия " + v;
+        elNote.textContent = (to && to.note) ? "· " + to.note : "";
+        btnGo.disabled = false;
+        bar.hidden = false;
+      });
+    });
+  }
+
+  btnGo.addEventListener("click", function(){
+    btnGo.disabled = true;
+    asked = true;
+    var w = reg && reg.waiting;
+    // Ждущей версии уже нет (её приняли в соседней вкладке) — просто перезагружаемся: страница
+    // и так идёт сначала в сеть (network-first), так что придёт свежая.
+    if(!w) return reload();
+    w.postMessage({ type: "apply-update" });
+    setTimeout(reload, 4000);        // страховка: не дождались смены — грузимся сами
   });
-}
+
+  btnLater.addEventListener("click", function(){
+    skipped = shown;                 // эту версию больше не предлагаем, следующую — предложим
+    bar.hidden = true;
+  });
+
+  /* Контроллер сменился = новая версия встала. Перезагружаемся, только если её позвали именно
+     здесь: иначе «Обновить» в соседней вкладке дёрнуло бы перезагрузку у всех разом. */
+  navigator.serviceWorker.addEventListener("controllerchange", function(){ if(asked) reload(); });
+
+  function check(){
+    var now = Date.now();
+    if(!reg || now - lastCheck < CALM_MS) return;
+    lastCheck = now;
+    reg.update().catch(function(){});
+  }
+
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js", { scope: "./" }).then(function(r){
+      reg = r;
+      if(r.waiting) offer();                      // обновление ждало ещё до того, как страницу открыли
+      r.addEventListener("updatefound", function(){
+        var inst = r.installing;
+        if(!inst) return;
+        inst.addEventListener("statechange", function(){ if(inst.state === "installed") offer(); });
+      });
+      setInterval(check, CHECK_MS);
+      document.addEventListener("visibilitychange", function(){ if(!document.hidden) check(); });
+    }).catch(function(){});
+  });
+})();
 </script>
 </body>
 </html>

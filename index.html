@@ -138,6 +138,23 @@
   .nav-item:hover{background:var(--nav-hover);color:var(--text)}
   .nav-item.active{background:rgba(209,31,45,.16);color:var(--accent-soft);box-shadow:inset 0 0 0 1px rgba(209,31,45,.28)}
 
+  /* Плашка «вышло обновление» — первая строка ВНУТРИ липкой панели, а не поверх неё:
+     ничего не перекрывает и не прыгает по контенту, панель просто становится выше на строку.
+     Поверхность нейтральная (--card2), красный только на кнопке действия — один акцент. */
+  .newver{border-bottom:1px solid var(--line);background:var(--card2)}
+  .newver[hidden]{display:none}
+  .newver-inner{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:13px}
+  .newver-ico{display:flex;flex:none;color:var(--accent-soft)}
+  .newver-ico svg{width:17px;height:17px;display:block}
+  /* Одна строка и только одна: плашка тонкая, поэтому лишнее режет «что нового» многоточием,
+     а не переносит панель на второй этаж (flex-wrap здесь был бы именно этим). */
+  .newver-text{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:nowrap;overflow:hidden}
+  .newver-text b{font-weight:700;color:var(--text);white-space:nowrap;flex:none}
+  .newver-ver{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;flex:none}
+  .newver-note{color:var(--muted);flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .newver-go{margin-left:auto;flex:none}
+  .newver-later{flex:none}
+
   /* шапка страницы: заголовок раздела + подзаголовок */
   .pagehead{margin:0 0 22px}
   .title{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
@@ -968,6 +985,21 @@
   .to-card-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .to-card-title{font-family:var(--font-disp);font-weight:700;font-size:16.5px;letter-spacing:.2px;margin-right:auto}
   .to-card-title .f{color:var(--muted);font-size:13px;font-weight:600}
+  /* Машины двигателя: один мотор стоит в разных кузовах, и фильтры у них разные. Чипы —
+     та же механика, что у каталога двигателей (.to-eng), только мельче: они внутри карточки
+     и не должны спорить с названием мотора. */
+  .to-cars{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .to-carchip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:11px;cursor:pointer;
+    border:1px solid var(--line);background:var(--fill);color:var(--text);font:inherit;font-weight:600;font-size:12.5px;
+    transition:border-color .15s,background .15s,color .15s,transform .15s}
+  .to-carchip:hover{border-color:var(--line-strong);background:var(--fill-hover)}
+  .to-carchip:active{transform:scale(.95)}
+  .to-carchip.active{border-color:#d11f2d;background:rgba(209,31,45,.1);color:var(--accent-soft)}
+  .to-carchip .f{font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.3px}
+  .to-carchip.active .f{color:inherit;opacity:.75}
+  /* «убрать машину» — только у выбранной: чистить память приходится редко, а промахнуться
+     мимо чипа в ряду из пяти легко */
+  .to-carx{flex:none}
   .to-rows{display:flex;flex-direction:column}
   .to-row{display:flex;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
   .to-row:last-child{border-bottom:none}
@@ -1081,11 +1113,12 @@
   .to-upsell .h{display:block;color:var(--text);font-weight:700;margin-bottom:4px}
   .to-upsell .body{display:block;white-space:pre-line}   /* абзацы — как уйдут клиенту */
   @media(max-width:720px){
-    .to-eng{min-height:44px}
+    .to-eng,.to-carchip{min-height:44px}
     /* на телефоне марка — строкой над своими машинами: колонка в 104px съедала половину ширины */
     .to-grp{grid-template-columns:1fr;gap:6px}
     .to-grp-cap{padding-top:0}
-    .to-cat-top .ui-btn,.to-bar .ui-btn,.to-vin .ui-btn,.to-box .ui-btn{min-height:44px}   /* хиты ≥44px (must-keep 7) */
+    .to-cat-top .ui-btn,.to-bar .ui-btn,.to-vin .ui-btn,.to-box .ui-btn,
+    .to-cars .ui-btn{min-height:44px;min-width:44px}   /* хиты ≥44px (must-keep 7) */
     .to-box-go{margin-left:0;width:100%;justify-content:center}   /* на телефоне кнопка во всю строку, а не хвостиком справа */
     .to-form-grid{grid-template-columns:1fr}
     /* на телефоне три поля слота — каждое своей строкой, кнопки последней (хит ≥44px) */
@@ -1104,6 +1137,7 @@
     html[data-theme]{--text:#111;--muted:#555}
     body{background:#fff;color:#111;padding:0;background-image:none}
     #gate{display:none !important}
+    .newver{display:none !important}          /* плашка обновления — экранная, на лист не идёт */
     body.locked #app{filter:none}
     .topnav{position:static;border:none;backdrop-filter:none;margin:0 0 16px}
     .topnav,.tablecard,.note,.today,.tpl-card,.tpl-facets{box-shadow:none}
@@ -1158,6 +1192,14 @@
       scrollbar-width:none;-webkit-overflow-scrolling:touch}
     .mainnav::-webkit-scrollbar{display:none}
     .mainnav .nav-item{flex:none;min-height:44px}
+    /* плашка обновления: текст первой строкой, кнопки второй — хиты ≥44px (правило 7).
+       Строку «что нового» на телефоне прячем: в 375px она вытесняет сами кнопки. */
+    /* плашка обновления в 375px: «что нового» не влезает вовсе, а версия уходит второй
+       строкой под заголовок — так обе кнопки остаются в одной строке с хитом ≥44px (правило 7) */
+    .newver-inner{gap:8px}
+    .newver-note{display:none}
+    .newver-text{flex-direction:column;align-items:flex-start;gap:1px}
+    .newver-go,.newver-later{min-height:44px}
     .title .t{font-size:18px}
     /* поля ввода ≥16px — иначе iOS зумит страницу при фокусе */
     .tpl-search input,#fb-text,.sales-month-sel{font-size:16px}
@@ -1297,6 +1339,22 @@
 
   <!-- Верхнее меню (липкая панель) -->
   <header class="topnav">
+
+    <!-- Плашка «вышло обновление»: появляется, когда рядом ждёт новая версия портала.
+         Ничего не перезагружает сама — человек дожимает своё дело и жмёт «Обновить». -->
+    <div class="newver" id="newver" hidden role="status" aria-live="polite">
+      <div class="wrap newver-inner">
+        <span class="newver-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.6 8a5.6 5.6 0 1 1-1.7-4"/><path d="M13.8 1.8v3.4h-3.4"/></svg></span>
+        <span class="newver-text">
+          <b>Вышло обновление</b>
+          <span class="newver-ver" id="newver-ver"></span>
+          <span class="newver-note" id="newver-note"></span>
+        </span>
+        <button class="ui-btn ui-btn--sm ui-btn--primary newver-go" id="newver-go" type="button">Обновить</button>
+        <button class="ui-btn ui-btn--sm ui-btn--ghost newver-later" id="newver-later" type="button">Позже</button>
+      </div>
+    </div>
+
     <div class="wrap topnav-inner">
       <button class="logo" id="home-logo" type="button" aria-label="На главную">
         <div class="badge"><span>MD</span></div>
@@ -1794,6 +1852,8 @@
     motul_dctf:    2500,  // Motul Multi DCTF 105786
     motul_ht_dctf: 4000,  // Motul HIGH TORQUE DCTF
     vag_g052182:   3300,  // Оригинал VAG G052182A2 (мокрый DSG DQ250/DQ500)
+    vag_g055529:   5000,  // Оригинал VAG G055529A2 (гидравлика DL-382)
+    vag_g052549:   5000,  // Оригинал VAG G052549A2 (механика DL-382)
     gear300:       4500,  // Motul Gear 300 75W90 105777
     gear300_ls:    5500,  // Motul Gear 300 LS 75W90 105778
     motul_cvtf:    2500,  // Motul Multi CVTF
@@ -1926,6 +1986,7 @@
     // Фильтр-поддон ZF и работа с промывкой — общие. Мосты/Торсен — блок AXLES_TORSEN.
     oil_zf8hp_12:          ["Оригинальное трансмиссионное масло ZF8HP S671090312 12л", perL(RATES.zf8hp, 12)],
     filter_zf_8hp65:       ["Оригинальный Фильтр-поддон ZF 1103298006", 13000],
+    filter_sollo_8hp65:    ["Фильтр поддон Sollo Germany", 10000],   // неоригинальный поддон 8HP65 (вариант на масле Motul)
     work_full_8hp65_wash:  ["Полная аппаратная замена масла в АКПП ZF 8HP65 с промывкой системы", 7000],
     oil_zf8hp_6:           ["Оригинальное трансмиссионное масло ZF8HP S671090312 6л", perL(RATES.zf8hp, 6)],
     work_part_8hp65:       ["Частичная замена масла в АКПП ZF 8HP65 с заменой фильтра", 4000],
@@ -1952,6 +2013,9 @@
     oil_dctf_2:    ["Трансмиссионное масло Motul Multi DCTF 105786 2л", perL(RATES.motul_dctf, 2)],
     oil_httdctf_9: ["Трансмиссионное масло Motul HIGH TORQUE DCTF 9л", perL(RATES.motul_ht_dctf, 9)],
     oil_g052182_9: ["Оригинальное трансмиссионное масло DSG DQ250/500 G052182A2 9л", perL(RATES.vag_g052182, 9)],
+    // DL-382, вариант «оригинал VAG»: два разных масла — гидравлика и механика, по 4 л каждое
+    oil_g055529_4: ["Трансмиссионное масло (гидравлика) VAG G055529A2 4л", perL(RATES.vag_g055529, 4)],
+    oil_g052549_4: ["Трансмиссионное масло (механика) VAG G052549A2 4л", perL(RATES.vag_g052549, 4)],
     oil_gear300_4: ["Трансмиссионное масло Motul Gear 300 105777 4л", perL(RATES.gear300, 4)],
     oil_gear300_38:["Трансмиссионное масло Motul Gear 300 105777 3.8л", perL(RATES.gear300, 3.8)],
     oil_cvtf_12:   ["Трансмиссионное масло Motul Multi CVTF 12л", perL(RATES.motul_cvtf, 12)],
@@ -2328,12 +2392,15 @@
         },
       },
       "Частичная": {
-        head: "Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 (заменой фильтр-поддона)",
+        // Заголовок нейтральный: вариантов два (с заменой фильтр-поддона и без съёма) — как у 8HP55/65/65A.
+        // Какой именно способ, видно по строке работы внутри варианта.
+        head: "Частичная замена масла в АКПП ZF 8HP45-50-70-75-76",
         // С глубоким поддоном сливается больше — 6 л вместо 5 (масло то же, ключ уже есть в PRICE).
         variants: f => f === "filter_deep" ? [
           { label: "1.2", items: ["oil_zf8hp_6", f, "work_partial"] },
         ] : [
           { label: "1.2", items: ["oil_zf_5", f, "work_partial"] },
+          { label: "1.3", items: ["oil_zf_4", "work_drainfill_2000"] },   // без съёма фильтр-поддона: 4 л + слил-залил
         ],
         // Полный гибрид 8HP60: тот же поддон BMW, работа частичной 7000. Два масла на выбор.
         "Гибрид": {
@@ -2435,6 +2502,8 @@
         variants: () => [
           { label: "1.",  items: ["oil_motul_atf6_12", "bardahl", "filter_zf_8hp65", "work_full_8hp65_wash"] },
           { label: "1.1", items: ["oil_zf8hp_12",      "bardahl", "filter_zf_8hp65", "work_full_8hp65_wash"] },
+          // Бюджетный вариант из публичного прайса: масло Motul + неоригинальный поддон Sollo Germany.
+          { label: "1.2", items: ["oil_motul_atf6_12", "bardahl", "filter_sollo_8hp65", "work_full_8hp65_wash"] },
         ],
       },
       "Частичная": {
@@ -2659,8 +2728,10 @@
     "DL-382": {
       "Аппаратная": {
         head: "Замена масла в DSG DL-382 (гидравлическая + механическая часть)",
+        // Два варианта, как в публичном прайсе: Motul или оригинал VAG (у гидравлики и механики свои масла).
         variants: () => [
-          { label: "1.", items: ["oil_dctf_35", "work_dl382_hydro", "oil_gear300_38", "work_dl382_mech"] },
+          { label: "1.",  items: ["oil_dctf_35",   "work_dl382_hydro", "oil_gear300_38", "work_dl382_mech"] },
+          { label: "1.1", items: ["oil_g055529_4", "work_dl382_hydro", "oil_g052549_4",  "work_dl382_mech"] },
         ],
       },
     },
@@ -2912,10 +2983,10 @@
     // Спек Торсена (поле axles) не входит в автокод → у каждой карточки свой code, иначе пара слипнется в логе А3.
     { brand:"ZF", box:"8HP65", type:"Аппаратная", title:"ZF 8HP65 + мосты и Торсен G055",
       code:"ZF·8HP65·Аппаратная·Торсен G055",
-      titleAccent:"G055", extraTags:["8HP65", "Motul ATF6 / оригинал ZF", "Мосты", "Торсен"] },
+      titleAccent:"G055", extraTags:["8HP65", "Motul ATF6 / оригинал ZF", "Поддон Sollo", "Мосты", "Торсен"] },
     { brand:"ZF", box:"8HP65", type:"Аппаратная", axles:AXLES_TORSEN_G060, title:"ZF 8HP65 + мосты и Торсен G060",
       code:"ZF·8HP65·Аппаратная·Торсен G060",
-      titleAccent:"G060", extraTags:["8HP65", "Motul ATF6 / оригинал ZF", "Мосты", "Торсен"] },
+      titleAccent:"G060", extraTags:["8HP65", "Motul ATF6 / оригинал ZF", "Поддон Sollo", "Мосты", "Торсен"] },
     { brand:"ZF", box:"8HP65", type:"Частичная", title:"ZF 8HP65 · частичная + мосты и Торсен G055",
       code:"ZF·8HP65·Частичная·Торсен G055",
       titleAccent:"G055", extraTags:["8HP65", "оригинал ZF 6л", "Мосты", "Торсен"] },
@@ -3009,8 +3080,8 @@
       titleAccent:"DL501 0B5", extraTags:["DL501", "0B5", "S-Tronic", "Motul Multi DCTF", "HIGH TORQUE"] },
     { brand:"DSG / DCT", box:"DL501 0B5", type:"Частичная", title:"DL-501 · механическая часть",
       titleAccent:"DL-501", extraTags:["DL501", "механическая часть", "Motul Gear 300"] },
-    { brand:"DSG / DCT", box:"DL-382", type:"Аппаратная", title:"DSG DL-382 (гидравлика + механика)",
-      titleAccent:"DL-382", extraTags:["DL-382", "Motul Multi DCTF", "Motul Gear 300"] },
+    { brand:"DSG / DCT", box:"DL-382", type:"Аппаратная", title:"DSG DL-382 (Motul / оригинал VAG)",
+      titleAccent:"DL-382", extraTags:["DL-382", "Motul Multi DCTF", "Motul Gear 300", "G055529A2", "G052549A2"] },
     { brand:"DSG / DCT", box:"DQ-200", type:"Аппаратная", title:"DSG DQ-200 (+ жидкость ГУР)",
       titleAccent:"DQ-200", extraTags:["DQ-200", "Motul Multi DCTF", "ГУР Motul Multi HF"] },
 
@@ -4484,13 +4555,22 @@
     let done = false;
     const finish = () => { done = true; clearTimeout(timer); s.remove(); };
     const failed = why => { window.MDLOG && window.MDLOG.err("net", why + ": " + name, "jsonp:" + tag); };
+    /* {error:"backend"} — бэкенд сознался, что упал сам (страховка в doGet, 09.09.2026).
+       Данными это не является: раздел должен остаться на кэше, ровно как при молчании канала.
+       Ловим здесь, ОДНИМ местом на все каналы, а не учим каждый раздел заново отличать сбой
+       от пустого ответа. Причина в журнале своя: «не ответил» и «ответил, что упал» чинятся
+       в разных местах. */
+    const take = data => {
+      if(data && data.error === "backend"){ failed("бэкенд упал на запросе"); return; }
+      onData(data);
+    };
     const timer = setTimeout(() => {
       if(done) return;
       finish();
-      window[cb] = data => { delete window[cb]; onData(data); };   // поздний ответ — см. выше
+      window[cb] = data => { delete window[cb]; take(data); };   // поздний ответ — см. выше
       failed("канал молчит " + Math.round(API_WAIT_MS / 1000) + " с");
     }, API_WAIT_MS);
-    window[cb] = data => { if(done) return; finish(); delete window[cb]; onData(data); };
+    window[cb] = data => { if(done) return; finish(); delete window[cb]; take(data); };
     s.onerror = () => { if(done) return; finish(); delete window[cb]; failed("канал не ответил"); };
     s.src = url + "&callback=" + cb + "&t=" + Date.now();
     document.head.appendChild(s);
@@ -6388,6 +6468,7 @@
     let catOpen = true;                                // каталог двигателей развёрнут (после разбора VIN — нет)
     let slots = { air:null, cabin:null, fuel:null };   // фильтры кузова {name, code, price}
     let slotOpen = { air:false, cabin:false, fuel:false };
+    let carSel = "";                                   // машина, выбранная руками чипом (ключ памяти)
     let priceEdit = null;                              // какая цена сейчас правится: "oil" | "slot:air"…
     let rowEdit = null;                                // какая строка сметы правится целиком (фирма + номер + цена)
     /* Ручная правка держит оборону: догрузка цен по VIN не затирает вписанное руками.
@@ -6429,6 +6510,35 @@
       const k = [c.brand, c.model, c.body, c.engineFull || c.engine, Number(c.cc) || ""].map(keyPart);
       return k.filter(Boolean).length >= 3 ? k.join("|") : "";
     }
+    /* Имя машины для чипа. Ключ для сверки хорош, а для глаз — нет: он без регистра и пробелов
+       («Q7QUATTRO30TDI»). Поэтому вместе с фильтрами кладём и подпись, как машина называется
+       у каталога: модель и кузов. Марку не повторяем — она уже стоит в названии двигателя. */
+    function vinCarTitle(){
+      const c = (vin && vin.status === "ok" && vin.car) || null;
+      if(!c) return "";
+      const model = String(c.model || "").trim().slice(0, 28);
+      return [model, String(c.body || "").trim()].filter(Boolean).join(" · ").slice(0, 40);
+    }
+    // подпись машины: своя, а у записей до 09.09.2026 её нет — собираем из ключа (модель · кузов)
+    const carLabel = (key, car) => {
+      if(car && car.t) return car.t;
+      const p = String(key || "").split("|");
+      return [p[1], p[2]].filter(Boolean).join(" · ") || String(key || "");
+    };
+    /* Машины, которые помнит запись двигателя: свежая сверху — ею и пользовались последней.
+       Разобранная сейчас по VIN машина стоит в списке всегда, даже если запоминать у неё ещё
+       нечего: иначе после разбора чип «моей» машины не появлялся бы до первой правки фильтра. */
+    function carsOf(e){
+      const cars = extraOf(e).cars || {};
+      const out = Object.keys(cars).map(k => ({ key:k, label: carLabel(k, cars[k]), ts: (cars[k] && cars[k].ts) || "" }));
+      out.sort((a, b) => String(b.ts).localeCompare(String(a.ts)) || a.label.localeCompare(b.label, "ru"));
+      const vk = vinCarKey();
+      if(vk && !out.some(c => c.key === vk)) out.unshift({ key: vk, label: vinCarTitle() || carLabel(vk), ts: "" });
+      return out;
+    }
+    /* Какая машина сейчас в смете. Разбор по VIN определяет её сам, но выбор РУКАМИ сильнее:
+       его сделал человек, который смотрит на машину, а разбор мог остаться от предыдущей. */
+    function curCarKey(){ return carSel || vinCarKey(); }
     /* Id записи — из имени двигателя, а не случайный. Тот же двигатель, разобранный второй раз
        или на другом устройстве, попадает в ТУ ЖЕ строку листа (upsert по id), а не заводит
        двойника: каталог для того и общий. */
@@ -7049,6 +7159,7 @@
       selId = vinRecId = rec.id;
       manual = { oil:false, air:false, cabin:false, fuel:false };
       rowEdit = null; priceEdit = null;
+      carSel = "";                                    // машину определил разбор — выбор от прошлой сметы снимаем
       applyMemory(rec, true);
     }
 
@@ -7056,7 +7167,7 @@
        смета собрана в ту же секунду. А их номера становятся якорями подбора — цену спрашиваем
        заново, она с прошлого раза могла измениться. Память говорит ЧТО покупать, а не почём. */
     function applyMemory(rec, seed){
-      const key = vinCarKey();
+      const key = curCarKey();
       const mem = carFilters(rec, key) || {};
       slots = { air:null, cabin:null, fuel:null };
       for(const s of SLOTS){
@@ -7082,7 +7193,7 @@
        руками, без VIN) — не выдумываем: помнить нечего, слоты остаются разовыми. Кузовов помним
        не больше CARS_MAX и не длиннее EXTRA_MAX знаков — лишними уходят самые старые. */
     function withMemory(rec){
-      const key = vinCarKey();
+      const key = curCarKey();
       if(!key) return rec;
       const x = extraOf(rec);
       const cars = x.cars = x.cars || {};
@@ -7091,7 +7202,10 @@
         const v = slots[s.id];
         if(v && v.name) f[s.id] = { n: v.name, c: v.code || "", p: Number(v.price) || 0 };
       }
-      if(Object.keys(f).length) cars[key] = { ts: todayISO(), f: f };
+      // подпись машины пишем один раз и больше не трогаем: она пришла из каталога вместе с
+      // разбором, а выбранная руками машина своей подписи не имеет — её имя и есть ключ
+      const t = (cars[key] && cars[key].t) || (key === vinCarKey() ? vinCarTitle() : "");
+      if(Object.keys(f).length){ cars[key] = { ts: todayISO(), f: f }; if(t) cars[key].t = t; }
       else delete cars[key];
       let list = Object.keys(cars);
       const oldestFirst = () => list.sort((a, b) => String(cars[a].ts || "").localeCompare(String(cars[b].ts || "")));
@@ -7162,6 +7276,11 @@
           : vin.err === "rate" ? "Подбор просили слишком часто — он отдыхает около часа. Смета собирается как обычно, фильтры руками."
           : vin.err === "slow" ? "Каталог не успел ответить дважды. Разбор, скорее всего, уже дописался на сервере — нажми «Разобрать» ещё раз через минуту, ответ придёт из памяти."
           : vin.err === "pending" ? "Разбор ещё готовится на сервере. Нажми «Разобрать» ещё раз через полминуты — машина появится из памяти."
+          /* «backend» — сервер честно сознался, что упал сам (сбой уже лежит строкой в журнале
+             ошибок с текстом исключения). До 09.09.2026 такого ответа не было вовсе: упавшая
+             ручка отдавала HTML-страницу ошибки, тег <script> молча её отбрасывал, и поломка
+             бэкенда выглядела на экране обрывом связи — чинить по такому экрану было нечего. */
+          : vin.err === "backend" ? "Сервер разбора споткнулся на этой машине — сбой записан в журнал ошибок. Смета собирается как обычно, фильтры — руками."
           : vin.err === "net" ? "Не дозвонился до сервера. Смета собирается как обычно, фильтры — руками."
           : "Каталог не ответил. Смета собирается как обычно, фильтры — руками.";
         vinBox.innerHTML = `<div class="to-note">${esc(msg)}</div>`;
@@ -7429,6 +7548,23 @@
             aria-label="Закрыть">${ICO.close}</button>
         </div>`;
       }).join("");
+      /* Машины этого двигателя. Один мотор стоит в разных кузовах (B57 — и X5, и X7), а
+         воздушный с салонным у них разные: портал помнит их по каждой машине отдельно.
+         Раньше эта память открывалась ТОЛЬКО разбором по VIN — выбрал двигатель руками, и
+         фильтры приходилось искать заново, хотя они уже лежали в записи (владелец, 09.09.2026).
+         Сами фильтры не подставляются, пока машину не выбрали: у соседнего кузова они другие,
+         и «само подставилось» здесь означало бы «клиенту уехал чужой фильтр». */
+      const cars = carsOf(e);
+      const curKey = curCarKey();
+      const carsHtml = cars.length ? `<div class="to-cars"><span class="to-cap">Машина</span>` + cars.map(c => {
+        const on = c.key === curKey;
+        return `<button class="to-carchip${on ? " active" : ""}" type="button" data-act="car-pick"
+          data-key="${esc(c.key)}" title="${on ? "Убрать фильтры этой машины из сметы" : "Подставить фильтры этой машины"}">${esc(c.label)}${
+          c.ts ? `<span class="f">${esc(c.ts.slice(8) + "." + c.ts.slice(5, 7))}</span>` : ""}</button>` +
+          (on && c.ts ? ` <button class="ui-btn ui-btn--ghost ui-btn--sm ui-btn--icon to-carx" type="button"
+            data-act="car-del" data-key="${esc(c.key)}"
+            title="Забыть фильтры этой машины" aria-label="Забыть машину">${ICO.close}</button>` : "");
+      }).join("") + `${curKey ? "" : `<span class="to-note">выбери машину — фильтры подставятся</span>`}</div>` : "";
       drawCard(
         `<div class="to-card">
           <div class="to-card-top">
@@ -7436,6 +7572,7 @@
             ${s.stale || s.unknown || u.stale ? `<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>` : ""}
             <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" data-act="edit">Изменить</button>
           </div>
+          ${carsHtml}
           <div class="to-litres">Масло:
             <span class="ui-select-wrap"><select class="ui-select" data-act="oil-set" data-focus="oil" aria-label="Моторное масло">${
               TO_OILS.map(o => `<option value="${esc(o.key)}"${o.key === e.oilKey ? " selected" : ""}>${
@@ -7566,6 +7703,7 @@
       slotOpen = { air:false, cabin:false, fuel:false };
       rowEdit = null; priceEdit = null;
       manual = { oil:false, air:false, cabin:false, fuel:false };
+      carSel = "";                                // машины у каждого двигателя свои — выбор не переносим
       const e = byId(selId);
       if(e) applyMemory(e);                       // у этого двигателя своя память по машине из VIN
       else slots = { air:null, cabin:null, fuel:null };
@@ -7587,6 +7725,35 @@
       // а эта кнопка обычно жмётся сразу после «Копировать» — один расчёт стал бы двумя событиями
       else if(act === "copy-codes"){ copyTo(bodyText(e, true), b, "Скопировано с номерами"); }
       else if(act === "edit"){ updateForm(e.id); formWrap.scrollIntoView({ behavior:"smooth", block:"nearest" }); }
+      /* Выбрал машину — её фильтры встают в смету, и она же становится адресом памяти:
+         дальнейшие правки уходят в неё, а не в соседний кузов. Слоты помечаем ручными —
+         это выбор человека, и цены подбора, приехавшие следом, не вправе его затереть.
+         Клик по уже выбранной машине снимает выбор: смета возвращается к тому, что решил
+         разбор по VIN (а без разбора — просто пустеет). */
+      else if(act === "car-pick"){
+        const key = b.dataset.key || "";
+        carSel = (key === curCarKey()) ? "" : key;
+        manual.air = manual.cabin = manual.fuel = !!carSel;
+        rowEdit = null; priceEdit = null;
+        applyMemory(e);
+        updateCard();
+      }
+      // «забыть машину»: убираем её из памяти записи. Фильтры машины при этом уходят и из
+      // сметы — показывать их дальше значило бы обещать память, которой больше нет
+      else if(act === "car-del"){
+        const key = b.dataset.key || "";
+        const x = extraOf(e);
+        if(!x.cars || !x.cars[key]) return;
+        // спрашиваем, как при удалении двигателя: память общая, стирается сразу на всех устройствах
+        if(!confirm("Забыть фильтры машины «" + carLabel(key, x.cars[key]) + "»? Память уйдёт со всех устройств.")) return;
+        delete x.cars[key];
+        if(carSel === key) carSel = "";
+        slots = { air:null, cabin:null, fuel:null };
+        rowEdit = null; priceEdit = null;
+        saveEngine(Object.assign({}, e, { extra: JSON.stringify(x) }), e);
+        flushSave();                              // удаление — не набор литража: отправляем сейчас, а не через паузу
+        updateList(); updateCard();
+      }
       // цена подтверждена сегодня. extra берём с запасом из зеркала: лист мог вернуть запись
       // без него (скрипт таблицы ещё не обновлён), и пересохранение стёрло бы память по машине
       else if(act === "fresh"){ upsert(Object.assign({}, e,
@@ -7705,7 +7872,7 @@
         const id = formWrap.querySelector("form").dataset.edit, e = id && byId(id);
         if(e && confirm("Удалить двигатель «" + e.name + "» из каталога на всех устройствах?")){
           upsert(Object.assign({}, e, { status:"del", updated: todayISO() }));
-          if(selId === id) selId = null;
+          if(selId === id){ selId = null; carSel = ""; }   // записи нет — и выбранной машины у неё тоже
           updateForm(undefined); updateAll();
         }
       }
@@ -7733,6 +7900,7 @@
       };
       upsert(rec);
       selId = rec.id;
+      if(!editId) carSel = "";                    // завели НОВЫЙ двигатель — машина от прежнего к нему не относится
       manual.oil = true;                          // фирму и цену масляного только что задали руками
       slotOpen = { air:false, cabin:false, fuel:false };
       updateForm(undefined); updateAll();
@@ -7863,12 +8031,98 @@
   /* PWA-оболочка (Н4): регистрируем service worker для офлайна — чистая вкладка открывает инструмент
      из кэша при недоступности Pages. Только на http(s): на file:// (двойной клик) SW недоступен,
      регистрацию пропускаем. Путь относительный ("sw.js", scope "./") — сайт живёт в подпапке Pages
-     (/motul-drive-grafik/), абсолютный "/sw.js" был бы не туда. SW внешних доменов не трогает (КЛ3). */
-  if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
-    window.addEventListener("load", function(){
-      navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(function(){});
+     (/motul-drive-grafik/), абсолютный "/sw.js" был бы не туда. SW внешних доменов не трогает (КЛ3).
+
+     Он же — плашка «вышло обновление» (09.09.2026). Новая версия портала приезжает вместе с новым sw.js —
+     4 КБ против 600+ КБ страницы, потому и перепроверяем именно его. По стандарту новая версия не
+     вытесняет работающую, а ждёт в очереди (registration.waiting), и встаёт только по нашей команде:
+     человека нельзя выдёргивать из середины сметы. Мы спрашиваем у обеих версий их номер (семвер
+     живёт в sw.js) и показываем «было → стало»; перезагрузка — ТОЛЬКО по кнопке. */
+  (function(){
+    if(!("serviceWorker" in navigator) || location.protocol.indexOf("http") !== 0) return;
+
+    const bar = document.getElementById("newver");
+    const elVer = document.getElementById("newver-ver"), elNote = document.getElementById("newver-note");
+    const btnGo = document.getElementById("newver-go"), btnLater = document.getElementById("newver-later");
+    if(!bar || !btnGo || !btnLater) return;
+
+    const CHECK_MS = 30 * 60 * 1000;   // вкладка открыта сутками — сами перепроверяем sw.js раз в полчаса
+    const CALM_MS  =  5 * 60 * 1000;   // и не чаще раза в 5 минут, сколько бы ни щёлкали вкладками
+    let reg = null, shown = "", skipped = "", asked = false, reloading = false, lastCheck = 0;
+
+    /* Спросить у конкретной версии, кто она. Ответ идёт в свой одноразовый порт, поэтому ответы
+       работающей и ждущей не путаются. Старый sw.js (до 09.09.2026) такого вопроса не понимает и
+       промолчит — ждём не дольше трёх секунд и обходимся без «было». */
+    function ask(sw){
+      return new Promise(function(res){
+        if(!sw) return res(null);
+        const ch = new MessageChannel();
+        let done = false;
+        const end = v => { if(!done){ done = true; res(v); } };
+        ch.port1.onmessage = ev => end(ev.data || null);
+        setTimeout(() => end(null), 3000);
+        try { sw.postMessage({ type: "version" }, [ch.port2]); } catch(e){ end(null); }
+      });
+    }
+
+    function reload(){ if(reloading) return; reloading = true; location.reload(); }
+
+    async function offer(){
+      const next = reg && reg.waiting;
+      // Контроллера нет — портал открыт впервые: обновлять нечего, первая версия встаёт сама.
+      if(!next || !navigator.serviceWorker.controller) return;
+      const to = await ask(next);
+      const v = (to && to.version) || "";
+      if(!v || v === shown || v === skipped) return;   // эту версию уже показали или отложили
+      const from = await ask(navigator.serviceWorker.controller);
+      shown = v;
+      elVer.textContent = (from && from.version) ? from.version + " → " + v : "версия " + v;
+      elNote.textContent = (to && to.note) ? "· " + to.note : "";
+      btnGo.disabled = false;
+      bar.hidden = false;
+    }
+
+    btnGo.addEventListener("click", function(){
+      btnGo.disabled = true;
+      asked = true;
+      const w = reg && reg.waiting;
+      // Ждущей версии уже нет (её приняли в соседней вкладке) — просто перезагружаемся: страница
+      // и так идёт сначала в сеть (network-first), так что придёт свежая.
+      if(!w) return reload();
+      w.postMessage({ type: "apply-update" });
+      setTimeout(reload, 4000);        // страховка: не дождались смены — грузимся сами
     });
-  }
+
+    btnLater.addEventListener("click", function(){
+      skipped = shown;                 // эту версию больше не предлагаем, следующую — предложим
+      bar.hidden = true;
+    });
+
+    /* Контроллер сменился = новая версия встала. Перезагружаемся, только если её позвали именно
+       здесь: иначе «Обновить» в соседней вкладке дёрнуло бы перезагрузку у всех разом. */
+    navigator.serviceWorker.addEventListener("controllerchange", function(){ if(asked) reload(); });
+
+    function check(){
+      const now = Date.now();
+      if(!reg || now - lastCheck < CALM_MS) return;
+      lastCheck = now;
+      reg.update().catch(function(){});
+    }
+
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("sw.js", { scope: "./" }).then(function(r){
+        reg = r;
+        if(r.waiting) offer();                      // обновление ждало ещё до того, как вкладку открыли
+        r.addEventListener("updatefound", function(){
+          const inst = r.installing;
+          if(!inst) return;
+          inst.addEventListener("statechange", function(){ if(inst.state === "installed") offer(); });
+        });
+        setInterval(check, CHECK_MS);
+        document.addEventListener("visibilitychange", function(){ if(!document.hidden) check(); });
+      }).catch(function(){});
+    });
+  })();
 </script>
 </body>
 </html>

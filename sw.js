@@ -6,15 +6,26 @@
    Стратегия — network-first для навигаций и своих GET: свежий деплой всегда доходит до онлайн-
    пользователя (нет «залипшей» старой оболочки), кэш — только страховка на офлайн. Публикация нового
    ядра требует смены версии кэша ниже — старые версии сносятся при activate. */
-const CACHE = "motul-drive-v43";
+
+/* Версия портала — семантическая, МАЖОР.МИНОР.ПАТЧ (решение владельца 09.09.2026):
+     ПАТЧ  — мелкое: цена, текст, точечный фикс;
+     МИНОР — заметное: новый вариант, новая кнопка, поведение раздела;
+     МАЖОР — крупное: новый раздел, переработка.
+   Она же имя кэша и она же то, что человек видит в плашке «вышло обновление». Пишем литералом
+   в одну строку (а не склейкой "motul-drive-v" + VERSION) намеренно: deploy.ps1 ищет версию
+   регуляркой прямо в тексте файла и на склейке нашёл бы пустоту, то есть страж публикации
+   молча перестал бы работать. NOTE — строка «что нового» для той же плашки: меняется вместе
+   с версией, поэтому протухнуть не может. */
+const CACHE = "motul-drive-v1.0.0";
+const VERSION = CACHE.replace("motul-drive-v", "");
+const NOTE = "Портал сам сообщает о новых версиях";
 
 self.addEventListener("install", e => {
-  // Предкэш корня scope (на Pages это index.html). Если недоступен — не валим установку.
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.add("./"))
-      .then(() => self.skipWaiting())
-      .catch(() => self.skipWaiting())
-  );
+  /* Предкэш корня scope (на Pages это index.html). Если недоступен — не валим установку.
+     skipWaiting() здесь НЕТ намеренно: новая версия ждёт в очереди, пока человек не нажмёт
+     «Обновить» в плашке — иначе оболочка сменится посреди работы. Первую установку это не
+     задерживает: пока нет активного service worker, вытеснять некого и версия встаёт сразу. */
+  e.waitUntil(caches.open(CACHE).then(c => c.add("./")).catch(() => {}));
 });
 
 self.addEventListener("activate", e => {
@@ -25,6 +36,21 @@ self.addEventListener("activate", e => {
       .then(keys => Promise.all(keys.filter(k => k.startsWith("motul-drive-") && k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
+});
+
+/* Разговор со страницей — из-за него плашка вообще может назвать цифры:
+     version      → отвечаем в присланный порт (MessageChannel), кто мы по версии и что нового.
+                    Спрашивают двоих: активного («было») и ждущего в очереди («стало»);
+     apply-update → человек нажал «Обновить». Только теперь вытесняем старую версию;
+                    страница поймает controllerchange и перезагрузится сама. */
+self.addEventListener("message", e => {
+  const type = e.data && e.data.type;
+  if (type === "version") {
+    const port = e.ports && e.ports[0];
+    if (port) port.postMessage({ version: VERSION, note: NOTE });
+  } else if (type === "apply-update") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("fetch", e => {
