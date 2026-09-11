@@ -1851,7 +1851,7 @@
     toyota_ws:     1800,  // Toyota ATF WS 08886-81210
     motul_dctf:    2500,  // Motul Multi DCTF 105786
     motul_ht_dctf: 4000,  // Motul HIGH TORQUE DCTF
-    vag_g052182:   3300,  // Оригинал VAG G052182A2 (мокрый DSG DQ250/DQ500)
+    vag_g052182:   4000,  // Оригинал VAG G052182A2 (мокрый DSG DQ250/DQ500)
     vag_g055529:   5000,  // Оригинал VAG G055529A2 (гидравлика DL-382)
     vag_g052549:   5000,  // Оригинал VAG G052549A2 (механика DL-382)
     gear300:       4500,  // Motul Gear 300 75W90 105777
@@ -1942,7 +1942,7 @@
     work_full_aisin: ["Полная аппаратная замена масла в АКПП Aisin 8F22 с промывкой системы", 5000],
     // 09S (масло Ravenol, допуск AW2)
     oil_ravenol_11:  ["Трансмиссионное масло Ravenol ATF T-ULV Fluid 1211146-001 11л", perL(RATES.ravenol_ulv, 11)],
-    work_full_09s:   ["Полная аппаратная замена масла в АКПП с промывкой 09S", 5000],
+    work_full_09s:   ["Полная аппаратная замена масла в АКПП с промывкой 09S/8G45", 5000],
     // Муфта Haldex (BMW X1 F48)
     oil_haldex:       ["Трансмиссионное масло для муфты Haldex 101172 1шт", 3000],
     haldex_ring:      ["Уплотнительное кольцо BMW Haldex", 3500],
@@ -2009,7 +2009,7 @@
     oil_toyota_11: ["Трансмиссионное масло Toyota ATF WS 08886-81210 11л", perL(RATES.toyota_ws, 11)],
     oil_dctf_9:    ["Трансмиссионное масло Motul Multi DCTF 105786 9л", perL(RATES.motul_dctf, 9)],
     oil_dctf_5:    ["Трансмиссионное масло Motul Multi DCTF 105786 5л", perL(RATES.motul_dctf, 5)],
-    oil_dctf_35:   ["Трансмиссионное масло Motul Multi DCTF 105786 3.5л", perL(RATES.motul_dctf, 3.5)],
+    oil_dctf_35:   ["Трансмиссионное масло Motul Multi DCTF 105786 3.5л", 10500],  // не по ставке: мелкий объём 3000/л (публичный прайс DRIVE2, п. 14.2)
     oil_dctf_2:    ["Трансмиссионное масло Motul Multi DCTF 105786 2л", perL(RATES.motul_dctf, 2)],
     oil_httdctf_9: ["Трансмиссионное масло Motul HIGH TORQUE DCTF 9л", perL(RATES.motul_ht_dctf, 9)],
     oil_g052182_9: ["Оригинальное трансмиссионное масло DSG DQ250/500 G052182A2 9л", perL(RATES.vag_g052182, 9)],
@@ -2041,8 +2041,6 @@
     filter_gm_6l45:     ["Фильтр LYNXauto LT-1040", 6000],
     filter_dl501_coarse:     ["Фильтр грубой очистки Mahle (DL501)", 7000],
     filter_dl501_fine:       ["Фильтр тонкой очистки Mahle (DL501)", 3000],
-    filter_dl501_coarse_lynx:["Фильтр грубой очистки Lynx Japan (DL501)", 6000],
-    filter_dl501_fine2:      ["Фильтр тонкой очистки Mahle (DL501)", 2000],
     filter_dq724_fine:  ["Фильтр тонкой очистки (DSG 724.020)", 4000],
     filter_dq724_coarse:["Фильтр грубой очистки (DSG 724.020)", 10000],
     // -- Вариаторы Nissan (прокладки/кольца/фильтры) --
@@ -2058,7 +2056,7 @@
     work_drainfill_2000: ["Частичная замена масла в АКПП (методом слил-залил)", 2000],
     work_full_8hp55:  ["Полная аппаратная замена масла в АКПП ZF 8HP55 с промывкой системы", 7000],
     work_part_8hp55:  ["Частичная замена масла в АКПП ZF 8HP55 с заменой фильтра", 4000],
-    work_full_9hp48:  ["Полная замена масла в АКПП ZF 9HP48 с промывкой системы", 6000],
+    work_full_9hp48:  ["Полная аппаратная замена масла в АКПП ZF 9HP48 с промывкой системы", 6000],
     work_full_6hp19:  ["Полная аппаратная замена масла в АКПП ZF 6HP19 с промывкой системы", 6000],
     work_full_6hp21:  ["Полная аппаратная замена масла в АКПП ZF 6HP19/21 с промывкой системы", 6000],
     work_full_tr80:   ["Полная аппаратная замена масла в АКПП Aisin TR80SD 0C8 с промывкой системы", 7000],
@@ -2174,7 +2172,7 @@
       "filter_zf_8hp65a", "work_full_8hp65a_wash", "work_part_8hp65a", "filter_mahle_hx189", "filter_mahle_hx187", "filter_mahle_hx160",
       "filter_mahle_hx139", "filter_mahle_hx132", "filter_tf60", "filter_tf60_alt", "filter_tf62", "filter_u660",
       "filter_a750", "filter_r4a51", "filter_ab60", "filter_u340", "filter_fw6el", "filter_6hp19_mahle",
-      "filter_zf_6hp2", "filter_gm_6l45", "filter_dl501_coarse", "filter_dl501_fine", "filter_dl501_coarse_lynx", "filter_dl501_fine2",
+      "filter_zf_6hp2", "filter_gm_6l45", "filter_dl501_coarse", "filter_dl501_fine",
       "filter_dq724_fine", "filter_dq724_coarse", "cvt_gasket_3jx0a", "cvt_ring_3jx3a", "cvt_filter_28x0a", "cvt_gasket_1xf0d",
       "cvt_ring_3vx0a", "cvt_filter_fine", "cvt_filter_coarse", "re7_gasket_1xj0a", "work_drainfill_2000", "work_full_8hp55",
       "work_part_8hp55", "work_full_9hp48", "work_full_6hp19", "work_full_6hp21", "work_full_tr80", "work_full_tr60",
@@ -2191,7 +2189,7 @@
       "oil_mb_9g_13", "oil_mb_9g_10", "mb_diff_oil", "oil_mb_7g_12", "oil_motul_atf6_12", "oil_zf8hp_12",
       "oil_zf8hp_6", "oil_motul_10", "oil_motul_15", "oil_motul_16", "oil_zf_4", "oil_zf_10",
       "oil_multiatf_11", "oil_multiatf_15", "oil_multiatf_16", "oil_toyota_16", "oil_toyota_11", "oil_dctf_9",
-      "oil_dctf_5", "oil_dctf_35", "oil_dctf_2", "oil_httdctf_9", "oil_gear300_4", "oil_gear300_38",
+      "oil_dctf_5", "oil_dctf_2", "oil_httdctf_9", "oil_gear300_4", "oil_gear300_38",
       "oil_cvtf_12", "oil_hf_1", "oil_kia_sp4_11",
       "kit_diff_motul_ls", "kit_diff_motul_reg",   // масла комплекта-с-блокировкой — по ставкам gear300_ls/gear300
       // (первая сверка 09.07.2026)
@@ -2219,10 +2217,13 @@
     // Суммы прежние (12450 / 31500), но ключи новые — без этой даты 8 карточек подняли бы бейдж
     // «Проверить цены» на ровном месте (в листе «Сверка цен» их ещё нет).
     "2026-09-04": ["diff_oil_front_lock", "diff_oil_rear_lock", "bmw_g_oil_lsd"],
-    // третий вариант мокрого DSG (DQ500/DQ250): оригинал VAG G052182A2 9 л = 29700 (ставка 3300 ₽/л).
-    // Цену продиктовал владелец вместе со сметами 12 и 13; остальные строки этих смет (Motul 22500,
-    // HIGH TORQUE 36000, фильтры 4000, BARDAHL 2200, работы 6000) совпали с прайсом — их даты не трогаем.
-    "2026-09-08": ["vag_g052182", "oil_g052182_9"],
+    // Сверка шаблонов с публичным прайсом владельца на DRIVE2 (пост «Уникально низкие цены…»):
+    //   • DL-382: Motul Multi DCTF 3,5 л = 10 500 — мелким объёмом по 3000 ₽/л, а не по ставке 2500
+    //     (было 8 750). Итого варианта Motul стало 30 600, как в прайсе (п. 14.2).
+    //   • DQ500/DQ250: оригинал VAG G052182A2 по 4000 ₽/л → 9 л = 36 000, Итого 48 200 (пп. 12 и 13).
+    //     08.09.2026 владелец диктовал 3300 ₽/л (29 700), 11.09.2026 выбрал цену прайса — она и стоит.
+    //     Той же ставкой считается строка каталога PARTS: цена за литр там одна с этой.
+    "2026-09-11": ["oil_dctf_35", "vag_g052182", "oil_g052182_9"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -2552,7 +2553,7 @@
     },
     "9HP48": {
       "Аппаратная": {
-        head: "Полная замена масла в АКПП ZF 9HP48",
+        head: "Полная аппаратная замена масла в АКПП ZF 9HP48",
         variants: () => [
           { label: "1.",  items: ["oil_motul_10", "bardahl", "work_full_9hp48"] },
           { label: "1.1", items: ["oil_zf_10",    "bardahl", "work_full_9hp48"] },
@@ -2715,7 +2716,7 @@
         head: "Полная замена масла в DSG S-Tronic DL501 0B5",
         variants: () => [
           { label: "1.",  items: ["oil_dctf_9",   "filter_dl501_coarse",      "filter_dl501_fine",  "bardahl", "work_full_dl501"] },
-          { label: "1.1", items: ["oil_httdctf_9","filter_dl501_coarse_lynx", "filter_dl501_fine2", "bardahl", "work_full_dl501"] },
+          { label: "1.1", items: ["oil_httdctf_9","filter_dl501_coarse",      "filter_dl501_fine",  "bardahl", "work_full_dl501"] },
         ],
       },
       "Частичная": {
