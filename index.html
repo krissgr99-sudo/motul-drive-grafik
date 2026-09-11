@@ -2372,11 +2372,11 @@
     ],
   };
 
-  // Поддоны 8HP, под которые в коробку входит 13 л масла вместо 12: глубокий ZF 1087298361
-  // (Jeep/Dodge) и алюминиевый M-версии (BMW M). Появится третий такой — впиши сюда, оба
-  // варианта масла (Motul/оригинал) пересоберутся сами. Про ЧАСТИЧНУЮ замену это ничего не
-  // говорит: там объём слива свой, и он посчитан только для глубокого поддона.
-  const PANS_13L = new Set(["filter_deep", "filter_m_alu"]);
+  // УВЕЛИЧЕННЫЕ поддоны 8HP: глубокий ZF 1087298361 (Jeep/Dodge) и алюминиевый M-версии (BMW M).
+  // С ними в коробку входит 13 л вместо 12, а при частичной сливается 6 л вместо 5 (владелец
+  // подтвердил объём слива для M 11.09.2026). Появится третий такой — впиши сюда, и аппаратная,
+  // и частичная пересоберутся сами.
+  const PANS_BIG = new Set(["filter_deep", "filter_m_alu"]);
 
   // 3) Услуги по коробкам. Новую коробку (6-ступку) добавляешь сюда + позиции в PRICE.
   //    filter — какой фильтр-поддон для обычной / гибрида.
@@ -2385,8 +2385,8 @@
       filter: { "Обычная": "filter_std", "Мягкий гибрид": "filter_mild" },
       "Аппаратная": {
         head: "Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76",
-        // Глубокий поддон и алюминиевый M-версии (см. PANS_13L): масла те же, но 13 л вместо 12.
-        variants: f => PANS_13L.has(f) ? [
+        // Увеличенные поддоны (см. PANS_BIG): масла те же, но 13 л вместо 12.
+        variants: f => PANS_BIG.has(f) ? [
           { label: "1.",  items: ["oil_motul_13", "bardahl", f, "work_full"] },
           { label: "1.1", items: ["oil_zf_13",    "bardahl", f, "work_full"] },
         ] : [
@@ -2407,8 +2407,8 @@
         // Заголовок нейтральный: вариантов два (с заменой фильтр-поддона и без съёма) — как у 8HP55/65/65A.
         // Какой именно способ, видно по строке работы внутри варианта.
         head: "Частичная замена масла в АКПП ZF 8HP45-50-70-75-76",
-        // С глубоким поддоном сливается больше — 6 л вместо 5 (масло то же, ключ уже есть в PRICE).
-        variants: f => f === "filter_deep" ? [
+        // С увеличенным поддоном сливается больше — 6 л вместо 5 (масло то же, ключ уже есть в PRICE).
+        variants: f => PANS_BIG.has(f) ? [
           { label: "1.2", items: ["oil_zf8hp_6", f, "work_partial"] },
         ] : [
           { label: "1.2", items: ["oil_zf_5", f, "work_partial"] },
@@ -2984,14 +2984,17 @@
       code:"ZF·8HP45-76·Частичная·Глубокий поддон",
       title:"8HP45-76 · глубокий поддон · частичная (с заменой фильтр-поддона)", titleAccent:"глубокий поддон",
       extraTags:["Глубокий поддон", "1087298361", "Jeep", "Dodge", "6 л", "оригинал ZF"] },
-    // M-версия BMW: алюминиевый поддон со своим фильтром (11 000), заправка 13 л — «Итого» 42 600 / 47 800.
+    // M-версия BMW: алюминиевый поддон со своим фильтром (11 000), заправка 13 л, слив при частичной 6 л.
     // lock:true без пары «без блокировки» намеренно: у M задний мост с блокировкой ВСЕГДА (владелец 11.09.2026),
-    // поэтому мосты и раздатка идут сразу в LSD-раскладке. Частичной замены у этой карточки нет — объём
-    // слива под алюминиевый поддон владелец не называл, выдумывать его нельзя.
+    // поэтому мосты и раздатка идут сразу в LSD-раскладке.
     { brand:"ZF", box:"8HP45-76", type:"Аппаратная", filter:"filter_m_alu", lock:true, diffs:true,
       code:"ZF·8HP45-76·Аппаратная·M-версия алюминиевый поддон",
       title:"8HP45-76 · M-серия · алюминиевый поддон + мосты и раздатка (с блокировкой)", titleAccent:"M-серия",
       extraTags:["M-серия", "M-Версия", "Алюминиевый поддон", "13 л", "Motul ATF6", "оригинал ZF"] },
+    { brand:"ZF", box:"8HP45-76", type:"Частичная", filter:"filter_m_alu", lock:true, diffs:true,
+      code:"ZF·8HP45-76·Частичная·M-версия алюминиевый поддон",
+      title:"8HP45-76 · M-серия · частичная (алюминиевый поддон) + мосты и раздатка (с блокировкой)", titleAccent:"M-серия",
+      extraTags:["M-серия", "M-Версия", "Алюминиевый поддон", "6 л", "оригинал ZF"] },
 
     // ZF 8HP55 (фильтр Mahle HX189KIT)
     { brand:"ZF", box:"8HP55", type:"Аппаратная", title:"ZF 8HP55 · аппаратная (Motul / оригинал ZF)",
@@ -3185,7 +3188,9 @@
   //          draft:true — ЧЕРНОВИК, ждёт сверки Кристиана (red line №2: неверная коробка = неверная цена);
   //          allow — какие ВАРИАНТЫ карточек коробки показывать этой машине (чтобы не вываливать все 12):
   //              base(всегда) / mild(48V мягкий гибрид) / phev(engine:"Гибрид") / lock(блокировка диффа) /
-  //              transfer(diffsDetailed — мосты+раздатка). Нет флага = не показывать этот тип. Фильтр — в visible().
+  //              transfer(diffsDetailed — мосты+раздатка) / deep(глубокий поддон ZF 1087298361) /
+  //              m(поддон M-версии: у такой машины показываем ТОЛЬКО M-карточки 8HP, обычные прячем).
+  //              Нет флага = не показывать этот тип. Фильтр — в visible().
   //              Мейнстрим F/G BMW = только base (гибрид/блокировки у них нет); X5 E70 + transfer (раздатка).
   //    ⚙️ Карта выверена мульти-агентным аудитом (ETK/ZF/пресс-релизы) + состязательная
   //       перепроверка + решения Кристиана. draft:true — там, где коробка зависит от мотора/версии.
@@ -3198,7 +3203,8 @@
     //   nocard:"ZF 8HP80" — коробку ОБСЛУЖИВАЕМ, но готовой карточки в TEMPLATES ещё нет -> показываем
     //     код коробки + «смета вручную». НЕ путать с noservice: там отказ клиенту, тут ручной расчёт;
     //   draft:true — коробка зависит от мотора/версии/года -> плашка «сверь по VIN»; note — короткая развилка;
-    //   allow — какие ВАРИАНТЫ карточек: base / mild(48V) / phev(engine:"Гибрид") / lock(блокировка) / transfer.
+    //   allow — какие ВАРИАНТЫ карточек: base / mild(48V) / phev(engine:"Гибрид") / lock(блокировка) /
+    //     transfer / deep(глубокий поддон) / m(поддон M-версии — обычные карточки 8HP такой машине прячем).
     // ВНИМАНИЕ: почти ВСЕ PHEV BMW идут на ОТДЕЛЬНОЙ гибридной коробке (GA8P75HZ/GA8P70H) — НЕ обычная 8HP,
     //   масло/объём иные -> phev:false, вынесено в note. Карта выверена мульти-агентным аудитом (ETK/ZF/
     //   пресс-релизы + состязательная проверка), 2026-07. До 2007 не заводим (редкие, считаются вручную).
@@ -3356,31 +3362,31 @@
     /* ==================== M-модели на 8HP (наши) ==================== */
     { brand:"BMW", model:"M2", gen:"G87 · 2023+ · S58 · ZF 8HP76", boxes:["8HP45-76"],
       match:["g87","m2 g87","m2 competition","m2 cs"],
-      allow:{base:true, lock:true}, note:"Автомат = ZF 8HP76, Active M Diff, RWD. Базовая 6MT — не наша." },
+      allow:{base:true, lock:true, m:true}, note:"Автомат = ZF 8HP76, Active M Diff, RWD. Базовая 6MT — не наша." },
     { brand:"BMW", model:"M3", gen:"G80/G81 · 2021+ · S58 · ZF 8HP76 (Competition)", boxes:["8HP45-76"],
       match:["g80","g81","m3 g80","m3 g81","m3 competition","m3 touring"],
-      allow:{base:true, lock:true}, note:"Автомат (Competition, RWD/xDrive) = ZF 8HP76, Active M Diff. Базовая 6MT — не наша." },
+      allow:{base:true, lock:true, m:true}, note:"Автомат (Competition, RWD/xDrive) = ZF 8HP76, Active M Diff. Базовая 6MT — не наша." },
     { brand:"BMW", model:"M4", gen:"G82/G83 · 2021+ · S58 · ZF 8HP76 (Competition)", boxes:["8HP45-76"],
       match:["g82","g83","m4 g82","m4 g83","m4 competition","m4 cabrio","m4 csl","m4 cs"],
-      allow:{base:true, lock:true}, note:"Автомат (Competition/CSL/CS) = ZF 8HP76, Active M Diff. Базовая 6MT — не наша." },
+      allow:{base:true, lock:true, m:true}, note:"Автомат (Competition/CSL/CS) = ZF 8HP76, Active M Diff. Базовая 6MT — не наша." },
     { brand:"BMW", model:"M5", gen:"F90 · 2017-2023 · S63 · ZF 8HP «M Steptronic»", boxes:["8HP45-76"],
       match:["f90","m5 f90","m5 competition"],
-      allow:{base:true, lock:true}, note:"ZF 8HP75/76 M Steptronic (гидромех., не DCT). Active M Diff стандарт." },
+      allow:{base:true, lock:true, m:true}, note:"ZF 8HP75/76 M Steptronic (гидромех., не DCT). Active M Diff стандарт." },
     { brand:"BMW", model:"M5", gen:"G90/G99 · 2024+ · S68 PHEV · 8HP", boxes:["8HP45-76"], draft:true,
       match:["g90","g99","m5 g90","m5 touring"],
       allow:{base:true, lock:true}, note:"PHEV: V8 + э-мотор в корпусе 8HP «M Steptronic». Гибридное исполнение — объём/процедура иные, сверять. Active M Diff." },
     { brand:"BMW", model:"M8", gen:"F91/F92/F93 · 2019-2025 · S63 · ZF 8HP76", boxes:["8HP45-76"],
       match:["f91","f92","f93","m8 f9","m8 competition","m8 gran coupe"],
-      allow:{base:true, lock:true}, note:"ZF 8HP76 M Steptronic (не DCT). Active M Diff стандарт. xDrive с режимом RWD." },
+      allow:{base:true, lock:true, m:true}, note:"ZF 8HP76 M Steptronic (не DCT). Active M Diff стандарт. xDrive с режимом RWD." },
     { brand:"BMW", model:"X3 M / X4 M", gen:"F97/F98 · 2019-2024 · S58 · ZF 8HP76", boxes:["8HP45-76"],
       match:["f97","f98","x3 m","x4 m","x3m","x4m"],
-      allow:{base:true, lock:true}, note:"ZF 8HP76. Active M Diff стандарт. Только M xDrive." },
+      allow:{base:true, lock:true, m:true}, note:"ZF 8HP76. Active M Diff стандарт. Только M xDrive." },
     { brand:"BMW", model:"X5 M / X6 M", gen:"F85/F86 · 2015-2019 · S63 · ZF 8HP75", boxes:["8HP45-76"],
       match:["f85","f86","x5 m f85","x6 m f86","x5m f85","x6m f86"],
-      allow:{base:true, lock:true}, note:"ZF 8HP75. Active M Diff стандарт. Только xDrive." },
+      allow:{base:true, lock:true, m:true}, note:"ZF 8HP75. Active M Diff стандарт. Только xDrive." },
     { brand:"BMW", model:"X5 M / X6 M", gen:"F95/F96 · 2020-2023 · S63 · ZF 8HP76", boxes:["8HP45-76"],
       match:["f95","f96","x5 m f95","x6 m f96","x5m f95","x6m f96"],
-      allow:{base:true, lock:true}, note:"ZF 8HP76. Active M Diff стандарт. Только xDrive." },
+      allow:{base:true, lock:true, m:true}, note:"ZF 8HP76. Active M Diff стандарт. Только xDrive." },
 
     /* ==================== M-модели вне ассортимента (робот DCT / SMG) ==================== */
     { brand:"BMW", model:"M3 (E9x)", gen:"E90/E92/E93 · 2007-2013 · S65 V8 · DCT/МКПП", boxes:[], noservice:true,
@@ -3800,10 +3806,14 @@
       // такую карточку не показываем, пока машина её явно не разрешит (c.allow.deep). Fail-closed —
       // прячем и там, где c.allow вообще не задан, иначе BMW получит поддон не от своей машины.
       if(t.filter === "filter_deep" && !(c.allow && c.allow.deep)) return false;
-      // Тот же fail-closed для алюминиевого поддона M-версии: в карте CARS настоящие M (M3/M5/X5M…)
-      // пока не заведены — «отдельно» в примечаниях, — а lock:true у этой карточки иначе показал бы
-      // её любой машине с M Sport Diff (M340i, M550i). У них поддон обычный, поддон M — не их.
+      // Тот же fail-closed для алюминиевого поддона M-версии. Без него lock:true у этой карточки
+      // показал бы её любой машине с M Sport Diff (M340i, M550i, X5 M50i): у них поддон ОБЫЧНЫЙ,
+      // поддон M — не их. Флаг m стоит только у настоящих M на 8HP (блок «M-модели» в CARS).
       if(t.filter === "filter_m_alu" && !(c.allow && c.allow.m)) return false;
+      // И обратное: машине с поддоном M-версии не годятся ОБЫЧНЫЕ карточки 8HP — там другой поддон
+      // и 12 л вместо 13. У такой машины показываем ТОЛЬКО M-карточки: внешне сметы почти одинаковые,
+      // разница в одной строке, и выбрать не ту слишком легко.
+      if(c.allow && c.allow.m && t.box === "8HP45-76" && t.filter !== "filter_m_alu") return false;
       if(!c.allow) return true;
       if(t.diffsDetailed && !c.allow.transfer) return false;   // мосты+раздатка
       if(t.engine === "Гибрид" && !c.allow.phev) return false; // полный гибрид (PHEV)
