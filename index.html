@@ -2033,6 +2033,8 @@
     filter_tf60_alt:    ["Фильтр АКПП Aisin TF60/61 (аналог)", 5000],
     filter_tf62:        ["Фильтр АКПП Aisin TF62SN", 4000],
     filter_u660:        ["Фильтр АКПП Aisin U660E/F", 4400],
+    filter_lynx_lt1036: ["Фильтр LYNXauto LT-1036 с прокладкой в комплекте", 4400],   // Aisin U661F
+    filter_lynx_lt1090: ["Фильтр LYNXauto LT-1090 с прокладкой в комплекте", 4400],   // Aisin U760E/U761E
     filter_a750:        ["Фильтр JS Asakashi JT541K", 6000],
     filter_r4a51:       ["Фильтр JS Asakashi JT208K", 3800],
     filter_ab60:        ["Фильтр JS Asakashi JT568K", 5300],
@@ -2066,6 +2068,8 @@
     work_full_tf60:   ["Полная аппаратная замена масла в АКПП Aisin TF60/61 09G/K с промывкой системы", 7000],
     work_full_tf62:   ["Полная аппаратная замена масла в АКПП Aisin TF62SN 09M с промывкой системы", 7000],
     work_full_u660:   ["Полная аппаратная замена масла в АКПП Aisin U660E/F с промывкой системы", 6000],
+    work_full_u661:   ["Полная аппаратная замена масла в АКПП Aisin U661F с промывкой системы", 6000],
+    work_full_u760:   ["Полная аппаратная замена масла в АКПП Aisin U760E / U761E с промывкой системы", 6000],
     work_full_a750:   ["Полная аппаратная замена масла в АКПП Aisin A750F с промывкой системы", 6000],
     work_full_r4a51:  ["Полная аппаратная замена масла в АКПП Aisin R4A51/V4A51 с промывкой системы", 6000],
     work_full_ab60:   ["Полная аппаратная замена масла в АКПП Aisin AB60E/F с промывкой системы", 6000],
@@ -2228,7 +2232,10 @@
     //   • M-версия BMW: фильтр с прокладкой под алюминиевый поддон 11 000 — цену прислал владелец
     //     вместе со сметой (Итого 42 600 / 47 800). В его тексте у второго варианта стояла работа
     //     7 000 при «Итого 47 800» — по «Итого» и по первому варианту работа 6 000, это и взято.
-    "2026-09-11": ["oil_dctf_35", "vag_g052182", "oil_g052182_9", "filter_m_alu"],
+    //   • Aisin U661F и U760E/U761E: фильтры LYNXauto LT-1036 и LT-1090 по 4400, работы по 6000 —
+    //     владелец прислал обе сметы целиком, «Итого» 34 200 у каждой (совпало с расчётом).
+    "2026-09-11": ["oil_dctf_35", "vag_g052182", "oil_g052182_9", "filter_m_alu",
+                   "filter_lynx_lt1036", "filter_lynx_lt1090", "work_full_u661", "work_full_u760"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -2621,6 +2628,24 @@
         head: "Полная аппаратная замена масла в АКПП Aisin TF62SN 09M",
         variants: () => [
           { label: "1.", items: ["oil_multiatf_11", "bardahl", "filter_tf62", "work_full_tf62"] },
+        ],
+      },
+    },
+    // U661F и U760E/U761E — отдельные коробки, а не варианты U660E/F: состав и «Итого» совпадают
+    // (34 200), но фильтр у каждой свой по номеру LYNXauto. Владелец прислал их сметы 11.09.2026.
+    "U661F": {
+      "Аппаратная": {
+        head: "Полная аппаратная замена масла в АКПП Aisin U661F",
+        variants: () => [
+          { label: "1.", items: ["oil_motul_12", "bardahl", "filter_lynx_lt1036", "work_full_u661"] },
+        ],
+      },
+    },
+    "U760E/U761E": {
+      "Аппаратная": {
+        head: "Полная аппаратная замена масла в АКПП Aisin U760E / U761E",
+        variants: () => [
+          { label: "1.", items: ["oil_motul_12", "bardahl", "filter_lynx_lt1090", "work_full_u760"] },
         ],
       },
     },
@@ -3075,6 +3100,10 @@
       titleAccent:"TF62SN 09M", extraTags:["TF62SN", "09M", "Motul Multi ATF"] },
     { brand:"Aisin", box:"U660E/F", type:"Аппаратная", title:"Aisin U660E/F (Motul ATF6)",
       titleAccent:"U660E/F", extraTags:["U660E", "U660F", "Motul ATF6"] },
+    { brand:"Aisin", box:"U661F", type:"Аппаратная", title:"Aisin U661F (Motul ATF6)",
+      titleAccent:"U661F", extraTags:["U661F", "6/1", "Motul ATF6", "LYNXauto LT-1036", "LT-1036"] },
+    { brand:"Aisin", box:"U760E/U761E", type:"Аппаратная", title:"Aisin U760E / U761E (Motul ATF6)",
+      titleAccent:"U760E / U761E", extraTags:["U760E", "U761E", "6/1", "Motul ATF6", "LYNXauto LT-1090", "LT-1090"] },
     { brand:"Aisin", box:"A750F", type:"Аппаратная", title:"Aisin A750F (Motul ATF6)",
       titleAccent:"A750F", extraTags:["A750F", "Motul ATF6", "JS Asakashi JT541K"] },
     { brand:"Aisin", box:"R4A51/V4A51", type:"Аппаратная", title:"Aisin R4A51/V4A51 (Motul Multi ATF)",
