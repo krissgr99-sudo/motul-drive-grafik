@@ -2096,7 +2096,7 @@
     oil_kia_sp4_11:["Трансмиссионное масло Kia Sp4 11л", perL(RATES.kia_sp4, 11)],
     // -- Фильтры (новые) --
     filter_mahle_hx189: ["Фильтр Mahle HX189KIT", 9000],
-    filter_mahle_hx187: ["Фильтр Mahle HX187KIT", 6000],
+    filter_mahle_hx187: ["Фильтр АКПП с прокладкой в комплекте Mahle HX187KIT", 4500],   // Aisin TR80SD 0C8 — как в прайсе DRIVE2, п. 6
     filter_mahle_hx160: ["Фильтр Mahle HX160KIT", 4600],
     filter_mahle_hx139: ["Фильтр Mahle HX139D", 4000],
     filter_mahle_hx132: ["Фильтр Mahle HX132D", 4000],
@@ -2134,7 +2134,7 @@
     work_full_9hp48:  ["Полная аппаратная замена масла в АКПП ZF 9HP48 с промывкой системы", 6000],
     work_full_6hp19:  ["Полная аппаратная замена масла в АКПП ZF 6HP19 с промывкой системы", 6000],
     work_full_6hp21:  ["Полная аппаратная замена масла в АКПП ZF 6HP19/21 с промывкой системы", 6000],
-    work_full_tr80:   ["Полная аппаратная замена масла в АКПП Aisin TR80SD 0C8 с промывкой системы", 7000],
+    work_full_tr80:   ["Полная аппаратная замена масла в АКПП Aisin TR80SD с промывкой системы", 7000],   // без «0C8» — как в прайсе DRIVE2 (код стоит в заголовке сметы)
     work_full_tr60:   ["Полная аппаратная замена масла в АКПП Aisin TR60SN 09D с промывкой системы", 7000],
     work_full_tf60:   ["Полная аппаратная замена масла в АКПП Aisin TF60/61 09G/K с промывкой системы", 7000],
     work_full_tf62:   ["Полная аппаратная замена масла в АКПП Aisin TF62SN 09M с промывкой системы", 7000],
@@ -2246,7 +2246,7 @@
       "mb_diff_rear", "mb_transf_work",
       // (первая сверка 03.07.2026)
       "filter_mb_7g", "work_full_7g_wash", "work_full_7g_std_wash", "filter_zf_8hp65", "work_full_8hp65_wash", "work_part_8hp65",
-      "filter_zf_8hp65a", "work_full_8hp65a_wash", "work_part_8hp65a", "filter_mahle_hx189", "filter_mahle_hx187", "filter_mahle_hx160",
+      "filter_zf_8hp65a", "work_full_8hp65a_wash", "work_part_8hp65a", "filter_mahle_hx189", "filter_mahle_hx160",
       "filter_mahle_hx139", "filter_mahle_hx132", "filter_tf60", "filter_tf60_alt", "filter_tf62", "filter_u660",
       "filter_a750", "filter_r4a51", "filter_ab60", "filter_u340", "filter_fw6el", "filter_6hp19_mahle",
       "filter_zf_6hp2", "filter_gm_6l45", "filter_dl501_coarse", "filter_dl501_fine",
@@ -2307,6 +2307,10 @@
     //     владелец прислал обе сметы целиком, «Итого» 34 200 у каждой (совпало с расчётом).
     "2026-09-11": ["oil_dctf_35", "vag_g052182", "oil_g052182_9", "filter_m_alu",
                    "filter_lynx_lt1036", "filter_lynx_lt1090", "work_full_u661", "work_full_u760"],
+    // Aisin TR80SD 0C8: владелец прислал обе сметы целиком — текст пункта 6 прайса DRIVE2. Фильтр
+    // Mahle HX187KIT 4 500 (в портале стоял 6 000) → «Итого» 42 500 у обоих вариантов (было 44 000).
+    // Строка каталога «Цены» (PARTS, HX187KIT 5 000) — не смета, эта правка её не меняла.
+    "2026-09-12": ["filter_mahle_hx187"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
