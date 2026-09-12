@@ -573,6 +573,20 @@
   thead th{padding:14px 12px;font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:#fff;
     background:var(--head);text-align:center;border-left:1px solid var(--hair)}
   thead th.th-date{width:120px;background:var(--head-date);text-align:left;border-left:none}
+  /* ЛИПКАЯ ШАПКА ГРАФИКА (просьба владельца 12.09.2026): листаешь месяц вниз — имена людей
+     едут вместе со страницей, и не надо помнить, кто в каком столбце. Только график: у «Цен»
+     и «Продаж» свои таблицы (та же .tablecard), их поведение не трогаем.
+     top = высота липкого меню: она приходит в --navh из JS (syncNavH), потому что числом её
+     не написать — в одну строку меню 66px, а в полосе 721–1120px пункты уезжают во вторую
+     строку. 66px здесь — только фолбэк, если переменной ещё нет. z-index ниже его 30 —
+     шапка уходит ПОД меню, а не наезжает на него.
+     overflow:clip вместо hidden у карточки обязателен: hidden делает её скролл-контейнером,
+     и шапка «прилипала» бы к самой карточке, то есть не липла вовсе. Порядок объявлений —
+     страховка: браузер без clip оставит hidden (шапка просто не липкая), а не потеряет
+     скругление углов. Фон у ячеек шапки непрозрачный (--head-date / --card2) — строки под
+     ней не просвечивают. */
+  #page-grafik .tablecard{overflow:clip}
+  #page-grafik thead th{position:sticky;top:var(--navh,66px);z-index:5}
   tbody td{padding:14px 12px;border-top:1px solid var(--line);border-left:1px solid var(--line);vertical-align:middle;text-align:center}
   tbody td.date-cell{border-left:none;text-align:left}
   tbody tr:hover td{background:var(--rowhover)}
@@ -671,7 +685,7 @@
   .withdraw-cell .wd-amount{font-family:var(--font-disp);font-weight:800}
   .withdraw-cell .wd-note{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
   .withdraw-card{background:rgba(209,31,45,.06);border:1px solid var(--open-border);border-radius:14px;padding:13px 15px;
-    display:flex;align-items:center;gap:9px;font-weight:700;font-size:13px;color:var(--accent-soft)}
+    display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-weight:700;font-size:13px;color:var(--accent-soft)}
   .withdraw-card .wd-note{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
   /* расход из копилки масла (Алексей взял деньги — напр. купил масло): нейтральная строка, не красная */
   tbody tr.spend-row td{background:var(--fill-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -920,15 +934,11 @@
   /* лента штрафов */
   .fn-list{display:flex;flex-direction:column;gap:10px}
   .fn-row{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:13px 16px}
-  .fn-row.is-off{opacity:.6}
   .fn-row-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .fn-who{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:14px}
   .fn-reason{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:var(--fill-soft);
     color:var(--muted);border:1px solid var(--line-strong)}
   .fn-money{font-family:var(--font-mono);font-size:12.5px;font-weight:700;color:var(--accent-soft);font-variant-numeric:tabular-nums}
-  .fn-row.is-off .fn-money{color:var(--muted);text-decoration:line-through}
-  .fn-off{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;
-    background:var(--fill-soft);color:var(--muted);border:1px solid var(--line-strong)}
   .fn-when{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;
     color:var(--muted);font-weight:600;white-space:nowrap}
   .fn-comment{margin-top:9px;font-size:13.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
@@ -1143,6 +1153,7 @@
     .newver{display:none !important}          /* плашка обновления — экранная, на лист не идёт */
     body.locked #app{filter:none}
     .topnav{position:static;border:none;backdrop-filter:none;margin:0 0 16px}
+    #page-grafik thead th{position:static}   /* на листе шапка не липкая: её повторяет сам thead */
     .topnav,.tablecard,.note,.today,.tpl-card,.tpl-facets{box-shadow:none}
     .today{background:#fff;border:1px solid #eee}
     .tablecard,.tpl-card,.note,.tpl-facets{border-color:#ddd}
@@ -1524,7 +1535,7 @@
       <div class="fn-score" id="fn-score"></div>
       <div class="fb-form">
         <div class="fb-h">Выписать штраф</div>
-        <div class="fb-sub">Штраф увидят все, кто заходит на портал. Ошибся — штраф можно отменить: из счёта он уйдёт, из истории нет.</div>
+        <div class="fb-sub">Штраф увидят все, кто заходит на портал. Ошибся — отмени: штраф исчезнет и из счёта, и из истории.</div>
         <div class="fb-lbl">Кому</div>
         <div class="fb-chips" id="fn-who"></div>
         <div class="fb-lbl">За что</div>
@@ -4968,6 +4979,14 @@
     let cur = CH.flush;
     try { if(localStorage.getItem("md_sales_ch") === "oil") cur = CH.oil; } catch(e){}
 
+    /* Отменённые операции: id → канал ("flush" / "oil"), пока таблица не догнала отмену.
+       Зачем хранить: подтверждение у нас приходит только перечиткой (ответ no-cors
+       непрозрачен), а перезагрузка до неё вернула бы отменённый вывод на экран вместе
+       с деньгами. Запись уходит из списка сразу, а id лежит здесь до тех пор, пока
+       таблица не перестанет отдавать операцию (reconcileDel); пока лежит — отмена
+       досылается при старте и возврате сети, как очередь операций масла. */
+    let opDel = {};
+
     // нормализация операции (сервер/очередь → вид для рендера); cd — дата ВНЕСЕНИЯ (бекдейт виден)
     const normOp = (w, pending) => ({ id:String(w.id || ""), date:String(w.date || ""), dt:parse(w.date),
       amount:Number(w.amount) || 0, time:w.time || "", cd:String(w.cd || ""),
@@ -4978,11 +4997,12 @@
         if(!w || !w.date) return;
         const o = normOp(w, false);
         if(isNaN(o.dt.getTime())) return;
-        if(o.id) seen[o.id] = 1;
+        if(o.id) seen[o.id] = 1;       // помечаем ДО отмены: иначе та же операция вернулась бы из очереди
+        if(o.id && opDel[o.id]) return;   // отменена здесь — ждём, пока таблица догонит
         out.push(o);
       });
       (ch.pend || []).forEach(w => {   // очередь: с меткой «не сохранено», пока сервер не подтвердил
-        if(seen[w.id]) return;
+        if(seen[w.id] || opDel[w.id]) return;
         const o = normOp(w, true);
         if(isNaN(o.dt.getTime())) return;
         // старше серверного окна (62 дня) — сервер уже никогда не примет: терминальное
@@ -5043,7 +5063,9 @@
       };
       next();
     }
-    window.addEventListener("online", sendPending);
+    // вернулась сеть: досылаем очередь и перечитываем таблицу — перечитка же досылает
+    // неподтверждённые отмены выводов (reconcileDel), отдельного канала им не нужно
+    window.addEventListener("online", () => { sendPending(); loadOps(); });
     function reconcilePending(server){
       const ids = {};
       server.forEach(o => { if(o && o.id) ids[o.id] = 1; });
@@ -5098,6 +5120,7 @@
           else if(!CH.oil.pend.length) oilRecheck = 0;
           dirty = true;
         }
+        if(data) reconcileDel(data);   // отмены, которые таблица уже приняла, забываем
         if(dirty) render();
       });
     }
@@ -5181,6 +5204,60 @@
       enqueueOp("spend", amount, note);
     }
 
+    /* ==== Отмена ошибочного вывода (кнопка в ленте) ====
+       Деньги возвращаются в копилку сами: «К выводу» = старт + продажи − операции, и
+       отменённая операция из этой суммы просто выпадает. Запись уходит из истории — ни
+       строки, ни пометки «отменён»: на месте ошибки должно быть пусто (решение владельца
+       2026-09-12). В таблице строка остаётся с пометкой «удалено» в колонке status —
+       портал её не отдаёт и не рисует, а ошибочная отмена лечится очисткой ячейки. */
+    function doUndoOp(id){
+      const ch = cur;
+      const o = chanOps(ch).find(x => x.id === id);
+      if(!o || o.kind !== "wd") return;
+      if(!confirm("Отменить вывод " + money(o.amount) + " от " + dateFull(o.dt) +
+                  (ch.person ? " (" + ch.person + ")" : "") + "?\n" +
+                  money(o.amount) + " вернутся в копилку, запись уйдёт из истории у всех.")) return;
+      opDel[id] = ch.key;
+      saveLS("md_ops_del", opDel);
+      // операция ещё в очереди (масло, не подтверждена таблицей) — убираем и оттуда, иначе досыл её вернёт
+      if(ch.pend && ch.pend.length){
+        const left = ch.pend.filter(p => p.id !== id);
+        if(left.length !== ch.pend.length){ ch.pend = left; saveLS("md_oil_pending", left); }
+      }
+      render();
+      sendOpDel(id);
+      setTimeout(loadOps, 1500); setTimeout(loadOps, 7000);   // подтверждение — перечиткой
+    }
+    // отмена уходит на сервер; ответ no-cors непрозрачен, поэтому «доехало» решает перечитка
+    function sendOpDel(id){
+      if(!WITHDRAW_API || !opDel[id]) return;
+      postChannel(WITHDRAW_API, { token: WITHDRAW_TOKEN, kind:"op-del", ch: opDel[id], id: id },
+                  "отмена вывода", "op-del")
+        .catch(() => {});   // отмена осталась в md_ops_del — досыл при старте и возврате сети
+    }
+    /* Отмена доехала, когда операции с таким id больше нет в ответе таблицы; пока она там —
+       фильтр держим и отмену шлём снова: молча потерять отмену вывода нельзя, это деньги.
+       Повторов не больше DEL_TRIES за загрузку: иначе «сервер отдаёт — шлём — перечитываем»
+       закрутилось бы в петлю и съело потолок записи (RL_POST_MAX) на пустом месте. */
+    const DEL_TRIES = 2;
+    const delTries = {};
+    function reconcileDel(data){
+      const got = { flush: Array.isArray(data.withdrawals), oil: Array.isArray(data.oilOps) };
+      const live = {};
+      (data.withdrawals || []).forEach(w => { if(w && w.id) live[String(w.id)] = 1; });
+      (data.oilOps || []).forEach(w => { if(w && w.id) live[String(w.id)] = 1; });
+      let dirty = false;
+      for(const id in opDel){
+        if(!got[opDel[id]]) continue;          // канал в ответе не пришёл (старый бэкенд) — не судим
+        if(live[id]){
+          if((delTries[id] = (delTries[id] || 0) + 1) <= DEL_TRIES) sendOpDel(id);
+          continue;
+        }
+        delete opDel[id]; dirty = true;
+      }
+      if(dirty) saveLS("md_ops_del", opDel);
+    }
+
     // метка операции из очереди: «не сохранено» уйдёт после подтверждения таблицей;
     // «не записано» — терминально (окно дат сервера прошло, покажи владельцу и удали руками)
     const pendBadge = o => o.failed ? `<span class="op-pend">не записано · устарело</span>`
@@ -5188,6 +5265,10 @@
     // у операции, внесённой задним числом, показываем и дату внесения (cd = created из таблицы)
     const opWhen = o => dateFull(o.dt) + (o.time ? ", " + o.time : "") +
       (o.cd && o.cd.slice(0, 10) !== o.date ? " · внесено " + dateFull(parse(o.cd)) : "");
+    /* Кнопка отмены вывода. Класс общий с «Заметками» (.fb-undo) — такой же тихий ghost,
+       второй набор правил тому же виду не заводим. Показываем только у записей С id:
+       у самых старых строк листа его нет (до дедупа Р5.1), их отменяют в таблице. */
+    const wdUndo = o => o.id ? `<button class="fb-undo" type="button" data-op="${escOrd(o.id)}">Отменить</button>` : "";
 
     // список заказ-нарядов внутри раскрытого дня; у масла позиции группируются
     // под одним № заказа, имя масла — отдельной строкой (.ord-name)
@@ -5298,7 +5379,7 @@
         rowsEl.innerHTML = timeline.map(item => {
           if(item.kind === "wd"){
             const w = item.o;
-            return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>${ICO.cash} Вывод — <span class="wd-amount">${money(w.amount)}</span></span>${pendBadge(w)}<span class="wd-note">${opWhen(w)}</span></div></td></tr>`;
+            return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>${ICO.cash} Вывод — <span class="wd-amount">${money(w.amount)}</span></span>${pendBadge(w)}<span class="wd-note">${opWhen(w)}</span>${wdUndo(w)}</div></td></tr>`;
           }
           if(item.kind === "spend"){
             const w = item.o;
@@ -5323,7 +5404,7 @@
         cardsEl.innerHTML = timeline.map(item => {
           if(item.kind === "wd"){
             const w = item.o;
-            return `<div class="withdraw-card"><span>${ICO.cash} Вывод — <b>${money(w.amount)}</b></span>${pendBadge(w)}<span class="wd-note">${opWhen(w)}</span></div>`;
+            return `<div class="withdraw-card"><span>${ICO.cash} Вывод — <b>${money(w.amount)}</b></span>${pendBadge(w)}<span class="wd-note">${opWhen(w)}</span>${wdUndo(w)}</div>`;
           }
           if(item.kind === "spend"){
             const w = item.o;
@@ -5369,6 +5450,8 @@
 
     // раскрытие дня — десктоп (строка-деталь = следующий tr)
     rowsEl.addEventListener("click", e => {
+      const undo = e.target.closest("[data-op]");
+      if(undo){ doUndoOp(undo.dataset.op); return; }   // «Отменить» в строке вывода
       const row = e.target.closest("tr.sales-day");
       if(!row || row.classList.contains("no-orders")) return;
       const detail = row.nextElementSibling;
@@ -5377,6 +5460,8 @@
     });
     // раскрытие дня — мобайл (деталь внутри карточки)
     cardsEl.addEventListener("click", e => {
+      const undo = e.target.closest("[data-op]");
+      if(undo){ doUndoOp(undo.dataset.op); return; }   // «Отменить» в карточке вывода
       const btn = e.target.closest(".sday-btn");
       if(!btn) return;
       btn.closest(".daycard").classList.toggle("open");
@@ -5404,6 +5489,7 @@
     try { const c = JSON.parse(localStorage.getItem("md_withdrawals") || "null"); if(Array.isArray(c)) CH.flush.ops = c; } catch(e){}
     try { const c = JSON.parse(localStorage.getItem("md_oil_ops") || "null"); if(Array.isArray(c)) CH.oil.ops = c; } catch(e){}
     try { const c = JSON.parse(localStorage.getItem("md_oil_pending") || "null"); if(Array.isArray(c)) CH.oil.pend = c; } catch(e){} // не усекаем: молча терять денежные записи нельзя
+    try { const c = JSON.parse(localStorage.getItem("md_ops_del") || "null"); if(c && typeof c === "object") opDel = c; } catch(e){} // отмены, не подтверждённые таблицей
     // старт копилок из прошлого ответа сервера: до первой загрузки копилка считается по нему, а не по константам
     try { const c = JSON.parse(localStorage.getItem("md_opening") || "null");
           if(c && typeof c === "object"){ const s = Number(c.flush), o = Number(c.oil);
@@ -5885,8 +5971,13 @@
      отправили → перечитали. Отличие одно: у штрафа есть свой id, поэтому неподтверждённое
      лежит в очереди (md_fines_out) и досылается при следующей загрузке и при возврате сети —
      дедуп по id на стороне таблицы делает повтор безопасным, и штраф, записанный без связи,
-     не пропадает. Отмена (kind:"fine-status") строку не удаляет: из счёта штраф уходит,
-     из истории — нет. Табло, суммы и «лучший месяца» СЧИТАЮТСЯ из ленты, руками нигде
+     не пропадает.
+     ОТМЕНА (kind:"fine-status" со статусом «удалено») убирает штраф ЦЕЛИКОМ: из ленты, из
+     счёта месяца и из «за всё время» — зачёркнутых и приглушённых штрафов на портале больше
+     нет (решение владельца 2026-09-12, отменяет пункт 5 карточки
+     decisions/2026-09-01-shtrafy-luchshij-mesyaca-i-otmena.md). В листе строка остаётся с
+     пометкой в колонке status, ручка ?type=fines её не отдаёт; ошибочная отмена лечится
+     очисткой ячейки. Табло, суммы и «лучший месяца» СЧИТАЮТСЯ из ленты, руками нигде
      не дублируются (данные → авто-рендер). */
   (function(){
     // Люди раздела свои, а не PEOPLE: там у каждого режим смен, обязанности и soloAll —
@@ -5938,17 +6029,23 @@
     sendEl.insertAdjacentHTML("afterbegin", ICO.flag + " ");   // иконка статичной кнопки (§6 п.2: не эмодзи)
     warnEl.insertAdjacentHTML("afterbegin", ICO.warn + " ");
 
+    const GONE = "удалено";   // статус отмены в листе (то же надгробие, что у «Заметок»)
+    const DEL_TRIES = 2;      // столько раз за загрузку повторяем отмену, которую таблица ещё отдаёт
+
     let fines = [];      // подтверждённые таблицей (или из кэша)
     let out   = [];      // записанные здесь, таблицей ещё не подтверждённые
-    let override = {};   // локальная отметка «отменён» по id — до подтверждения таблицей
+    let del   = {};      // отменённые здесь (id → 1) — пока таблица не догнала отмену
     let who = null, boss = null, hintTimer = 0;
     let month = "", shown = [];
+    const delTries = {};
 
     const save     = () => { try { localStorage.setItem("md_fines", JSON.stringify(fines)); } catch(e){} };
     const saveOut  = () => { try { localStorage.setItem("md_fines_out", JSON.stringify(out)); } catch(e){} };
-    const saveOver = () => { try { localStorage.setItem("md_fines_cancel", JSON.stringify(override)); } catch(e){} };
-    const statusOf = f => (f.id && (f.id in override)) ? override[f.id] : String(f.status || "");
-    const isOff    = f => statusOf(f).trim() !== "";
+    const saveDel  = () => { try { localStorage.setItem("md_fines_del", JSON.stringify(del)); } catch(e){} };
+    /* Штрафа нет, если он отменён здесь или снят в таблице. Непустой status из кэша
+       читаем как «снят» намеренно: в листе лежат старые «отменён», и кэш прошлой версии
+       страницы их помнит — иначе отменённое когда-то вернулось бы в счёт. */
+    const isGone   = f => (f.id && del[f.id]) || String(f.status || "").trim() !== "";
     const colorOf  = name => (FINE_PEOPLE.find(p => p.name === name) || {}).color || "graphite";
     const keyOf    = f => String(f.created || "").slice(0, 7);          // месяц штрафа
     const curKey   = () => { const d = new Date(); return `${d.getFullYear()}-${p2(d.getMonth() + 1)}`; };
@@ -5993,7 +6090,9 @@
     } catch(e){}
     /* ---- рендер: табло месяца, «лучший» и лента ---- */
     function render(){
-      const all = [...out, ...fines].sort((a,b) => String(b.created).localeCompare(String(a.created)));
+      // отменённых в ленте нет вовсе: ни строки, ни числа в счёте, ни в «за всё время»
+      const all = [...out, ...fines].filter(f => !isGone(f))
+        .sort((a,b) => String(b.created).localeCompare(String(a.created)));
       // месяцы селектора — те, что есть в данных, плюс текущий (даже если он пустой)
       const months = [...new Set([curKey(), ...all.map(keyOf).filter(k => /^\d{4}-\d{2}$/.test(k))])].sort().reverse();
       if(!months.includes(month)) month = months[0];
@@ -6001,10 +6100,9 @@
       monthEl.value = month;
 
       const inMonth = all.filter(f => keyOf(f) === month);
-      const live    = inMonth.filter(f => !isOff(f));
       const stat = FINE_PEOPLE.map(p => {
-        const mine = live.filter(f => f.who === p.name);
-        const ever = all.filter(f => f.who === p.name && !isOff(f));
+        const mine = inMonth.filter(f => f.who === p.name);
+        const ever = all.filter(f => f.who === p.name);
         const sum  = a => a.reduce((s,f) => s + (Number(f.amount) || 0), 0);
         return { p, n: mine.length, sum: sum(mine), everN: ever.length, everSum: sum(ever) };
       });
@@ -6048,19 +6146,17 @@
       listHEl.hidden = inMonth.length === 0;
       listHEl.textContent = `Штрафы · ${monthLabel(month)} · ${inMonth.length}`;
       listEl.innerHTML = inMonth.length ? inMonth.map((f,i) => {
-        const off = isOff(f);
-        return `<div class="fn-row${off ? " is-off" : ""}">
+        return `<div class="fn-row">
           <div class="fn-row-top">
             <span class="fn-who" data-color="${colorOf(f.who)}"><span class="fn-dot"></span>${esc(f.who)}</span>
             <span class="fn-reason">${esc(f.reason)}</span>
             ${Number(f.amount) > 0 ? `<span class="fn-money">${money(f.amount)}</span>` : ""}
-            ${off ? `<span class="fn-off">${esc(statusOf(f).trim())}</span>` : ""}
             <span class="fn-when">${when(f.created)}</span>
           </div>
           ${f.comment ? `<div class="fn-comment">${esc(f.comment)}</div>` : ""}
           <div class="fn-foot">
             <span class="fn-author">${f.author ? "выписал " + esc(f.author) : ""}</span>
-            <button class="fb-undo" type="button" data-fine="${i}" data-off="${off ? "0" : "1"}">${off ? "Вернуть штраф" : "Отменить"}</button>
+            <button class="fb-undo" type="button" data-fine="${i}">Отменить</button>
           </div>
         </div>`;
       }).join("") : `<div class="fb-empty">За этот месяц штрафов нет</div>`;
@@ -6085,11 +6181,19 @@
           fines = data.fines;
           const ids = {}; fines.forEach(f => { if(f.id) ids[f.id] = 1; });
           out = out.filter(f => !ids[f.id]);                 // долетевшее убираем из очереди
-          // локальную отметку «отменён» гасим, когда таблица догнала её (или статус сменили руками)
-          for(const f of fines){ const k = f.id;
-            if(k && (k in override) && (override[k].trim() !== "") === (String(f.status || "").trim() !== "")) delete override[k]; }
+          /* Отмена доехала, когда таблица перестала отдавать штраф действующим: новая ручка
+             отменённых не отдаёт вовсе, а старая (до обновления скрипта) отдаёт со статусом —
+             считаем оба случая подтверждением. Пока отдаёт как действующий — повторяем отмену,
+             но не больше DEL_TRIES за загрузку: иначе «отдаёт → шлём → перечитываем»
+             закрутилось бы в петлю и съело потолок записи. */
+          const liveIds = {};
+          fines.forEach(f => { if(f.id && String(f.status || "").trim() === "") liveIds[f.id] = 1; });
+          for(const k in del){
+            if(!liveIds[k]){ delete del[k]; continue; }
+            if((delTries[k] = (delTries[k] || 0) + 1) <= DEL_TRIES) sendDel(k);
+          }
           warnEl.hidden = true;
-          save(); saveOut(); saveOver(); render();
+          save(); saveOut(); saveDel(); render();
         } else if(data && !data.blocked && !data.error){
           warnEl.hidden = false;   // таблица ответила, но штрафов не отдаёт — скрипт ещё не обновлён
         }                          // error (token/rate) — это не «старый скрипт», молча остаёмся на кэше
@@ -6125,17 +6229,24 @@
     commentEl.addEventListener("keydown", e => { if(e.key === "Enter") send(); });
     monthEl.addEventListener("change", () => { month = monthEl.value; render(); });
 
-    // отмена / возврат штрафа — по кнопке в ленте
+    // отмена штрафа — по кнопке в ленте. Штраф исчезает целиком: из ленты, из счёта и из
+    // «за всё время», у всех. Возврата на портале нет (в таблице — очистить колонку status),
+    // поэтому спрашиваем подтверждение: до 12.09.2026 отмена была обратимой одним тапом.
     listEl.addEventListener("click", e => {
       const b = e.target.closest("[data-fine]"); if(!b) return;
       const f = shown[+b.dataset.fine]; if(!f) return;
       if(!f.id){ hint("Этот штраф добавлен в таблицу руками — отменить его можно только там"); return; }
-      const off = b.dataset.off === "1";
-      override[f.id] = off ? "отменён" : "";     // оптимистично: из счёта уходит сразу
-      saveOver(); render();
-      post({ token: SHEET_TOKEN, kind:"fine-status", id: f.id, status: off ? "отменён" : "" })
-        .then(() => { setTimeout(loadFines, 2500); setTimeout(loadFines, 9000); });
+      if(!confirm("Отменить штраф " + f.who + " — «" + f.reason + "»" +
+                  (Number(f.amount) > 0 ? " на " + money(f.amount) : "") +
+                  "?\nОн исчезнет из истории и из счёта у всех.")) return;
+      del[f.id] = 1;                             // оптимистично: из ленты и счёта уходит сразу
+      out = out.filter(x => x.id !== f.id);      // не доехавший штраф ещё в очереди — иначе досыл его вернёт
+      saveDel(); saveOut(); render();
+      sendDel(f.id);
+      setTimeout(loadFines, 2500); setTimeout(loadFines, 9000);
     });
+    // отмена уходит в таблицу; «доехало» решает перечитка (ответ no-cors непрозрачен)
+    function sendDel(id){ post({ token: SHEET_TOKEN, kind:"fine-status", id: id, status: GONE }); }
 
     // каскад появления карточек табло при входе в раздел (та же дозировка, что у Комплектов)
     window.finesReveal = function(){ mdBlurStagger(scoreEl.querySelectorAll(".fn-card")); };
@@ -6143,7 +6254,7 @@
     // сначала кэш (мгновенно и офлайн), затем досыл очереди и свежие из таблицы
     try { const c = JSON.parse(localStorage.getItem("md_fines")  || "null"); if(Array.isArray(c)) fines = c; } catch(e){}
     try { const o = JSON.parse(localStorage.getItem("md_fines_out") || "null"); if(Array.isArray(o)) out = o; } catch(e){}
-    try { const v = JSON.parse(localStorage.getItem("md_fines_cancel") || "null"); if(v && typeof v === "object") override = v; } catch(e){}
+    try { const v = JSON.parse(localStorage.getItem("md_fines_del") || "null"); if(v && typeof v === "object") del = v; } catch(e){}
     month = curKey();
     render();
     flushOut();
@@ -8076,12 +8187,24 @@
   const pageheadEl = document.querySelector(".pagehead");
   const mainnavEl = document.getElementById("mainnav");
   const homeLogo = document.getElementById("home-logo");
+  /* Высота липкого меню → CSS-переменная --navh: на неё встаёт липкая шапка «Графика»
+     (#page-grafik thead th). Числом её не напишешь: в одну строку меню 66px, в полосе
+     721–1120px пункты уезжают во вторую строку (около 101px), а на Главной меню скрыто
+     вовсе. Поэтому меряем — при смене раздела и на resize; иначе имена людей при прокрутке
+     прятались бы под меню. */
+  const navInnerEl = document.querySelector(".topnav-inner");
+  function syncNavH(){
+    const h = navInnerEl ? Math.round(navInnerEl.getBoundingClientRect().height) : 0;
+    if(h) document.documentElement.style.setProperty("--navh", h + "px");
+  }
+  window.addEventListener("resize", syncNavH);
   function showPage(id){
     const isHome = (id === "glavnaya");
     document.querySelectorAll(".page").forEach(p => { p.hidden = (p.id !== "page-" + id); });
     document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.page === id));
     if(mainnavEl) mainnavEl.hidden = isHome;     // вариант B: на Главной меню скрыто, навигация плитками
     if(pageheadEl) pageheadEl.hidden = isHome;   // на Главной свой hero — шапку раздела прячем
+    syncNavH();                                  // меню то скрыто, то в две строки — липкой шапке нужна его высота
     if(isHome){
       homeReveal();
     } else if(PAGES[id]){
