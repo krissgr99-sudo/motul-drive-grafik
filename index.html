@@ -685,7 +685,7 @@
   .withdraw-cell .wd-amount{font-family:var(--font-disp);font-weight:800}
   .withdraw-cell .wd-note{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
   .withdraw-card{background:rgba(209,31,45,.06);border:1px solid var(--open-border);border-radius:14px;padding:13px 15px;
-    display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-weight:700;font-size:13px;color:var(--accent-soft)}
+    display:flex;align-items:center;gap:9px;font-weight:700;font-size:13px;color:var(--accent-soft)}
   .withdraw-card .wd-note{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
   /* расход из копилки масла (Алексей взял деньги — напр. купил масло): нейтральная строка, не красная */
   tbody tr.spend-row td{background:var(--fill-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -4979,13 +4979,12 @@
     let cur = CH.flush;
     try { if(localStorage.getItem("md_sales_ch") === "oil") cur = CH.oil; } catch(e){}
 
-    /* Отменённые операции: id → канал ("flush" / "oil"), пока таблица не догнала отмену.
-       Зачем хранить: подтверждение у нас приходит только перечиткой (ответ no-cors
-       непрозрачен), а перезагрузка до неё вернула бы отменённый вывод на экран вместе
-       с деньгами. Запись уходит из списка сразу, а id лежит здесь до тех пор, пока
-       таблица не перестанет отдавать операцию (reconcileDel); пока лежит — отмена
-       досылается при старте и возврате сети, как очередь операций масла. */
-    let opDel = {};
+    /* ОТМЕНЫ ВЫВОДА ЗДЕСЬ НЕТ НАМЕРЕННО (решение владельца 12.09.2026, вечером того же дня,
+       которым её сюда добавили). Портал открыт всей команде под одним паролем, а отмена
+       вывода двигает деньги — поэтому она живёт на закрытой странице /k/ под личным ключом
+       владельца (CASH_KEY), и ручка `op-del` принимает только его. Портал отменённых выводов
+       просто не получает: их не отдаёт сама ручка чтения
+       (→ decisions/2026-09-12-otmena-vyvoda-i-udalenie-shtrafa.md). */
 
     // нормализация операции (сервер/очередь → вид для рендера); cd — дата ВНЕСЕНИЯ (бекдейт виден)
     const normOp = (w, pending) => ({ id:String(w.id || ""), date:String(w.date || ""), dt:parse(w.date),
@@ -4997,12 +4996,11 @@
         if(!w || !w.date) return;
         const o = normOp(w, false);
         if(isNaN(o.dt.getTime())) return;
-        if(o.id) seen[o.id] = 1;       // помечаем ДО отмены: иначе та же операция вернулась бы из очереди
-        if(o.id && opDel[o.id]) return;   // отменена здесь — ждём, пока таблица догонит
+        if(o.id) seen[o.id] = 1;
         out.push(o);
       });
       (ch.pend || []).forEach(w => {   // очередь: с меткой «не сохранено», пока сервер не подтвердил
-        if(seen[w.id] || opDel[w.id]) return;
+        if(seen[w.id]) return;
         const o = normOp(w, true);
         if(isNaN(o.dt.getTime())) return;
         // старше серверного окна (62 дня) — сервер уже никогда не примет: терминальное
@@ -5063,9 +5061,7 @@
       };
       next();
     }
-    // вернулась сеть: досылаем очередь и перечитываем таблицу — перечитка же досылает
-    // неподтверждённые отмены выводов (reconcileDel), отдельного канала им не нужно
-    window.addEventListener("online", () => { sendPending(); loadOps(); });
+    window.addEventListener("online", sendPending);
     function reconcilePending(server){
       const ids = {};
       server.forEach(o => { if(o && o.id) ids[o.id] = 1; });
@@ -5120,7 +5116,6 @@
           else if(!CH.oil.pend.length) oilRecheck = 0;
           dirty = true;
         }
-        if(data) reconcileDel(data);   // отмены, которые таблица уже приняла, забываем
         if(dirty) render();
       });
     }
@@ -5204,60 +5199,6 @@
       enqueueOp("spend", amount, note);
     }
 
-    /* ==== Отмена ошибочного вывода (кнопка в ленте) ====
-       Деньги возвращаются в копилку сами: «К выводу» = старт + продажи − операции, и
-       отменённая операция из этой суммы просто выпадает. Запись уходит из истории — ни
-       строки, ни пометки «отменён»: на месте ошибки должно быть пусто (решение владельца
-       2026-09-12). В таблице строка остаётся с пометкой «удалено» в колонке status —
-       портал её не отдаёт и не рисует, а ошибочная отмена лечится очисткой ячейки. */
-    function doUndoOp(id){
-      const ch = cur;
-      const o = chanOps(ch).find(x => x.id === id);
-      if(!o || o.kind !== "wd") return;
-      if(!confirm("Отменить вывод " + money(o.amount) + " от " + dateFull(o.dt) +
-                  (ch.person ? " (" + ch.person + ")" : "") + "?\n" +
-                  money(o.amount) + " вернутся в копилку, запись уйдёт из истории у всех.")) return;
-      opDel[id] = ch.key;
-      saveLS("md_ops_del", opDel);
-      // операция ещё в очереди (масло, не подтверждена таблицей) — убираем и оттуда, иначе досыл её вернёт
-      if(ch.pend && ch.pend.length){
-        const left = ch.pend.filter(p => p.id !== id);
-        if(left.length !== ch.pend.length){ ch.pend = left; saveLS("md_oil_pending", left); }
-      }
-      render();
-      sendOpDel(id);
-      setTimeout(loadOps, 1500); setTimeout(loadOps, 7000);   // подтверждение — перечиткой
-    }
-    // отмена уходит на сервер; ответ no-cors непрозрачен, поэтому «доехало» решает перечитка
-    function sendOpDel(id){
-      if(!WITHDRAW_API || !opDel[id]) return;
-      postChannel(WITHDRAW_API, { token: WITHDRAW_TOKEN, kind:"op-del", ch: opDel[id], id: id },
-                  "отмена вывода", "op-del")
-        .catch(() => {});   // отмена осталась в md_ops_del — досыл при старте и возврате сети
-    }
-    /* Отмена доехала, когда операции с таким id больше нет в ответе таблицы; пока она там —
-       фильтр держим и отмену шлём снова: молча потерять отмену вывода нельзя, это деньги.
-       Повторов не больше DEL_TRIES за загрузку: иначе «сервер отдаёт — шлём — перечитываем»
-       закрутилось бы в петлю и съело потолок записи (RL_POST_MAX) на пустом месте. */
-    const DEL_TRIES = 2;
-    const delTries = {};
-    function reconcileDel(data){
-      const got = { flush: Array.isArray(data.withdrawals), oil: Array.isArray(data.oilOps) };
-      const live = {};
-      (data.withdrawals || []).forEach(w => { if(w && w.id) live[String(w.id)] = 1; });
-      (data.oilOps || []).forEach(w => { if(w && w.id) live[String(w.id)] = 1; });
-      let dirty = false;
-      for(const id in opDel){
-        if(!got[opDel[id]]) continue;          // канал в ответе не пришёл (старый бэкенд) — не судим
-        if(live[id]){
-          if((delTries[id] = (delTries[id] || 0) + 1) <= DEL_TRIES) sendOpDel(id);
-          continue;
-        }
-        delete opDel[id]; dirty = true;
-      }
-      if(dirty) saveLS("md_ops_del", opDel);
-    }
-
     // метка операции из очереди: «не сохранено» уйдёт после подтверждения таблицей;
     // «не записано» — терминально (окно дат сервера прошло, покажи владельцу и удали руками)
     const pendBadge = o => o.failed ? `<span class="op-pend">не записано · устарело</span>`
@@ -5265,10 +5206,6 @@
     // у операции, внесённой задним числом, показываем и дату внесения (cd = created из таблицы)
     const opWhen = o => dateFull(o.dt) + (o.time ? ", " + o.time : "") +
       (o.cd && o.cd.slice(0, 10) !== o.date ? " · внесено " + dateFull(parse(o.cd)) : "");
-    /* Кнопка отмены вывода. Класс общий с «Заметками» (.fb-undo) — такой же тихий ghost,
-       второй набор правил тому же виду не заводим. Показываем только у записей С id:
-       у самых старых строк листа его нет (до дедупа Р5.1), их отменяют в таблице. */
-    const wdUndo = o => o.id ? `<button class="fb-undo" type="button" data-op="${escOrd(o.id)}">Отменить</button>` : "";
 
     // список заказ-нарядов внутри раскрытого дня; у масла позиции группируются
     // под одним № заказа, имя масла — отдельной строкой (.ord-name)
@@ -5379,7 +5316,7 @@
         rowsEl.innerHTML = timeline.map(item => {
           if(item.kind === "wd"){
             const w = item.o;
-            return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>${ICO.cash} Вывод — <span class="wd-amount">${money(w.amount)}</span></span>${pendBadge(w)}<span class="wd-note">${opWhen(w)}</span>${wdUndo(w)}</div></td></tr>`;
+            return `<tr class="withdraw-row"><td colspan="4"><div class="withdraw-cell"><span>${ICO.cash} Вывод — <span class="wd-amount">${money(w.amount)}</span></span>${pendBadge(w)}<span class="wd-note">${opWhen(w)}</span></div></td></tr>`;
           }
           if(item.kind === "spend"){
             const w = item.o;
@@ -5404,7 +5341,7 @@
         cardsEl.innerHTML = timeline.map(item => {
           if(item.kind === "wd"){
             const w = item.o;
-            return `<div class="withdraw-card"><span>${ICO.cash} Вывод — <b>${money(w.amount)}</b></span>${pendBadge(w)}<span class="wd-note">${opWhen(w)}</span>${wdUndo(w)}</div>`;
+            return `<div class="withdraw-card"><span>${ICO.cash} Вывод — <b>${money(w.amount)}</b></span>${pendBadge(w)}<span class="wd-note">${opWhen(w)}</span></div>`;
           }
           if(item.kind === "spend"){
             const w = item.o;
@@ -5450,8 +5387,6 @@
 
     // раскрытие дня — десктоп (строка-деталь = следующий tr)
     rowsEl.addEventListener("click", e => {
-      const undo = e.target.closest("[data-op]");
-      if(undo){ doUndoOp(undo.dataset.op); return; }   // «Отменить» в строке вывода
       const row = e.target.closest("tr.sales-day");
       if(!row || row.classList.contains("no-orders")) return;
       const detail = row.nextElementSibling;
@@ -5460,8 +5395,6 @@
     });
     // раскрытие дня — мобайл (деталь внутри карточки)
     cardsEl.addEventListener("click", e => {
-      const undo = e.target.closest("[data-op]");
-      if(undo){ doUndoOp(undo.dataset.op); return; }   // «Отменить» в карточке вывода
       const btn = e.target.closest(".sday-btn");
       if(!btn) return;
       btn.closest(".daycard").classList.toggle("open");
@@ -5489,7 +5422,6 @@
     try { const c = JSON.parse(localStorage.getItem("md_withdrawals") || "null"); if(Array.isArray(c)) CH.flush.ops = c; } catch(e){}
     try { const c = JSON.parse(localStorage.getItem("md_oil_ops") || "null"); if(Array.isArray(c)) CH.oil.ops = c; } catch(e){}
     try { const c = JSON.parse(localStorage.getItem("md_oil_pending") || "null"); if(Array.isArray(c)) CH.oil.pend = c; } catch(e){} // не усекаем: молча терять денежные записи нельзя
-    try { const c = JSON.parse(localStorage.getItem("md_ops_del") || "null"); if(c && typeof c === "object") opDel = c; } catch(e){} // отмены, не подтверждённые таблицей
     // старт копилок из прошлого ответа сервера: до первой загрузки копилка считается по нему, а не по константам
     try { const c = JSON.parse(localStorage.getItem("md_opening") || "null");
           if(c && typeof c === "object"){ const s = Number(c.flush), o = Number(c.oil);

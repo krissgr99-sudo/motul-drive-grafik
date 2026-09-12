@@ -160,6 +160,13 @@
   .op.spend{background:var(--fill-soft);border-color:var(--line);color:var(--text)}
   .op .when{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;
     text-transform:uppercase;color:var(--muted);font-weight:600}
+  /* «Отменить» у вывода — тихая кнопка, появляется только вместе с панелью правок
+     (и только если сервер дал право). Хит 44px: страницу открывают с телефона. */
+  .op .undo{font-family:inherit;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:44px;
+    flex:none;transition:color .15s,border-color .15s,background .15s}
+  .op .undo:hover{color:var(--accent-soft);border-color:var(--open-border);background:var(--fill-hover)}
+  .op .undo:active{transform:scale(.96)}
   .empty{padding:26px 16px;text-align:center;color:var(--muted);font-size:13px;
     background:var(--card);border:1px solid var(--line);border-radius:12px}
   .note{margin-top:14px;font-size:12px;color:var(--muted);min-height:18px}
@@ -225,6 +232,11 @@
    Что здесь есть: продажи по дням, копилка «К выводу», выводы и расходы. Владельцу —
    оба канала, Алексею — только его «Масло». Чего здесь нет: прайса, штрафов, заметок,
    ямы и общего токена портала.
+
+   ОТМЕНА ОШИБОЧНОГО ВЫВОДА живёт здесь, а не в портале (решение владельца 12.09.2026):
+   портал открыт всей команде под одним паролем, а отмена двигает деньги. Кнопка у строки
+   вывода появляется вместе с панелью правок и только если сервер прислал право (undoOps),
+   то есть только у владельца; ручка kind:"op-del" принимает лишь ключ этой страницы.
 
    Доступ. Ключ вводится один раз и живёт в localStorage этого браузера; он же уходит на
    бэкенд в каждом запросе. Проверяет его Apps Script — неверный ключ получает честный
@@ -349,7 +361,7 @@
   }
   function opsOf(ch){
     return (ch.ops || []).map(function(o){
-      return { dt: parse(o.date), amount: Number(o.amount) || 0, time: o.time || "",
+      return { id: String(o.id || ""), dt: parse(o.date), amount: Number(o.amount) || 0, time: o.time || "",
                kind: (o.kind === "spend" ? "spend" : "wd"), note: String(o.note || "") };
     }).filter(function(o){ return !isNaN(o.dt.getTime()); }).sort(function(a,b){ return a.dt - b.dt; });
   }
@@ -438,10 +450,14 @@
                '<span class="s">' + money(d.sum) + '</span></div>';
       }
       var o = it.o;
+      // «Отменить» — только у вывода, только с правом от сервера и только когда открыта
+      // панель правок (тот же жест). У самых старых строк листа нет id — их отменяют в таблице.
+      var undo = (o.kind === "wd" && o.id && canUndo() && actsOn)
+        ? '<button class="undo" type="button" data-undo="' + esc(o.id) + '">Отменить</button>' : "";
       return '<div class="op' + (o.kind === "spend" ? " spend" : "") + '">' +
              '<span>' + (o.kind === "spend" ? "Расход — −" : "Вывод — ") + money(o.amount) + '</span>' +
              (o.note ? '<span class="q">' + esc(o.note) + '</span>' : "") +
-             '<span class="when">' + when(o) + '</span></div>';
+             '<span class="when">' + when(o) + '</span>' + undo + '</div>';
     }).join("");
     if(aggSel) html = '<div class="row"><span class="d">за месяц</span><span class="q">' +
       nf.format(aggSel.qty) + " " + esc(unit) + '</span><span class="s">' + money(aggSel.sum) + '</span></div>' + html;
@@ -459,9 +475,45 @@
   });
   monEl.addEventListener("change", function(){ selMonth = Number(monEl.value); render(); });
 
+  /* ---------- отмена ошибочного вывода ----------
+     Деньги возвращаются сами: копилка считается как «старт + продажи − операции», и
+     отменённая операция из суммы выпадает. Запись уходит и из этой ленты, и с портала —
+     её не отдаёт ручка чтения; в листе строка остаётся со словом «удалено», так что
+     ошибочная отмена лечится очисткой ячейки. Право даёт сервер (undoOps), не файл. */
+  listEl.addEventListener("click", function(e){
+    var b = e.target.closest("[data-undo]"); if(!b) return;
+    var ch = data.channels[curCh];
+    var id = b.getAttribute("data-undo");
+    var o  = opsOf(ch).filter(function(x){ return x.id === id; })[0];
+    if(!o || !canUndo()) return;
+    var was  = potOf(ch);
+    var will = was + o.amount;
+    if(!confirm("Отменить вывод " + money(o.amount) + " от " + when(o) +
+                " — «" + (ch.title || ch.key) + "»?\n" +
+                "Копилка: " + money(was) + " → " + money(will) + ".\nЗапись уйдёт из истории.")) return;
+    sendUndo(ch, id);
+  });
+  // как у корректировки: ответ no-cors не прочитать, правду приносит перечитка
+  function sendUndo(ch, id){
+    var key = keyGet(); if(!key) return;
+    actNote("Отменяю…");
+    fetch(API, { method:"POST", mode:"no-cors",
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify({ key:key, kind:"op-del", ch:ch.key, id:id }) })
+      .then(function(){ setTimeout(function(){ load(false, function(){
+        var cur = data.channels[curCh];
+        var gone = !opsOf(cur).filter(function(x){ return x.id === id; }).length;
+        if(gone) actNote("Отменено: копилка " + money(potOf(cur)) + ".", "ok");
+        else actNote("Не прошло — вывод на месте (" + money(potOf(cur)) + ").", "bad");
+      }); }, 2500); })
+      .catch(function(){ actNote("Связи нет — не отменено.", "bad"); });
+  }
+
   /* ---------- действия (то, что прислал сервер) ----------
      Кнопки не висят на экране: их открывает долгое нажатие на цифру копилки. Нет прав —
      нет и списка действий, поэтому жест не делает ровно ничего. */
+  // право отменить вывод — от сервера (undoOps у роли владельца), не из этого файла
+  function canUndo(){ return !!(data && data.undoOps); }
   function renderActs(ch){
     var acts = (data && data.actions) || [];
     if(!acts.length || !actsOn){ actsEl.hidden = true; actsEl.innerHTML = ""; return; }
@@ -482,9 +534,9 @@
       if(timer) return;
       timer = setTimeout(function(){
         timer = null;
-        if(!data || !(data.actions || []).length) return;   // прав нет — жест немой
+        if(!data || (!(data.actions || []).length && !canUndo())) return;   // прав нет — жест немой
         actsOn = !actsOn;
-        renderActs(data.channels[curCh]);
+        render();   // не только панель: вместе с ней в ленте появляются кнопки «Отменить»
       }, 700);
     }
     function stop(){ if(timer){ clearTimeout(timer); timer = null; } }
