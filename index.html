@@ -524,7 +524,10 @@
   .t-tag{font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#fff;
     background:var(--brand);padding:5px 12px;border-radius:999px;box-shadow:0 0 0 4px rgba(209,31,45,.18)}
   .t-date{font-family:var(--font-disp);font-weight:600;font-size:17px}
-  .t-body{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  /* Людей четверо: на широком экране вся смена в одну строку, уже — 2×2. Жёсткие 3 колонки
+     оставляли четвёртого одного во всю ширину. */
+  .t-body{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:1180px){ .t-body{grid-template-columns:repeat(2,1fr)} }
   .t-person{position:relative;background:var(--fill-soft);border:1px solid var(--line);border-radius:12px;padding:14px}
   .t-person.is-off{opacity:.5}
   .t-row{display:flex;align-items:center;gap:8px}
@@ -1624,17 +1627,22 @@
   };
   DUTY.all = [...DUTY.pair, ...DUTY.krist];
 
+  /* Обязанностей у Ивана нет намеренно (решение владельца 12.09.2026): он четвёртый в графике,
+     но списки мессенджеров на нём не висят. Из-за этого «соло-день» считается не по головам,
+     а по людям С обязанностями — см. ROWS ниже. */
   const PEOPLE = [
-    { name:"Бекзод",    color:"red",      mode:"2 / 2",          duties:DUTY.pair,  soloAll:true  },
-    { name:"Святослав", color:"graphite", mode:"2 / 2",          duties:DUTY.pair,  soloAll:true  },
-    { name:"Кристиан",  color:"blue",     mode:"5 / 2 · чт, вс", duties:DUTY.krist, soloAll:false },
+    { name:"Бекзод",    color:"red",      mode:"2 / 2",             duties:DUTY.pair,  soloAll:true  },
+    { name:"Святослав", color:"graphite", mode:"2 / 2",             duties:DUTY.pair,  soloAll:true  },
+    { name:"Кристиан",  color:"blue",     mode:"5 / 2",             duties:DUTY.krist, soloAll:false },
+    { name:"Иван",      color:"teal",     mode:"5 / 2",             duties:[],         soloAll:false },
   ];
 
   /* График строится ИЗ ПРАВИЛ, руками дни не перечисляем (иначе «кончается» в конце месяца).
-     Правила выведены из прежнего ручного графика и проверены на всех его днях:
-       • Кристиан 5/2 — работает все дни, кроме Чт и Вс.
-       • Бекзод 2/2  — (дней от опоры) mod 4 ∈ {0,3} → смена, иначе выходной.
+       • Бекзод 2/2  — (дней от опоры) mod 4 ∈ {0,1} → смена, иначе выходной.
        • Святослав   — строгая противофаза: работает ровно когда Бекзод отдыхает.
+       • Кристиан и Иван — 5/2 с ПЛАВАЮЩИМИ выходными, см. floatRest (с 13.09.2026).
+       • До 13.09.2026 Кристиан работал все дни кроме Чт и Вс, Ивана в графике не было —
+         прошлое не переписываем, архив должен остаться таким, каким люди его видели.
      Отпуска — отдельными данными (VACATIONS), накладываются поверх формулы. */
   const WD_RU  = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"];              // по Date.getDay()
 
@@ -1663,16 +1671,59 @@
     const pos = ((Math.round((utc(d) - utc(anchor)) / 864e5) % 4) + 4) % 4;
     return (pos === 0 || pos === 1) ? 1 : 0;                          // 2 смены / 2 выходных
   }
+
+  /* ======= Плавающие выходные Кристиана и Ивана (с 13.09.2026) =======
+     Требование владельца: на каждой смене Бекзода есть Кристиан; у Кристиана и Ивана в КАЖДОЙ
+     календарной неделе ровно 5 смен и 2 выходных, и подряд работать больше трёх дней не нужно.
+
+     Отсюда правило (не список дней — список бы «кончился»):
+       • Кристиан вправе отдыхать только в выходные Бекзода → ни одна смена Бекзода не остаётся
+         без него. Иван — только в выходные Святослава → он всегда в паре со Святославом.
+       • Берём ПЕРВЫЙ день каждой пары выходных напарника — это ровно раз в 4 дня.
+       • За 28 дней таких пар семь, а выходных нужно восемь (по два на четыре недели), поэтому
+         в ту неделю, где первый день выпал всего один, добавляем первый подходящий день недели.
+         Ровно одна пара выходных за круг оказывается слитной — и попадает на вс + пн.
+     Проверено машиной до конца года: каждая неделя 5/2, подряд не больше 3 смен, ни дня без
+     Кристиана на смене Бекзода, ни дня меньше двух человек. Восемь разнесённых выходных за
+     28 дней не существует в принципе: из семи пар по одному дню набирается максимум семь.
+
+     Правило привязано к фазе Бекзода, а не к календарю: новая опора в ROT_ANCHORS (выход из
+     отпуска) утащит выходные за собой, и связка не развалится. Сам отпуск — исключение:
+     на время подмены пары ломаются, это разбирается руками, отпуск редкий. */
+  const FLOAT_FROM = new Date(2026, 8, 13);                           // 13.09.2026 — график на четверых
+  function floatRest(first, last, canRest){
+    const step = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+    const from = step(first, -7), to = step(last, 7);                 // запас, чтобы края не врали
+    const rest = new Set();
+    for(let d = new Date(from); d <= to; d = step(d, 1)){
+      if(canRest(d) && !canRest(step(d, -1))) rest.add(utc(d));       // первый день пары напарника
+    }
+    const mon0 = step(from, -((from.getDay() + 6) % 7));              // понедельник первой недели
+    for(let w = new Date(mon0); w <= to; w = step(w, 7)){             // добираем неделю до двух
+      let need = 2;
+      for(let i = 0; i < 7; i++) if(rest.has(utc(step(w, i)))) need--;
+      for(let i = 0; i < 7 && need > 0; i++){                         // добираем до двух, а не ровно один:
+        const d = step(w, i);                                         // так правило не опирается на то,
+        if(canRest(d) && !rest.has(utc(d))){ rest.add(utc(d)); need--; }  // что первый день в неделе есть
+      }
+    }
+    return rest;
+  }
+
   function buildSchedule(){
     // Окно: прошлый + текущий + следующий месяц. Прошлый — архив «кто когда был на смене»:
     // формула та же, отпуска те же, поэтому история не хранится, а считается заново.
     const first = new Date(now.getFullYear(), now.getMonth() - 1, 1); // 1-е ПРОШЛОГО месяца
     const cur   = new Date(now.getFullYear(), now.getMonth(), 1);     // 1-е текущего — граница архива
     const last  = new Date(now.getFullYear(), now.getMonth() + 2, 0); // последний день следующего месяца
+    const kristOff = floatRest(first, last, d => !bekOn(d));          // отдыхает в выходные Бекзода
+    const ivanOff  = floatRest(first, last, d => !!bekOn(d));         // отдыхает в выходные Святослава
     const out = [];
     for(let d = new Date(first); d <= last; d.setDate(d.getDate() + 1)){
-      const gd = d.getDay();
-      const krist = (gd === 0 || gd === 4) ? 0 : 1;                   // Кристиан: выходной Вс(0) и Чт(4)
+      const gd = d.getDay(), floating = utc(d) >= utc(FLOAT_FROM);
+      const krist = floating ? (kristOff.has(utc(d)) ? 0 : 1)         // с 13.09.2026 — плавающие
+                             : ((gd === 0 || gd === 4) ? 0 : 1);      // до неё — выходной Вс(0) и Чт(4)
+      const ivan  = floating ? (ivanOff.has(utc(d)) ? 0 : 1) : -1;    // -1 = ещё не в графике
       let bek = bekOn(d);                                             // Бекзод 2/2 (с учётом сегментов опоры)
       let sv  = bek ? 0 : 1;                                          // Святослав — противофаза
       for(const v of VACATIONS){                                     // отпуска поверх формулы
@@ -1681,7 +1732,7 @@
           else if(v.who === "Святослав"){ sv = 0; bek = 1; }         // Бекзод подменяет
         }
       }
-      out.push([pad(d.getDate()) + "." + pad(d.getMonth() + 1), WD_RU[gd], bek, sv, krist, utc(d) < utc(cur)]);
+      out.push([pad(d.getDate()) + "." + pad(d.getMonth() + 1), WD_RU[gd], bek, sv, krist, ivan, utc(d) < utc(cur)]);
     }
     return out;
   }
@@ -1690,7 +1741,7 @@
   /* Подпись раздела — из живого окна графика, а не строкой руками: она обязана стареть вместе
      с данными. Архив прошлого месяца в диапазон не входит — он открывается кнопкой. */
   const SCHED_RANGE = (() => {
-    const days = SCHEDULE.filter(r => !r[5]).length;                 // дни текущего + следующего месяца
+    const days = SCHEDULE.filter(r => !r[6]).length;                 // дни текущего + следующего месяца
     const from = new Date(now.getFullYear(), now.getMonth(), 1);
     const to   = new Date(now.getFullYear(), now.getMonth() + 2, 0);
     const word = n => (n % 100 >= 11 && n % 100 <= 14) ? "дней"
@@ -1709,7 +1760,8 @@
   // Сегодняшняя дата устройства → ключ "ДД.ММ". График теперь генерируется вокруг «сегодня»
   // (всегда содержит текущий день), поэтому страховка годом больше не нужна.
   const todayKey = pad(now.getDate()) + "." + pad(now.getMonth() + 1);
-  const chips = (arr, cls) => `<div class="${cls}">${arr.map(d=>`<span class="chip">${d}</span>`).join("")}</div>`;
+  // Пустой список обязанностей (Иван) не рисует пустую полосу — иначе под «На смене» висел бы отступ.
+  const chips = (arr, cls) => arr.length ? `<div class="${cls}">${arr.map(d=>`<span class="chip">${d}</span>`).join("")}</div>` : "";
 
   // Полоска людей (видна только на мобильном)
   document.getElementById("people-strip").innerHTML = PEOPLE.map(p => `
@@ -1725,21 +1777,29 @@
       </th>`).join("");
 
   // Подготовка строк
-  const ROWS = SCHEDULE.map(([date, wd, bek, sv, krist, past]) => {
-    const work = [bek, sv, krist];                                   // порядок как в PEOPLE
+  const ROWS = SCHEDULE.map(([date, wd, bek, sv, krist, ivan, past]) => {
+    const work = [bek, sv, krist, ivan];                             // порядок как в PEOPLE; -1 = не в графике
     const [dd, mm] = date.split(".");
     const weekend = isWeekend(wd);
-    const solo = work.reduce((a,b)=>a+b,0) === 1;
+    /* «Всё на одном» считается по людям С ОБЯЗАННОСТЯМИ, а не по головам: у Ивана их нет, и
+       день «Бекзод + Иван» по-прежнему оставляет все мессенджеры на Бекзоде. По головам соло
+       тоже бывает — в архиве до 13.09.2026 — тогда подпись прежняя. */
+    const onHead = work.filter(v => v === 1).length;
+    const onDuty = PEOPLE.filter((p,i) => work[i] === 1 && p.duties.length).length;
+    const solo = onDuty === 1;
     const cells = PEOPLE.map((p,i) => {
-      const working = work[i] === 1;
+      const working = work[i] === 1, absent = work[i] === -1;
+      const takesAll = working && solo && p.soloAll;
       return {
         ...p,
-        working,
-        duties: working ? ((solo && p.soloAll) ? DUTY.all : p.duties) : [],
-        label: solo ? "На смене один · всё на нём" : "На смене",
+        working, absent,
+        duties: working ? (takesAll ? DUTY.all : p.duties) : [],
+        label: takesAll
+          ? (onHead === 1 ? "На смене один · всё на нём" : "Все обязанности на нём")
+          : "На смене",
       };
     });
-    return { key: date, dd, mon: MON[mm] || "", wd, weekend, cells, past };
+    return { key: date, dd, mon: MON[mm] || "", wd, weekend, cells, past, onHead, solo };
   });
 
   // Тело таблицы (десктоп)
@@ -1748,7 +1808,7 @@
       <td data-color="${c.color}">
         ${c.working
           ? `<div class="shift"><span class="mk"></span><span class="lbl">${c.label}</span></div>${chips(c.duties,"duty")}`
-          : `<span class="off">выходной</span>`}
+          : `<span class="off">${c.absent ? "не в графике" : "выходной"}</span>`}
       </td>`).join("");
     const today = r.key === todayKey;
     return `<tr class="${r.weekend ? "weekend" : ""}${today ? " today-row" : ""}${r.past ? " is-arch" : ""}"${r.past ? " hidden" : ""}>
@@ -1765,7 +1825,7 @@
         <div class="pv">
           ${c.working
             ? `<div class="lbl">${c.label}</div>${chips(c.duties,"duty")}`
-            : `<span class="off">выходной</span>`}
+            : `<span class="off">${c.absent ? "не в графике" : "выходной"}</span>`}
         </div>
       </div>`).join("");
     const today = r.key === todayKey;
@@ -1810,7 +1870,7 @@
           <div class="t-row">
             <span class="t-dot"></span>
             <span class="t-name">${c.name}</span>
-            ${c.working ? `<span class="t-status">${c.label}</span>` : `<span class="t-off">выходной</span>`}
+            ${c.working ? `<span class="t-status">${c.label}</span>` : `<span class="t-off">${c.absent ? "не в графике" : "выходной"}</span>`}
           </div>
           ${c.working ? chips(c.duties, "t-duties") : ""}
         </div>`).join("");
@@ -5829,7 +5889,8 @@
      из истории — нет. Табло, суммы и «лучший месяца» СЧИТАЮТСЯ из ленты, руками нигде
      не дублируются (данные → авто-рендер). */
   (function(){
-    // Люди раздела свои, а не PEOPLE: Ивана нет в графике дежурств, а штраф ему выписывают.
+    // Люди раздела свои, а не PEOPLE: там у каждого режим смен, обязанности и soloAll —
+    // штрафам это не нужно, нужны только имя и цвет. Цвета держим одинаковыми с графиком.
     const FINE_PEOPLE = [
       { name:"Бекзод",    color:"red" },
       { name:"Святослав", color:"graphite" },
@@ -6184,7 +6245,9 @@
             <span class="home-shift-tag">Сегодня</span>
             <span class="home-shift-date">${dateText}</span>
             <span class="home-shift-sep"></span>
-            <span class="home-shift-label">${on.length === 1 ? "На смене один — все обязанности" : "На смене"}</span>
+            <span class="home-shift-label">${tr.solo
+              ? (tr.onHead === 1 ? "На смене один — все обязанности" : "Все обязанности на одном")
+              : "На смене"}</span>
             <span class="home-shift-people">${people}</span>
           </div>`;
       } else {
