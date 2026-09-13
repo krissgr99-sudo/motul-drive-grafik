@@ -16,9 +16,9 @@
    регуляркой прямо в тексте файла и на склейке нашёл бы пустоту, то есть страж публикации
    молча перестал бы работать. NOTE — строка «что нового» для той же плашки: меняется вместе
    с версией, поэтому протухнуть не может. */
-const CACHE = "motul-drive-v1.6.1";
+const CACHE = "motul-drive-v1.6.2";
 const VERSION = CACHE.replace("motul-drive-v", "");
-const NOTE = "Шаблоны: Aisin TR80SD 0C8 — итого 42 500 ₽";
+const NOTE = "Шаблоны: DSG DL-382, оригинал VAG — итого 59 000 ₽";
 
 self.addEventListener("install", e => {
   /* Предкэш корня scope (на Pages это index.html). Если недоступен — не валим установку.
