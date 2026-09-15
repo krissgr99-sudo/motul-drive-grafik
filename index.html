@@ -781,7 +781,8 @@
     border:1px solid var(--line);border-radius:8px;padding:3px 8px;font-size:12px;color:var(--muted)}
   .ychip b{color:var(--text);font-weight:600}
   .ychip.other{border-color:var(--accent-soft);color:var(--accent-soft)}
-  /* «некруглая» цена работы: не запрет, а вопрос — цифру не трогаем, только помечаем.
+  /* «некруглая» цена работы или «?» (робот не уверен, что это работа): не запрет, а вопрос —
+     цифру не трогаем, только помечаем.
      Статусный жёлтый (--warn), рецепт как у бейджа «Проверить цены»: акцент в системе один. */
   .ychip.odd{background:rgba(240,180,41,.14);border-color:rgba(240,180,41,.42);color:var(--warn)}
   .ychip.odd b{color:var(--warn)}
@@ -5498,6 +5499,14 @@
     const ODD_HINT = "Цена не кратна 100 ₽ — проверьте, не вшито ли в работу что-то ещё "
                    + "(например, 6% за оплату по счёту: их место в расходниках, а не в работе).";
     const isOdd = v => v > 0 && v % ODD_STEP !== 0;
+    // «?» у работы: название робот не узнал (ни действие, ни вещь) и посчитал его работой — лучше
+    // лишняя строка на виду, чем пропавшая молча. Решает владелец в листе «Яма-позиции».
+    const UNSURE_HINT = "Робот не уверен, что это работа, и посчитал её в журнал. Если это расходник — "
+                      + "в таблице на листе «Яма-позиции» напротив названия напишите «нет».";
+    const FLAG_HINT   = "Внутри дня есть что проверить: цена не кратна 100 ₽ или «?» у работы — "
+                      + "подробности в подписи под журналом.";
+    // подробные работы — в привычном порядке колонок журнала; работа вне колонок — в конце
+    const colRank = c => { const i = UI_ORDER.indexOf(c); return i < 0 ? UI_ORDER.length : i; };
     const WD   = ["вс","пн","вт","ср","чт","пт","сб"];
     const MON  = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
     const MONF = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль",
@@ -5546,25 +5555,32 @@
       sumEl.innerHTML = shown.length ? `
         <div class="ys"><span class="k">Машин за месяц</span><span class="v">${nf.format(cars)}</span></div>` : "";
 
-      let oddTotal = 0;   // сколько «некруглых» цен во всех показанных днях — для подписи внизу
+      let oddTotal = 0, unsureTotal = 0;   // сколько «некруглых» цен и «?» во всех показанных днях — для подписи внизу
       daysEl.innerHTML = shown.map((d, i) => {
         const dt = parse(d.date);
         const итог = d.rows.reduce((s, r) => s + r.sum, 0);
         let dayOdd = 0;   // свёрнутый день тоже должен признаться, что внутри есть что проверить
         const cars = d.rows.map(r => {
-          // чип работы; «некруглую» цену помечаем и считаем — счёт уходит в бейдж шапки дня
-          const chip = (name, v, cls) => {
+          // чип работы; «некруглую» цену и «?» помечаем и считаем — счёт уходит в бейдж шапки дня
+          const chip = (name, v, cls, unsure) => {
             const odd = isOdd(v);
-            if(odd) dayOdd++;
-            return `<span class="ychip${cls ? " " + cls : ""}${odd ? " odd" : ""}"${odd ? ` title="${ODD_HINT}"` : ""}>`
-                 + `${name} <b>${nf.format(v)}</b></span>`;
+            if(odd || unsure) dayOdd++;
+            if(odd) oddTotal++;
+            if(unsure) unsureTotal++;
+            const hint = [unsure ? UNSURE_HINT : "", odd ? ODD_HINT : ""].filter(Boolean).join(" ");
+            return `<span class="ychip${cls ? " " + cls : ""}${odd || unsure ? " odd" : ""}"${hint ? ` title="${hint}"` : ""}>`
+                 + `${esc(name)}${unsure ? "?" : ""} <b>${nf.format(v)}</b></span>`;
           };
-          // чипы работ — в привычном порядке журнала, только ненулевые
-          const chips = UI_ORDER.map(name => {
-            const i = (data.columns || []).indexOf(name);
-            const v = i >= 0 ? (r.cols[i] || 0) : 0;
-            return v ? chip(name, v) : "";
-          }).join("") + (r.other ? chip("Прочее", r.other, "other") : "");
+          // чипы работ: подробный список от робота («КПП · полная замена», «Задний дифференциал»);
+          // у строк, посчитанных до него, списка нет — тогда колонки в привычном порядке, только ненулевые
+          const chips = Array.isArray(r.works) && r.works.length
+            ? r.works.slice().sort((a, b) => colRank(a[2]) - colRank(b[2]))
+                .map(w => chip(w[0], w[1], "", !!w[3])).join("")
+            : UI_ORDER.map(name => {
+                const i = (data.columns || []).indexOf(name);
+                const v = i >= 0 ? (r.cols[i] || 0) : 0;
+                return v ? chip((data.labels && data.labels[i]) || name, v) : "";
+              }).join("") + (r.other ? chip("Прочее", r.other, "other") : "");
           const m = masterOf(r);
           return `<div class="ycar">
             <div class="ycar-main">
@@ -5582,13 +5598,12 @@
         }).join("");
         // день = гармошка (механика «Продаж»): свежий раскрыт, остальные свёрнуты —
         // в свёрнутом виде день всё равно показывает главное: машины, работы, долю мастеров
-        oddTotal += dayOdd;
         return `<div class="daycard sday yday${i === 0 ? " open" : ""}">
           <button class="sday-btn" type="button" aria-expanded="${i === 0}">
             <div class="dhead">
               <span class="dnum">${dt.getDate()}</span><span class="dmon">${MON[dt.getMonth()]}</span>
               <span class="dbadge">${WD[dt.getDay()]}</span>
-              ${dayOdd ? `<span class="yflag" title="${ODD_HINT}">${ICO.warn} проверить ${dayOdd}</span>` : ""}
+              ${dayOdd ? `<span class="yflag" title="${FLAG_HINT}">${ICO.warn} проверить ${dayOdd}</span>` : ""}
               <span class="yhead-vals">
                 <span class="yhv"><span class="k">машин</span><span class="v">${d.rows.length}</span></span>
                 <span class="yhv"><span class="k">работы</span><span class="v">${money(итог)}</span></span>
@@ -5610,6 +5625,8 @@
           ? "Машины и работы приходят из LiveSklad автоматически каждые 15 минут. Руками — только имя мастера."
             + (oddTotal ? " Жёлтым помечены цены не кратные 100 ₽: в такую цену обычно вшито что-то ещё —"
                         + " например, 6% за оплату по счёту, место которым в расходниках." : "")
+            + (unsureTotal ? " «?» — робот не уверен, что позиция — работа, но посчитал её: если это расходник,"
+                           + " в таблице на листе «Яма-позиции» напротив названия напишите «нет»." : "")
           : "За этот месяц работ пока нет.");
     }
 
