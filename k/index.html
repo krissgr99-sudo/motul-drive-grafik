@@ -154,19 +154,53 @@
   .row .q{font-size:12px;color:var(--muted);flex:none}
   .row .s{margin-left:auto;font-family:var(--font-disp);font-weight:700;font-size:15px}
   .row.we{background:var(--fill-soft)}
-  .op{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;margin-bottom:8px;
+  .op{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;margin-bottom:8px;
     background:rgba(209,31,45,.06);border:1px solid var(--open-border);
     font-weight:700;font-size:13px;color:var(--accent-soft)}
   .op.spend{background:var(--fill-soft);border-color:var(--line);color:var(--text)}
   .op .when{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;
     text-transform:uppercase;color:var(--muted);font-weight:600}
-  /* «Отменить» у вывода — тихая кнопка, появляется только вместе с панелью правок
+  /* «Изменить» и «Отменить» у вывода — тихие кнопки, появляются только вместе с панелью правок
      (и только если сервер дал право). Хит 44px: страницу открывают с телефона. */
-  .op .undo{font-family:inherit;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;
+  .op-btns{display:flex;gap:8px;flex:none}
+  .op .obtn{font-family:inherit;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;
     background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:44px;
     flex:none;transition:color .15s,border-color .15s,background .15s}
-  .op .undo:hover{color:var(--accent-soft);border-color:var(--open-border);background:var(--fill-hover)}
-  .op .undo:active{transform:scale(.96)}
+  .op .obtn:hover{color:var(--accent-soft);border-color:var(--open-border);background:var(--fill-hover)}
+  .op .obtn:active{transform:scale(.96)}
+  .op .saved{font-size:11px;font-weight:700;color:var(--ok);background:var(--ok-bg);border-radius:8px;padding:2px 8px}
+  /* на телефоне рядом с суммой и датой двум кнопкам тесно — они уходят отдельной строкой вправо */
+  @media (max-width:520px){ .op-btns{flex-basis:100%;justify-content:flex-end} }
+
+  /* Правка вывода: строка ленты превращается в маленькую форму. Карточка нейтральная, а не
+     красная «денежная» — пока правишь, это ещё не операция. Поле и кнопки — по дизайн-системе:
+     поле на --fill с фокусом красным бордером, главная кнопка красная, вторичная на --fill.
+     Шрифт поля 16px: меньше — и телефон приближает страницу при вводе. */
+  .op.ed{display:block;padding:14px;background:var(--card);border-color:var(--open-border);color:var(--text)}
+  .ed-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .ed-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .ed-f{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .ed-k{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .ed-in{width:100%;min-width:0;height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--line);
+    background:var(--fill);color:var(--text);font-family:inherit;font-size:16px;font-weight:600;outline:none;
+    transition:border-color .15s,background .15s}
+  .ed-in:focus{border-color:var(--brand);background:var(--fill-hover)}
+  .ed-in.bad{border-color:var(--accent-soft)}
+  .ed-in[disabled]{opacity:.6}
+  [data-theme="dark"] .ed-in{color-scheme:dark}
+  .ed-calc{margin-top:10px;font-size:12px;font-weight:600;color:var(--muted);min-height:18px}
+  .ed-calc.bad{color:var(--accent-soft)}
+  .ed-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .ed-save,.ed-cancel{font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;border-radius:12px;
+    padding:10px 16px;min-height:44px;transition:background .15s,box-shadow .15s}
+  .ed-save{border:none;background:var(--brand);color:#fff;box-shadow:0 0 16px rgba(209,31,45,.35)}
+  .ed-save:hover{background:var(--brand-hover);box-shadow:0 0 22px rgba(209,31,45,.5)}
+  .ed-cancel{background:var(--fill);border:1px solid var(--line);color:var(--text)}
+  .ed-cancel:hover{background:var(--fill-hover)}
+  .ed-save:active,.ed-cancel:active{transform:scale(.95)}
+  .ed-save:active{box-shadow:none}
+  .ed-save[disabled],.ed-cancel[disabled]{opacity:.5;cursor:default;transform:none}
+  @media (max-width:360px){ .ed-grid{grid-template-columns:1fr} }
   .empty{padding:26px 16px;text-align:center;color:var(--muted);font-size:13px;
     background:var(--card);border:1px solid var(--line);border-radius:12px}
   .note{margin-top:14px;font-size:12px;color:var(--muted);min-height:18px}
@@ -238,6 +272,10 @@
    вывода появляется вместе с панелью правок и только если сервер прислал право (undoOps),
    то есть только у владельца; ручка kind:"op-del" принимает лишь ключ этой страницы.
 
+   ПРАВКА ВЫВОДА — там же и так же (решение владельца 15.09.2026): «Изменить» у строки
+   вывода, сумма и дата, право editOps от сервера, ручка kind:"op-edit" под ключом владельца.
+   Портал и Алексей видят вывод уже с новыми числами — без пометки, что его правили.
+
    Доступ. Ключ вводится один раз и живёт в localStorage этого браузера; он же уходит на
    бэкенд в каждом запросе. Проверяет его Apps Script — неверный ключ получает честный
    {error:"key"}, после которого страница снова просит ключ. Ссылка вида …/k/#k=КЛЮЧ
@@ -257,6 +295,8 @@
   var MON  = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
   var MONF = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль",
               "Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+  var WD_MAX  = 1000000;   // потолок одного вывода — тот же, что WITHDRAW_MAX в Apps Script
+  var WD_DAYS = 62;        // окно даты вывода — WITHDRAW_DAYS там же (новая дата при правке — в нём)
 
   var tabsEl = document.getElementById("tabs");
   var kopEl  = document.getElementById("kop");
@@ -274,11 +314,13 @@
   var errEl  = document.getElementById("gate-err");
 
   var data = null, seq = 0, busy = false, curCh = 0, selMonth = null, actsOn = false;
+  var editing = null, savedId = null;   // открытая форма правки вывода и строка, которую только что сохранили
   var nf = new Intl.NumberFormat("ru-RU");
   function money(v){ return nf.format(Math.round(v)) + " ₽"; }
   function esc(s){ return String(s).replace(/[&<>"']/g, function(c){
     return ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[c]; }); }
   function parse(ds){ var p = String(ds).split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function ymd(dt){ return dt.getFullYear() + "-" + ("0" + (dt.getMonth() + 1)).slice(-2) + "-" + ("0" + dt.getDate()).slice(-2); }
   function mkey(dt){ return dt.getFullYear() * 12 + dt.getMonth(); }
   function ls(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsSet(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
@@ -320,6 +362,7 @@
     rate:   "Сервис на паузе из-за частых запросов. Попробуйте через час."
   };
   function lock(msg){
+    editing = null; savedId = null;       // после смены ключа старая форма правки не должна всплыть
     document.body.classList.add("locked");
     errEl.textContent = msg || "";
     setTimeout(function(){ try { keyInp.focus(); } catch(e){} }, 60);
@@ -365,12 +408,15 @@
                kind: (o.kind === "spend" ? "spend" : "wd"), note: String(o.note || "") };
     }).filter(function(o){ return !isNaN(o.dt.getTime()); }).sort(function(a,b){ return a.dt - b.dt; });
   }
-  function potOf(ch){
+  function rawPotOf(ch){      // без нижней границы — правке вывода нужно знать, сколько на самом деле
     var sum = 0;
     daysOf(ch).forEach(function(d){ sum += d.sum; });
     aggOf(ch).forEach(function(a){ sum += a.sum; });
     opsOf(ch).forEach(function(o){ sum -= o.amount; });
-    var pot = Math.round((Number(ch.opening) || 0) + sum);
+    return Math.round((Number(ch.opening) || 0) + sum);
+  }
+  function potOf(ch){
+    var pot = rawPotOf(ch);
     return ch.key === "flush" ? Math.max(0, pot) : pot;   // у промывки минуса не бывает, как в портале
   }
 
@@ -450,14 +496,20 @@
                '<span class="s">' + money(d.sum) + '</span></div>';
       }
       var o = it.o;
-      // «Отменить» — только у вывода, только с правом от сервера и только когда открыта
-      // панель правок (тот же жест). У самых старых строк листа нет id — их отменяют в таблице.
-      var undo = (o.kind === "wd" && o.id && canUndo() && actsOn)
-        ? '<button class="undo" type="button" data-undo="' + esc(o.id) + '">Отменить</button>' : "";
-      return '<div class="op' + (o.kind === "spend" ? " spend" : "") + '">' +
+      if(editing && editing.ch === ch.key && editing.id === o.id) return editHtml(ch, o);
+      // «Изменить» и «Отменить» — только у вывода, только с правом от сервера и только когда
+      // открыта панель правок (тот же жест). У самых старых строк листа нет id — их правят в таблице.
+      var btns = "";
+      if(o.kind === "wd" && o.id && actsOn){
+        if(canEdit()) btns += '<button class="obtn" type="button" data-edit="' + esc(o.id) + '">Изменить</button>';
+        if(canUndo()) btns += '<button class="obtn" type="button" data-undo="' + esc(o.id) + '">Отменить</button>';
+      }
+      return '<div class="op' + (o.kind === "spend" ? " spend" : "") + '" data-op="' + esc(o.id) + '">' +
              '<span>' + (o.kind === "spend" ? "Расход — −" : "Вывод — ") + money(o.amount) + '</span>' +
              (o.note ? '<span class="q">' + esc(o.note) + '</span>' : "") +
-             '<span class="when">' + when(o) + '</span>' + undo + '</div>';
+             (o.id && o.id === savedId ? '<span class="saved">Сохранено</span>' : "") +
+             '<span class="when">' + when(o) + '</span>' +
+             (btns ? '<span class="op-btns">' + btns + '</span>' : "") + '</div>';
     }).join("");
     if(aggSel) html = '<div class="row"><span class="d">за месяц</span><span class="q">' +
       nf.format(aggSel.qty) + " " + esc(unit) + '</span><span class="s">' + money(aggSel.sum) + '</span></div>' + html;
@@ -470,10 +522,10 @@
   tabsEl.addEventListener("click", function(e){
     var b = e.target.closest(".tab"); if(!b) return;
     curCh = Number(b.getAttribute("data-i")) || 0;
-    selMonth = null; hideActs();
+    selMonth = null; hideActs(); editing = null; savedId = null;
     render();
   });
-  monEl.addEventListener("change", function(){ selMonth = Number(monEl.value); render(); });
+  monEl.addEventListener("change", function(){ selMonth = Number(monEl.value); editing = null; savedId = null; render(); });
 
   /* ---------- отмена ошибочного вывода ----------
      Деньги возвращаются сами: копилка считается как «старт + продажи − операции», и
@@ -509,6 +561,147 @@
       .catch(function(){ actNote("Связи нет — не отменено.", "bad"); });
   }
 
+  /* ---------- правка ошибочного вывода ----------
+     Строка вывода превращается в форму: сумма и дата (время остаётся тем, когда вывод отметили).
+     Деньги двигаются сами, как у отмены: копилка считается «старт + продажи − операции», и новая
+     сумма просто встаёт на место старой. Сервер правит ту же строку листа, прежние числа кладёт
+     в колонку edits и наружу признака правки не отдаёт. Право — от сервера (editOps), не файл. */
+  function canEdit(){ return !!(data && data.editOps); }
+  // на день уже серверного окна намеренно: сервер считает его от полуночи UTC, и самый крайний
+  // день он может отбить — пусть лучше форма не предложит его вовсе, чем «Не сохранилось»
+  function editMin(){ var d = new Date(); d.setDate(d.getDate() - (WD_DAYS - 1)); return ymd(d); }
+  function parseAmt(s){
+    var n = Number(String(s).replace(/[\s₽рp]/gi, "").replace(",", "."));
+    return isFinite(n) ? Math.round(n) : 0;
+  }
+  // что будет, если сохранить: ошибка (и в каком поле) или новая копилка
+  function editCheck(ch, o){
+    var a = parseAmt(editing.amount), dt = String(editing.date || "");
+    if(!(a > 0))   return { field:"amount", msg:"Введите сумму числом." };
+    if(a > WD_MAX) return { field:"amount", msg:"Больше " + money(WD_MAX) + " одним выводом сервер не примет." };
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(dt) || isNaN(parse(dt).getTime())) return { field:"date", msg:"Укажите дату." };
+    if(dt !== ymd(o.dt)){
+      if(dt > ymd(new Date())) return { field:"date", msg:"Дата вывода не может быть в будущем." };
+      if(dt < editMin())       return { field:"date", msg:"Дату можно перенести только в пределах двух последних месяцев." };
+    }
+    var raw = rawPotOf(ch), will = raw + o.amount - a;
+    // больше, чем было в копилке, вывод не бывает — то же правило, что у «Отметить вывод» в портале,
+    // в обоих каналах: у «Промывки» лишнее растворилось бы в нуле, а у «Масла» портал подписал бы
+    // минус «расходы больше продаж», хотя расходов не было. Уменьшать вывод можно всегда.
+    if(a > o.amount && will < 0)
+      return { field:"amount", msg:"Больше " + money(o.amount + Math.max(0, raw)) + " не получится — в копилке столько нет." };
+    if(a === o.amount && dt === ymd(o.dt)) return { same:true, msg:"Поменяйте сумму или дату — копилка пересчитается сама." };
+    return { ok:true, amount:a, date:dt, msg:"Копилка: " + money(potOf(ch)) + " → " +
+             money(ch.key === "flush" ? Math.max(0, will) : will) + "." };
+  }
+  // пока идёт отправка — «Сохраняю…»; причина прошлой неудачи висит, пока не тронули поля;
+  // ошибки ввода краснеют только после попытки сохранить, до неё — тихая подсказка
+  function editState(ch, o){
+    if(editing.busy) return { msg: editing.msg };
+    if(editing.msg)  return { msg: editing.msg, bad: true };
+    var c = editCheck(ch, o), bad = !c.ok && !c.same && editing.tried;
+    return { msg: c.msg, bad: bad, field: bad ? c.field : "" };
+  }
+  function editHtml(ch, o){
+    var st = editState(ch, o), dis = editing.busy ? " disabled" : "";
+    return '<div class="op ed" data-op="' + esc(o.id) + '">' +
+      '<div class="ed-top"><span>Правка вывода</span><span class="when">' + when(o) + '</span></div>' +
+      '<div class="ed-grid">' +
+        '<label class="ed-f"><span class="ed-k">Сумма, ₽</span><input class="ed-in' + (st.field === "amount" ? " bad" : "") +
+          '" id="ed-amount" type="text" inputmode="numeric" autocomplete="off" value="' + esc(editing.amount) + '"' + dis + '></label>' +
+        '<label class="ed-f"><span class="ed-k">Дата</span><input class="ed-in' + (st.field === "date" ? " bad" : "") +
+          '" id="ed-date" type="date" min="' + editMin() + '" max="' + ymd(new Date()) + '" value="' + esc(editing.date) + '"' + dis + '></label>' +
+      '</div>' +
+      '<div class="ed-calc' + (st.bad ? " bad" : "") + '" id="ed-calc" aria-live="polite">' + esc(st.msg) + '</div>' +
+      '<div class="ed-btns"><button class="ed-save" type="button" data-ed-save' + dis + '>Сохранить</button>' +
+      '<button class="ed-cancel" type="button" data-ed-cancel' + dis + '>Отмена</button></div></div>';
+  }
+  function opById(ch, id){ return opsOf(ch).filter(function(x){ return x.id === id; })[0]; }
+  // перерисовать только подсказку и рамки — без render(), иначе поле теряет фокус и курсор
+  function paintEdit(){
+    var ch = data.channels[curCh], o = opById(ch, editing.id);
+    if(!o) return;
+    var st = editState(ch, o);
+    var calc = document.getElementById("ed-calc"), fa = document.getElementById("ed-amount"), fd = document.getElementById("ed-date");
+    if(calc){ calc.textContent = st.msg; calc.className = "ed-calc" + (st.bad ? " bad" : ""); }
+    if(fa) fa.className = "ed-in" + (st.field === "amount" ? " bad" : "");
+    if(fd) fd.className = "ed-in" + (st.field === "date" ? " bad" : "");
+  }
+  function saveEdit(){
+    var ch = data.channels[curCh], o = opById(ch, editing.id);
+    if(!o){ editing = null; render(); return; }
+    editing.tried = true;
+    var c = editCheck(ch, o);
+    if(!c.ok){ paintEdit(); return; }
+    sendEdit(ch, o.id, c.amount, c.date);
+  }
+
+  listEl.addEventListener("click", function(e){
+    var b = e.target.closest("[data-edit],[data-ed-save],[data-ed-cancel]"); if(!b || !data) return;
+    if(b.hasAttribute("data-edit")){
+      var ch = data.channels[curCh], id = b.getAttribute("data-edit"), o = opById(ch, id);
+      if(!o || !canEdit()) return;
+      editing = { ch:ch.key, id:id, amount:String(o.amount), date:ymd(o.dt), busy:false, msg:"", tried:false };
+      savedId = null;
+      render();
+      var ia = document.getElementById("ed-amount");
+      if(ia){ try { ia.focus(); ia.select(); } catch(err){} }
+      return;
+    }
+    if(!editing || editing.busy) return;
+    if(b.hasAttribute("data-ed-cancel")){ editing = null; render(); return; }
+    saveEdit();
+  });
+  // дата из календаря телефона приходит то «input», то «change» — слушаем оба
+  ["input", "change"].forEach(function(ev){
+    listEl.addEventListener(ev, function(e){
+      if(!editing || editing.busy) return;
+      if(e.target.id === "ed-amount") editing.amount = e.target.value;
+      else if(e.target.id === "ed-date") editing.date = e.target.value;
+      else return;
+      editing.msg = "";              // причина прошлой неудачи больше не про эти числа
+      paintEdit();
+    });
+  });
+  listEl.addEventListener("keydown", function(e){
+    if(!editing || editing.busy || !e.target.classList || !e.target.classList.contains("ed-in")) return;
+    if(e.key === "Enter"){ e.preventDefault(); saveEdit(); }
+    else if(e.key === "Escape"){ editing = null; render(); }
+  });
+
+  /* Отправка — как у отмены: ответ no-cors не прочитать, правду приносит перечитка. Сверяем
+     сумму и дату. Повтор той же правки сервер не пишет второй раз, поэтому «Сохранить ещё раз»
+     после обрыва связи безопасно. */
+  function sendEdit(ch, id, amount, date){
+    var key = keyGet(); if(!key) return;
+    var chKey = ch.key;
+    editing.busy = true; editing.msg = "Сохраняю…";
+    render();
+    fetch(API, { method:"POST", mode:"no-cors",
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify({ key:key, kind:"op-edit", ch:chKey, id:id, amount:amount, date:date }) })
+      .then(function(){ setTimeout(function(){ load(false, function(){
+        if(!editing || editing.id !== id) return;            // ушли на другой канал или месяц
+        var cur = data.channels.filter(function(c){ return c.key === chKey; })[0];
+        var n   = cur && opById(cur, id);
+        if(!n){ editing = null; render(); noteEl.textContent = "Этого вывода уже нет — его отменили."; return; }
+        if(n.amount === amount && ymd(n.dt) === date){
+          editing = null; savedId = id; selMonth = mkey(n.dt);   // перенесли в другой месяц — едем за ним
+          render(); showOp(id);
+          return;
+        }
+        editFail("Не сохранилось — вывод прежний. Нажмите «Сохранить» ещё раз.");
+      }, function(){
+        editFail("Связь пропала — не видно, сохранилось ли. Нажмите «Сохранить» ещё раз: повтор безопасен.");
+      }); }, 2500); })
+      .catch(function(){ editFail("Связи нет — не сохранено. Нажмите «Сохранить», когда появится интернет."); });
+  }
+  function editFail(msg){ if(!editing) return; editing.busy = false; editing.msg = msg; render(); }
+  function showOp(id){
+    var el = [].filter.call(listEl.querySelectorAll("[data-op]"), function(x){ return x.getAttribute("data-op") === id; })[0];
+    if(el && el.scrollIntoView) el.scrollIntoView({ block:"nearest" });
+  }
+
   /* ---------- действия (то, что прислал сервер) ----------
      Кнопки не висят на экране: их открывает долгое нажатие на цифру копилки. Нет прав —
      нет и списка действий, поэтому жест не делает ровно ничего. */
@@ -534,9 +727,10 @@
       if(timer) return;
       timer = setTimeout(function(){
         timer = null;
-        if(!data || (!(data.actions || []).length && !canUndo())) return;   // прав нет — жест немой
+        if(!data || (!(data.actions || []).length && !canUndo() && !canEdit())) return;   // прав нет — жест немой
         actsOn = !actsOn;
-        render();   // не только панель: вместе с ней в ленте появляются кнопки «Отменить»
+        if(!actsOn){ editing = null; savedId = null; }
+        render();   // не только панель: вместе с ней в ленте появляются кнопки «Изменить» и «Отменить»
       }, 700);
     }
     function stop(){ if(timer){ clearTimeout(timer); timer = null; } }
@@ -593,10 +787,12 @@
   }
 
   /* ---------- загрузка (JSONP: Apps Script не отдаёт CORS) ---------- */
-  function load(fromGate, after){
+  // after — после удачной перечитки, onFail — если перечитать не вышло (проверке записи нужно знать и это)
+  function load(fromGate, after, onFail){
     var key = keyGet();
     if(!key){ lock(""); return; }
-    if(busy) return;
+    // занято другой загрузкой — проверку после записи не теряем: повторим, когда та закончится
+    if(busy){ if(after) setTimeout(function(){ load(fromGate, after, onFail); }, 700); return; }
     busy = true; rfrEl.disabled = true;
     var cb = "__cash_" + (++seq);
     var s = document.createElement("script");
@@ -613,6 +809,7 @@
       window[cb] = function(){ try { delete window[cb]; } catch(e){ window[cb] = undefined; } };
       if(fromGate) lock("Сервис не отвечает. Проверьте интернет и попробуйте ещё раз.");
       else noteEl.textContent = "Связи нет — данные не обновились.";
+      if(onFail) onFail();
     }
     window[cb] = function(j){
       if(done) return;
@@ -620,13 +817,14 @@
       if(j && j.error){
         // ключ не подошёл — на устройстве его не держим: иначе «просто не работает» без причины
         if(j.error === "key" || j.error === "keyoff"){ keySet(""); data = null; lock(GATE_MSG[j.error]); return; }
-        if(data){ noteEl.textContent = GATE_MSG[j.error] || "Сервис временно недоступен."; return; }
+        if(data){ noteEl.textContent = GATE_MSG[j.error] || "Сервис временно недоступен."; if(onFail) onFail(); return; }
         lock(GATE_MSG[j.error] || "Сервис временно недоступен. Попробуйте позже.");
         return;
       }
       if(!j || !Array.isArray(j.channels)){
         if(fromGate) lock("Сервис ответил непонятным. Попробуйте позже.");
         else noteEl.textContent = "Сервис ответил непонятным.";
+        if(onFail) onFail();
         return;
       }
       data = j; noteEl.textContent = "";
