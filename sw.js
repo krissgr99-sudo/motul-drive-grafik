@@ -14,11 +14,10 @@
    Она же имя кэша и она же то, что человек видит в плашке «вышло обновление». Пишем литералом
    в одну строку (а не склейкой "motul-drive-v" + VERSION) намеренно: deploy.ps1 ищет версию
    регуляркой прямо в тексте файла и на склейке нашёл бы пустоту, то есть страж публикации
-   молча перестал бы работать. NOTE — строка «что нового» для той же плашки: меняется вместе
-   с версией, поэтому протухнуть не может. */
-const CACHE = "motul-drive-v1.7.0";
+   молча перестал бы работать. Описания «что нового» рядом нет намеренно: плашка показывает
+   только номер (решение владельца 16.09.2026). */
+const CACHE = "motul-drive-v1.8.0";
 const VERSION = CACHE.replace("motul-drive-v", "");
-const NOTE = "Яма: все работы и подробные названия";
 
 self.addEventListener("install", e => {
   /* Предкэш корня scope (на Pages это index.html). Если недоступен — не валим установку.
@@ -39,7 +38,7 @@ self.addEventListener("activate", e => {
 });
 
 /* Разговор со страницей — из-за него плашка вообще может назвать цифры:
-     version      → отвечаем в присланный порт (MessageChannel), кто мы по версии и что нового.
+     version      → отвечаем в присланный порт (MessageChannel), кто мы по версии.
                     Спрашивают двоих: активного («было») и ждущего в очереди («стало»);
      apply-update → человек нажал «Обновить». Только теперь вытесняем старую версию;
                     страница поймает controllerchange и перезагрузится сама. */
@@ -47,7 +46,7 @@ self.addEventListener("message", e => {
   const type = e.data && e.data.type;
   if (type === "version") {
     const port = e.ports && e.ports[0];
-    if (port) port.postMessage({ version: VERSION, note: NOTE });
+    if (port) port.postMessage({ version: VERSION });
   } else if (type === "apply-update") {
     self.skipWaiting();
   }

@@ -146,12 +146,11 @@
   .newver-inner{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:13px}
   .newver-ico{display:flex;flex:none;color:var(--accent-soft)}
   .newver-ico svg{width:17px;height:17px;display:block}
-  /* Одна строка и только одна: плашка тонкая, поэтому лишнее режет «что нового» многоточием,
-     а не переносит панель на второй этаж (flex-wrap здесь был бы именно этим). */
+  /* Одна строка и только одна: плашка тонкая, заголовок с номером не переносят панель
+     на второй этаж (flex-wrap здесь был бы именно этим). Описания «что нового» нет намеренно. */
   .newver-text{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:nowrap;overflow:hidden}
   .newver-text b{font-weight:700;color:var(--text);white-space:nowrap;flex:none}
   .newver-ver{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;flex:none}
-  .newver-note{color:var(--muted);flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .newver-go{margin-left:auto;flex:none}
   .newver-later{flex:none}
 
@@ -253,6 +252,7 @@
   .tpl-carhint .tpl-carhint-box{color:var(--accent-soft);font-weight:700}
   .tpl-carhint-note{display:block;margin-top:5px;color:var(--muted);font-size:12.5px}
   .tpl-carhint-warn{display:block;margin-top:5px;color:var(--c-red);font-weight:600;font-size:12.5px}
+  .tpl-carhint .ui-btn{margin-top:9px}   /* «Открыть в Ценах» в плашке поиска по номеру */
   /* счётчики на вкладках/фильтрах */
   .tpl-count{margin-left:6px;font-size:11px;font-weight:700;color:var(--muted);opacity:.9}
   .tpl-chip.active .tpl-count{color:#fff;opacity:.9}
@@ -1207,17 +1207,15 @@
       scrollbar-width:none;-webkit-overflow-scrolling:touch}
     .mainnav::-webkit-scrollbar{display:none}
     .mainnav .nav-item{flex:none;min-height:44px}
-    /* плашка обновления: текст первой строкой, кнопки второй — хиты ≥44px (правило 7).
-       Строку «что нового» на телефоне прячем: в 375px она вытесняет сами кнопки. */
-    /* плашка обновления в 375px: «что нового» не влезает вовсе, а версия уходит второй
-       строкой под заголовок — так обе кнопки остаются в одной строке с хитом ≥44px (правило 7) */
+    /* плашка обновления в 375px: версия уходит второй строкой под заголовок — так обе кнопки
+       остаются в одной строке с хитом ≥44px (правило 7) */
     .newver-inner{gap:8px}
-    .newver-note{display:none}
     .newver-text{flex-direction:column;align-items:flex-start;gap:1px}
     .newver-go,.newver-later{min-height:44px}
     .title .t{font-size:18px}
     /* поля ввода ≥16px — иначе iOS зумит страницу при фокусе */
     .tpl-search input,#fb-text,.sales-month-sel{font-size:16px}
+    .tpl-carhint .ui-btn{min-height:44px}   /* «Открыть в Ценах» — хит ≥44 (правило 7) */
   }
 
   /* узкая полоса (721–1120px, вкл. iPad-портрет 768px и окно ноутбука в половину экрана):
@@ -1363,7 +1361,6 @@
         <span class="newver-text">
           <b>Вышло обновление</b>
           <span class="newver-ver" id="newver-ver"></span>
-          <span class="newver-note" id="newver-note"></span>
         </span>
         <button class="ui-btn ui-btn--sm ui-btn--primary newver-go" id="newver-go" type="button">Обновить</button>
         <button class="ui-btn ui-btn--sm ui-btn--ghost newver-later" id="newver-later" type="button">Позже</button>
@@ -1441,10 +1438,10 @@
     <!-- ===== Страница: Шаблоны ===== -->
     <div id="page-shablony" class="page" hidden>
       <div class="tpl-toolbar">
-        <div class="tpl-search"><input id="tpl-search" type="text" placeholder="Найти коробку: 8HP65, DQ500, U660, вариатор…" autocomplete="off"></div>
+        <div class="tpl-search"><input id="tpl-search" type="text" placeholder="Коробка, машина или номер фильтра: 8HP65, X5 G05, HX187KIT…" autocomplete="off"></div>
         <button class="tpl-copyall" id="tpl-copyall" type="button">Копировать всё видимое</button>
       </div>
-      <div class="tpl-hint" id="tpl-hint" hidden>Выберите семейство коробки слева или начните вводить модель в поиск — например 8HP65, DQ500, U660.</div>
+      <div class="tpl-hint" id="tpl-hint" hidden>Выберите семейство коробки слева или начните вводить в поиск — модель (8HP65, DQ500), машину (X5 G05) или номер фильтра (HX187KIT, 1103298119).</div>
       <div class="tpl-layout">
         <aside class="tpl-nav" id="tpl-nav"></aside>
         <section class="tpl-main">
@@ -2972,9 +2969,11 @@
      sink (необязательный) — массив, куда складываются все позиции сметы: по нему считается бейдж. */
   function priceLine(key, sink){
     const item = PRICE[key];
+    // key кладём в строку намеренно: по нему поиск «по номеру фильтра» отличает деталь от работы
+    // (в названиях работ стоят коды коробок — «ZF 8HP65», а не номера запчастей).
     const l = !item
-      ? (console.warn("PRICE: нет ключа", key), { name: `⚠ уточню: ${key}`, price: null })
-      : { name: item[0], price: item[1], stale: !isFresh(key) };
+      ? (console.warn("PRICE: нет ключа", key), { name: `⚠ уточню: ${key}`, price: null, key })
+      : { name: item[0], price: item[1], stale: !isFresh(key), key };
     if(sink) sink.push(l);
     return l;
   }
@@ -3014,7 +3013,7 @@
   function tplDoc(t){
     const box = BOXES[t.box];
     let svc = box && box[t.type];
-    if(!svc) return { text: "", stale: false, unknown: false };   // нет данных по услуге (заготовка) — пусто
+    if(!svc) return { text: "", stale: false, unknown: false, items: [] };   // нет данных по услуге (заготовка) — пусто
     const eng = engineOf(t);
     if(svc[eng]) svc = svc[eng];           // мотор переопределяет услугу (полный гибрид = др. агрегат)
     const combo = t.combo && box.combo ? box.combo : null;   // сводка «все поддоны» этой же услуги
@@ -3034,7 +3033,8 @@
     if(box.haldex) blocks.push(haldexBlock(box.haldex, seen));
     return { text: CDOC.doc({ title: head, blocks }),
              stale:   seen.some(l => l.stale),
-             unknown: seen.some(l => l.price == null) };
+             unknown: seen.some(l => l.price == null),
+             items:   seen };   // позиции сметы: из них поиск достаёт номера деталей (docArts)
   }
   // Текст шаблона (то же, но только тело — для копирования, поиска и «Копировать всё видимое»)
   const tplBody = t => tplDoc(t).text;
@@ -3799,6 +3799,33 @@
     return hits.filter(h => h.best === top).map(h => h.c);
   }
 
+  /* ===== Номера запчастей (артикулы) — поиск «по номеру фильтра» =====
+     Один и тот же номер приходит к менеджеру как угодно: «LT-1036», «LT 1036», «lt1036»,
+     а у Chrysler 68225344АА хвост вообще набран кириллицей. Поэтому сравниваем не строки,
+     а их скелет: латиница и цифры, регистр и любые разделители сняты (foldLat — тот же,
+     что у машин, он и чинит кириллические двойники). */
+  const artNorm = s => foldLat(String(s).toLowerCase()).replace(/[^a-z0-9]/g, "");
+  /* Номера ВНУТРИ названия позиции: «Оригинальный Фильтр-поддон ZF 1087298437» → 1087298437,
+     «Фильтр LYNXauto LT-1036 с прокладкой» → lt1036. Дефис и точка внутри слова — часть номера
+     (LT-1036, 31726-28X0A, 236.17), поэтому режем только по пробелам, слэшам и скобкам.
+     Слово считаем номером, если в нём есть цифра и скелет длиной от 5 знаков: короче — это
+     литраж («12л») и объёмы, по ним искать нечего. Вязкость (75W90, 0W30) отсекаем отдельно:
+     по форме она номер, по смыслу — нет, и плашка «поиск по номеру» на ней врала бы. */
+  const VISCOSITY = /^\d{1,2}w\d{2,3}$/;
+  function artsInName(name){
+    const out = [];
+    for(const w of String(name).split(/[\s/,;()«»"]+/)){
+      const a = artNorm(w);
+      if(a.length >= 5 && /\d/.test(a) && !VISCOSITY.test(a)) out.push(a);
+    }
+    return out;
+  }
+  /* Запрос похож на номер? Нужна цифра и 4 знака скелета («8hp» — не номер).
+     Сверяем ПО НАЧАЛУ номера: «hx187» находит HX187KIT, «0D5398009» — всю семью
+     0D5398009A/B/C, а «1000» (это цена, а не номер) не цепляет чужие артикулы серединой. */
+  const artQuery = q => { const a = artNorm(q); return (a.length >= 4 && /\d/.test(a)) ? a : ""; };
+  const artHas = (arts, qa) => arts.some(a => a.startsWith(qa));
+
   // Значки семейств коробок (inline SVG — работает офлайн). Ключ = brand из TEMPLATES.
   //    Единый стиль: тёмный кружок + серебряная монограмма (#c7ccd1). Новое семейство → добавь сюда.
   const logoBadge = (label, text, fontSize, dy=0, ls=1) =>
@@ -3908,6 +3935,13 @@
     // Поиск по машине — общий с разбором по VIN: carsMatching живёт при данных CARS (см. там же).
     const carsForQuery = () => carsMatching(query);
 
+    /* Номера деталей сметы. Считаем ЛЕНИВО — только когда запрос похож на номер и текстовый
+       поиск уже промахнулся: разбор названий стоит ~40% времени tplDoc, а ищут чаще словом,
+       и на телефоне это были бы лишние миллисекунды на каждую букву. Работы пропускаем:
+       в их названиях стоят коды коробок («ZF 8HP65»), а не номера запчастей. */
+    const docArts = doc => [...new Set(doc.items
+      .filter(l => !/work/.test(l.key || "")).flatMap(l => artsInName(l.name)))];
+
     // Какие ВАРИАНТЫ карточек коробки уместны конкретной машине (c.allow). База — всегда; гибрид/
     // блокировку/раздатку показываем, только если машина их разрешает. Нет c.allow → старое поведение (всё).
     const cardAllowed = (t, c) => {
@@ -3945,8 +3979,14 @@
             if(!cars.some(c => c.boxes.includes(t.box) && cardAllowed(t, c))) return false;
           } else {
             // Обычный текстовый поиск по коробке/тегам/телу карточки.
-            const hay = (t.brand+" "+(t.box||"")+" "+tplTitle(t)+" "+tplTags(t).join(" ")+" "+tplBody(t)).toLowerCase();
-            if(!hay.includes(query)) return false;
+            const doc = tplDoc(t);
+            const hay = (t.brand+" "+(t.box||"")+" "+tplTitle(t)+" "+tplTags(t).join(" ")+" "+doc.text).toLowerCase();
+            if(hay.includes(query)) return true;
+            // Поиск ПО НОМЕРУ детали: сравниваем скелеты, поэтому «lt1036» находит «LT-1036»,
+            // а кусок номера («1036», «hx187») — весь номер. Это второй заход, а не замена
+            // текстовому поиску: всё, что находилось раньше, находится и сейчас.
+            const qa = artQuery(query);
+            if(!(qa && artHas(docArts(doc), qa))) return false;
           }
         }
         return true;
@@ -4022,6 +4062,49 @@
         tile.addEventListener("click", ()=> selectBrand(tile.dataset.brand)));
     }
 
+    /* Подсказка «нашли по номеру»: что это за номер и откуда портал его знает.
+       Коробку по номеру НЕ угадываем. Соблазн есть — в каталоге «Цены» у номера написано
+       «ZF8HP65 ОРИГИНАЛ 100%», — но это же название стоит и у 8HP65A, а поддон у неё ДРУГОЙ:
+       догадка уехала бы клиенту сметой не от его машины. Показываем факт из данных, выбирает
+       человек (тот же довод, что в decisions/2026-09-09-mashinu-vybiraet-chelovek.md). */
+    function artHint(found){
+      const qa = artQuery(query); if(!qa) return "";
+      // позиции наших смет с таким номером — по ним карточки и нашлись
+      const parts = [...new Set(Object.keys(PRICE)
+        .filter(k => !/work/.test(k) && artHas(artsInName(PRICE[k][0]), qa))
+        .map(k => PRICE[k][0]))].slice(0, 4);
+      // тот же номер в каталоге запчастей (PARTS объявлен ниже по файлу — к первому вводу он уже есть)
+      const cat = [...new Map(PARTS.filter(p => artNorm(p[1]).startsWith(qa))
+        .map(p => [p[0] + "|" + p[1] + "|" + p[2], p])).values()].slice(0, 4);
+      if(!parts.length && !cat.length) return "";
+      // цену запчасти сюда не тащим: в каталоге она за деталь, в смете — вместе с работой,
+      // рядом их легко перепутать и назвать клиенту не ту (правило 9 — в буфер уходит смета).
+      const inDoc = parts.length
+        ? `<b>В сметах:</b> ${parts.map(n => esc(n)).join("<br>")}`
+        : `Такого номера в наших сметах нет.`;
+      const inCat = cat.length
+        ? `<span class="tpl-carhint-note">В каталоге «Цены»: ${cat.map(p =>
+             `<span class="tpl-carhint-car">${esc(p[0])} · ${esc(p[1])}</span> — ${esc(p[2])}`).join("<br>")}</span>`
+        : "";
+      const why = found ? "" :
+        `<span class="tpl-carhint-note">Коробку по номеру портал не подбирает — у соседних моделей поддоны разные, а название в каталоге подскажет, что это за деталь.</span>`;
+      const btn = cat.length
+        ? `<button class="ui-btn ui-btn--secondary ui-btn--sm" type="button" data-art-open="${esc(cat[0][1])}">${ICO.search} Открыть в «Ценах»</button>`
+        : "";
+      return `<div class="tpl-carhint">${ICO.search} <b>Поиск по номеру:</b> `
+        + `<span class="tpl-carhint-box">${esc(searchInp.value.trim())}</span><br>${inDoc}${inCat}${why}${btn}</div>`;
+    }
+    // кнопка из подсказки: тот же приём, что «коробка → Шаблоны» — переключаем вкладку и кладём
+    // номер в поиск «Цен», вся логика каталога остаётся одна на портал
+    function bindArtOpen(){
+      const b = grid.querySelector("[data-art-open]");
+      if(b) b.addEventListener("click", ()=>{
+        showPage("tseny");
+        const ps = document.getElementById("pr-search");
+        if(ps){ ps.value = b.dataset.artOpen; ps.dispatchEvent(new Event("input", { bubbles:true })); }
+      });
+    }
+
     function render(){
       // По умолчанию (никакая марка не выбрана и пустой поиск) — стартовый экран с плитками.
       const landing = activeBrand==="all" && !query;
@@ -4053,17 +4136,23 @@
         // если совпавшие машины все «не наши» — честно говорим об этом, а не «ничего не найдено»
         const onlyNoservice = cars.length && cars.every(c=>c.noservice || !c.boxes || !c.boxes.length);
         const anyNocard = cars.some(c=>c.nocard);
+        // номер портал знает (он в каталоге «Цены»), а готовой сметы по нему нет — это не
+        // «ничего не найдено»: деталь названа в подсказке выше, тупика у менеджера нет
+        const numHint = artHint(false);
         const msg = anyNocard
           ? "Эту коробку мы обслуживаем, но готовой карточки в каталоге ещё нет — соберите смету вручную из раздела «Цены» (см. подсказку выше)."
           : onlyNoservice
             ? "Эту коробку у нас не обслуживают (робот DCT / электро / крупный автомат вне ассортимента)."
-            : "Ничего не найдено";
+            : numHint
+              ? "Готовой сметы по этому номеру нет."
+              : "Ничего не найдено";
         const q = searchInp.value.trim();
         // А4: искал и не нашёл → предложить зафиксировать пробел покрытия (DemandLog found=false).
         const notFound = q
           ? `<div class="tpl-notfound">Не нашли нужную машину или узел? Отметьте — добавим в каталог.<button class="tpl-notfound-btn" type="button">${ICO.inbox} Сообщить, что не нашёл</button></div>`
           : "";
-        grid.innerHTML = carHint + `<div class="tpl-empty">${msg}</div>` + notFound;
+        grid.innerHTML = carHint + numHint + `<div class="tpl-empty">${msg}</div>` + notFound;
+        bindArtOpen();
         const nfBtn = grid.querySelector(".tpl-notfound-btn");
         if(nfBtn) nfBtn.addEventListener("click", ()=>{
           if(window.MDLOG) window.MDLOG.demand(q);
@@ -4071,7 +4160,7 @@
         });
         return;
       }
-      grid.innerHTML = carHint + list.map((t,i)=>{
+      grid.innerHTML = carHint + artHint(true) + list.map((t,i)=>{
         const tags = tplTags(t).map(x=>`<span class="tpl-tag">${esc(x)}</span>`).join("");
         const logo = BRAND_LOGOS[t.brand] || "";
         const doc = tplDoc(t);
@@ -4108,6 +4197,7 @@
           </div></div>
         </div>`;
       }).join("");
+      bindArtOpen();
       grid.querySelectorAll(".tpl-card-head").forEach(head=>{
         head.addEventListener("click", ()=>{
           const card = head.closest(".tpl-card");
@@ -6272,7 +6362,7 @@
   const HOME = {
     title:   "Что подобрать клиенту?",
     sub:     "Коробка, марка или модель — найдём готовый чек-шаблон с ценой замены.",
-    askPlaceholder: "8HP, DQ500, U660, вариатор, BMW…",
+    askPlaceholder: "8HP, DQ500, BMW X5, номер фильтра…",
     askGo:   "Найти цену",
     // плитки-лаунчер: страница · иконка · название · назначение (что делает раздел)
     tiles: [
@@ -6336,7 +6426,7 @@
         <form class="home-ask" id="home-ask" data-hero role="search">
           <div class="home-ask-field">
             <span class="home-ask-ico">${ICO.search}</span>
-            <input id="home-ask-input" type="text" autocomplete="off" placeholder="${HOME.askPlaceholder}" aria-label="Коробка, марка или модель клиента">
+            <input id="home-ask-input" type="text" autocomplete="off" placeholder="${HOME.askPlaceholder}" aria-label="Коробка, машина клиента или номер фильтра">
           </div>
           <button class="home-ask-go" type="submit">${HOME.askGo} ${ICO.arrow}</button>
         </form>
@@ -8258,12 +8348,13 @@
      4 КБ против 600+ КБ страницы, потому и перепроверяем именно его. По стандарту новая версия не
      вытесняет работающую, а ждёт в очереди (registration.waiting), и встаёт только по нашей команде:
      человека нельзя выдёргивать из середины сметы. Мы спрашиваем у обеих версий их номер (семвер
-     живёт в sw.js) и показываем «было → стало»; перезагрузка — ТОЛЬКО по кнопке. */
+     живёт в sw.js) и показываем только «было → стало», без описания (решение владельца 16.09.2026);
+     перезагрузка — ТОЛЬКО по кнопке. */
   (function(){
     if(!("serviceWorker" in navigator) || location.protocol.indexOf("http") !== 0) return;
 
     const bar = document.getElementById("newver");
-    const elVer = document.getElementById("newver-ver"), elNote = document.getElementById("newver-note");
+    const elVer = document.getElementById("newver-ver");
     const btnGo = document.getElementById("newver-go"), btnLater = document.getElementById("newver-later");
     if(!bar || !btnGo || !btnLater) return;
 
@@ -8298,7 +8389,6 @@
       const from = await ask(navigator.serviceWorker.controller);
       shown = v;
       elVer.textContent = (from && from.version) ? from.version + " → " + v : "версия " + v;
-      elNote.textContent = (to && to.note) ? "· " + to.note : "";
       btnGo.disabled = false;
       bar.hidden = false;
     }

@@ -105,11 +105,11 @@
     max-width:860px;margin:0 auto;padding:10px 16px;font-size:13px}
   .newver-ico{display:flex;flex:none;color:var(--accent-soft)}
   .newver-ico svg{width:17px;height:17px;display:block}
-  /* Одна строка: лишнее режет «что нового» многоточием, а не переносит плашку на второй этаж. */
+  /* Одна строка: заголовок с номером не переносят плашку на второй этаж. Описания «что нового»
+     нет намеренно, как и в портале. */
   .newver-text{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:nowrap;overflow:hidden}
   .newver-text b{font-weight:700;color:var(--text);white-space:nowrap;flex:none}
   .newver-ver{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;flex:none}
-  .newver-note{color:var(--muted);flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .newver-go{margin-left:auto;background:var(--brand);border-color:var(--brand);color:#fff}
   .newver-go:hover{background:var(--brand-hover)}
 
@@ -200,10 +200,9 @@
     .ymaster{flex:1 1 auto;min-width:0;max-width:none;min-height:44px}
     .ysum{margin-left:auto;align-self:center}
     .sel,.rfr{min-height:40px}
-    /* плашка обновления: в 375px строка «что нового» вытесняет кнопки — прячем её,
-       кнопки держим хитом ≥44px (мастер жмёт в перчатке) */
+    /* плашка обновления в 375px: версия уходит второй строкой под заголовок, кнопки держим
+       хитом ≥44px (мастер жмёт в перчатке) */
     .newver-inner{padding:10px 12px;gap:8px;flex-wrap:nowrap}
-    .newver-note{display:none}
     .newver-text{flex-direction:column;align-items:flex-start;gap:1px}
     .newver-go,.newver-later{min-height:44px}
   }
@@ -256,7 +255,6 @@
       <span class="newver-text">
         <b>Вышло обновление</b>
         <span class="newver-ver" id="newver-ver"></span>
-        <span class="newver-note" id="newver-note"></span>
       </span>
       <button class="rfr newver-go" id="newver-go" type="button">Обновить</button>
       <button class="rfr newver-later" id="newver-later" type="button">Позже</button>
@@ -672,12 +670,12 @@
    Новая версия страницы приезжает вместе с новым sw.js (пара килобайт — дёшево перепроверять).
    По стандарту она ждёт в очереди (registration.waiting) и вытесняет работающую только по нашей
    команде: мастера нельзя выдёргивать посреди машины. Спрашиваем у обеих версий их номер (семвер
-   в sw.js), показываем «было → стало», перезагружаемся ТОЛЬКО по кнопке. */
+   в sw.js), показываем только «было → стало», без описания, перезагружаемся ТОЛЬКО по кнопке. */
 (function(){
   if(!("serviceWorker" in navigator) || location.protocol.indexOf("http") !== 0) return;
 
   var bar = document.getElementById("newver");
-  var elVer = document.getElementById("newver-ver"), elNote = document.getElementById("newver-note");
+  var elVer = document.getElementById("newver-ver");
   var btnGo = document.getElementById("newver-go"), btnLater = document.getElementById("newver-later");
   if(!bar || !btnGo || !btnLater) return;
 
@@ -711,7 +709,6 @@
       ask(navigator.serviceWorker.controller).then(function(from){
         shown = v;
         elVer.textContent = (from && from.version) ? from.version + " → " + v : "версия " + v;
-        elNote.textContent = (to && to.note) ? "· " + to.note : "";
         btnGo.disabled = false;
         bar.hidden = false;
       });

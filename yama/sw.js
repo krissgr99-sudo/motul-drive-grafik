@@ -11,10 +11,9 @@
 
    Версия семантическая, как у портала: МАЖОР.МИНОР.ПАТЧ (мелкое / заметное / крупное),
    у ямы свой счёт. Литералом в одну строку — deploy.ps1 ищет её регуляркой в тексте файла.
-   NOTE — строка «что нового» для плашки обновления, меняется вместе с версией. */
-const CACHE = "md-yama-v1.1.0";
+   Описания «что нового» нет намеренно, как и у портала: плашка показывает только номер. */
+const CACHE = "md-yama-v1.1.1";
 const VERSION = CACHE.replace("md-yama-v", "");
-const NOTE = "Работы подписаны подробно: «КПП · полная замена», «Задний дифференциал»";
 
 self.addEventListener("install", e => {
   /* Без skipWaiting намеренно: мастер обновляется сам, кнопкой в плашке, а не посреди работы.
@@ -31,12 +30,12 @@ self.addEventListener("activate", e => {
 });
 
 /* Разговор со страницей (плашка обновления), один в один с порталом:
-   version → кто мы по версии и что нового; apply-update → мастер нажал «Обновить». */
+   version → кто мы по версии; apply-update → мастер нажал «Обновить». */
 self.addEventListener("message", e => {
   const type = e.data && e.data.type;
   if (type === "version") {
     const port = e.ports && e.ports[0];
-    if (port) port.postMessage({ version: VERSION, note: NOTE });
+    if (port) port.postMessage({ version: VERSION });
   } else if (type === "apply-update") {
     self.skipWaiting();
   }
