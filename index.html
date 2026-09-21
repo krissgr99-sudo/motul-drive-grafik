@@ -2104,6 +2104,7 @@
     filter_u660:        ["Фильтр АКПП Aisin U660E/F", 4400],
     filter_lynx_lt1036: ["Фильтр LYNXauto LT-1036 с прокладкой в комплекте", 4400],   // Aisin U661F
     filter_lynx_lt1090: ["Фильтр LYNXauto LT-1090 с прокладкой в комплекте", 4400],   // Aisin U760E/U761E
+    filter_lynx_lt1089: ["Фильтр LYNXauto LT-1089 с прокладкой в комплекте", 4400],   // Aisin A760F
     filter_a750:        ["Фильтр JS Asakashi JT541K", 6000],
     filter_r4a51:       ["Фильтр JS Asakashi JT208K", 3800],
     filter_ab60:        ["Фильтр JS Asakashi JT568K", 5300],
@@ -2140,6 +2141,7 @@
     work_full_u661:   ["Полная аппаратная замена масла в АКПП Aisin U661F с промывкой системы", 6000],
     work_full_u760:   ["Полная аппаратная замена масла в АКПП Aisin U760E / U761E с промывкой системы", 6000],
     work_full_a750:   ["Полная аппаратная замена масла в АКПП Aisin A750F с промывкой системы", 6000],
+    work_full_a760:   ["Полная аппаратная замена масла в АКПП Aisin A760F с промывкой системы", 7000],
     work_full_r4a51:  ["Полная аппаратная замена масла в АКПП Aisin R4A51/V4A51 с промывкой системы", 6000],
     work_full_ab60:   ["Полная аппаратная замена масла в АКПП Aisin AB60E/F с промывкой системы", 6000],
     work_full_re7:    ["Полная аппаратная замена масла в АКПП RE7R01A с промывкой системы", 6000],
@@ -2313,6 +2315,9 @@
     // по 28 000 за 4 л (7 000 ₽/л; при сверке 09.09 было 20 000) → «Итого» 59 000 вместо 43 000.
     // Владелец выбрал цену поста. Ставки меняются вместе со своими маслами — даты у обеих пар.
     "2026-09-13": ["vag_g055529", "vag_g052549", "oil_g055529_4", "oil_g052549_4"],
+    // Aisin A760F (6/1): владелец прислал смету целиком — Motul ATF6 13 л (23 400) + BARDAHL (2 200)
+    // + фильтр LYNXauto LT-1089 (4 400) + работа (7 000) = «Итого» 37 000 (совпало с расчётом).
+    "2026-09-21": ["filter_lynx_lt1089", "work_full_a760"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -2739,6 +2744,14 @@
         head: "Полная аппаратная замена масла в АКПП Aisin A750F",
         variants: () => [
           { label: "1.", items: ["oil_motul_15", "bardahl", "filter_a750", "work_full_a750"] },
+        ],
+      },
+    },
+    "A760F": {
+      "Аппаратная": {
+        head: "Полная аппаратная замена масла в АКПП Aisin A760F",
+        variants: () => [
+          { label: "1.", items: ["oil_motul_13", "bardahl", "filter_lynx_lt1089", "work_full_a760"] },
         ],
       },
     },
@@ -3186,6 +3199,8 @@
       titleAccent:"U760E / U761E", extraTags:["U760E", "U761E", "6/1", "Motul ATF6", "LYNXauto LT-1090", "LT-1090"] },
     { brand:"Aisin", box:"A750F", type:"Аппаратная", title:"Aisin A750F (Motul ATF6)",
       titleAccent:"A750F", extraTags:["A750F", "Motul ATF6", "JS Asakashi JT541K"] },
+    { brand:"Aisin", box:"A760F", type:"Аппаратная", title:"Aisin A760F (Motul ATF6)",
+      titleAccent:"A760F", extraTags:["A760F", "6/1", "Motul ATF6", "LYNXauto LT-1089", "LT-1089"] },
     { brand:"Aisin", box:"R4A51/V4A51", type:"Аппаратная", title:"Aisin R4A51/V4A51 (Motul Multi ATF)",
       titleAccent:"R4A51/V4A51", extraTags:["R4A51", "V4A51", "Motul Multi ATF", "JS Asakashi JT208K"] },
     { brand:"Aisin", box:"AB60E/F", type:"Аппаратная", title:"Aisin AB60E/F (Motul ATF6)",
