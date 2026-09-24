@@ -797,52 +797,65 @@
   .ymaster-wrap{flex:0 0 auto;width:auto;min-width:128px;max-width:162px}
   .ymaster{padding:7px 30px 7px 11px;border-radius:10px;font-size:13px}
   .ymaster.is-empty{color:var(--muted)}
-  /* ── Долг бригады (2026-09-24): карточка над журналом. Остаток крупно, под ним «долг · отдали» и
-     полоска отданного — статусным --ok (отдано — состояние, а не акцент). Долга нет — карточка
-     сжимается в строку без красной полосы. Кнопки и поля — UI-KIT, чипы подписи — из «Штрафов». */
-  .ydebt{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;
-    box-shadow:var(--shadow);padding:14px 20px;margin-bottom:16px}
+  /* ── Долг бригады (2026-09-24): своя карточка СПРАВА от журнала — просьба владельца 24.09.2026
+     «не сверху всей табличкой, а справа в квадратике, чтоб было видно». Раскладка как у каталога
+     «Шаблонов»: журнал в резиновой колонке, карточка в узкой липкой — листаешь дни, долг на виду.
+     ≤900px правой колонки нет: карточка встаёт над журналом (в разметке она первая). Карточка
+     узкая при любой ширине, поэтому внутри всё столбиком.
+     Есть долг — два сигнала, а не один цвет: рамка --open-border с кольцом (как «сегодня» в
+     графике) и остаток красным (как копилка). Долга нет — спокойная карточка без красного.
+     Под остатком «долг · отдали» и полоска отданного — статусным --ok (отдано — состояние, а не
+     акцент). История свёрнута в кнопку, на виду только записи, которые ещё едут в таблицу.
+     Кнопки и поля — UI-KIT, чипы подписи — из «Штрафов». */
+  .yama-main{min-width:0}
+  .ydebt{background:var(--card);border:1px solid var(--line);border-radius:18px;
+    box-shadow:var(--shadow);padding:16px 18px;margin-bottom:16px}
   .ydebt [hidden]{display:none}          /* у .ui-btn свой display — он перебил бы [hidden] */
-  .ydebt.is-on{padding:17px 20px}
-  .ydebt.is-on::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--brand)}
-  .ydebt-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .ydebt.is-on{border-color:var(--open-border);box-shadow:0 0 0 1px var(--open-border),var(--shadow)}
+  .ydebt-top{display:flex;flex-direction:column;gap:12px}
   .ydebt-main{display:flex;flex-direction:column;gap:5px;min-width:0}
   .ydebt-k{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
-  .ydebt-v{font-family:var(--font-disp);font-weight:800;font-size:30px;line-height:1.05;font-variant-numeric:tabular-nums}
+  .ydebt-v{font-family:var(--font-disp);font-weight:800;font-size:30px;line-height:1.05;font-variant-numeric:tabular-nums;color:var(--accent-soft)}
   .ydebt-sub{font-size:12px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
   .ydebt-none{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
   .ydebt-none .mi{color:var(--ok)}
   .ydebt-none small{font-size:12px;font-weight:600;color:var(--muted)}
-  .ydebt-acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .ydebt-acts{display:flex;gap:8px;flex-wrap:wrap}
+  .ydebt-acts .ui-btn{flex:1 1 0}
   /* дорожка — --line, а не --fill-soft, как у табло штрафов: на белой карточке --fill-soft не виден,
      а здесь глазу нужна доля «отдано из долга», то есть и заливка, и весь путь */
-  .ydebt-bar{order:3;flex:0 0 100%;height:6px;border-radius:999px;background:var(--line);overflow:hidden}
+  .ydebt-bar{height:6px;border-radius:999px;background:var(--line);overflow:hidden}
   .ydebt-bar i{display:block;height:100%;border-radius:999px;background:var(--ok);transition:width .3s}
-  .ydebt-form{margin-top:14px;padding:14px 16px 16px;border:1px dashed var(--line-strong);border-radius:14px;background:var(--fill-soft)}
+  .ydebt-form{margin-top:14px;padding:14px;border:1px dashed var(--line-strong);border-radius:14px;background:var(--fill-soft)}
   .ydebt-form-h{font-family:var(--font-disp);font-weight:700;font-size:15px}
-  .ydebt-fields{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
-  .ydebt-fields .ui-field{min-width:0}
+  .ydebt-fields{display:grid;gap:12px;margin-top:12px}
   .ydebt-fields .fb-lbl{margin:0}
-  .ydebt-amt{flex:0 0 170px}
-  .ydebt-why{flex:1 1 240px}
   .ydebt-amount{font-family:var(--font-mono);font-weight:600;font-variant-numeric:tabular-nums}
   .ydebt-hist{margin-top:14px;border-top:1px solid var(--line)}
-  .ydebt-row{display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
-  .ydebt-when{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--muted);min-width:50px;white-space:nowrap}
-  .ydebt-sum{font-family:var(--font-mono);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--accent-soft)}
+  /* запись истории в узкой карточке — три строки: дата, сумма и «Отменить» · за что · подпись */
+  .ydebt-row{display:grid;grid-template-columns:auto auto 1fr;grid-template-areas:"when sum undo" "what what what" "by by by";
+    align-items:center;gap:2px 10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .ydebt-when{grid-area:when;font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
+  .ydebt-sum{grid-area:sum;font-family:var(--font-mono);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--accent-soft)}
   .ydebt-sum.pay{color:var(--ok)}
-  .ydebt-what{min-width:0;word-break:break-word}
-  .ydebt-by{font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap}
-  .ydebt-row .fb-undo{margin-left:auto}
+  .ydebt-what{grid-area:what;min-width:0;word-break:break-word}
+  .ydebt-by{grid-area:by;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  /* отрицательные поля: хит кнопки прежний, но строку с датой она не раздувает, а текст встаёт по правому краю */
+  .ydebt-row .fb-undo{grid-area:undo;justify-self:end;margin:-7px -12px -7px 0}
   .ydebt-more{margin-top:8px}
+  @media (min-width:901px){
+    .yama-layout{display:flex;flex-direction:row-reverse;align-items:flex-start;gap:20px}
+    .yama-main{flex:1 1 auto}
+    /* липкая, как дерево «Шаблонов»: встаёт под липким меню (--navh), а выше экрана — листается сама */
+    .ydebt{flex:0 0 300px;margin-bottom:0;position:sticky;top:calc(var(--navh,66px) + 16px);
+      max-height:calc(100vh - var(--navh,66px) - 32px);overflow-y:auto}
+    .ydebt-acts{flex-direction:column}   /* в 300px две кнопки рядом не встают — столбиком, главная сверху */
+    .ydebt-acts .ui-btn{flex:none}
+  }
   @media (max-width:720px){
-    .ydebt,.ydebt.is-on{padding:14px 15px}
+    .ydebt{padding:14px 15px}
     .ydebt-v{font-size:26px}
-    .ydebt-bar{order:0}                  /* полоска — сразу под суммой, кнопки после неё */
-    .ydebt-acts{margin-left:0;width:100%}
-    .ydebt-acts .ui-btn{flex:1 1 0}
     .ydebt .ui-btn,.ydebt .ui-input{min-height:44px}     /* хит ≥44px на телефоне (must-keep #7) */
-    .ydebt-amt{flex:1 1 100%}
   }
   @media (max-width:720px){
     .yama-sum{grid-template-columns:1fr}
@@ -1203,6 +1216,7 @@
     body.locked #app{filter:none}
     .topnav{position:static;border:none;backdrop-filter:none;margin:0 0 16px}
     #page-grafik thead th{position:static}   /* на листе шапка не липкая: её повторяет сам thead */
+    .ydebt{position:static;max-height:none;overflow:visible}   /* долг ямы: без липкости и потолка высоты — история не обрежется */
     .topnav,.tablecard,.note,.today,.tpl-card,.tpl-facets{box-shadow:none}
     .today{background:#fff;border:1px solid #eee}
     .tablecard,.tpl-card,.note,.tpl-facets{border-color:#ddd}
@@ -1563,46 +1577,52 @@
 
     <!-- ===== Страница: Яма (журнал работ и доля мастеров) — рендерится из данных Apps Script ===== -->
     <div id="page-yama" class="page" hidden>
-      <!-- Долг бригады (2026-09-24): остаток над журналом — он не зависит от месяца. Каркас статичный:
-           перечитка журнала обновляет только числа и историю, набранное в форме не стирается.
-           Нет поля debt в ответе таблицы (старый скрипт) — блок остаётся скрытым целиком -->
-      <div class="ydebt" id="yama-debt" hidden>
-        <div class="ydebt-top">
-          <div class="ydebt-main" id="ydebt-main"></div>
-          <!-- полоска стоит в разметке ДО кнопок: на телефоне она идёт сразу под суммой, а на
-               десктопе CSS уводит её строкой ниже (order) -->
-          <div class="ydebt-bar" id="ydebt-bar" hidden><i></i></div>
-          <div class="ydebt-acts">
-            <button class="ui-btn ui-btn--primary" id="ydebt-pay" type="button" hidden>Оставили</button>
-            <button class="ui-btn ui-btn--secondary" id="ydebt-add" type="button">Записать долг</button>
+      <!-- Журнал слева, долг бригады справа своей карточкой (просьба владельца 24.09.2026: «не сверху
+           всей табличкой, а справа в квадратике»). В разметке карточка ПЕРВАЯ: на узком экране правой
+           колонки нет, и она встаёт над журналом; на широком CSS уводит её вправо (row-reverse) -->
+      <div class="yama-layout">
+        <!-- Долг бригады (2026-09-24): не зависит от месяца. Каркас статичный:
+             перечитка журнала обновляет только числа и историю, набранное в форме не стирается.
+             Нет поля debt в ответе таблицы (старый скрипт) — блок остаётся скрытым целиком,
+             и журнал занимает всю ширину -->
+        <div class="ydebt" id="yama-debt" hidden>
+          <div class="ydebt-top">
+            <div class="ydebt-main" id="ydebt-main"></div>
+            <div class="ydebt-bar" id="ydebt-bar" hidden><i></i></div>
+            <div class="ydebt-acts">
+              <button class="ui-btn ui-btn--primary" id="ydebt-pay" type="button" hidden>Оставили</button>
+              <button class="ui-btn ui-btn--secondary" id="ydebt-add" type="button">Записать долг</button>
+            </div>
           </div>
+          <div class="ydebt-form" id="ydebt-form" hidden>
+            <div class="ydebt-form-h" id="ydebt-form-h"></div>
+            <div class="ydebt-fields">
+              <label class="ui-field"><span class="fb-lbl">Сумма, ₽</span>
+                <input class="ui-input ydebt-amount" id="ydebt-amount" type="number" inputmode="numeric" min="1" step="100" placeholder="0"></label>
+              <!-- maxlength = YAMA_DEBT_REASON_MAX в Apps Script: меняются парой, иначе таблица молча обрежет хвост -->
+              <label class="ui-field"><span class="fb-lbl" id="ydebt-why-l">За что</span>
+                <input class="ui-input" id="ydebt-reason" maxlength="120"></label>
+            </div>
+            <div class="fb-lbl">Кто записывает</div>
+            <div class="fb-chips" id="ydebt-authors"></div>
+            <div class="fb-actions">
+              <button class="ui-btn ui-btn--primary" id="ydebt-save" type="button">Записать</button>
+              <button class="ui-btn ui-btn--ghost" id="ydebt-cancel" type="button">Отмена</button>
+              <span class="fb-hint" id="ydebt-hint"></span>
+            </div>
+          </div>
+          <div class="ydebt-hist" id="ydebt-hist" hidden></div>
         </div>
-        <div class="ydebt-form" id="ydebt-form" hidden>
-          <div class="ydebt-form-h" id="ydebt-form-h"></div>
-          <div class="ydebt-fields">
-            <label class="ui-field ydebt-amt"><span class="fb-lbl">Сумма, ₽</span>
-              <input class="ui-input ydebt-amount" id="ydebt-amount" type="number" inputmode="numeric" min="1" step="100" placeholder="0"></label>
-            <!-- maxlength = YAMA_DEBT_REASON_MAX в Apps Script: меняются парой, иначе таблица молча обрежет хвост -->
-            <label class="ui-field ydebt-why"><span class="fb-lbl" id="ydebt-why-l">За что</span>
-              <input class="ui-input" id="ydebt-reason" maxlength="120"></label>
+        <div class="yama-main">
+          <div class="sales-head">
+            <select class="sales-month-sel" id="yama-month" aria-label="Месяц" hidden></select>
+            <div class="sales-upd" id="yama-upd"></div>
           </div>
-          <div class="fb-lbl">Кто записывает</div>
-          <div class="fb-chips" id="ydebt-authors"></div>
-          <div class="fb-actions">
-            <button class="ui-btn ui-btn--primary" id="ydebt-save" type="button">Записать</button>
-            <button class="ui-btn ui-btn--ghost" id="ydebt-cancel" type="button">Отмена</button>
-            <span class="fb-hint" id="ydebt-hint"></span>
-          </div>
+          <div class="yama-sum" id="yama-sum" hidden></div>
+          <div class="yama-days" id="yama-days"></div>
+          <div class="note"><span class="nd"></span><span id="yama-note"></span></div>
         </div>
-        <div class="ydebt-hist" id="ydebt-hist" hidden></div>
       </div>
-      <div class="sales-head">
-        <select class="sales-month-sel" id="yama-month" aria-label="Месяц" hidden></select>
-        <div class="sales-upd" id="yama-upd"></div>
-      </div>
-      <div class="yama-sum" id="yama-sum" hidden></div>
-      <div class="yama-days" id="yama-days"></div>
-      <div class="note"><span class="nd"></span><span id="yama-note"></span></div>
     </div>
 
     <!-- ===== Страница: Штрафы (дисциплина команды) — табло, лента и «лучший» считаются из данных ===== -->
@@ -5693,7 +5713,7 @@
      Кэш md_yama — мгновенный показ и офлайн; md_yama_local — имя, поставленное на этом
      устройстве, но ещё не подтверждённое таблицей (механика «Заметок»).
 
-     ДОЛГ БРИГАДЫ (2026-09-24) — блок над журналом: записи «долг» / «оставили» из листа «Яма-долг»
+     ДОЛГ БРИГАДЫ (2026-09-24) — карточка справа от журнала: записи «долг» / «оставили» из листа «Яма-долг»
      приезжают полем debt того же ответа, остаток считает yamaDebtCalc (её копия — в yama.html). */
   (function(){
     const MASTERS  = ["Ориф", "Вугар", "Намиг"];   // мастера ямы — НЕ люди графика дежурств (PEOPLE)
@@ -5738,7 +5758,6 @@
     const DEBT_REASON_MAX = 120;       // = YAMA_DEBT_REASON_MAX и maxlength поля #ydebt-reason — меняются вместе
     const DEBT_OUT_MAX    = 50;        // потолок очереди неподтверждённых записей
     const DEBT_DEL_TRIES  = 2;         // столько раз за загрузку повторяем отмену, которую таблица ещё отдаёт
-    const DEBT_HIST_MIN   = 3;         // столько последних записей текущего долга видно без раскрытия
     const DEBT_GONE       = "удалено"; // статус отмены в листе — то же надгробие, что у штрафов
     const DKEY_OUT = "md_ydebt_out", DKEY_DEL = "md_ydebt_del", DKEY_AUTH = "md_ydebt_author";
 
@@ -5961,14 +5980,14 @@
       debtPayBtn.hidden = !on;
       if(!on && debtMode === PAY) closeDebtForm();     // остаток ушёл в ноль (отмена, перечитка) — отдавать нечего
       if(debtMode === PAY) debtAmountEl.placeholder = "до " + nf.format(c.left);
-      // история: при долге видны последние записи текущего долга, остальное — по кнопке; долга нет — вся по кнопке
-      const base = on ? Math.min(DEBT_HIST_MIN, c.cur) : 0;
-      debtShown = debtHistOpen ? c.all : c.all.slice(0, base);
+      // история свёрнута в кнопку: карточка — «квадратик», а не таблица (владелец 24.09.2026). На виду
+      // только записи, которые ещё едут в таблицу: «сохраняется…» / «ждёт связи» — ответ на нажатие
+      debtShown = debtHistOpen ? c.all : c.all.filter(x => x.wait);
       debtHistEl.hidden = !c.all.length;
       debtHistEl.innerHTML = debtShown.map(debtRow).join("")
-        + (c.all.length > base
+        + (debtHistOpen || debtShown.length < c.all.length
           ? `<button class="ui-btn ui-btn--ghost ui-btn--sm ydebt-more" type="button" data-debt-more>${
-              debtHistOpen ? "Свернуть" : (on ? "Вся история" : "История") + " · " + c.all.length}</button>` : "");
+              debtHistOpen ? "Свернуть" : "История · " + c.all.length}</button>` : "");
     }
     function debtHint(msg){ debtHintEl.textContent = msg || ""; }
     function openDebtForm(mode){
