@@ -17,7 +17,8 @@
      СТРАНИЦА МАСТЕРОВ ЯМЫ — отдельный адрес /yama/, отдельный ключ доступа.
      Здесь НЕТ цен, продаж, копилки, штрафов и общего токена портала: мастеру нужно
      ровно одно действие — поставить имя напротив машины, и видеть он должен ровно
-     столько же. Токены и компоненты повторяют портал (дизайн-система), но живут
+     столько же. Плюс с 2026-09-24 — долг бригады, только просмотр (решение владельца).
+     Токены и компоненты повторяют портал (дизайн-система), но живут
      своей копией: страница обязана открываться и работать сама по себе.
      ========================================================= */
   :root{
@@ -179,6 +180,32 @@
   .ymaster.is-empty{color:var(--muted);border-style:dashed}
   .ymaster.saved{border-color:var(--ok);background:var(--ok-bg)}
 
+  /* ---------- Долг бригады (2026-09-24) ----------
+     Только чтение: остаток, «долг · отдали», полоска отданного и история — без кнопок записи.
+     Записывают и отменяют в портале (ключ ямы запись долга не пускает). Те же классы, что в портале:
+     отдано — статусный --ok, сумма долга — --accent-soft, как у штрафа. */
+  .ydebt{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);padding:13px 16px;margin-bottom:14px}
+  .ydebt[hidden]{display:none}
+  .ydebt.is-on{padding:15px 16px}
+  .ydebt.is-on::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--brand)}
+  .ydebt-k{display:block;font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .ydebt-v{display:block;margin-top:4px;font-family:var(--font-disp);font-weight:800;font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+  .ydebt-sub{display:block;margin-top:4px;font-size:12px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+  .ydebt-none{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+  .ydebt-none svg{width:16px;height:16px;flex:none;color:var(--ok)}
+  .ydebt-none small{font-size:12px;font-weight:600;color:var(--muted)}
+  .ydebt-bar{margin-top:11px;height:6px;border-radius:999px;background:var(--line);overflow:hidden}
+  .ydebt-bar i{display:block;height:100%;border-radius:999px;background:var(--ok)}
+  .ydebt-hist{margin-top:12px;border-top:1px solid var(--line)}
+  .ydebt-row{display:flex;align-items:baseline;gap:4px 10px;flex-wrap:wrap;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .ydebt-when{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--muted);min-width:46px;white-space:nowrap}
+  .ydebt-sum{font-family:var(--font-mono);font-weight:700;white-space:nowrap;color:var(--accent-soft);font-variant-numeric:tabular-nums}
+  .ydebt-sum.pay{color:var(--ok)}
+  .ydebt-what{min-width:0;word-break:break-word}
+  .ydebt-by{font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap}
+  .ydebt-more{margin-top:8px}
+
   /* ---------- Подвал ---------- */
   .note{display:flex;gap:9px;margin-top:16px;font-size:12px;color:var(--muted);line-height:1.6}
   .note .nd{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent-soft);margin-top:7px}
@@ -200,6 +227,7 @@
     .ymaster{flex:1 1 auto;min-width:0;max-width:none;min-height:44px}
     .ysum{margin-left:auto;align-self:center}
     .sel,.rfr{min-height:40px}
+    .ydebt-more{min-height:44px}       /* хит ≥44px: мастер жмёт в перчатке */
     /* плашка обновления в 375px: версия уходит второй строкой под заголовок, кнопки держим
        хитом ≥44px (мастер жмёт в перчатке) */
     .newver-inner{padding:10px 12px;gap:8px;flex-wrap:nowrap}
@@ -271,6 +299,10 @@
   </header>
 
   <div class="wrap">
+    <!-- Долг бригады (2026-09-24) — только просмотр: записывают и отменяют в портале. Приходит тем же
+         ответом, что и журнал; записей нет вовсе (или скрипт таблицы старый) — блока нет -->
+    <div class="ydebt" id="debt" hidden></div>
+
     <div class="bar">
       <span class="upd" id="upd"></span>
       <select class="sel" id="month" aria-label="Месяц" hidden></select>
@@ -290,8 +322,9 @@
 <script>
 /* ===================== ЖУРНАЛ ЯМЫ ДЛЯ МАСТЕРОВ =====================
    Что здесь есть: дни смен, машины с работами, сумма дня и доля мастеров, выбор мастера
-   напротив машины. Чего здесь нет и не будет: цены, продажи, копилка, штрафы, заметки —
-   ради этого страница и отделена от портала.
+   напротив машины и — с 2026-09-24 — долг бригады, только просмотр
+   (→ decisions/2026-09-24-yama-dolg.md). Чего здесь нет и не будет: цены, продажи, копилка,
+   штрафы, заметки — ради этого страница и отделена от портала.
 
    Доступ. Ключ (YAMA_KEY) вводится один раз и живёт в localStorage этого браузера; он же
    уходит на бэкенд в каждом запросе. Проверяет его Apps Script: неверный ключ — не «пустой
@@ -336,6 +369,35 @@
   function ls(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
   function lsSet(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
   function lsDel(k){ try { localStorage.removeItem(k); } catch(e){} }
+
+  // ── yamaDebtCalc: начало (маркер для scripts/test-yama-dolg.js; копия в yama.html — держать одинаковыми) ──
+  /* Остаток долга из записей. Порядок — по времени записи, при равенстве — как пришли.
+     «долг X · отдали Y» — ТЕКУЩИЙ долг: отсчёт с момента, когда остаток последний раз был нулём,
+     иначе закрытый в прошлом долг рисовал бы «отдано 75%» у только что записанного нового.
+     Переплата прошлого круга (две выплаты разом с двух телефонов) засчитывается в «отдали».
+     all — записи от новой к старой, cur — сколько из них относится к текущему долгу.
+     ES5 намеренно: страница мастеров написана без стрелок и let, а копия обязана быть одна. */
+  function yamaDebtCalc(list){
+    var rows = [], i, r, a, bal = 0, start = 0, carry = 0, debt = 0, paid, all = [];
+    for(i = 0; i < list.length; i++){
+      r = list[i]; a = Math.round(Number(r && r.amount) || 0);
+      if(!(a > 0) || (r.type !== "долг" && r.type !== "оставили")) continue;
+      rows.push({ e: r, a: a, s: r.type === "долг" ? a : -a, n: i });
+    }
+    rows.sort(function(x, y){
+      var p = String(x.e.created || ""), q = String(y.e.created || "");
+      return p < q ? -1 : p > q ? 1 : x.n - y.n;
+    });
+    for(i = 0; i < rows.length; i++){
+      bal += rows[i].s;
+      if(bal <= 0){ start = i + 1; carry = bal; }
+    }
+    paid = carry < 0 ? -carry : 0;   // не «-carry»: от нуля это −0, и на экране вышло бы «отдали -0 ₽»
+    for(i = start; i < rows.length; i++){ if(rows[i].s > 0) debt += rows[i].a; else paid += rows[i].a; }
+    for(i = rows.length - 1; i >= 0; i--) all.push(rows[i].e);
+    return { left: bal, debt: debt, paid: paid, all: all, cur: rows.length - start };
+  }
+  // ── yamaDebtCalc: конец ──
 
   try { var j0 = JSON.parse(ls(CKEY) || "null"); if(j0 && Array.isArray(j0.days)) data = j0; } catch(e){}
   try { var l0 = JSON.parse(ls(LKEY) || "null"); if(l0 && typeof l0 === "object") local = l0; } catch(e){}
@@ -606,7 +668,55 @@
     noteEl.textContent = shown.length
       ? "Машины и работы приходят из заказ-нарядов сами. Руками — только имя того, кто делал."
       : "Журнал заполняется автоматически: как появятся заказы, машины будут здесь.";
+    renderDebt();
   }
+
+  /* ---------- долг бригады (2026-09-24) — только просмотр ----------
+     Записи «долг» / «оставили» приходят полем debt того же ответа, остаток считает yamaDebtCalc —
+     та же функция, что в портале (тест сверяет копии), поэтому цифра у мастеров и в портале одна.
+     Кнопок записи нет: записывают и отменяют в портале, ключ ямы запись долга не пускает. */
+  var DEBT_HIST_MIN = 3;       // столько последних записей текущего долга видно без раскрытия — как в портале
+  var CHECK_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.9 8.4 6.2 11.7l7-7.5"/></svg>';
+  var debtEl = document.getElementById("debt"), debtOpen = false;
+  // «2026-09-24 16:05» → «24 сен»; год — только если не текущий
+  function debtWhen(s){
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || ""));
+    if(!m) return "";
+    return Number(m[3]) + " " + MON[Number(m[2]) - 1] + (Number(m[1]) !== new Date().getFullYear() ? " " + m[1] : "");
+  }
+  function renderDebt(){
+    var list = data && Array.isArray(data.debt) ? data.debt : null;
+    if(!list || !list.length){ debtEl.hidden = true; return; }   // скрипт таблицы старый или записей нет вовсе
+    var c = yamaDebtCalc(list), on = c.left > 0;
+    var base = on ? Math.min(DEBT_HIST_MIN, c.cur) : 0;
+    var rows = (debtOpen ? c.all : c.all.slice(0, base)).map(function(x){
+      var pay = x.type === "оставили";
+      return '<div class="ydebt-row">'
+        + '<span class="ydebt-when">' + debtWhen(x.created) + "</span>"
+        + '<span class="ydebt-sum' + (pay ? " pay" : "") + '">' + (pay ? "−" : "+") + money(x.amount) + "</span>"
+        + '<span class="ydebt-what">' + esc(pay ? "оставили" + (x.reason ? " · " + x.reason : "") : x.reason) + "</span>"
+        + (x.author ? '<span class="ydebt-by">подпись: ' + esc(x.author) + "</span>" : "")
+        + "</div>";
+    }).join("");
+    debtEl.hidden = false;
+    debtEl.className = "ydebt" + (on ? " is-on" : "");
+    debtEl.innerHTML = (on
+        ? '<span class="ydebt-k">Долг ямы · осталось отдать</span>'
+          + '<span class="ydebt-v">' + money(c.left) + "</span>"
+          + '<span class="ydebt-sub">долг ' + money(c.debt) + " · отдали " + money(c.paid) + "</span>"
+          + '<div class="ydebt-bar"><i style="width:' + Math.min(100, Math.round(c.paid / c.debt * 100)) + '%"></i></div>'
+        : '<span class="ydebt-none">' + CHECK_SVG + "Долга нет"
+          + (c.left < 0 ? " <small>· переплата " + money(-c.left) + "</small>" : "") + "</span>")
+      + '<div class="ydebt-hist">' + rows
+      + (c.all.length > base
+          ? '<button class="rfr ydebt-more" type="button">'
+            + (debtOpen ? "Свернуть" : (on ? "Вся история" : "История") + " · " + c.all.length) + "</button>" : "")
+      + "</div>";
+  }
+  debtEl.addEventListener("click", function(e){
+    if(!e.target.closest(".ydebt-more")) return;
+    debtOpen = !debtOpen; renderDebt();
+  });
 
   /* ---------- события ---------- */
   daysEl.addEventListener("click", function(e){

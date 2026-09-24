@@ -797,6 +797,53 @@
   .ymaster-wrap{flex:0 0 auto;width:auto;min-width:128px;max-width:162px}
   .ymaster{padding:7px 30px 7px 11px;border-radius:10px;font-size:13px}
   .ymaster.is-empty{color:var(--muted)}
+  /* ── Долг бригады (2026-09-24): карточка над журналом. Остаток крупно, под ним «долг · отдали» и
+     полоска отданного — статусным --ok (отдано — состояние, а не акцент). Долга нет — карточка
+     сжимается в строку без красной полосы. Кнопки и поля — UI-KIT, чипы подписи — из «Штрафов». */
+  .ydebt{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;
+    box-shadow:var(--shadow);padding:14px 20px;margin-bottom:16px}
+  .ydebt [hidden]{display:none}          /* у .ui-btn свой display — он перебил бы [hidden] */
+  .ydebt.is-on{padding:17px 20px}
+  .ydebt.is-on::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--brand)}
+  .ydebt-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .ydebt-main{display:flex;flex-direction:column;gap:5px;min-width:0}
+  .ydebt-k{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .ydebt-v{font-family:var(--font-disp);font-weight:800;font-size:30px;line-height:1.05;font-variant-numeric:tabular-nums}
+  .ydebt-sub{font-size:12px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+  .ydebt-none{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+  .ydebt-none .mi{color:var(--ok)}
+  .ydebt-none small{font-size:12px;font-weight:600;color:var(--muted)}
+  .ydebt-acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  /* дорожка — --line, а не --fill-soft, как у табло штрафов: на белой карточке --fill-soft не виден,
+     а здесь глазу нужна доля «отдано из долга», то есть и заливка, и весь путь */
+  .ydebt-bar{order:3;flex:0 0 100%;height:6px;border-radius:999px;background:var(--line);overflow:hidden}
+  .ydebt-bar i{display:block;height:100%;border-radius:999px;background:var(--ok);transition:width .3s}
+  .ydebt-form{margin-top:14px;padding:14px 16px 16px;border:1px dashed var(--line-strong);border-radius:14px;background:var(--fill-soft)}
+  .ydebt-form-h{font-family:var(--font-disp);font-weight:700;font-size:15px}
+  .ydebt-fields{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+  .ydebt-fields .ui-field{min-width:0}
+  .ydebt-fields .fb-lbl{margin:0}
+  .ydebt-amt{flex:0 0 170px}
+  .ydebt-why{flex:1 1 240px}
+  .ydebt-amount{font-family:var(--font-mono);font-weight:600;font-variant-numeric:tabular-nums}
+  .ydebt-hist{margin-top:14px;border-top:1px solid var(--line)}
+  .ydebt-row{display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .ydebt-when{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--muted);min-width:50px;white-space:nowrap}
+  .ydebt-sum{font-family:var(--font-mono);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--accent-soft)}
+  .ydebt-sum.pay{color:var(--ok)}
+  .ydebt-what{min-width:0;word-break:break-word}
+  .ydebt-by{font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap}
+  .ydebt-row .fb-undo{margin-left:auto}
+  .ydebt-more{margin-top:8px}
+  @media (max-width:720px){
+    .ydebt,.ydebt.is-on{padding:14px 15px}
+    .ydebt-v{font-size:26px}
+    .ydebt-bar{order:0}                  /* полоска — сразу под суммой, кнопки после неё */
+    .ydebt-acts{margin-left:0;width:100%}
+    .ydebt-acts .ui-btn{flex:1 1 0}
+    .ydebt .ui-btn,.ydebt .ui-input{min-height:44px}     /* хит ≥44px на телефоне (must-keep #7) */
+    .ydebt-amt{flex:1 1 100%}
+  }
   @media (max-width:720px){
     .yama-sum{grid-template-columns:1fr}
     /* на телефоне шапка дня в две строки: дата сверху, числа под ней */
@@ -1516,6 +1563,39 @@
 
     <!-- ===== Страница: Яма (журнал работ и доля мастеров) — рендерится из данных Apps Script ===== -->
     <div id="page-yama" class="page" hidden>
+      <!-- Долг бригады (2026-09-24): остаток над журналом — он не зависит от месяца. Каркас статичный:
+           перечитка журнала обновляет только числа и историю, набранное в форме не стирается.
+           Нет поля debt в ответе таблицы (старый скрипт) — блок остаётся скрытым целиком -->
+      <div class="ydebt" id="yama-debt" hidden>
+        <div class="ydebt-top">
+          <div class="ydebt-main" id="ydebt-main"></div>
+          <!-- полоска стоит в разметке ДО кнопок: на телефоне она идёт сразу под суммой, а на
+               десктопе CSS уводит её строкой ниже (order) -->
+          <div class="ydebt-bar" id="ydebt-bar" hidden><i></i></div>
+          <div class="ydebt-acts">
+            <button class="ui-btn ui-btn--primary" id="ydebt-pay" type="button" hidden>Оставили</button>
+            <button class="ui-btn ui-btn--secondary" id="ydebt-add" type="button">Записать долг</button>
+          </div>
+        </div>
+        <div class="ydebt-form" id="ydebt-form" hidden>
+          <div class="ydebt-form-h" id="ydebt-form-h"></div>
+          <div class="ydebt-fields">
+            <label class="ui-field ydebt-amt"><span class="fb-lbl">Сумма, ₽</span>
+              <input class="ui-input ydebt-amount" id="ydebt-amount" type="number" inputmode="numeric" min="1" step="100" placeholder="0"></label>
+            <!-- maxlength = YAMA_DEBT_REASON_MAX в Apps Script: меняются парой, иначе таблица молча обрежет хвост -->
+            <label class="ui-field ydebt-why"><span class="fb-lbl" id="ydebt-why-l">За что</span>
+              <input class="ui-input" id="ydebt-reason" maxlength="120"></label>
+          </div>
+          <div class="fb-lbl">Кто записывает</div>
+          <div class="fb-chips" id="ydebt-authors"></div>
+          <div class="fb-actions">
+            <button class="ui-btn ui-btn--primary" id="ydebt-save" type="button">Записать</button>
+            <button class="ui-btn ui-btn--ghost" id="ydebt-cancel" type="button">Отмена</button>
+            <span class="fb-hint" id="ydebt-hint"></span>
+          </div>
+        </div>
+        <div class="ydebt-hist" id="ydebt-hist" hidden></div>
+      </div>
       <div class="sales-head">
         <select class="sales-month-sel" id="yama-month" aria-label="Месяц" hidden></select>
         <div class="sales-upd" id="yama-upd"></div>
@@ -1628,6 +1708,7 @@
     box:    _ic('<path d="M8 2 2.6 5v6L8 14l5.4-3V5L8 2Z"/><path d="M2.6 5 8 8l5.4-3"/><path d="M8 8v6"/>'),
     list:   _ic('<path d="M6 4.4h7.4M6 8h7.4M6 11.6h7.4"/><path d="M2.8 4.4h.01M2.8 8h.01M2.8 11.6h.01"/>'),
     flag:   _ic('<path d="M4 14.2V2.2"/><path d="M4 2.8h8.2l-1.7 2.9 1.7 2.9H4"/>'),
+    plus:   _ic('<path d="M8 3v10M3 8h10"/>'),
   };
 
   /* =========================================================
@@ -5610,7 +5691,10 @@
      показ, ни одна цифра в вёрстке не дублируется.
 
      Кэш md_yama — мгновенный показ и офлайн; md_yama_local — имя, поставленное на этом
-     устройстве, но ещё не подтверждённое таблицей (механика «Заметок»). */
+     устройстве, но ещё не подтверждённое таблицей (механика «Заметок»).
+
+     ДОЛГ БРИГАДЫ (2026-09-24) — блок над журналом: записи «долг» / «оставили» из листа «Яма-долг»
+     приезжают полем debt того же ответа, остаток считает yamaDebtCalc (её копия — в yama.html). */
   (function(){
     const MASTERS  = ["Ориф", "Вугар", "Намиг"];   // мастера ямы — НЕ люди графика дежурств (PEOPLE)
     const UI_ORDER = ["КПП","Раздатка","Передний","Задний","Халдекс","ДВС",
@@ -5638,11 +5722,75 @@
     const MONF = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль",
                   "Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
 
+    /* ---- ДОЛГ БРИГАДЫ (2026-09-24, → decisions/2026-09-24-yama-dolg.md) ----
+       Бригада ошиблась так, что это стоило сервису денег, — на яму записывается долг, один на
+       троих. Мастера отдают его частями, каждая выплата — запись «оставили». Остаток нигде не
+       хранится: его считает yamaDebtCalc из записей, поэтому отмена ошибочной строки сама
+       исправляет и остаток. Записи приезжают полем debt того же ответа ?type=yama — своего канала
+       нет; нет поля (скрипт таблицы ещё старый) — блока нет, журнал работает как раньше.
+       Запись — механика «Штрафов»: оптимистично показали → отправили → перечитали. Неподтверждённое
+       лежит в очереди md_ydebt_out и досылается (дедуп по id в таблице), отмена ждёт в md_ydebt_del. */
+    const DEBT = "долг", PAY = "оставили";   // тип записи — ровно те слова, что в листе «Яма-долг»
+    // кто принимает деньги у ямы и подписывает запись — те же двое, что выписывают штрафы (FINE_BOSSES).
+    // Подпись, а не замок: раздел открыт всей команде. Новый человек — строка здесь.
+    const DEBT_AUTHORS    = ["Алексей", "Рамиль"];
+    const DEBT_MAX        = 1000000;   // = YAMA_DEBT_MAX в Apps Script: запись сверх рамки таблица не примет
+    const DEBT_REASON_MAX = 120;       // = YAMA_DEBT_REASON_MAX и maxlength поля #ydebt-reason — меняются вместе
+    const DEBT_OUT_MAX    = 50;        // потолок очереди неподтверждённых записей
+    const DEBT_DEL_TRIES  = 2;         // столько раз за загрузку повторяем отмену, которую таблица ещё отдаёт
+    const DEBT_HIST_MIN   = 3;         // столько последних записей текущего долга видно без раскрытия
+    const DEBT_GONE       = "удалено"; // статус отмены в листе — то же надгробие, что у штрафов
+    const DKEY_OUT = "md_ydebt_out", DKEY_DEL = "md_ydebt_del", DKEY_AUTH = "md_ydebt_author";
+
+    // ── yamaDebtCalc: начало (маркер для scripts/test-yama-dolg.js; копия в yama.html — держать одинаковыми) ──
+    /* Остаток долга из записей. Порядок — по времени записи, при равенстве — как пришли.
+       «долг X · отдали Y» — ТЕКУЩИЙ долг: отсчёт с момента, когда остаток последний раз был нулём,
+       иначе закрытый в прошлом долг рисовал бы «отдано 75%» у только что записанного нового.
+       Переплата прошлого круга (две выплаты разом с двух телефонов) засчитывается в «отдали».
+       all — записи от новой к старой, cur — сколько из них относится к текущему долгу.
+       ES5 намеренно: страница мастеров написана без стрелок и let, а копия обязана быть одна. */
+    function yamaDebtCalc(list){
+      var rows = [], i, r, a, bal = 0, start = 0, carry = 0, debt = 0, paid, all = [];
+      for(i = 0; i < list.length; i++){
+        r = list[i]; a = Math.round(Number(r && r.amount) || 0);
+        if(!(a > 0) || (r.type !== "долг" && r.type !== "оставили")) continue;
+        rows.push({ e: r, a: a, s: r.type === "долг" ? a : -a, n: i });
+      }
+      rows.sort(function(x, y){
+        var p = String(x.e.created || ""), q = String(y.e.created || "");
+        return p < q ? -1 : p > q ? 1 : x.n - y.n;
+      });
+      for(i = 0; i < rows.length; i++){
+        bal += rows[i].s;
+        if(bal <= 0){ start = i + 1; carry = bal; }
+      }
+      paid = carry < 0 ? -carry : 0;   // не «-carry»: от нуля это −0, и на экране вышло бы «отдали -0 ₽»
+      for(i = start; i < rows.length; i++){ if(rows[i].s > 0) debt += rows[i].a; else paid += rows[i].a; }
+      for(i = rows.length - 1; i >= 0; i--) all.push(rows[i].e);
+      return { left: bal, debt: debt, paid: paid, all: all, cur: rows.length - start };
+    }
+    // ── yamaDebtCalc: конец ──
+
     const daysEl  = document.getElementById("yama-days");
     const sumEl   = document.getElementById("yama-sum");
     const updEl   = document.getElementById("yama-upd");
     const noteEl  = document.getElementById("yama-note");
     const monthEl = document.getElementById("yama-month");
+    const debtEl        = document.getElementById("yama-debt");
+    const debtMainEl    = document.getElementById("ydebt-main");
+    const debtPayBtn    = document.getElementById("ydebt-pay");
+    const debtAddBtn    = document.getElementById("ydebt-add");
+    const debtBarEl     = document.getElementById("ydebt-bar");
+    const debtFormEl    = document.getElementById("ydebt-form");
+    const debtFormHEl   = document.getElementById("ydebt-form-h");
+    const debtAmountEl  = document.getElementById("ydebt-amount");
+    const debtWhyLEl    = document.getElementById("ydebt-why-l");
+    const debtReasonEl  = document.getElementById("ydebt-reason");
+    const debtAuthorsEl = document.getElementById("ydebt-authors");
+    const debtSaveBtn   = document.getElementById("ydebt-save");
+    const debtCancelBtn = document.getElementById("ydebt-cancel");
+    const debtHintEl    = document.getElementById("ydebt-hint");
+    const debtHistEl    = document.getElementById("ydebt-hist");
     if(!daysEl) return;
 
     let data = null, local = {}, selMonth = null;
@@ -5650,12 +5798,23 @@
     const money = v => nf.format(Math.round(v)) + " ₽";
     const parse = ds => { const [y,m,d] = String(ds).split("-").map(Number); return new Date(y, m-1, d); };
     const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+    const p2 = n => String(n).padStart(2, "0");
 
     try { const j = JSON.parse(localStorage.getItem(CKEY) || "null"); if(j && Array.isArray(j.days)) data = j; } catch(e){}
     try { const j = JSON.parse(localStorage.getItem(LKEY) || "null"); if(j && typeof j === "object") local = j; } catch(e){}
 
     const save = () => { try { localStorage.setItem(CKEY, JSON.stringify(data)); } catch(e){} };
     const saveLocal = () => { try { localStorage.setItem(LKEY, JSON.stringify(local)); } catch(e){} };
+
+    // долг: записанное здесь и ещё не подтверждённое таблицей · отменённое здесь · кто записывает · форма
+    let debtOut = [], debtDel = {}, debtAuthor = null, debtMode = null, debtHistOpen = false, debtShown = [];
+    const debtDelTries = {};
+    try { const o = JSON.parse(localStorage.getItem(DKEY_OUT) || "null"); if(Array.isArray(o)) debtOut = o; } catch(e){}
+    try { const v = JSON.parse(localStorage.getItem(DKEY_DEL) || "null"); if(v && typeof v === "object") debtDel = v; } catch(e){}
+    const saveDebtQueues = () => {
+      try { localStorage.setItem(DKEY_OUT, JSON.stringify(debtOut)); } catch(e){}
+      try { localStorage.setItem(DKEY_DEL, JSON.stringify(debtDel)); } catch(e){}
+    };
 
     // имя мастера: локальная отметка выигрывает, пока таблица её не подтвердила
     const masterOf = row => (local[row.order] != null ? local[row.order] : (row.master || ""));
@@ -5754,6 +5913,134 @@
             + (unsureTotal ? " «?» — робот не уверен, что позиция — работа, но посчитал её: если это расходник,"
                            + " в таблице на листе «Яма-позиции» напротив названия напишите «нет»." : "")
           : "За этот месяц работ пока нет.");
+      renderDebt();
+    }
+
+    /* ---- долг бригады: список, отрисовка, форма, сеть ---- */
+    // записи: подтверждённые таблицей (кроме отменённых здесь) + записанные здесь и ещё не подтверждённые
+    function debtList(){
+      const srv = (data && Array.isArray(data.debt)) ? data.debt : [];
+      const ids = {}; srv.forEach(x => { if(x.id) ids[x.id] = 1; });
+      return srv.filter(x => !(x.id && debtDel[x.id]))
+        .concat(debtOut.filter(x => !ids[x.id]).map(x => Object.assign({}, x, { wait: true })));
+    }
+    // «2026-09-24 16:05» → «24 сен»; год — только если не текущий
+    function debtWhen(s){
+      const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || ""));
+      if(!m) return "";
+      return `${Number(m[3])} ${MON[Number(m[2]) - 1]}${Number(m[1]) !== new Date().getFullYear() ? " " + m[1] : ""}`;
+    }
+    function debtRow(x, i){
+      const pay = x.type === PAY;
+      const what = pay ? "оставили" + (x.reason ? " · " + x.reason : "") : x.reason;
+      // «подпись: Рамиль» — без рода глагола; у неподтверждённой записи вместо подписи — её судьба
+      const by = x.wait ? (navigator.onLine === false ? "ждёт связи" : "сохраняется…")
+                        : (x.author ? "подпись: " + x.author : "");
+      return `<div class="ydebt-row">
+          <span class="ydebt-when">${debtWhen(x.created)}</span>
+          <span class="ydebt-sum${pay ? " pay" : ""}">${pay ? "−" : "+"}${money(x.amount)}</span>
+          <span class="ydebt-what">${esc(what)}</span>
+          ${by ? `<span class="ydebt-by">${esc(by)}</span>` : ""}
+          ${x.id ? `<button class="fb-undo" type="button" data-debt-del="${i}">Отменить</button>` : ""}
+        </div>`;
+    }
+    function renderDebt(){
+      const supported = !!(data && Array.isArray(data.debt));
+      debtEl.hidden = !supported;
+      if(!supported){ closeDebtForm(); return; }
+      const c = yamaDebtCalc(debtList());
+      const on = c.left > 0;
+      debtEl.classList.toggle("is-on", on);
+      debtMainEl.innerHTML = on
+        ? `<span class="ydebt-k">Долг ямы · осталось отдать</span>
+           <span class="ydebt-v">${money(c.left)}</span>
+           <span class="ydebt-sub">долг ${money(c.debt)} · отдали ${money(c.paid)}</span>`
+        : `<span class="ydebt-none">${ICO.check} Долга у ямы нет${c.left < 0 ? ` <small>· переплата ${money(-c.left)}</small>` : ""}</span>`;
+      debtBarEl.hidden = !on;
+      if(on) debtBarEl.firstElementChild.style.width = Math.min(100, Math.round(c.paid / c.debt * 100)) + "%";
+      debtPayBtn.hidden = !on;
+      if(!on && debtMode === PAY) closeDebtForm();     // остаток ушёл в ноль (отмена, перечитка) — отдавать нечего
+      if(debtMode === PAY) debtAmountEl.placeholder = "до " + nf.format(c.left);
+      // история: при долге видны последние записи текущего долга, остальное — по кнопке; долга нет — вся по кнопке
+      const base = on ? Math.min(DEBT_HIST_MIN, c.cur) : 0;
+      debtShown = debtHistOpen ? c.all : c.all.slice(0, base);
+      debtHistEl.hidden = !c.all.length;
+      debtHistEl.innerHTML = debtShown.map(debtRow).join("")
+        + (c.all.length > base
+          ? `<button class="ui-btn ui-btn--ghost ui-btn--sm ydebt-more" type="button" data-debt-more>${
+              debtHistOpen ? "Свернуть" : (on ? "Вся история" : "История") + " · " + c.all.length}</button>` : "");
+    }
+    function debtHint(msg){ debtHintEl.textContent = msg || ""; }
+    function openDebtForm(mode){
+      debtMode = mode;
+      const pay = mode === PAY;
+      debtFormHEl.textContent  = pay ? "Оставили в счёт долга" : "Новый долг ямы";
+      debtWhyLEl.textContent   = pay ? "Комментарий" : "За что";
+      debtReasonEl.placeholder = pay ? "Необязательно" : "Например: сорвали резьбу поддона — BMW X5";
+      debtAmountEl.placeholder = "0";
+      debtAmountEl.value = ""; debtReasonEl.value = ""; debtHint("");
+      debtFormEl.hidden = false;
+      renderDebt();                                    // у «Оставили» в поле суммы — подсказка «до N»
+      try { debtAmountEl.focus(); } catch(e){}
+    }
+    function closeDebtForm(){ debtMode = null; debtFormEl.hidden = true; debtHint(""); }
+    function saveDebtRec(){
+      if(!debtMode) return;
+      const pay = debtMode === PAY;
+      const amount = Math.round(Number(debtAmountEl.value) || 0);
+      const reason = debtReasonEl.value.trim().slice(0, DEBT_REASON_MAX);
+      if(!(amount >= 1)){ debtHint("Впиши сумму"); debtAmountEl.focus(); return; }
+      if(amount > DEBT_MAX){ debtHint(`Сумма — не больше ${money(DEBT_MAX)}`); debtAmountEl.focus(); return; }
+      if(!pay && !reason){ debtHint("Впиши, за что долг"); debtReasonEl.focus(); return; }
+      if(pay){
+        const left = yamaDebtCalc(debtList()).left;
+        if(amount > left){
+          debtHint(left > 0 ? `Больше остатка нельзя: осталось ${money(left)}` : "Долга нет — отдавать нечего");
+          debtAmountEl.focus(); return;
+        }
+      }
+      if(!debtAuthor){ debtHint("Отметь, кто записывает"); return; }
+      if(debtOut.length >= DEBT_OUT_MAX){ debtHint("Слишком много неотправленных записей — дождись связи"); return; }
+      const d = new Date();
+      const rec = { created: `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`,
+                    id: "y" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+                    type: debtMode, amount, reason, author: debtAuthor };
+      debtOut.push(rec); saveDebtQueues();
+      closeDebtForm();
+      renderDebt();                                    // запись уже в истории — с пометкой «сохраняется…»
+      postDebt(rec).then(() => { setTimeout(load, 2500); setTimeout(load, 9000); });
+    }
+    const deviceId = () => {
+      try { const v = JSON.parse(localStorage.getItem("md_device")); return typeof v === "string" ? v : ""; } catch(e){ return ""; }
+    };
+    function postDebt(rec){
+      if(!SHEET_API) return Promise.resolve();
+      return postChannel(SHEET_API, { token: SHEET_TOKEN, kind:"yama-debt", id: rec.id, type: rec.type,
+                                      amount: rec.amount, reason: rec.reason, author: rec.author, device: deviceId() },
+                         "долг ямы", "yama-debt").catch(() => {});
+    }
+    function sendDebtDel(id){
+      if(!SHEET_API) return;
+      postChannel(SHEET_API, { token: SHEET_TOKEN, kind:"yama-debt-status", id, status: DEBT_GONE },
+                  "отмена записи долга ямы", "yama-debt-del").catch(() => {});
+    }
+    // досыл очереди: повтор безопасен — таблица дедуплицирует по id
+    const flushDebtOut = () => debtOut.slice(0, DEBT_OUT_MAX).forEach(postDebt);
+    /* Перечитка подтверждает записи и отмены. Запись доехала — её id есть в ответе: в debt, а если её
+       уже успели отменить с другого устройства — в debtGone; из очереди убираем. Отмена доехала —
+       таблица больше не отдаёт запись действующей; пока отдаёт — повторяем, но не больше
+       DEBT_DEL_TRIES за загрузку, иначе «отдаёт → шлём → перечитываем» съело бы потолок записи. */
+    function debtSync(j){
+      if(!Array.isArray(j.debt)) return;               // старый скрипт таблицы: очереди не трогаем
+      const live = {}, seen = {};
+      j.debt.forEach(x => { if(x.id){ live[x.id] = 1; seen[x.id] = 1; } });
+      (Array.isArray(j.debtGone) ? j.debtGone : []).forEach(id => { seen[id] = 1; });
+      debtOut = debtOut.filter(x => !seen[x.id]);
+      for(const k in debtDel){
+        if(!live[k]){ delete debtDel[k]; continue; }
+        if((debtDelTries[k] = (debtDelTries[k] || 0) + 1) <= DEBT_DEL_TRIES) sendDebtDel(k);
+      }
+      saveDebtQueues();
     }
 
     function load(){
@@ -5765,6 +6052,7 @@
           data = j;
           // имя, подтверждённое таблицей, из локальных снимаем — источник правды один
           j.days.forEach(d => d.rows.forEach(r => { if(local[r.order] != null && local[r.order] === r.master) delete local[r.order]; }));
+          debtSync(j);                                 // то же для записей и отмен долга
           saveLocal(); save(); render();
         }
       });
@@ -5798,8 +6086,49 @@
     });
     if(monthEl) monthEl.addEventListener("change", () => { selMonth = monthEl.value; render(); });
 
-    render();   // из кэша — мгновенно и офлайн
-    load();     // свежий журнал из таблицы
+    /* ---- долг бригады: события ---- */
+    // подпись — чипы «кто записывает»; выбор запоминается на устройстве, в следующий раз уже стоит
+    debtAuthorsEl.innerHTML = DEBT_AUTHORS.map(n =>
+      `<button class="fb-chip" type="button" data-name="${n}">${n}</button>`).join("");
+    const pickAuthor = name => {
+      debtAuthor = DEBT_AUTHORS.indexOf(name) >= 0 ? name : null;
+      debtAuthorsEl.querySelectorAll(".fb-chip").forEach(b => b.classList.toggle("active", b.dataset.name === debtAuthor));
+    };
+    try { pickAuthor(localStorage.getItem(DKEY_AUTH)); } catch(e){}
+    debtAuthorsEl.addEventListener("click", e => {
+      const b = e.target.closest(".fb-chip"); if(!b) return;
+      pickAuthor(b.dataset.name);
+      try { localStorage.setItem(DKEY_AUTH, debtAuthor); } catch(err){}
+      debtHint("");
+    });
+    debtPayBtn.insertAdjacentHTML("afterbegin", ICO.cash + " ");   // иконки статичных кнопок (§6 п.2: не эмодзи)
+    debtAddBtn.insertAdjacentHTML("afterbegin", ICO.plus + " ");
+    // кнопка открывает свою форму, повторное нажатие — закрывает
+    debtPayBtn.addEventListener("click", () => { if(debtMode === PAY) closeDebtForm(); else openDebtForm(PAY); });
+    debtAddBtn.addEventListener("click", () => { if(debtMode === DEBT) closeDebtForm(); else openDebtForm(DEBT); });
+    debtSaveBtn.addEventListener("click", saveDebtRec);
+    debtCancelBtn.addEventListener("click", closeDebtForm);
+    [debtAmountEl, debtReasonEl].forEach(el => el.addEventListener("keydown", e => { if(e.key === "Enter") saveDebtRec(); }));
+    // история: раскрыть/свернуть и отмена записи. Отменённое исчезает из истории и из остатка у всех;
+    // вернуть — только в таблице (очистить status), поэтому спрашиваем подтверждение, как у штрафов
+    debtHistEl.addEventListener("click", e => {
+      if(e.target.closest("[data-debt-more]")){ debtHistOpen = !debtHistOpen; renderDebt(); return; }
+      const b = e.target.closest("[data-debt-del]"); if(!b) return;
+      const x = debtShown[+b.dataset.debtDel]; if(!x || !x.id) return;
+      const what = x.type === PAY ? "«оставили " + money(x.amount) + "»" : "долг «" + x.reason + "» на " + money(x.amount);
+      if(!confirm("Отменить " + what + "?\nЗапись исчезнет из истории и из остатка у всех.")) return;
+      debtDel[x.id] = 1;                               // оптимистично: из истории и остатка уходит сразу
+      debtOut = debtOut.filter(o => o.id !== x.id);    // не доехавшая запись ещё в очереди — иначе досыл её вернёт
+      saveDebtQueues(); renderDebt();
+      sendDebtDel(x.id);
+      setTimeout(load, 2500); setTimeout(load, 9000);
+    });
+    // вернулась сеть — дослать записанное без неё
+    window.addEventListener("online", () => { if(debtOut.length){ flushDebtOut(); setTimeout(load, 2500); } });
+
+    render();        // из кэша — мгновенно и офлайн
+    flushDebtOut();  // досыл записей долга, не подтверждённых таблицей (повтор безопасен — дедуп по id)
+    load();          // свежий журнал из таблицы
   })();
 
   /* ===================== ЗАМЕТКИ (пожелания команды) =====================
