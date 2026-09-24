@@ -330,7 +330,7 @@
     .tpl-facet{flex-wrap:nowrap;overflow-x:auto;padding:3px 0;
       scrollbar-width:none;-webkit-overflow-scrolling:touch}
     .tpl-facet::-webkit-scrollbar{display:none}
-    .tpl-facet > .tpl-chip,.tpl-facet > .tpl-facet-reset{flex:none}
+    .tpl-facet > .tpl-chip,.tpl-facet > .tpl-facet-reset{flex:none;min-height:44px}   /* чипы фильтров (Шаблоны, Цены) — хит ≥44 (правило 7) */
     .tpl-facet-label{position:sticky;left:0;z-index:1;align-self:center;
       padding-right:6px;background:var(--card)}
   }
@@ -634,7 +634,8 @@
     .ps-name{font-family:var(--font-disp);font-weight:600;font-size:15px;flex:1}
     .ps-mode{font-size:11px;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap;
       background:color-mix(in srgb, var(--cc) 18%, transparent);color:var(--cc);border:1px solid color-mix(in srgb, var(--cc) 38%, transparent)}
-    .tpl-nav-head{min-height:44px}                 /* строки дерева — хит ≥44 */
+    .tpl-nav-head,.tpl-nav-model{min-height:44px}  /* строки дерева: группы и коробки — хит ≥44 */
+    .tpl-copy{min-height:44px}                     /* «Копировать» в Шаблонах и Комплектах — хит ≥44 (правило 7) */
     .sched-arch .ui-btn{min-height:44px;width:100%} /* кнопка архива — хит ≥44 (правило 7) */
   }
 
@@ -1995,11 +1996,17 @@
     kit_diff_motul_ls:  ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 1л (в мосты)", perL(RATES.gear300_ls, 1)], // 5500
     kit_diff_motul_reg: ["Трансмиссионное масло Motul Gear 300 75W90 105777 1л (в мосты)",    perL(RATES.gear300, 1)],    // 4500
     kit_diff_orig_lock: ["Оригинальное трансмиссионное масло BMW G OIL (в мосты, 4 шт)", 23000],                          // блокировка: 2×6500 (LSD) + 2×5000
-    // Комплект (запчасти без работ) для мостов и Торсена Audi/VW — блок DIFFS_KIT_TORSEN. Названия и цены — владельца;
-    // каждая ровно на 3000 (работа) дешевле своей услуги AXLES_TORSEN (17500 / 33000 / 39800).
-    kit_torsen_motul: ["Масло Motul по 1л в передний, задний и Торсен", 14500],
-    kit_torsen_g055:  ["Оригинальное масло VAG G055 по 1л в передний, задний и Торсен", 30000],
-    kit_torsen_g060:  ["Оригинальное масло VAG G060 по 1л в передний, задний и Торсен", 36800],
+    // Комплект (запчасти без работ) для мостов и Торсена Audi/VW — блоки DIFFS_KIT_TORSEN_G055/_G060, поузлово.
+    // Названия и цены — владельца. Итоги: VAG G055 30000 / VAG G060 36800 / Motul 14500 — каждый ровно на 3000
+    // (работа) дешевле своей услуги AXLES_TORSEN (33000 / 39800 / 17500).
+    kit_torsen_motul_front: ["Motul Gear 300 75W90 для переднего дифференциала 1л", perL(RATES.gear300, 1)],    // 4500
+    kit_torsen_motul_rear:  ["Motul Gear 300 75W90 для заднего дифференциала 1л",   perL(RATES.gear300, 1)],    // 4500
+    kit_torsen_motul_ls:    ["Motul Gear 300 LS для торсена 1л",                     perL(RATES.gear300_ls, 1)], // 5500
+    kit_torsen_vag_torsen:  ["Трансмиссионное масло для ТОРСЕН VAG G055145A2 1л", 17000],   // общее у G055 и G060
+    kit_torsen_g055_front:  ["Масло трансмиссионное для переднего дифф. 1л", 6500],
+    kit_torsen_g055_rear:   ["Трансмиссионное масло для заднего дифф. VAG 1л", 6500],
+    kit_torsen_g060_front:  ["Масло трансмиссионное VAG G065190A2 для переднего дифф. 1л", 9900],
+    kit_torsen_g060_rear:   ["Трансмиссионное масло для заднего дифф. VAG G060190A2 1л", 9900],
     // Агрегатные «мосты/раздатка/Торсен» — Motul и Оригинал АЛЬТЕРНАТИВЫ (не слагаемые), «Итого» нет.
     // diffs_* = сумма поузловых (нужны «Комплектам»/addons, KITS); AXLES_* — X1/Торсен (axlesBlock). Цены здесь.
     diffs_motul_nolock:     ["Масло Motul +замена", 11550],
@@ -2326,9 +2333,11 @@
     // Aisin A760F (6/1): владелец прислал смету целиком — Motul ATF6 13 л (23 400) + BARDAHL (2 200)
     // + фильтр LYNXauto LT-1089 (4 400) + работа (7 000) = «Итого» 37 000 (совпало с расчётом).
     "2026-09-21": ["filter_lynx_lt1089", "work_full_a760"],
-    // Комплект для мостов и Торсена Audi/VW (DIFFS_KIT_TORSEN): владелец продиктовал все три варианта —
-    // Motul 14 500, оригинал VAG G055 30 000, G060 36 800.
-    "2026-09-23": ["kit_torsen_motul", "kit_torsen_g055", "kit_torsen_g060"],
+    // Комплект для мостов и Торсена Audi/VW: 23.09 владелец дал итоги (Motul 14 500, VAG G055 30 000, G060 36 800),
+    // 24.09 — поузловую раскладку и две карточки. Motul: Gear 300 по 4 500 (в его тексте стояло 5 500 — с «Итого»
+    // 14 500 не сходилось; взято из первой части сообщения, 4500+4500+5500) — ставки те же, что в RATES.
+    "2026-09-24": ["kit_torsen_motul_front", "kit_torsen_motul_rear", "kit_torsen_motul_ls", "kit_torsen_vag_torsen",
+                   "kit_torsen_g055_front", "kit_torsen_g055_rear", "kit_torsen_g060_front", "kit_torsen_g060_rear"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -2408,18 +2417,19 @@
     ],
   };
   // 2.0.2) КОМПЛЕКТ (запчасти без работ) для мостов и Торсена Audi/VW (ZF 8HP65A) — апсел в «Комплектах».
-  //        Не путать с AXLES_TORSEN (УСЛУГА с работами). Три варианта масла в одном блоке, как продиктовал
-  //        владелец: Motul 14500 / оригинал VAG G055 30000 / G060 36800. Цены — в PRICE.
-  const DIFFS_KIT_TORSEN = {
-    head:  "Также можем предложить комплект для мостов и Торсена.",
-    intro: "3 варианта:",
-    note:  "Motul ничем не уступает оригиналу.",
+  //        Не путать с AXLES_TORSEN (УСЛУГА с работами). Две карточки — оригинал VAG G055 и G060 (решение
+  //        владельца 24.09.2026); шапка и вариант Motul у них общие, поэтому собираются одной функцией.
+  //        Итого: VAG G055 30000 / VAG G060 36800, Motul 14500. Текст — владельца, цены — в PRICE.
+  const diffsKitTorsen = vagItems => ({
+    head:  "Также можем предложить трансмиссионное масло для переднего, заднего дифференциала и торсена.",
+    intro: "2 варианта:",
     variants: [
-      { label: "Комплект Motul",             items: ["kit_torsen_motul"] },
-      { label: "Комплект оригинал VAG G055", items: ["kit_torsen_g055"] },
-      { label: "Комплект оригинал VAG G060", items: ["kit_torsen_g060"] },
+      { label: "Комплект Vag",   items: vagItems },
+      { label: "Комплект Motul", items: ["kit_torsen_motul_front", "kit_torsen_motul_rear", "kit_torsen_motul_ls"] },
     ],
-  };
+  });
+  const DIFFS_KIT_TORSEN_G055 = diffsKitTorsen(["kit_torsen_g055_front", "kit_torsen_vag_torsen", "kit_torsen_g055_rear"]);
+  const DIFFS_KIT_TORSEN_G060 = diffsKitTorsen(["kit_torsen_g060_front", "kit_torsen_vag_torsen", "kit_torsen_g060_rear"]);
 
   // 2.1) Детальные мосты/раздатка — поузловой расчёт, задний мост трёхсекционный. Цены в PRICE.
   const DIFFS_DETAILED = {
@@ -6541,17 +6551,27 @@
       ],
       addons: { block: DIFFS_KIT_LOCK, lock: true },
     },
-    // Audi / VW — ZF 8HP65A: масло 6 л + поддон 1103298119 (13200+16000=29200). Апсел — комплект для мостов
-    // и Торсена DIFFS_KIT_TORSEN (Motul 14500 / оригинал VAG G055 30000 / G060 36800).
+    // Пара Audi / VW — ZF 8HP65A: масло 6 л + поддон 1103298119 (13200+16000=29200). Апсел — мосты и Торсен,
+    // карточки разведены по маслу оригинала: G055 (VAG 30000) и G060 (VAG 36800); Motul 14500 у обеих.
     {
-      name:  "ZF 8HP65A · масло 6 л · мосты и Торсен",
+      name:  "ZF 8HP65A · масло 6 л · мосты и Торсен G055",
       price: 29200,
       format:["вживую","отправка"],
       items: [
         { ref:"oil_zf8hp_6" },       // Оригинальное масло ZF8HP 6л (13 200 ₽)
         { ref:"filter_zf_8hp65a" },  // Оригинальный фильтр-поддон ZF 1103298119 (16 000 ₽)
       ],
-      addons: { block: DIFFS_KIT_TORSEN },
+      addons: { block: DIFFS_KIT_TORSEN_G055 },
+    },
+    {
+      name:  "ZF 8HP65A · масло 6 л · мосты и Торсен G060",
+      price: 29200,
+      format:["вживую","отправка"],
+      items: [
+        { ref:"oil_zf8hp_6" },       // Оригинальное масло ZF8HP 6л (13 200 ₽)
+        { ref:"filter_zf_8hp65a" },  // Оригинальный фильтр-поддон ZF 1103298119 (16 000 ₽)
+      ],
+      addons: { block: DIFFS_KIT_TORSEN_G060 },
     },
     // Формат заполнения нового комплекта (скопируй объект выше и правь; addons — по желанию):
     // {
