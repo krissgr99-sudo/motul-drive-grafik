@@ -1572,7 +1572,9 @@
         <div class="fb-chips" id="fb-cats"></div>
         <div class="fb-lbl">Срочность</div>
         <div class="fb-chips" id="fb-urgs"></div>
-        <textarea id="fb-text" maxlength="600" rows="3" placeholder="Например: в шаблонах не находится DQ381 · добавьте цены на Hyundai · уберите старую строку из прайса…"></textarea>
+        <!-- maxlength — ровно рамка text у kind:"note" в Apps Script: меняются парой, иначе таблица молча обрежет хвост.
+             4000 — чтобы целиком влезала самая длинная смета «Шаблонов» (9G-Tronic, все поддоны) вместе с комментарием -->
+        <textarea id="fb-text" maxlength="4000" rows="3" placeholder="Например: в шаблонах не находится DQ381 · добавьте цены на Hyundai · уберите старую строку из прайса…"></textarea>
         <div class="fb-actions">
           <button class="fb-send" id="fb-send" type="button">Отправить</button>
           <span class="fb-hint" id="fb-hint"></span>
@@ -1993,6 +1995,11 @@
     kit_diff_motul_ls:  ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 1л (в мосты)", perL(RATES.gear300_ls, 1)], // 5500
     kit_diff_motul_reg: ["Трансмиссионное масло Motul Gear 300 75W90 105777 1л (в мосты)",    perL(RATES.gear300, 1)],    // 4500
     kit_diff_orig_lock: ["Оригинальное трансмиссионное масло BMW G OIL (в мосты, 4 шт)", 23000],                          // блокировка: 2×6500 (LSD) + 2×5000
+    // Комплект (запчасти без работ) для мостов и Торсена Audi/VW — блок DIFFS_KIT_TORSEN. Названия и цены — владельца;
+    // каждая ровно на 3000 (работа) дешевле своей услуги AXLES_TORSEN (17500 / 33000 / 39800).
+    kit_torsen_motul: ["Масло Motul по 1л в передний, задний и Торсен", 14500],
+    kit_torsen_g055:  ["Оригинальное масло VAG G055 по 1л в передний, задний и Торсен", 30000],
+    kit_torsen_g060:  ["Оригинальное масло VAG G060 по 1л в передний, задний и Торсен", 36800],
     // Агрегатные «мосты/раздатка/Торсен» — Motul и Оригинал АЛЬТЕРНАТИВЫ (не слагаемые), «Итого» нет.
     // diffs_* = сумма поузловых (нужны «Комплектам»/addons, KITS); AXLES_* — X1/Торсен (axlesBlock). Цены здесь.
     diffs_motul_nolock:     ["Масло Motul +замена", 11550],
@@ -2003,11 +2010,12 @@
     axles_torsen_motul:     ["Масло Motul +замена", 17500],
     axles_torsen_orig_g055: ["Оригинал Vag +замена", 33000],
     axles_torsen_orig_g060: ["Оригинал Vag +замена", 39800],
-    // Раздатка BMW xDrive (отдельная услуга, блок TRANSFER). Правило «считаем литр»: заправка 0.6 л,
+    // Масло раздатки BMW xDrive, 1 л: DTF-1 — в «мостах и раздатке» и в комплектах, Motul — только в комплектах
+    // (в услуге у Motul своя строка 0.6 л — diff_oil_transf). Правило «считаем литр»: заправка 0.6 л,
     // но берём за целый литр, остаток клиенту. Цены плоские (не по ставке RATES).
+    // Отдельной услуги «только раздатка» нет (→ decisions/2026-09-21-bez-otdelnoj-uslugi-razdatki.md).
     transfer_oil_motul: ["Трансмиссионное масло Motul Multi DCTF 105786 1л", 3000],  // не по ставке: считаем литр, 3000/л
     transfer_oil_dtf1:  ["Оригинальное трансмиссионное масло BMW DTF-1 1л", 5500],   // не по ставке: оригинал, 5500/л
-    transfer_work:      ["Замена масла в раздаточной коробке", 1000],
     // Aisin 8F22 (BMW X1 F48)
     oil_motul_11:    ["Трансмиссионное масло Motul ATF6 105774 11л", perL(RATES.motul_atf6, 11)],
     work_full_aisin: ["Полная аппаратная замена масла в АКПП Aisin 8F22 с промывкой системы", 5000],
@@ -2270,7 +2278,7 @@
       "oil_cvtf_12", "oil_hf_1", "oil_kia_sp4_11",
       "kit_diff_motul_ls", "kit_diff_motul_reg",   // масла комплекта-с-блокировкой — по ставкам gear300_ls/gear300
       // (первая сверка 09.07.2026)
-      "transfer_oil_motul", "transfer_oil_dtf1", "transfer_work",
+      "transfer_oil_motul", "transfer_oil_dtf1",
       // (первая сверка 10.07.2026)
       "diffs_motul_nolock", "diffs_orig_nolock", "diffs_motul_lock", "diffs_orig_lock", "axles_x1_motul", "axles_torsen_motul",
       "axles_torsen_orig_g055", "axles_torsen_orig_g060",
@@ -2318,6 +2326,9 @@
     // Aisin A760F (6/1): владелец прислал смету целиком — Motul ATF6 13 л (23 400) + BARDAHL (2 200)
     // + фильтр LYNXauto LT-1089 (4 400) + работа (7 000) = «Итого» 37 000 (совпало с расчётом).
     "2026-09-21": ["filter_lynx_lt1089", "work_full_a760"],
+    // Комплект для мостов и Торсена Audi/VW (DIFFS_KIT_TORSEN): владелец продиктовал все три варианта —
+    // Motul 14 500, оригинал VAG G055 30 000, G060 36 800.
+    "2026-09-23": ["kit_torsen_motul", "kit_torsen_g055", "kit_torsen_g060"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -2377,7 +2388,7 @@
   // 2.0) КОМПЛЕКТ (запчасти без работ) для мостов и раздатки — апсел в «Комплектах» (diffsMultiBlock / addonBlockHtml).
   //      Не путать с DIFFS_REGULAR (это УСЛУГА с работами). Итого: Motul 12000 / оригинал BMW 25500. Цены — в PRICE.
   const DIFFS_KIT = {
-    head:  "Так же можем предложить комплект для мостов и раздатки.",
+    head:  "Также можем предложить комплект для мостов и раздатки.",
     intro: "2 варианта:",
     note:  "Motul ничем не уступает оригиналу.",
     variants: [
@@ -2388,12 +2399,25 @@
   // 2.0.1) КОМПЛЕКТ С БЛОКИРОВКОЙ (LSD): задний мост на Gear 300 LS (Motul) / оригинал 4 шт (2×6500 LSD + 2×5000 = 23000) — блокировка
   //        уже в масле, отдельной «доплаты» нет. Итого: Motul 13000 / оригинал BMW 28500. Цены — в PRICE.
   const DIFFS_KIT_LOCK = {
-    head:  "Так же можем предложить комплект для мостов и раздатки — с блокировкой дифференциала.",
+    head:  "Также можем предложить комплект для мостов и раздатки — с блокировкой дифференциала.",
     intro: "2 варианта:",
     note:  "Motul ничем не уступает оригиналу.",
     variants: [
       { label: "Комплект Motul",        items: ["kit_diff_motul_ls", "kit_diff_motul_reg", "transfer_oil_motul"] },
       { label: "Комплект оригинал BMW", items: ["kit_diff_orig_lock", "transfer_oil_dtf1"] },
+    ],
+  };
+  // 2.0.2) КОМПЛЕКТ (запчасти без работ) для мостов и Торсена Audi/VW (ZF 8HP65A) — апсел в «Комплектах».
+  //        Не путать с AXLES_TORSEN (УСЛУГА с работами). Три варианта масла в одном блоке, как продиктовал
+  //        владелец: Motul 14500 / оригинал VAG G055 30000 / G060 36800. Цены — в PRICE.
+  const DIFFS_KIT_TORSEN = {
+    head:  "Также можем предложить комплект для мостов и Торсена.",
+    intro: "3 варианта:",
+    note:  "Motul ничем не уступает оригиналу.",
+    variants: [
+      { label: "Комплект Motul",             items: ["kit_torsen_motul"] },
+      { label: "Комплект оригинал VAG G055", items: ["kit_torsen_g055"] },
+      { label: "Комплект оригинал VAG G060", items: ["kit_torsen_g060"] },
     ],
   };
 
@@ -2424,19 +2448,6 @@
     variants: [
       { label: "1)", items: ["oil_haldex", "work_haldex_cut"] },
       { label: "2)", items: ["oil_haldex", "haldex_ring", "work_haldex_full"] },
-    ],
-  };
-
-  // 2.4) Раздатка BMW xDrive — отдельная услуга (не путать с раздаткой внутри DIFFS_DETAILED
-  //      блока X5 E70). Два варианта масла: Motul Multi DCTF (3000) или оригинал BMW DTF-1 (5500),
-  //      «считаем литр». Форма как у HALDEX → рендерится тем же haldexBlock. Цены — в PRICE.
-  //      Пока не привязан к карточкам (данные заведены, привязка к машинам — следующим шагом).
-  const TRANSFER = {
-    head:  "Замена масла в раздаточной коробке (BMW xDrive)",
-    intro: "2 варианта масла (заправка 0,6 л — считаем целый литр, остаток ваш):",
-    variants: [
-      { label: "1)", items: ["transfer_oil_motul", "transfer_work"] },
-      { label: "2)", items: ["transfer_oil_dtf1",  "transfer_work"] },
     ],
   };
 
@@ -6529,6 +6540,18 @@
         { ref:"filter_mild" },   // Оригинальный фильтр-поддон ZF мягкого гибрида (19 000 ₽)
       ],
       addons: { block: DIFFS_KIT_LOCK, lock: true },
+    },
+    // Audi / VW — ZF 8HP65A: масло 6 л + поддон 1103298119 (13200+16000=29200). Апсел — комплект для мостов
+    // и Торсена DIFFS_KIT_TORSEN (Motul 14500 / оригинал VAG G055 30000 / G060 36800).
+    {
+      name:  "ZF 8HP65A · масло 6 л · мосты и Торсен",
+      price: 29200,
+      format:["вживую","отправка"],
+      items: [
+        { ref:"oil_zf8hp_6" },       // Оригинальное масло ZF8HP 6л (13 200 ₽)
+        { ref:"filter_zf_8hp65a" },  // Оригинальный фильтр-поддон ZF 1103298119 (16 000 ₽)
+      ],
+      addons: { block: DIFFS_KIT_TORSEN },
     },
     // Формат заполнения нового комплекта (скопируй объект выше и правь; addons — по желанию):
     // {
