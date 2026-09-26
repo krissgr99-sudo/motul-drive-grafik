@@ -8167,6 +8167,7 @@
     /* Перерисовка не должна выбивать из поля: смета обновляется и сама (пришла цена, ответила
        таблица), а человек в этот момент печатает литраж или цену. Поэтому запоминаем, где стоял
        курсор (data-focus у каждого поля карточки), и возвращаем его после отрисовки. */
+    let drawing = false;                               // идёт перерисовка карточки — см. drawCard
     function drawCard(html){
       const a = document.activeElement;
       const key = a && bodyEl.contains(a) ? a.getAttribute("data-focus") : null;
@@ -8177,12 +8178,23 @@
       const keep = {};
       for(const el of bodyEl.querySelectorAll('input[data-focus^="ed:"], input[data-focus^="new:"]'))
         keep[el.getAttribute("data-focus")] = el.value;
-      bodyEl.innerHTML = html;
+      /* Цена или литраж под курсором: набрано, но ещё не применено. Недобранное число («6.» —
+         текст такого поля браузер уже не отдаёт) сберечь нельзя: тогда и курсор не возвращаем —
+         пусть правка видимо сорвётся, чем следующие цифры сложатся в чужое число. */
+      const lost = !!(key && a.validity && a.validity.badInput);
+      if(key && a.tagName === "INPUT" && !lost) keep[key] = a.value;
+      /* Chromium, снимая поле под курсором, шлёт ему change и focusout прямо посреди innerHTML.
+         Обработчики принимали это за «человек закончил»: недопечатанные «13» из «1390» и «6» из
+         «6.5» уходили в смету и в каталог, дальнейший набор терялся, а перерисовка внутри
+         перерисовки роняла NotFoundError (журнал ошибок: 4 раза за 08–17.09.2026). Пока идёт
+         своя перерисовка, эти события — не действия человека. */
+      drawing = true;
+      try { bodyEl.innerHTML = html; } finally { drawing = false; }
       for(const k in keep){
         const el = bodyEl.querySelector('[data-focus="' + k + '"]');
         if(el) el.value = keep[k];                     // вписанное человеком старше отрисованного
       }
-      if(!key) return;
+      if(!key || lost) return;
       const el = bodyEl.querySelector('[data-focus="' + key + '"]');
       if(!el) return;
       el.focus();
@@ -8554,10 +8566,12 @@
       else if(ev.key === "Escape"){ priceEdit = null; updateCard(); }
     });
     bodyEl.addEventListener("focusout", ev => {
+      if(drawing) return;                              // поле сняла перерисовка, а не человек ушёл
       const pi = ev.target.closest("[data-act=price-set]"); if(!pi) return;
       applyPrice(pi.dataset.edit, pi.value);
     });
     bodyEl.addEventListener("change", ev => {
+      if(drawing) return;
       const pi = ev.target.closest("[data-act=price-set]");
       if(pi){ applyPrice(pi.dataset.edit, pi.value); return; }
       const e = selId && byId(selId);
@@ -8570,7 +8584,7 @@
       const v = Math.round(Number(i.value) * 10) / 10;
       if(e && isFinite(v) && v >= 0.5 && v <= 30 && Math.abs(v - Number(e.litres)) >= 0.05)
         setEngine(Object.assign({}, e, { litres: v }));
-      else updateCard();
+      else { i.value = i.defaultValue; updateCard(); }   // не приняли — вернуть число записи: набранное под курсором drawCard теперь бережёт
     });
     formWrap.addEventListener("click", ev => {
       const b = ev.target.closest("[data-act]"); if(!b) return;
