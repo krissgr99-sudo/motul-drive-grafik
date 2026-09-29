@@ -2440,6 +2440,8 @@
     // 14 500 не сходилось; взято из первой части сообщения, 4500+4500+5500) — ставки те же, что в RATES.
     "2026-09-24": ["kit_torsen_motul_front", "kit_torsen_motul_rear", "kit_torsen_motul_ls", "kit_torsen_vag_torsen",
                    "kit_torsen_g055_front", "kit_torsen_g055_rear", "kit_torsen_g060_front", "kit_torsen_g060_rear"],
+    // Владелец подтвердил состав комплекта для поддона 006: масло ZF 6 л и оригинальный поддон.
+    "2026-09-29": ["zf8hp", "oil_zf8hp_6", "filter_zf_8hp65"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -6899,6 +6901,28 @@
         { ref:"filter_mild" },   // Оригинальный фильтр-поддон ZF мягкого гибрида (19 000 ₽)
       ],
       addons: { block: DIFFS_KIT_LOCK, lock: true },
+    },
+    // Пара Audi / VW — ZF 8HP65: масло 6 л + поддон 1103298006. Цена — сумма позиций PRICE.
+    // Мосты и Торсен — те же комплекты запчастей G055/G060, что у поддона 119, без работ.
+    {
+      name:  "ZF 8HP65 · масло 6 л · мосты и Торсен G055",
+      price: PRICE.oil_zf8hp_6[1] + PRICE.filter_zf_8hp65[1],
+      format:["вживую","отправка"],
+      items: [
+        { ref:"oil_zf8hp_6" },
+        { ref:"filter_zf_8hp65" },
+      ],
+      addons: { block: DIFFS_KIT_TORSEN_G055 },
+    },
+    {
+      name:  "ZF 8HP65 · масло 6 л · мосты и Торсен G060",
+      price: PRICE.oil_zf8hp_6[1] + PRICE.filter_zf_8hp65[1],
+      format:["вживую","отправка"],
+      items: [
+        { ref:"oil_zf8hp_6" },
+        { ref:"filter_zf_8hp65" },
+      ],
+      addons: { block: DIFFS_KIT_TORSEN_G060 },
     },
     // Пара Audi / VW — ZF 8HP65A: масло 6 л + поддон 1103298119 (13200+16000=29200). Апсел — мосты и Торсен,
     // карточки разведены по маслу оригинала: G055 (VAG 30000) и G060 (VAG 36800); Motul 14500 у обеих.
