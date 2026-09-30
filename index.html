@@ -516,28 +516,68 @@
     .pc-group-h input[type=checkbox]{width:22px;height:22px}
   }
 
-  /* ===================== БАННЕР «СЕГОДНЯ» ===================== */
-  .today{position:relative;background:var(--today-bg);
-    border:1px solid var(--today-border);border-radius:18px;padding:20px;margin-bottom:18px;box-shadow:var(--shadow);overflow:hidden}
-  .today::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--brand);box-shadow:0 0 14px var(--brand)}
-  .t-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
-  .t-tag{font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#fff;
-    background:var(--brand);padding:5px 12px;border-radius:999px;box-shadow:0 0 0 4px rgba(209,31,45,.18)}
-  .t-date{font-family:var(--font-disp);font-weight:600;font-size:17px}
-  /* Людей четверо: на широком экране вся смена в одну строку, уже — 2×2. Жёсткие 3 колонки
-     оставляли четвёртого одного во всю ширину. */
-  .t-body{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-  @media(max-width:1180px){ .t-body{grid-template-columns:repeat(2,1fr)} }
-  .t-person{position:relative;background:var(--fill-soft);border:1px solid var(--line);border-radius:12px;padding:14px}
-  .t-person.is-off{opacity:.5}
+  /* ===================== ГРАФИК: ДЕНЬ + КАЛЕНДАРЬ ===================== */
+  .sched-overview{display:grid;grid-template-columns:minmax(0,1fr) 364px;gap:16px;align-items:start;margin-bottom:20px}
+  .sched-focus,.sched-calendar{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+  .sched-focus{padding:24px}
+  .sched-daynav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+  .sched-daynav .ui-btn{min-height:44px;min-width:44px}
+  .sched-daynav .sched-prev svg{transform:rotate(180deg)}
+  .sched-daynav .sched-next svg{margin-left:4px}
+  .sched-daynav #sched-today{color:var(--accent-soft);font-weight:800}
+  .sched-label{font-size:12px;font-weight:800;color:var(--accent-soft);margin-bottom:8px}
+  .sched-date{font-family:var(--font-disp);font-size:30px;font-weight:700;line-height:1.2;letter-spacing:-.5px}
+  .sched-weekday{color:var(--muted);font-size:14px;margin-top:6px}
+  .sched-on{margin:24px 0 12px;font-weight:700;font-size:13px}
+  .t-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .t-person{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
   .t-row{display:flex;align-items:center;gap:8px}
-  .t-dot{width:9px;height:9px;border-radius:50%;background:var(--cc);flex:none;box-shadow:0 0 10px var(--cc)}
-  .t-name{font-family:var(--font-disp);font-weight:600;font-size:16px}
-  .t-status{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--cc);text-align:right}
-  .t-off{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted)}
-  .t-duties{display:flex;flex-wrap:wrap;gap:5px;margin-top:11px}
-  .today-out .t-note{color:var(--muted);font-size:13px}
-  @media(max-width:720px){ .t-body{grid-template-columns:1fr} }
+  .t-dot{width:8px;height:8px;border-radius:50%;background:var(--cc);flex:none}
+  .t-name{font-family:var(--font-disp);font-weight:700;font-size:18px;color:var(--cc)}
+  .t-status{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .t-duties{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+  .sched-off{display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+  .sched-off-person{display:inline-flex;align-items:center;gap:6px}
+  .sched-calendar{padding:16px}
+  .sched-monthnav{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+  .sched-monthnav h2{flex:1;font-family:var(--font-disp);font-size:18px;font-weight:700;text-transform:capitalize}
+  .sched-monthnav .ui-btn{width:44px;height:44px;padding:0;flex:none}
+  #sched-month-prev svg{transform:rotate(180deg)}
+  .sched-calendar-scroll{overflow-x:auto}
+  .sched-week,.sched-grid{display:grid;grid-template-columns:repeat(7,minmax(44px,1fr));gap:2px;min-width:320px}
+  .sched-week{margin-bottom:8px;color:var(--muted);font-size:11px;font-weight:700;text-align:center}
+  .sched-week span{padding:4px 0}
+  .sched-day{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:48px;
+    padding:6px 2px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--text);font:inherit;
+    font-family:var(--font-mono);font-size:13px;cursor:pointer;transition:background .15s,border-color .15s,transform .15s}
+  .sched-day:hover{background:var(--fill-hover);border-color:var(--line-strong)}
+  .sched-day:active{transform:scale(.95)}
+  .sched-day.is-weekend{background:var(--card2)}
+  .sched-day.is-today{border-color:var(--accent-soft)}
+  .sched-day.is-selected{background:var(--fill-hover);border-color:var(--accent-soft);box-shadow:inset 0 -3px 0 var(--brand);font-weight:800}
+  .sched-day.is-today .sched-daynum{color:var(--accent-soft)}
+  .sched-daydots{display:flex;gap:3px;min-height:5px}
+  .sched-daydots i{display:block;width:5px;height:5px;border-radius:50%;background:var(--cc)}
+  .sched-legend{display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+  .sched-legend span{display:inline-flex;align-items:center;gap:5px}
+  .sched-legend i{width:6px;height:6px;border-radius:50%;background:var(--cc)}
+  .sched-hint{font-size:12px;line-height:1.6;color:var(--muted);margin-top:12px}
+  .sched-details>summary{display:flex;align-items:center;gap:10px;min-height:48px;padding:12px 16px;list-style:none;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;cursor:pointer;font-size:13px;font-weight:700}
+  .sched-details>summary::-webkit-details-marker{display:none}
+  .sched-details>summary::after{content:"+";margin-left:auto;font-size:20px;color:var(--accent-soft)}
+  .sched-details[open]>summary{margin-bottom:12px}
+  .sched-details[open]>summary::after{content:"−"}
+  .sched-details>summary:hover{border-color:var(--open-border)}
+  .sched-day:focus-visible,.sched-details>summary:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+  @media(max-width:980px){.sched-overview{grid-template-columns:1fr}.sched-calendar{max-width:520px;width:100%;justify-self:center}}
+  @media(max-width:720px){
+    .sched-focus{padding:20px 16px}.sched-date{font-size:26px}.sched-daynav{gap:8px}
+    .sched-daynav .ui-btn{padding:10px}.sched-calendar{padding:12px}
+    .t-person{padding:12px}.t-name{font-size:16px}.t-body{gap:8px}
+    .sched-on{margin-top:20px}.sched-daynav .ui-btn svg{width:14px;height:14px}
+  }
+  @media(max-width:360px){.sched-daynav .sched-navword{display:none}}
 
   /* подсветка «сегодня» */
   .dbadge.is-today{background:var(--brand) !important;color:#fff !important;box-shadow:0 0 10px rgba(209,31,45,.5)}
@@ -567,7 +607,6 @@
     background:var(--chip-bg);color:var(--chip-text);border:1px solid var(--line)}
 
   /* ===================== ТАБЛИЦА (десктоп) ===================== */
-  .sched-arch{margin:0 0 12px}   /* кнопка «прошлый месяц» над таблицей: архив открывается по требованию */
   .tablecard{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
   table{width:100%;border-collapse:collapse;table-layout:fixed}
   thead th{padding:14px 12px;font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:#fff;
@@ -636,7 +675,6 @@
       background:color-mix(in srgb, var(--cc) 18%, transparent);color:var(--cc);border:1px solid color-mix(in srgb, var(--cc) 38%, transparent)}
     .tpl-nav-head,.tpl-nav-model{min-height:44px}  /* строки дерева: группы и коробки — хит ≥44 */
     .tpl-copy{min-height:44px}                     /* «Копировать» в Шаблонах и Комплектах — хит ≥44 (правило 7) */
-    .sched-arch .ui-btn{min-height:44px;width:100%} /* кнопка архива — хит ≥44 (правило 7) */
   }
 
   /* ===================== ПРОДАЖИ ===================== */
@@ -1224,6 +1262,23 @@
     tbody td{border-color:#e6e6e6}
     .tpl-body{color:#222;background:#f7f7f7;border-color:#e6e6e6}
     .t-person{border-color:#e6e6e6;background:#fafafa}
+    .sched-overview{display:none !important}
+    .sched-details>summary{display:block;border:0;padding:0;margin-bottom:8px;min-height:0}
+    .sched-details>summary::after{display:none}
+    .sched-details>.tablecard{display:block !important;box-shadow:none}
+    .sched-details>.cards,.sched-details>.people-strip{display:none !important}
+    .sched-details th.person-head{padding:6px}.sched-details .h-name{font-size:10px}
+    .sched-details .h-mode{font-size:8px;padding:2px 4px}.sched-details .phead{gap:4px;min-height:0}
+    .sched-details td{padding:2px 4px;font-size:8px;line-height:1.2}.sched-details .lbl,.sched-details .off{font-size:8px}
+    .sched-details .duty{display:block;margin-top:2px;font-size:7px;line-height:1.3}
+    .sched-details .chip{font-size:7px;padding:0;border:0;background:none;white-space:normal}
+    .sched-details .chip:not(:last-child)::after{content:", "}
+    .sched-details .dnum{font-size:10px}.sched-details .dmon{font-size:8px}
+    .sched-details .dbadge{font-size:7px;margin-top:2px;padding:1px 3px;letter-spacing:0}
+    .sched-details tr{break-inside:avoid}
+    body:has(#page-grafik:not([hidden])) .topnav,
+    body:has(#page-grafik:not([hidden])) .pagehead{display:none !important}
+    .sched-details *{box-shadow:none !important}
   }
 
   /* ===================== ЭКРАН ВХОДА ===================== */
@@ -1469,14 +1524,36 @@
     <!-- ===== Страница: График ===== -->
     <div id="page-grafik" class="page">
 
-    <!-- Сегодня -->
-    <div id="today"></div>
+    <div class="sched-overview">
+      <section class="sched-focus" aria-label="Смена выбранного дня">
+        <div class="sched-daynav">
+          <button class="ui-btn ui-btn--secondary sched-prev" id="sched-prev" type="button" aria-label="Предыдущий день"></button>
+          <button class="ui-btn ui-btn--secondary" id="sched-today" type="button">Сегодня</button>
+          <button class="ui-btn ui-btn--secondary sched-next" id="sched-next" type="button" aria-label="Следующий день"></button>
+        </div>
+        <div id="today" aria-live="polite" aria-atomic="true"></div>
+      </section>
+      <section class="sched-calendar" aria-label="Календарь смен">
+        <div class="sched-monthnav">
+          <h2 id="sched-month-title"></h2>
+          <button class="ui-btn ui-btn--secondary" id="sched-month-prev" type="button" aria-label="Предыдущий месяц"></button>
+          <button class="ui-btn ui-btn--secondary" id="sched-month-next" type="button" aria-label="Следующий месяц"></button>
+        </div>
+        <div class="sched-calendar-scroll">
+          <div class="sched-week" id="sched-week" aria-hidden="true"></div>
+          <div class="sched-grid" id="sched-grid" aria-label="Выберите день"></div>
+        </div>
+        <div class="sched-legend" id="sched-legend"></div>
+        <div class="sched-hint">Точки — кто на смене. Рамка — сегодня,<br>полоска снизу — выбранный день.</div>
+        <div class="sched-hint" id="sched-window"></div>
+      </section>
+    </div>
 
-    <!-- Люди (компактно, только на мобильном) -->
+    <details class="sched-details" id="sched-details">
+    <summary id="sched-details-title">Подробный график месяца</summary>
+
+    <!-- Люди (компактно, только в подробном графике на мобильном) -->
     <div class="people-strip" id="people-strip"></div>
-
-    <!-- Архив: прошлый месяц лежит рядом, но по умолчанию скрыт (кнопка ниже) -->
-    <div class="sched-arch"><button class="ui-btn ui-btn--secondary ui-btn--sm" id="arch-btn" type="button" aria-expanded="false" hidden></button></div>
 
     <!-- Таблица (десктоп) -->
     <div class="tablecard">
@@ -1488,12 +1565,7 @@
 
     <!-- Карточки (мобайл) -->
     <div class="cards" id="cards"></div>
-
-    <!-- Сноска -->
-    <div class="note">
-      <span class="nd"></span>
-      <span>Бекзод и Святослав — график 2/2 в противофазе · Кристиан работает всё, кроме четверга и воскресенья. По четвергам и воскресеньям на смене один человек — он берёт все обязанности.</span>
-    </div>
+    </details>
 
     </div><!-- /page-grafik -->
 
@@ -1776,7 +1848,7 @@
 
   // [дата "ДД.ММ", день недели, работает(1/0) Бекзод, Святослав, Кристиан, прошлый месяц(true/false)]
   const pad = n => String(n).padStart(2, "0");
-  const now = new Date();
+  let now = new Date();
   const utc = d => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
   function bekOn(d){                                                  // Бекзод на смене в дату d?
     let anchor = ROT_ANCHORS[0];
@@ -1849,11 +1921,11 @@
     }
     return out;
   }
-  const SCHEDULE = buildSchedule();
+  let SCHEDULE = buildSchedule();
 
   /* Подпись раздела — из живого окна графика, а не строкой руками: она обязана стареть вместе
-     с данными. Архив прошлого месяца в диапазон не входит — он открывается кнопкой. */
-  const SCHED_RANGE = (() => {
+     с данными. Прошлый месяц доступен через календарь; основной диапазон прежний. */
+  function scheduleRange(){
     const days = SCHEDULE.filter(r => !r[6]).length;                 // дни текущего + следующего месяца
     const from = new Date(now.getFullYear(), now.getMonth(), 1);
     const to   = new Date(now.getFullYear(), now.getMonth() + 2, 0);
@@ -1863,7 +1935,8 @@
       const fmt = d => d.toLocaleDateString("ru-RU", { day:"numeric", month:"long" });
       return `${fmt(from)} — ${fmt(to)} ${to.getFullYear()} · ${days} ${word(days)}`;
     } catch(e){ return `${days} ${word(days)}`; }
-  })();
+  }
+  let SCHED_RANGE = scheduleRange();
 
   /* =========================== РЕНДЕР =========================== */
   const MON = { "01":"янв","02":"фев","03":"мар","04":"апр","05":"май","06":"июн",
@@ -1872,7 +1945,7 @@
 
   // Сегодняшняя дата устройства → ключ "ДД.ММ". График теперь генерируется вокруг «сегодня»
   // (всегда содержит текущий день), поэтому страховка годом больше не нужна.
-  const todayKey = pad(now.getDate()) + "." + pad(now.getMonth() + 1);
+  let todayKey = pad(now.getDate()) + "." + pad(now.getMonth() + 1);
   // Пустой список обязанностей (Иван) не рисует пустую полосу — иначе под «На смене» висел бы отступ.
   const chips = (arr, cls) => arr.length ? `<div class="${cls}">${arr.map(d=>`<span class="chip">${d}</span>`).join("")}</div>` : "";
 
@@ -1890,7 +1963,7 @@
       </th>`).join("");
 
   // Подготовка строк
-  const ROWS = SCHEDULE.map(([date, wd, bek, sv, krist, ivan, past]) => {
+  function scheduleRows(){ return SCHEDULE.map(([date, wd, bek, sv, krist, ivan, past], index) => {
     const work = [bek, sv, krist, ivan];                             // порядок как в PEOPLE; -1 = не в графике
     const [dd, mm] = date.split(".");
     const weekend = isWeekend(wd);
@@ -1912,9 +1985,13 @@
           : "На смене",
       };
     });
-    return { key: date, dd, mon: MON[mm] || "", wd, weekend, cells, past, onHead, solo };
-  });
+    // Полная дата из начала живого окна: декабрь/январь не путают годы.
+    const day = new Date(now.getFullYear(), now.getMonth() - 1, index + 1);
+    return { key: date, date: day, dd, mon: MON[mm] || "", wd, weekend, cells, past, onHead, solo };
+  }); }
+  let ROWS = scheduleRows();
 
+  function renderScheduleDetails(){
   // Тело таблицы (десктоп)
   document.getElementById("rows").innerHTML = ROWS.map(r => {
     const cells = r.cells.map(c => `
@@ -1948,57 +2025,93 @@
     </div>`;
   }).join("");
 
-  /* Архив прошлого месяца: дни уже построены и лежат первыми, но скрыты — график
-     открывается на текущем месяце, а не на истории. Кнопка их показывает и прячет обратно;
-     скрытые строки не попадают и в печать. Название месяца берётся из даты, не из текста. */
-  (function(){
-    const btn  = document.getElementById("arch-btn");
-    const past = document.querySelectorAll("#rows .is-arch, #cards .is-arch");
-    if(!btn || !past.length) return;
-    const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    let mon;
-    try { mon = prev.toLocaleDateString("ru-RU", { month:"long" }); }
-    catch(e){ mon = MON[pad(prev.getMonth() + 1)] || "прошлый месяц"; }
-    const apply = open => {
-      past.forEach(el => { el.hidden = !open; });
-      btn.setAttribute("aria-expanded", open ? "true" : "false");
-      btn.textContent = (open ? "Скрыть " : "Показать ") + mon;
-    };
-    btn.hidden = false;
-    apply(false);
-    btn.addEventListener("click", () => apply(btn.getAttribute("aria-expanded") !== "true"));
-  })();
+  }
+  renderScheduleDetails();
 
-  /* ===================== Баннер «Сегодня» ===================== */
+  /* Один выбранный день и календарь — из тех же ROWS, что подробный график и Главная. */
   (function(){
-    const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
-    let dateText;
-    try { dateText = cap(now.toLocaleDateString("ru-RU", { weekday:"long", day:"numeric", month:"long" })); }
-    catch(e){ dateText = todayKey; }
-    const tr = ROWS.find(r => r.key === todayKey);
-    let html;
-    if(tr){
-      const persons = tr.cells.map(c => `
-        <div class="t-person ${c.working ? "" : "is-off"}" data-color="${c.color}">
-          <div class="t-row">
-            <span class="t-dot"></span>
-            <span class="t-name">${c.name}</span>
-            ${c.working ? `<span class="t-status">${c.label}</span>` : `<span class="t-off">${c.absent ? "не в графике" : "выходной"}</span>`}
-          </div>
-          ${c.working ? chips(c.duties, "t-duties") : ""}
-        </div>`).join("");
-      html = `<div class="today">
-        <div class="t-head"><span class="t-tag">Сегодня</span><span class="t-date">${dateText}</span></div>
-        <div class="t-body">${persons}</div>
-      </div>`;
-    } else {
-      const span = SCHEDULE.length ? `${SCHEDULE[0][0]} – ${SCHEDULE[SCHEDULE.length - 1][0]}` : "";
-      html = `<div class="today today-out">
-        <div class="t-head"><span class="t-tag">Сегодня</span><span class="t-date">${dateText}</span></div>
-        <div class="t-note">Сегодняшний день вне текущего графика (${span}).</div>
-      </div>`;
+    const el = id => document.getElementById(id);
+    const monthOf = r => r.date.getFullYear() + "-" + pad(r.date.getMonth() + 1);
+    const fmt = (d, options) => d.toLocaleDateString("ru-RU", options);
+    let selected = ROWS.findIndex(r => r.key === todayKey);
+    let month = monthOf(ROWS[selected]);
+    const details = el("sched-details"), grid = el("sched-grid");
+    el("sched-prev").innerHTML = `${ICO.arrow}<span class="sched-navword">День назад</span>`;
+    el("sched-next").innerHTML = `<span class="sched-navword">День вперёд</span>${ICO.arrow}`;
+    el("sched-month-prev").innerHTML = el("sched-month-next").innerHTML = ICO.arrow;
+    el("sched-week").innerHTML = [...WD_RU.slice(1), WD_RU[0]].map(w => `<span>${w}</span>`).join("");
+    el("sched-legend").innerHTML = PEOPLE.map(p => `<span data-color="${p.color}"><i></i>${p.name}</span>`).join("");
+
+    function render(){
+      const r = ROWS[selected], today = r.key === todayKey;
+      const diff = Math.round((utc(r.date) - utc(now)) / 86400000);
+      const label = today ? "Сегодня" : diff === -1 ? "Вчера" : diff === 1 ? "Завтра" : diff < 0 ? "Прошедший день" : "Будущая смена";
+      const on = r.cells.filter(c => c.working), off = r.cells.filter(c => !c.working && !c.absent);
+      el("today").innerHTML = `<div class="sched-label">${label}</div>
+        <h2 class="sched-date">${fmt(r.date, {day:"numeric", month:"long", year:"numeric"})}</h2>
+        <div class="sched-weekday">${fmt(r.date, {weekday:"long"})}</div>
+        <div class="sched-on">На смене · ${r.onHead}</div>
+        <div class="t-body">${on.map(c => `<div class="t-person" data-color="${c.color}">
+          <div class="t-row"><span class="t-dot"></span><span class="t-name">${c.name}</span></div>
+          ${c.label !== "На смене" ? `<div class="t-status">${c.label}</div>` : ""}
+          ${chips(c.duties, "t-duties")}</div>`).join("")}</div>
+        ${off.length ? `<div class="sched-off"><span>Выходной:</span>${off.map(c => `<span class="sched-off-person" data-color="${c.color}"><i class="t-dot"></i>${c.name}</span>`).join("")}</div>` : ""}`;
+      el("sched-prev").disabled = selected === 0;
+      el("sched-next").disabled = selected === ROWS.length - 1;
+      el("sched-today").setAttribute("aria-pressed", String(today));
+      const months = [...new Set(ROWS.map(monthOf))], monthIndex = months.indexOf(month);
+      el("sched-month-prev").disabled = monthIndex === 0;
+      el("sched-month-next").disabled = monthIndex === months.length - 1;
+      const monthRows = ROWS.filter(row => monthOf(row) === month);
+      const monthTitle = fmt(monthRows[0].date, {month:"long", year:"numeric"});
+      el("sched-month-title").textContent = monthTitle;
+      el("sched-details-title").textContent = "Подробный график · " + monthTitle;
+      el("sched-window").textContent = "Доступно: " + fmt(ROWS[0].date, {day:"numeric", month:"short", year:"numeric"})
+        + " — " + fmt(ROWS[ROWS.length - 1].date, {day:"numeric", month:"short", year:"numeric"});
+      const focused = document.activeElement && document.activeElement.dataset.schedDay;
+      const blanks = (monthRows[0].date.getDay() + 6) % 7;
+      grid.innerHTML = '<span aria-hidden="true"></span>'.repeat(blanks) + monthRows.map(row => {
+        const index = ROWS.indexOf(row), isToday = row.key === todayKey;
+        const names = row.cells.filter(c => c.working).map(c => c.name).join(", ");
+        return `<button type="button" class="sched-day${row.weekend ? " is-weekend" : ""}${isToday ? " is-today" : ""}${index === selected ? " is-selected" : ""}"
+          data-sched-day="${index}" aria-pressed="${index === selected}"${isToday ? ' aria-current="date"' : ""}
+          aria-label="${fmt(row.date, {day:"numeric", month:"long", year:"numeric"})}. ${isToday ? "Сегодня. " : ""}На смене: ${names}">
+          <span class="sched-daynum">${Number(row.dd)}</span><span class="sched-daydots" aria-hidden="true">${row.cells.filter(c => c.working).map(c => `<i data-color="${c.color}"></i>`).join("")}</span></button>`;
+      }).join("");
+      if(focused !== undefined) grid.querySelector(`[data-sched-day="${focused}"]`)?.focus({preventScroll:true});
+      [el("rows"), el("cards")].forEach(parent => Array.from(parent.children).forEach((node, i) => { node.hidden = monthOf(ROWS[i]) !== month; }));
     }
-    document.getElementById("today").innerHTML = html;
+    function select(index){ selected = index; month = monthOf(ROWS[selected]); render(); }
+    function shiftMonth(step){
+      const months = [...new Set(ROWS.map(monthOf))], target = months[months.indexOf(month) + step];
+      const indices = ROWS.map((r, i) => monthOf(r) === target ? i : -1).filter(i => i >= 0);
+      select(indices[Math.min(Number(ROWS[selected].dd), indices.length) - 1]);
+    }
+    el("sched-prev").addEventListener("click", () => select(selected - 1));
+    el("sched-next").addEventListener("click", () => select(selected + 1));
+    el("sched-today").addEventListener("click", () => window.scheduleToday());
+    el("sched-month-prev").addEventListener("click", () => shiftMonth(-1));
+    el("sched-month-next").addEventListener("click", () => shiftMonth(1));
+    grid.addEventListener("click", e => { const btn = e.target.closest("[data-sched-day]"); if(btn) select(Number(btn.dataset.schedDay)); });
+    window.scheduleToday = function(){
+      const fresh = new Date();
+      if(utc(fresh) !== utc(now)){
+        now = fresh; SCHEDULE = buildSchedule(); todayKey = pad(now.getDate()) + "." + pad(now.getMonth() + 1);
+        ROWS = scheduleRows(); SCHED_RANGE = scheduleRange();
+        PAGES.grafik.r = SCHED_RANGE;
+        if(!el("page-grafik").hidden) titleR.textContent = SCHED_RANGE;
+        renderScheduleDetails(); renderHome();
+      }
+      select(ROWS.findIndex(r => r.key === todayKey));
+    };
+    document.addEventListener("visibilitychange", () => {
+      if(!document.hidden && !el("page-grafik").hidden && utc(new Date()) !== utc(now)) window.scheduleToday();
+    });
+    // В печати закрытый details тоже содержит таблицу. Экранное состояние восстанавливаем.
+    let printOpen = null;
+    window.addEventListener("beforeprint", () => { if(printOpen === null) printOpen = details.open; details.open = true; });
+    window.addEventListener("afterprint", () => { if(printOpen !== null) details.open = printOpen; printOpen = null; });
+    render();
   })();
 
   /* =========================================================
@@ -8743,6 +8856,7 @@
   }
   window.addEventListener("resize", syncNavH);
   function showPage(id){
+    if(id === "grafik") window.scheduleToday();
     const isHome = (id === "glavnaya");
     document.querySelectorAll(".page").forEach(p => { p.hidden = (p.id !== "page-" + id); });
     document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.page === id));
