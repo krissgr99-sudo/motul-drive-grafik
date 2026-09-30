@@ -390,31 +390,104 @@
   .tpl-notfound-btn:hover{background:var(--fill-hover);border-color:var(--brand)}
   .tpl-notfound-btn:disabled{opacity:.75;cursor:default;border-color:var(--ok);color:var(--ok)}
 
-  /* ===================== КОМПЛЕКТЫ (наборы на продажу) ===================== */
-  /* Переиспользуем каркас карточки шаблона (.tpl-card / .tpl-collapse / .tpl-copy);
-     kit-* — только специфика: цена в шапке и список состава. Всё на токенах — обе темы. */
-  .kit-price{flex:none;font-family:var(--font-mono);font-weight:600;font-size:14px;color:var(--text);
-    font-variant-numeric:tabular-nums;white-space:nowrap}
-  .kit-sub{padding:2px 16px 0;color:var(--muted);font-size:13px;line-height:1.5}
-  .kit-lbl{padding:12px 16px 0;font-weight:700;font-size:12px;letter-spacing:.2px;color:var(--muted)}
-  .kit-var-lbl{padding:10px 16px 0;font-family:var(--font-disp);font-weight:700;font-size:13px;color:var(--text)}
-  .kit-list{margin:6px 16px 0;padding:6px 4px;background:var(--receipt);border:1px solid var(--line);border-radius:12px}
-  .kit-list:last-of-type{margin-bottom:2px}
-  .kit-list .kit-row.kit-total{border-top:1px solid var(--line-strong);margin-top:2px}
-  .kit-row.kit-total .kit-row-n{font-weight:700;color:var(--text)}
-  .kit-row.kit-total .kit-row-p{font-weight:700;color:var(--text)}
-  .kit-row{display:flex;align-items:baseline;gap:10px;padding:6px 11px}
-  .kit-row + .kit-row{border-top:1px solid var(--line)}
-  .kit-row-n{flex:1;font-size:13px;line-height:1.45;color:var(--text);word-break:break-word}
-  .kit-row-p{flex:none;font-family:var(--font-mono);font-weight:600;font-size:12.5px;color:var(--muted);
-    font-variant-numeric:tabular-nums;white-space:nowrap}
-  .kit-note{margin:0 16px 4px;padding:2px 2px 0;color:var(--muted);font-size:12.5px;line-height:1.5}
-  /* сводка «Итого»: коробка + каждый вариант комплекта мостов/раздатки — главные цифры карточки */
-  .kit-sum{margin:12px 16px 0;padding:12px 14px;background:var(--fill-soft);border:1px solid var(--line-strong);border-radius:12px}
-  .kit-sum-h{font-family:var(--font-disp);font-weight:700;font-size:13px;color:var(--text);margin-bottom:6px}
-  .kit-sum-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:4px 0}
-  .kit-sum-n{font-size:13px;font-weight:600;color:var(--muted)}
-  .kit-sum-v{font-family:var(--font-mono);font-weight:600;font-size:15px;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap}
+  /* ===================== КОМПЛЕКТЫ: ПОИСК И КОНСТРУКТОР ===================== */
+  #page-komplekty{min-width:0}
+  #page-komplekty button,#page-komplekty input,#page-komplekty select{font:inherit;color:var(--text)}
+  #page-komplekty button{cursor:pointer;transition:color .15s,background .15s,border-color .15s,transform .15s}
+  #page-komplekty button:active{transform:scale(.95)}
+  #page-komplekty button:disabled{opacity:.5;cursor:default;transform:none}
+  #page-komplekty :is(button,input,select):focus-visible{outline:2px solid var(--accent-soft);outline-offset:3px}
+  #page-komplekty [hidden]{display:none!important}
+  .kc-tabs{display:flex;gap:4px;padding:4px;border:1px solid var(--line);background:var(--card2);border-radius:14px;width:max-content;margin-bottom:20px}
+  #page-komplekty .kc-tab{min-height:44px;border:0;background:transparent;border-radius:10px;padding:0 20px;color:var(--muted);font-weight:700}
+  #page-komplekty .kc-tab.active{background:var(--card);color:var(--text);box-shadow:var(--shadow)}
+  .kc-tab.active:after{content:"";display:block;height:2px;background:var(--brand);margin-top:6px;margin-bottom:-8px}
+  .kc-workbench{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:start}
+  .kc-left{min-width:0}
+  .kc-search{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 14px;min-height:52px}
+  .kc-search .mi{color:var(--muted);flex:none}
+  #page-komplekty .kc-search input{width:100%;min-width:0;border:0;outline:none;background:transparent;padding:12px 0}
+  .kc-search:focus-within{border-color:var(--accent-soft)}
+  .kc-filters{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 20px}
+  #page-komplekty .kc-chip{border:1px solid var(--line);border-radius:8px;padding:10px 14px;min-height:44px;background:var(--card);color:var(--muted);font-weight:600;font-size:12px}
+  #page-komplekty .kc-chip.active{border-color:var(--accent-soft);background:var(--weekend);color:var(--accent-soft)}
+  .kc-chip:hover{border-color:var(--open-border)}
+  .kc-caption{color:var(--muted);font-size:12px;margin-bottom:12px;display:flex;justify-content:space-between;gap:12px}
+  .kc-groups{display:grid;gap:16px}
+  .kc-group{border:1px solid var(--line);border-radius:16px;background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+  .kc-group-head{padding:20px;display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--line)}
+  .kc-group-title{display:block;font:700 19px var(--font-disp);line-height:1.3}
+  .kc-group-sub{display:block;font-size:12px;color:var(--muted);margin-top:6px}
+  .kc-group-code{font:500 11px/1.9 var(--font-mono);color:var(--muted);text-align:right;white-space:nowrap}
+  .kc-option{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:12px 16px;position:relative;border-bottom:1px solid var(--line)}
+  .kc-option:last-child{border-bottom:0}
+  .kc-option.selected{background:var(--weekend)}
+  .kc-option.selected:before{content:"";position:absolute;inset:12px auto 12px 0;width:3px;background:var(--brand)}
+  .kc-option-view{border:0;padding:6px 0;background:transparent;text-align:left;min-height:44px;min-width:0}
+  .kc-option-name{display:block;font-weight:700;font-size:13px;line-height:1.5}
+  .kc-option-meta{display:block;color:var(--muted);font-size:11px;margin-top:4px;line-height:1.5;overflow-wrap:anywhere}
+  .kc-option-price{font:600 13px var(--font-mono);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+  .kc-option-price small{display:block;font:500 11px var(--font-text);color:var(--muted);margin-top:5px;max-width:140px;white-space:normal}
+  #page-komplekty .kc-copy-row{border:1px solid var(--line);border-radius:10px;min-height:44px;padding:0 12px;background:var(--fill);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px}
+  #page-komplekty .kc-copy-row:hover{border-color:var(--accent-soft);color:var(--accent-soft)}
+  .kc-empty{padding:28px;color:var(--muted);line-height:1.7;background:var(--card);border:1px solid var(--line);border-radius:16px}
+  .kc-preview{position:sticky;top:calc(var(--navh,70px) + 20px);min-width:0;scroll-margin-top:calc(var(--navh,70px) + 20px)}
+  .kc-preview-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+  .kc-preview-head,.kc-total,.kc-warning,.kc-actions{flex:none}
+  .kc-preview-head{padding:20px;border-bottom:1px solid var(--line)}
+  .kc-eyebrow{font:600 10px var(--font-mono);letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+  #page-komplekty h2{font:700 19px/1.35 var(--font-disp)}
+  .kc-receipt{padding:20px;background:var(--receipt);max-height:360px;min-height:80px;overflow:auto;flex:0 1 auto}
+  .kc-receipt pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:400 12px/1.8 var(--font-mono);color:var(--code-text)}
+  .kc-total{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-top:1px solid var(--line);font-size:12px}
+  .kc-total strong{font:600 17px var(--font-mono);font-variant-numeric:tabular-nums}
+  .kc-actions{padding:0 20px 20px;display:grid;gap:10px}
+  #page-komplekty .kc-primary,#page-komplekty .kc-secondary{min-height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:13px;padding:10px 12px}
+  #page-komplekty .kc-primary{border:0;background:var(--brand);color:var(--tag-text)}
+  [data-theme="light"] #page-komplekty .kc-primary{color:var(--card)}
+  #page-komplekty .kc-primary:hover{background:var(--brand-hover)}
+  #page-komplekty .kc-secondary{border:1px solid var(--line);background:var(--fill)}
+  .kc-secondary:hover{border-color:var(--accent-soft)}
+  .kc-warning{color:var(--warn);font-size:11px;padding:0 20px 12px;line-height:1.6}
+  .kc-panel{padding:20px;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);margin-bottom:16px}
+  .kc-panel-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:16px}
+  #page-komplekty .kc-panel-heading h2{font-size:17px}
+  .kc-field+.kc-field{margin-top:16px}
+  .kc-field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px}
+  #page-komplekty .kc-field :is(input,select){width:100%;height:48px;padding:0 12px;border-radius:12px;background:var(--fill);border:1px solid var(--line);min-width:0}
+  .kc-line{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .kc-line-name{min-width:0;flex:1;line-height:1.6;font-size:12px;overflow-wrap:anywhere}
+  .kc-line-price{font:500 12px var(--font-mono);white-space:nowrap}
+  .kc-qty{flex:none}
+  #page-komplekty .kc-qty input{width:52px;height:44px;padding:0 4px;text-align:center;border:1px solid var(--line);border-radius:10px;background:var(--fill)}
+  .kc-remove,.kc-add{width:44px;min-width:44px;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--fill);display:grid;place-items:center}
+  #page-komplekty .kc-remove{color:var(--muted)}
+  #page-komplekty .kc-add{color:var(--accent-soft)}
+  .kc-note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:12px}
+  .kc-products{margin-top:12px;max-height:280px;overflow:auto}
+  .kc-product{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .kc-product span{flex:1;font-size:12px;line-height:1.6;min-width:0;overflow-wrap:anywhere}
+  .kc-saved{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .kc-saved-item{display:flex;gap:4px;align-items:center;max-width:100%}
+  .kc-saved-item .kc-chip{overflow-wrap:anywhere;min-width:0}
+  .kc-status{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);border:1px solid var(--line);border-radius:12px;padding:14px 20px;background:var(--card);box-shadow:var(--shadow);z-index:100;max-width:calc(100% - 32px);font-size:13px}
+  .kc-mobile{display:none}
+  .kc-counter{color:var(--muted);font-size:12px}
+  .kc-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  @media(min-width:1001px){.kc-preview-card{max-height:calc(100dvh - var(--navh,70px) - 40px)}}
+  @media(max-width:1000px){.kc-workbench{grid-template-columns:1fr}.kc-preview{position:static}}
+  @media(max-width:720px){
+    #page-komplekty{padding-bottom:72px}
+    .kc-tabs{width:100%}#page-komplekty .kc-tab{flex:1;padding:0 12px;font-size:12px}
+    .kc-option{grid-template-columns:minmax(0,1fr) auto;gap:8px 12px}.kc-option-view{grid-column:1/-1}
+    .kc-option-price{text-align:left;grid-column:1}.kc-copy-row{grid-column:2}
+    .kc-group-head{padding:16px}.kc-group-title{font-size:18px}.kc-group-code{font-size:10px}
+    .kc-caption{flex-direction:column;gap:4px}.kc-panel{padding:16px}.kc-panel-heading{flex-wrap:wrap}
+    .kc-line{flex-wrap:wrap;gap:8px}.kc-line-name{flex-basis:100%}.kc-line-price{flex:1}
+    .kc-mobile{position:fixed;bottom:0;left:0;right:0;display:flex;gap:12px;padding:12px 16px;background:var(--card);border-top:1px solid var(--line);z-index:20}
+    .kc-mobile button{flex:1;min-width:0}.kc-status{bottom:88px}
+  }
+  @media(prefers-reduced-motion:reduce){#page-komplekty button{transition:none}}
 
   /* ===================== ЦЕНЫ (прайс запчастей) ===================== */
   .pr-table thead th:first-child{border-left:none}
@@ -6971,22 +7044,25 @@
 
   /* ===================== КОМПЛЕКТЫ (наборы на продажу) =====================
      Наборы, которые собираем и продаём — отправкой или вживую. Данные → авто-рендер:
-     правь массив KITS, карточки/бейджи/состав/копи-текст строятся сами.
+     правь массив KITS, группы/конфигурации/состав/копи-текст строятся сами.
+     id — постоянный идентификатор для рецептов; group/brand/choice — подписи каталога.
      Поле price — ПРОДАЖНАЯ цена комплекта (её ставит владелец), null → «уточню».
      Без price цена складывается из items; variants — общая карточка из отдельных комплектов.
      Позиция состава (items[]) — одно из трёх:
        • "Название"            — просто строка, без цены;
        • ["Название", 1500]    — имя + цена позиции (розница);
-       • { ref:"ключ_PRICE" }  — тянет имя+цену из единого прайса PRICE (свежесть honored:
+       • { ref:"ключ_PRICE", qty? } — тянет имя+цену из единого прайса PRICE (qty — целые позиции;
+                                 свежесть honored:
                                  протухла/без даты сверки → прежняя цена + бейдж «Проверить цены»).
-     format[] — как продаём: "отправка" | "вживую" (любой набор) → бейджи. hybrid:true → бейдж «Мягкий гибрид».
+     format[] — как продаём: "отправка" | "вживую"; hybrid:true — мягкий гибрид.
      addons   — необязательный апсел «также можем предложить», НЕ входит в цену комплекта. Два вида:
                 • { head, items:[…], note }        — плоский список позиций-альтернатив (три вида, без «Итого»);
                 • { block: DIFFS_KIT }             — готовый поузловой блок (варианты с «Итого»). Карточку, сводку
                                                      и копи-текст считает ОДИН расчёт kitAddonVariants (fail-closed).
      При addons.block автоматически строится сводка «Итого» (kitAddonTotals):
-     коробка + каждый вариант блока — в карточке (.kit-sum) и в копи-тексте. */
+     коробка + каждый вариант блока — в предпросмотре и в копи-тексте. */
   const MB9G_KIT_COMMON = {
+    group: "Mercedes 9G-Tronic", brand: "Mercedes",
     sub: "Оригинальное масло Mercedes-Benz с допуском MB 236.17, 10 л. Комплект без работ.",
     format: ["вживую", "отправка"],
     addons: { block: DIFFS_KIT_MB },
@@ -6994,6 +7070,7 @@
   const MB9G_KITS = [["mb", "Mercedes-Benz"], ["sollo", "Sollo"], ["mahle", "Mahle"], ["zf", "ZF"]]
     .map(([filter, brand]) => ({
       ...MB9G_KIT_COMMON,
+      id: `mb9g-${filter}`, choice: brand,
       name: `Mercedes 9G-Tronic · поддон ${brand} · масло 10 л`,
       label: `С поддоном ${brand}`,
       items: ["oil_mb_9g_10", ...MB9G_FILTER.fill[filter]].map(ref => ({ ref })),
@@ -7003,6 +7080,7 @@
     // Апсел — комплект запчастей для мостов/раздатки: DIFFS_KIT (Motul 12000 / оригинал 25500)
     // или DIFFS_KIT_LOCK с блокировкой (LSD-масло в составе, Motul 13000 / оригинал 28500).
     {
+      id: "zf8hp-base", group: "ZF 8HP", brand: "BMW", choice: "Обычный · без блокировки",
       name:  "ZF 8HP · масло 5 л · мосты и раздатка без блокировки",
       price: 20000,
       format:["вживую","отправка"],
@@ -7013,6 +7091,7 @@
       addons: { block: DIFFS_KIT },
     },
     {
+      id: "zf8hp-lock", group: "ZF 8HP", brand: "BMW", choice: "Обычный · с блокировкой",
       name:  "ZF 8HP · масло 5 л · мосты и раздатка с блокировкой",
       price: 20000,
       format:["вживую","отправка"],
@@ -7024,6 +7103,7 @@
     },
     // Пара «мягкий гибрид»: тот же расклад, но поддон мягкого гибрида (filter_mild 19000) → коробка 30000.
     {
+      id: "zf8hp-mild", group: "ZF 8HP", brand: "BMW", choice: "Мягкий гибрид · без блокировки",
       name:  "ZF 8HP · мягкий гибрид · масло 5 л · мосты и раздатка без блокировки",
       hybrid:true,
       price: 30000,
@@ -7035,6 +7115,7 @@
       addons: { block: DIFFS_KIT },
     },
     {
+      id: "zf8hp-mild-lock", group: "ZF 8HP", brand: "BMW", choice: "Мягкий гибрид · с блокировкой",
       name:  "ZF 8HP · мягкий гибрид · масло 5 л · мосты и раздатка с блокировкой",
       hybrid:true,
       price: 30000,
@@ -7048,6 +7129,7 @@
     // Пара Audi / VW — ZF 8HP65: масло 6 л + поддон 1103298006. Цена — сумма позиций PRICE.
     // Мосты и Торсен — те же комплекты запчастей G055/G060, что у поддона 119, без работ.
     {
+      id: "zf8hp65-g055", group: "ZF 8HP65", brand: "Audi / VW", choice: "Торсен G055",
       name:  "ZF 8HP65 · масло 6 л · мосты и Торсен G055",
       price: PRICE.oil_zf8hp_6[1] + PRICE.filter_zf_8hp65[1],
       format:["вживую","отправка"],
@@ -7058,6 +7140,7 @@
       addons: { block: DIFFS_KIT_TORSEN_G055 },
     },
     {
+      id: "zf8hp65-g060", group: "ZF 8HP65", brand: "Audi / VW", choice: "Торсен G060",
       name:  "ZF 8HP65 · масло 6 л · мосты и Торсен G060",
       price: PRICE.oil_zf8hp_6[1] + PRICE.filter_zf_8hp65[1],
       format:["вживую","отправка"],
@@ -7070,6 +7153,7 @@
     // Пара Audi / VW — ZF 8HP65A: масло 6 л + поддон 1103298119 (13200+16000=29200). Апсел — мосты и Торсен,
     // карточки разведены по маслу оригинала: G055 (VAG 30000) и G060 (VAG 36800); Motul 14500 у обеих.
     {
+      id: "zf8hp65a-g055", group: "ZF 8HP65A", brand: "Audi / VW", choice: "Торсен G055",
       name:  "ZF 8HP65A · масло 6 л · мосты и Торсен G055",
       price: 29200,
       format:["вживую","отправка"],
@@ -7080,6 +7164,7 @@
       addons: { block: DIFFS_KIT_TORSEN_G055 },
     },
     {
+      id: "zf8hp65a-g060", group: "ZF 8HP65A", brand: "Audi / VW", choice: "Торсен G060",
       name:  "ZF 8HP65A · масло 6 л · мосты и Торсен G060",
       price: 29200,
       format:["вживую","отправка"],
@@ -7092,6 +7177,7 @@
     ...MB9G_KITS,
     {
       ...MB9G_KIT_COMMON,
+      id: "mb9g-all", choice: "Все поддоны — сравнение",
       name: "Mercedes 9G-Tronic · все поддоны · масло 10 л",
       variants: MB9G_KITS,
     },
@@ -7105,17 +7191,18 @@
     //   note:  "Примечание.",
     // },
   ];
-  const KIT_FORMAT_ICO = { "отправка": ICO.inbox, "вживую": ICO.wrench };
 
   // Позиция состава → { name, price|null, stale? } (единая обработка трёх форматов).
   function kitLine(it){
     if(typeof it === "string") return { name:it, price:null };
     if(Array.isArray(it))      return { name:it[0], price:(it[1] ?? null) };
     if(it && it.ref){
-      const p = PRICE[it.ref];
-      if(!p)                          return { name:`⚠ уточню: ${it.ref}`, price:null, stale:true }; // нет ключа (опечатка) → «уточню» + флаг (правило 2)
-      if(typeof p[1] !== "number")    return { name:p[0], price:null, stale:true };  // битая цена (не число) → «уточню», не молча 0 (правило 2)
-      return { name:p[0], price:p[1], stale: !isFresh(it.ref) };  // цена не подтверждена → показываем ПРЕЖНЮЮ + бейдж (решение владельца 26.07.2026)
+      const p = Object.hasOwn(PRICE, it.ref) ? PRICE[it.ref] : null, qty = it.qty ?? 1;
+      if(!p) return { name:`⚠ уточню: ${it.ref}`, price:null, stale:true };
+      const name = p[0] + (qty === 1 ? "" : " × " + qty);
+      if(!Number.isFinite(p[1]) || !Number.isInteger(qty) || qty < 1 || qty > 99)
+        return { name, price:null, stale:true };
+      return { name, price:p[1] * qty, stale: !isFresh(it.ref) };
     }
     return { name:String(it), price:null };
   }
@@ -7125,7 +7212,7 @@
   function kitBaseVariants(k){
     return (k.variants || [k]).map(v => {
       const lines = (v.items || []).map(kitLine);
-      const sum = v.price !== undefined ? v.price : lines.some(l => l.price == null) ? null
+      const sum = lines.some(l => l.price == null) ? null : v.price !== undefined ? (Number.isFinite(v.price) ? v.price : null)
         : lines.reduce((total, l) => total + l.price, 0);
       return { label: k.variants ? v.label : null, lines, sum };
     });
@@ -7181,123 +7268,329 @@
     return CDOC.doc({ title: k.name, sub: k.sub, blocks });
   }
 
-  function renderKits(){
+  const KIT_UI_SHELL = `
+  <div class="kc-tabs" role="tablist" aria-label="Режим работы">
+    <button class="kc-tab active" id="kc-catalog-tab" type="button" role="tab" aria-selected="true" aria-controls="kc-catalog">Готовые комплекты</button>
+    <button class="kc-tab" id="kc-builder-tab" type="button" role="tab" aria-selected="false" aria-controls="kc-builder">Конструктор</button>
+  </div>
+  <div class="kc-workbench"><div class="kc-left">
+    <section id="kc-catalog" role="tabpanel" aria-labelledby="kc-catalog-tab">
+      <label class="kc-search">${ICO.search}<input id="kc-search" aria-label="Найти комплект" placeholder="Коробка, поддон, артикул или слово…"><span class="kc-counter" id="kc-count"></span></label>
+      <div class="kc-filters" id="kc-filters"></div>
+      <div class="kc-caption"><span>Комплекты без работ · вживую и отправкой</span><span>Нажмите вариант, чтобы увидеть состав</span></div>
+      <div class="kc-groups" id="kc-groups"></div>
+    </section>
+    <section id="kc-builder" role="tabpanel" aria-labelledby="kc-builder-tab" hidden>
+      <div class="kc-panel"><div class="kc-panel-heading"><h2>На основе комплекта</h2><button class="kc-copy-row" type="button" id="kc-blank">С нуля</button></div>
+        <div class="kc-filters" id="kc-families"></div>
+        <div class="kc-field"><label for="kc-base">Конфигурация</label><select id="kc-base"></select></div>
+        <div class="kc-field"><label for="kc-title">Заголовок для клиента</label><input id="kc-title" maxlength="160"></div>
+      </div>
+      <div class="kc-panel"><div class="kc-panel-heading"><h2>Состав комплекта</h2><span class="kc-counter" id="kc-line-count"></span></div>
+        <div id="kc-lines"></div><p class="kc-note" id="kc-base-note"></p>
+      </div>
+      <div class="kc-panel" id="kc-addon-panel"><h2>Мосты и раздатка</h2>
+        <p class="kc-note">Выбранное масло относится к мостам и раздатке. Масло АКПП остаётся в составе выше.</p>
+        <div class="kc-filters" id="kc-addons"></div>
+      </div>
+      <div class="kc-panel"><div class="kc-panel-heading"><h2>Добавить из прайса</h2></div>
+        <label class="kc-search">${ICO.search}<input id="kc-product-search" aria-label="Найти позицию" placeholder="Название, номер фильтра, масло…"></label>
+        <div class="kc-products" id="kc-products"></div>
+        <p class="kc-note">Добавляется указанная позиция целиком: литраж или пакет уже написан в её названии. Количество — число таких позиций.</p>
+      </div>
+      <div class="kc-panel"><div class="kc-panel-heading"><h2>Мои шаблоны</h2><button class="kc-copy-row" id="kc-save" type="button">Сохранить текущий</button></div>
+        <p class="kc-note">Шаблоны сохраняются в браузере этого устройства.</p><div class="kc-saved" id="kc-saved"></div>
+      </div>
+    </section>
+  </div>
+  <aside class="kc-preview" id="kc-preview"><div class="kc-preview-card">
+    <div class="kc-preview-head"><div class="kc-eyebrow">Сообщение клиенту</div><h2 id="kc-preview-title"></h2><p class="kc-note" id="kc-description"></p></div>
+    <div class="kc-receipt"><pre id="kc-text"></pre></div>
+    <div class="kc-total"><span id="kc-sum-label">Комплект АКПП</span><strong id="kc-sum"></strong></div>
+    <div class="kc-warning" id="kc-warning" hidden>Проверить цены: есть позиции без свежего подтверждения. В сообщении сохраняются текущие суммы.</div>
+    <div class="kc-actions"><button class="kc-primary" type="button" id="kc-copy">${ICO.copy} Копировать клиенту</button><button class="kc-secondary" type="button" id="kc-edit">Собрать на основе</button></div>
+  </div><p class="kc-note">Предпросмотр показывает точный текст, который попадёт в буфер. Затем вставьте его в переписку с клиентом.</p></aside></div>
+  <div class="kc-mobile"><button class="kc-secondary" type="button" id="kc-jump">Посмотреть текст</button><button class="kc-primary" type="button" id="kc-mobile-copy">${ICO.copy} Копировать</button></div>
+  <div class="kc-status" id="kc-status" role="status" hidden></div>`;
+  /* Состояние раздела живёт отдельно от DOM: сверка цен обновляет расчёт,
+     не сбрасывая черновик. Сохранённый шаблон — только рецепт, никогда не цена. */
+  const KITS_UI = (() => {
     const root = document.getElementById("page-komplekty");
-    if(!root) return;
-    const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
-    if(!KITS.length){
-      root.innerHTML =
-        `<div class="tpl-grid"><div class="tpl-empty">
-          Пока нет комплектов. Добавьте первый в структуре <b>KITS</b> —
-          карточка с составом, ценой и кнопкой «Копировать» появится сама.
-        </div></div>`;
-      return;
+    const $ = id => root.querySelector("#kc-" + id);
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    const STORE = "md_kit_recipes";
+    const groups = [...new Set(KITS.map(k => k.group))];
+    const byId = id => KITS.find(k => k.id === id);
+    const norm = s => foldLat(String(s).toLowerCase()).replace(/[^a-zа-яё0-9]/g, "");
+    const aliases = { мерседес:"Mercedes", мерс:"Mercedes", бмв:"BMW", ауди:"Audi", фольксваген:"VW", зф:"ZF" };
+    const query = s => s.replace(/мерседес|мерс|бмв|ауди|фольксваген|зф/gi, w => aliases[w.toLowerCase()]);
+    const matches = (text, q) => query(q).trim().split(/\s+/).filter(Boolean).every(w => norm(text).includes(norm(w)));
+    const addonId = v => "ref:" + v.items[0];
+    const isGoods = ref => Object.hasOwn(PRICE, ref) && !/(^|_)work(_|$)/i.test(ref)
+      && !/замен|работ/i.test(PRICE[ref][0]);
+    // Исчезнувшую позицию не выкидываем: kitLine покажет «уточню» и не занизит итог.
+    const allowedRef = ref => typeof ref === "string" && /^[a-z0-9_]{1,80}$/.test(ref) && !/(^|_)work(_|$)/i.test(ref)
+      && (!Object.hasOwn(PRICE, ref) || isGoods(ref));
+    const rowKey = rows => JSON.stringify(rows.map(r => [r.ref, r.qty || 1]).sort((a,b) => a[0].localeCompare(b[0])));
+    let mode = "catalog", selectedId = KITS[0].id, filter = "Все", openGroup = groups[0];
+    let draft = null, currentText = "", timer, saved = [], mounted = false;
+
+    function readSaved(){
+      try {
+        const data = JSON.parse(localStorage.getItem(STORE) || "null");
+        if(data?.version !== 1 || !Array.isArray(data.templates)) return [];
+        return data.templates.map(s => {
+          if(!s || typeof s.id !== "string" || s.id.length > 80 || typeof s.title !== "string"
+            || !s.title.trim() || s.title.length > 160 || !(s.baseId === null || typeof s.baseId === "string")
+            || typeof s.addon !== "string" || !Array.isArray(s.rows) || !s.rows.length || s.rows.length > 200) return null;
+          if(!s.rows.every(r => r && allowedRef(r.ref) && Number.isInteger(r.qty) && r.qty >= 1 && r.qty <= 99)) return null;
+          const base = byId(s.baseId);
+          if(s.addon !== "none" && s.addon !== "all" && !base?.addons?.block?.variants.some(v => addonId(v) === s.addon)) return null;
+          return { id:s.id, title:s.title.trim(), baseId:s.baseId, addon:s.addon,
+            rows:s.rows.map(r => ({ ref:r.ref, qty:r.qty })) };
+        }).filter(Boolean);
+      } catch(e){ return []; }
     }
-    const listHtml = arr => arr.map(l =>
-      `<div class="kit-row"><span class="kit-row-n">${esc(l.name)}</span>${
-        l.price != null ? `<span class="kit-row-p">${esc(kitRub(l.price))}</span>` : ""}</div>`).join("");
-    // Варианты состава и допредложения уже посчитаны — здесь только разметка.
-    const variantBlockHtml = vars => vars.map(v =>
-      `<div class="kit-var-lbl">${esc(v.label)}</div>
-        <div class="kit-list">${listHtml(v.lines)}<div class="kit-row kit-total"><span class="kit-row-n">Итого</span>
-          <span class="kit-row-p">${v.sum == null || v.lines.some(l => l.price == null) ? "уточню" : esc(kitRub(v.sum))}</span></div></div>`).join("");
-    const cards = KITS.map((k,i) => {
-      const bases = kitBaseVariants(k);
-      const items = bases.flatMap(v => v.lines);
-      const ad = k.addons || null;
-      const adVars = kitAddonVariants(ad);               // единый расчёт — тот же, что сводка и копи-текст
-      const adLines = !ad ? [] : adVars ? adVars.flatMap(v => v.lines) : (ad.items || []).map(kitLine);
-      const stale = items.concat(adLines).some(l => l.stale); // свежесть учитывает и доп-позиции
-      const badges = [];
-      if(k.hybrid) badges.push(`<span class="tpl-badge b-hybrid">${ICO.bolt} Мягкий гибрид</span>`); // как в Шаблонах
-      if(ad && ad.lock) badges.push(`<span class="tpl-badge b-lock">${ICO.lock} Блокировка</span>`); // мосты/раздатка с блокировкой диф.
-      (k.format || []).forEach(f =>
-        badges.push(`<span class="tpl-badge b-hybrid">${KIT_FORMAT_ICO[f] || ""} ${esc(f)}</span>`));
-      if(stale) badges.push(`<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>`); // цена не подтверждена (в смете она прежняя) — сигнал владельцу, в буфер не уходит
-      const priceTxt = k.variants
-        ? (bases.some(v => v.sum == null) ? "уточню" : `от ${kitRub(Math.min(...bases.map(v => v.sum)))}`)
-        : bases[0].sum != null ? kitRub(bases[0].sum) : "уточню";
-      const list = listHtml(items);
-      return `<div class="tpl-card">
-        <button class="tpl-card-head" type="button" aria-expanded="false">
-          <span class="tpl-head-main">
-            <span class="tpl-title">${esc(k.name)}</span>
-            ${badges.length ? `<span class="tpl-badges">${badges.join("")}</span>` : ""}
-          </span>
-          <span class="kit-price">${esc(priceTxt)}</span>
-          <span class="tpl-chevron"></span>
-        </button>
-        <div class="tpl-collapse"><div class="tpl-collapse-inner">
-          ${k.sub ? `<div class="kit-sub">${esc(k.sub)}</div>` : ""}
-          ${k.variants ? `<div class="kit-lbl">На выбор — ${bases.length} варианта</div>${variantBlockHtml(bases)}`
-            : list ? `<div class="kit-lbl">Состав</div><div class="kit-list">${list}</div>` : ""}
-          ${!ad ? "" : adVars
-            ? `<div class="kit-lbl">${esc(ad.block.head)}</div>${variantBlockHtml(adVars)}${ad.block.note ? `<div class="kit-note">${esc(ad.block.note)}</div>` : ""}`
-            : `<div class="kit-lbl">${esc(ad.head || "Дополнительно")}</div><div class="kit-list">${listHtml((ad.items || []).map(kitLine))}</div>${ad.note ? `<div class="kit-note">${esc(ad.note)}</div>` : ""}`}
-          ${(() => { const totals = kitAddonTotals(k); return !totals ? "" :
-            `<div class="kit-sum"><div class="kit-sum-h">Итого</div>${totals.map(t =>
-              `<div class="kit-sum-row"><span class="kit-sum-n">${esc(t.label)}</span><span class="kit-sum-v">${t.total != null ? esc(kitRub(t.total)) : "уточню"}</span></div>`).join("")}</div>`; })()}
-          ${k.note ? `<div class="kit-note">${esc(k.note)}</div>` : ""}
-          <div class="tpl-actions"><button class="tpl-copy" type="button" data-i="${i}">${ICO.copy} Копировать</button></div>
-        </div></div>
-      </div>`;
-    }).join("");
-    root.innerHTML = `<div class="tpl-grid" id="kit-grid">${cards}</div>`;
-
-    root.querySelectorAll(".tpl-card-head").forEach(head =>
-      head.addEventListener("click", () => {
-        const card = head.closest(".tpl-card");
-        const open = card.classList.toggle("open");
-        head.setAttribute("aria-expanded", open ? "true" : "false");
-      }));
-
-    root.querySelectorAll(".tpl-copy").forEach(btn =>
-      btn.addEventListener("click", async e => {
-        e.stopPropagation();
-        const kit = KITS[+btn.dataset.i];
-        const text = kitBodyText(kit);
-        if(window.MDLOG) window.MDLOG.copy("Комплект·" + kit.name);  // А3: то же, что в Шаблонах и ТО — иначе метрика слепа на комплектах
-        try { await navigator.clipboard.writeText(text); }
-        catch(_){ const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed";
-          ta.style.opacity="0"; document.body.appendChild(ta); ta.select();
-          let ok=false; try{ ok = document.execCommand("copy"); }catch(__){} ta.remove();
-          if(!ok) window.MDLOG && window.MDLOG.err("ui", "копирование в буфер не сработало", "kit-copy"); }
-        if(!btn.classList.contains("ok")) btn.dataset.copyLabel = btn.innerHTML;
-        btn.innerHTML = ICO.check + " Вставьте в WhatsApp"; btn.classList.add("ok"); // мостик к следующему шагу (как в Шаблонах)
-        clearTimeout(btn._copyT);
-        btn._copyT = setTimeout(() => { btn.innerHTML = btn.dataset.copyLabel; btn.classList.remove("ok"); }, 1600);
-      }));
-
-    // Все свёрнутые карточки — одной высоты (как в Шаблонах): длинные названия не рвут сетку 2×2.
-    function kitEqualize(){
-      const heads = root.querySelectorAll(".tpl-card-head");
-      if(!heads.length) return;
-      heads.forEach(h => h.style.minHeight = "");        // сброс перед замером натуральной высоты
-      let max = 0;
-      heads.forEach(h => { if(h.offsetHeight > max) max = h.offsetHeight; });
-      if(!max) return;                                   // вкладка скрыта (высота 0) — пересчитается при показе (kitsReveal)
-      heads.forEach(h => h.style.minHeight = max + "px");
+    function notify(text){
+      $("status").textContent = text; $("status").hidden = false;
+      clearTimeout(timer); timer = setTimeout(() => $("status").hidden = true, 2200);
     }
-    kitEqualize();
-    window.kitEqualize = kitEqualize;
-  }
-  // Каскад проявления карточек комплектов при входе в раздел (перенос BlurFade со stagger).
-  window.kitsReveal = function(){
-    const root = document.getElementById("page-komplekty");
-    if(!root) return;
-    if(window.kitEqualize) window.kitEqualize();   // вкладка уже видима (showPage снял hidden) — выровнять шапки сразу
-    mdBlurStagger(root.querySelectorAll(".tpl-card"));
-  };
-  // Перерисовка после сверки цен (как window.tplRerender в Шаблонах): бейдж «Проверить цены»
-  // на комплектах должен гаснуть сразу. renderKits собирает карточки заново из KITS — состояния,
-  // которое можно потерять, у раздела нет (открытая карточка схлопнется — это весь эффект).
-  window.kitsRerender = () => { renderKits(); };
-  // при изменении ширины окна названия переносятся иначе — пересчитываем (rAF-дебаунс, как в Шаблонах)
-  let kitEqRaf;
-  window.addEventListener("resize", () => {
-    cancelAnimationFrame(kitEqRaf);
-    kitEqRaf = requestAnimationFrame(() => { if(window.kitEqualize) window.kitEqualize(); });
-  });
+    function loadKit(id){
+      let k = byId(id);
+      if(k?.variants) k = k.variants[0];
+      if(!k) return;
+      selectedId = k.id;
+      draft = { baseId:k.id, title:k.name, addon:k.addons ? "all" : "none",
+        rows:(k.items || []).map(r => ({ ref:r.ref, qty:1 })) };
+      renderBuilder(); renderPreview();
+    }
+    function makeDraftKit(){
+      const base = byId(draft.baseId);
+      const k = { name:draft.title.trim() || "Комплект запчастей", items:draft.rows, sub:"Комплект запчастей без работ." };
+      if(base && rowKey(draft.rows) === rowKey(base.items)) { k.price = base.price; k.sub = base.sub; }
+      if(base?.addons?.block && draft.addon !== "none"){
+        const b = base.addons.block;
+        const variants = draft.addon === "all" ? b.variants : b.variants.filter(v => addonId(v) === draft.addon);
+        if(variants.length) k.addons = { ...base.addons, block:{ ...b, variants,
+          intro:draft.addon === "all" ? b.intro : undefined,
+          head:draft.addon === "all" ? b.head : "Также рекомендуем комплект для мостов и раздатки." } };
+      }
+      return k;
+    }
+    function markEdited(){
+      const base = byId(draft.baseId);
+      if(base && draft.title === base.name) draft.title = "Комплект запчастей · " + base.group;
+    }
+    function setMode(next){
+      mode = next;
+      for(const name of ["catalog", "builder"]){
+        $(name).hidden = mode !== name;
+        $(name + "-tab").classList.toggle("active", mode === name);
+        $(name + "-tab").setAttribute("aria-selected", String(mode === name));
+        $(name + "-tab").tabIndex = mode === name ? 0 : -1;
+      }
+      if(mode === "builder" && !draft) loadKit(selectedId);
+      else renderPreview();
+    }
+    function renderFilters(){
+      const brands = ["Все", ...new Set(KITS.map(k => k.brand))];
+      $("filters").innerHTML = brands.map(b => `<button type="button" class="kc-chip ${filter === b ? "active" : ""}" aria-pressed="${filter === b}" data-brand="${esc(b)}">${esc(b)}</button>`).join("");
+      $("filters").querySelectorAll("button").forEach(b => b.onclick = () => {
+        filter = b.dataset.brand; openGroup = KITS.find(k => filter === "Все" || k.brand === filter)?.group;
+        renderFilters(); renderCatalog();
+      });
+    }
+    function renderCatalog(){
+      const q = $("search").value;
+      const visible = KITS.filter(k => (filter === "Все" || k.brand === filter) && matches([
+        k.name, k.brand, k.group, k.choice, ...kitBaseVariants(k).flatMap(v => v.lines.map(l => l.name)),
+        ...(kitAddonVariants(k.addons) || []).flatMap(v => v.lines.map(l => l.name))].join(" "), q));
+      if(visible.length && !visible.some(k => k.id === selectedId)) selectedId = visible[0].id;
+      $("count").textContent = visible.length;
+      $("groups").innerHTML = groups.map(group => {
+        const rows = visible.filter(k => k.group === group); if(!rows.length) return "";
+        const open = q.trim() || openGroup === group;
+        const sums = rows.flatMap(k => kitBaseVariants(k).map(v => v.sum));
+        const from = sums.every(s => s != null) ? "от " + kitRub(Math.min(...sums)) : "уточню";
+        const oil = kitBaseVariants(rows[0])[0].lines[0]?.name || "";
+        const litres = oil.match(/\d+\s*л/gi)?.at(-1) || "";
+        const word = rows.length === 1 ? "вариант" : rows.length < 5 ? "варианта" : "вариантов";
+        return `<article class="kc-group"><button type="button" class="kc-group-head" data-group="${esc(group)}" aria-expanded="${!!open}">
+          <span><span class="kc-group-title">${esc(group)}</span><span class="kc-group-sub">${esc(rows[0].brand)} · масло ${esc(litres)}</span></span>
+          <span class="kc-group-code">${rows.length} ${word}<br>${esc(from)} · ${open ? "−" : "+"}</span></button>${!open ? "" : rows.map(k => {
+            const bases = kitBaseVariants(k);
+            const amount = bases.every(v => v.sum != null) ? (k.variants ? "от " : "") + kitRub(Math.min(...bases.map(v => v.sum))) : "уточню";
+            const part = bases[0].lines.find(l => /поддон|фильтр/i.test(l.name));
+            const stale = bases.some(v => v.lines.some(l => l.stale)) || (kitAddonVariants(k.addons) || []).some(v => v.stale);
+            return `<div class="kc-option ${selectedId === k.id ? "selected" : ""}"><button type="button" class="kc-option-view" data-view="${esc(k.id)}" aria-pressed="${selectedId === k.id}">
+              <span class="kc-option-name">${esc(k.choice)}</span><span class="kc-option-meta">${esc(k.variants ? "Один текст со всеми вариантами поддонов" : part?.name || "")}</span></button>
+              <span class="kc-option-price">${esc(amount)}<small>комплект АКПП${stale ? " · проверить цены" : ""}</small></span>
+              <button type="button" class="kc-copy-row" data-copy="${esc(k.id)}" aria-label="Копировать ${esc(k.name)}">${ICO.copy}<span>Копировать</span></button></div>`;
+          }).join("")}</article>`;
+      }).join("") || '<div class="kc-empty">Комплект не найден. Попробуйте коробку, поддон или номер детали. Свой набор можно собрать в конструкторе.</div>';
+      $("groups").querySelectorAll("[data-view]").forEach(b => b.onclick = () => { selectedId = b.dataset.view; renderCatalog(); });
+      $("groups").querySelectorAll("[data-copy]").forEach(b => b.onclick = () => {
+        selectedId = b.dataset.copy; renderCatalog(); copyText(currentText, "Комплект·" + byId(selectedId).name);
+      });
+      $("groups").querySelectorAll("[data-group]").forEach(b => b.onclick = () => {
+        openGroup = openGroup === b.dataset.group ? "" : b.dataset.group;
+        if(openGroup && byId(selectedId)?.group !== openGroup) selectedId = KITS.find(k => k.group === openGroup).id;
+        renderCatalog();
+      });
+      renderPreview();
+    }
+    function renderBuilder(){
+      if(!draft) return;
+      const base = byId(draft.baseId), family = base?.group;
+      $("families").innerHTML = groups.map(g => `<button type="button" class="kc-chip ${family === g ? "active" : ""}" aria-pressed="${family === g}" data-family="${esc(g)}">${esc(g.replace("Mercedes ", ""))}</button>`).join("");
+      $("families").querySelectorAll("button").forEach(b => b.onclick = () => loadKit(KITS.find(k => k.group === b.dataset.family && !k.variants).id));
+      const choices = KITS.filter(k => k.group === family && !k.variants);
+      $("base").innerHTML = (!base ? '<option value="">Свой набор</option>' : "") + choices.map(k => `<option value="${esc(k.id)}">${esc(k.choice)}</option>`).join("");
+      $("base").value = base?.id || "";
+      if($("title").value !== draft.title) $("title").value = draft.title;
+      $("line-count").textContent = draft.rows.length + " поз.";
+      $("lines").innerHTML = draft.rows.map((r,i) => {
+        const l = kitLine(r);
+        return `<div class="kc-line"><span class="kc-line-name">${esc(l.name)}</span><label class="kc-qty"><span class="kc-sr">Количество позиций «${esc(PRICE[r.ref]?.[0] || r.ref)}»</span>
+          <input type="number" min="1" max="99" step="1" value="${r.qty}" data-qty="${i}" inputmode="numeric"></label>
+          <span class="kc-line-price">${l.price == null ? "уточню" : esc(kitRub(l.price))}</span>
+          <button type="button" class="kc-remove" data-remove="${i}" aria-label="Удалить ${esc(l.name)}">${ICO.close}</button></div>`;
+      }).join("") || '<p class="kc-note">Найдите нужные позиции в прайсе ниже и добавьте их в состав.</p>';
+      $("lines").querySelectorAll("[data-remove]").forEach(b => b.onclick = () => { draft.rows.splice(+b.dataset.remove, 1); markEdited(); renderBuilder(); renderPreview(); });
+      $("lines").querySelectorAll("[data-qty]").forEach(input => {
+        input.oninput = () => {
+          const qty = Number(input.value), valid = Number.isInteger(qty) && qty >= 1 && qty <= 99;
+          input.setCustomValidity(valid ? "" : "Введите целое количество от 1 до 99.");
+          if(valid){ draft.rows[+input.dataset.qty].qty = qty; markEdited();
+            const line = kitLine(draft.rows[+input.dataset.qty]), row = input.closest(".kc-line");
+            row.querySelector(".kc-line-price").textContent = line.price == null ? "уточню" : kitRub(line.price);
+            row.querySelector(".kc-line-name").textContent = line.name;
+            $("base-note").textContent = base && rowKey(draft.rows) === rowKey(base.items) ? "Состав и цена взяты из готового комплекта." : "Сумма пересчитывается по выбранным позициям прайса.";
+            if($("title").value !== draft.title) $("title").value = draft.title; }
+          renderPreview();
+        };
+        input.onchange = () => { if(!input.checkValidity()) input.value = draft.rows[+input.dataset.qty].qty; input.setCustomValidity(""); renderBuilder(); renderPreview(); };
+      });
+      $("base-note").textContent = base && rowKey(draft.rows) === rowKey(base.items) ? "Состав и цена взяты из готового комплекта." : "Сумма пересчитывается по выбранным позициям прайса.";
+      $("addon-panel").hidden = !base?.addons;
+      if(base?.addons){
+        const options = [["none", "Не добавлять"], ["all", "Предложить варианты"], ...base.addons.block.variants.map(v => [addonId(v), v.label.replace(/^Комплект\s*/, "")])];
+        $("addons").innerHTML = options.map(([id,label]) => `<button type="button" class="kc-chip ${draft.addon === id ? "active" : ""}" aria-pressed="${draft.addon === id}" data-addon="${esc(id)}">${esc(label)}</button>`).join("");
+        $("addons").querySelectorAll("button").forEach(b => b.onclick = () => { draft.addon = b.dataset.addon; if(draft.addon === "none") markEdited(); renderBuilder(); renderPreview(); });
+      }
+      renderProducts(); renderSaved();
+    }
+    function renderProducts(){
+      const q = $("product-search").value;
+      if(!q.trim()){ $("products").innerHTML = ""; return; }
+      const entries = Object.entries(PRICE).filter(([ref,[name]]) => isGoods(ref) && matches(name,q)).slice(0,12);
+      $("products").innerHTML = entries.map(([ref,[name,price]]) => `<div class="kc-product"><span>${esc(name)}<br><b>${Number.isFinite(price) ? esc(kitRub(price)) : "уточню"}</b></span>
+        <button type="button" class="kc-add" data-ref="${esc(ref)}" aria-label="Добавить ${esc(name)}">${ICO.plus}</button></div>`).join("") || '<p class="kc-note">Позиция не найдена. Попробуйте другое слово или номер.</p>';
+      $("products").querySelectorAll("button").forEach(b => b.onclick = () => {
+        if(!isGoods(b.dataset.ref)) return;
+        if(draft.rows.length >= 200){ notify("В комплекте уже слишком много позиций."); return; }
+        draft.rows.push({ ref:b.dataset.ref, qty:1 }); markEdited(); renderBuilder(); renderPreview(); notify("Позиция добавлена в состав");
+      });
+    }
+    function writeSaved(next){
+      try { localStorage.setItem(STORE, JSON.stringify({ version:1, templates:next })); saved = next; renderSaved(); return true; }
+      catch(e){ notify("Браузер не разрешил сохранить шаблон. Попробуйте освободить место."); return false; }
+    }
+    function renderSaved(){
+      $("saved").innerHTML = saved.map(s => `<span class="kc-saved-item"><button type="button" class="kc-chip" data-saved="${esc(s.id)}">${esc(s.title)}</button>
+        <button type="button" class="kc-remove" data-forget="${esc(s.id)}" aria-label="Удалить шаблон ${esc(s.title)}">${ICO.close}</button></span>`).join("");
+      $("saved").querySelectorAll("[data-saved]").forEach(b => b.onclick = () => {
+        const s = saved.find(s => s.id === b.dataset.saved);
+        if(!s) return;
+        if(s.baseId && !byId(s.baseId)){ notify("Основа этого шаблона больше недоступна. Соберите новый комплект."); return; }
+        draft = { baseId:s.baseId, title:s.title, addon:s.addon, rows:s.rows.map(r => ({ ...r })) };
+        renderBuilder(); renderPreview();
+      });
+      $("saved").querySelectorAll("[data-forget]").forEach(b => b.onclick = () => {
+        if(writeSaved(saved.filter(s => s.id !== b.dataset.forget))) notify("Шаблон удалён");
+      });
+    }
+    function renderPreview(){
+      if(mode === "catalog" && $("count").textContent === "0"){
+        currentText = ""; $("text").textContent = "Измените запрос или соберите набор в конструкторе.";
+        $("preview-title").textContent = "Комплект не найден"; $("description").textContent = "";
+        $("sum-label").textContent = "Комплект АКПП"; $("sum").textContent = "—";
+        $("warning").hidden = true; $("copy").disabled = true; $("mobile-copy").disabled = true; $("edit").hidden = true; return;
+      }
+      const k = mode === "builder" ? makeDraftKit() : byId(selectedId);
+      currentText = kitBodyText(k); $("text").textContent = currentText;
+      $("preview-title").textContent = mode === "builder" ? "Ваш комплект" : k.group;
+      $("description").textContent = mode === "builder" ? draft.addon === "all" ? "Клиент увидит варианты допкомплекта и итог для каждого."
+        : draft.addon === "none" ? "Только выбранный состав, без доппредложения." : "Клиент увидит один выбранный допкомплект."
+        : "Готовое предложение: комплект АКПП и отдельные варианты для мостов и раздатки.";
+      const bases = kitBaseVariants(k), totals = kitAddonTotals(k);
+      const single = mode === "builder" && !["all","none"].includes(draft.addon);
+      const values = single && totals ? totals.map(t => t.total) : bases.map(v => v.sum);
+      $("sum-label").textContent = single ? "Весь выбранный набор" : mode === "builder" && !draft.baseId ? "Цена комплекта" : "Комплект АКПП";
+      $("sum").textContent = values.some(s => s == null) ? "уточню" : (values.length > 1 ? "от " : "") + kitRub(Math.min(...values));
+      $("warning").hidden = !(bases.some(v => v.lines.some(l => l.stale)) || (kitAddonVariants(k.addons) || []).some(v => v.stale));
+      $("edit").hidden = mode === "builder";
+      const invalid = mode === "builder" && (!draft.rows.length || [...$("lines").querySelectorAll("input")].some(input => !input.checkValidity()));
+      $("copy").disabled = invalid; $("mobile-copy").disabled = invalid; $("save").disabled = invalid;
+    }
+    async function copyText(text, eventName){
+      if(!text) return;
+      let ok = false;
+      try { await navigator.clipboard.writeText(text); ok = true; }
+      catch(e){
+        const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select(); try { ok = document.execCommand("copy"); } catch(e){} ta.remove();
+      }
+      if(ok){ if(window.MDLOG) window.MDLOG.copy(eventName || "Комплект·Конструктор"); notify("Скопировано. Вставьте текст в переписку с клиентом."); }
+      else { if(window.MDLOG) window.MDLOG.err("ui", "копирование в буфер не сработало", "kit-copy"); notify("Не удалось скопировать. Выделите текст в предпросмотре и скопируйте его вручную."); }
+    }
+    function refresh(){
+      if(!mounted){
+        root.innerHTML = KIT_UI_SHELL;
+        saved = readSaved(); mounted = true;
+        $("catalog-tab").onclick = () => setMode("catalog"); $("builder-tab").onclick = () => setMode("builder");
+        $("builder-tab").tabIndex = -1;
+        for(const name of ["catalog", "builder"]) $(name + "-tab").onkeydown = e => {
+          if(!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+          e.preventDefault(); const next = e.key === "Home" ? "catalog" : e.key === "End" ? "builder" : name === "catalog" ? "builder" : "catalog";
+          setMode(next); $(next + "-tab").focus();
+        };
+        $("search").oninput = renderCatalog; $("product-search").oninput = renderProducts;
+        $("base").onchange = e => { if(e.target.value) loadKit(e.target.value); };
+        $("title").oninput = e => { draft.title = e.target.value; renderPreview(); };
+        $("edit").onclick = () => { loadKit(selectedId); setMode("builder"); };
+        $("copy").onclick = () => copyText(currentText, mode === "catalog" ? "Комплект·" + byId(selectedId).name : null);
+        $("mobile-copy").onclick = $("copy").onclick;
+        $("jump").onclick = () => $("preview").scrollIntoView({ behavior:"auto", block:"start" });
+        $("blank").onclick = () => { draft = { baseId:null, title:"Комплект запчастей", rows:[], addon:"none" }; renderBuilder(); renderPreview(); };
+        $("save").onclick = () => {
+          if($("save").disabled || !draft.title.trim()){ notify("Укажите название шаблона и добавьте позиции."); return; }
+          const old = saved.find(s => s.title === draft.title.trim());
+          const entry = { id:old?.id || (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)),
+            title:draft.title.trim(), baseId:draft.baseId, addon:draft.addon, rows:draft.rows.map(r => ({ ref:r.ref, qty:r.qty })) };
+          const next = old ? saved.map(s => s.id === old.id ? entry : s) : [...saved, entry];
+          if(writeSaved(next)) notify("Шаблон сохранён в этом браузере.");
+        };
+        renderFilters();
+      }
+      // Сверка может прийти во время ввода количества: запоминаем фокус и каретку.
+      const focus = document.activeElement, inRoot = root.contains(focus), qtyIndex = focus?.dataset?.qty;
+      const pendingQty = qtyIndex != null && !focus.checkValidity() ? focus.value : null;
+      const focusId = focus?.id, selection = focus && typeof focus.selectionStart === "number" ? [focus.selectionStart, focus.selectionEnd] : null;
+      renderCatalog(); if(draft) renderBuilder(); renderPreview();
+      if(inRoot){
+        const next = qtyIndex != null ? $("lines").querySelector(`[data-qty="${qtyIndex}"]`) : document.getElementById(focusId);
+        if(next){
+          if(pendingQty !== null){ next.value = pendingQty; next.setCustomValidity("Введите целое количество от 1 до 99."); renderPreview(); }
+          next.focus({ preventScroll:true }); if(selection) next.setSelectionRange(...selection);
+        }
+      }
+    }
+    return { refresh };
+  })();
+  function renderKits(){ KITS_UI.refresh(); }
+  window.kitsRerender = renderKits;
+  window.kitsReveal = () => mdBlurStagger(document.querySelectorAll("#page-komplekty .kc-group"));
 
   /* ===================== ТО (двигатель → масло, фильтры, работы) =====================
      Обучаемый конструктор: двигатели заводятся ПРЯМО В ИНТЕРФЕЙСЕ (клиент спросил → забили раз —
@@ -8832,7 +9125,7 @@
     shablony: { t:"Шаблоны",         r:"Каталог · выбери марку, копируй и отправляй клиенту" },
     to:       { t:"Расчёт ТО",       r:"Двигатель → масло, фильтры и работы · копируй и отправляй" },
     tseny:    { t:"Цены",            r:"Запчасти и масла · поиск по названию и артикулу" },
-    komplekty:{ t:"Комплекты",       r:"Наборы на продажу — собираем, отправляем и продаём вживую" },
+    komplekty:{ t:"Комплекты",       r:"Найдите готовый набор или соберите предложение клиенту" },
     prodazhi: { t:"Продажи",         r:"Присадки и масло · выручка и копилки по дням" },
     yama:     { t:"Яма",             r:"Работы по машинам · итог дня и доля мастеров" },
     shtrafy:  { t:"Штрафы",          r:"Дисциплина команды · кто, за что и сколько" },
