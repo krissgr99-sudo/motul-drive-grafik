@@ -277,37 +277,52 @@
   .tpl-tile-chip{font-family:var(--font-mono);font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:6px;
     background:var(--chip-bg);color:var(--chip-text);border:1px solid var(--line)}
   .tpl-tile-more{font-size:10.5px;font-weight:700;color:var(--accent-soft);align-self:center}
-  /* двухпанельный каталог: слева дерево семейство→модель, справа сметы */
-  .tpl-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:20px;align-items:start}
-  .tpl-nav{position:sticky;top:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;
-    box-shadow:var(--shadow);padding:10px;max-height:calc(100vh - 28px);overflow:auto}
-  .tpl-nav-home{margin-bottom:6px;padding-bottom:11px;border-bottom:1px solid var(--line)}
-  .tpl-nav-home.active-home{color:var(--accent-soft)}
-  .tpl-nav-group + .tpl-nav-group{margin-top:1px}
-  .tpl-nav-head{width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border:none;background:transparent;
-    border-radius:10px;font:inherit;font-weight:700;color:var(--text);cursor:pointer;text-align:left;transition:background .12s}
-  .tpl-nav-head:hover{background:var(--fill-soft)}
-  .tpl-nav-group.active-brand > .tpl-nav-head{color:var(--accent-soft)}
-  .tpl-nav-logo{width:26px;height:26px;flex:none}
+  /* Каталог в стиле «Комплектов»: семейства и модели над карточками. */
+  .tpl-layout{display:grid;gap:20px;min-width:0}
+  .tpl-nav{min-width:0}
+  .tpl-nav-brands,.tpl-nav-models{display:flex;flex-wrap:wrap;gap:8px}
+  .tpl-nav-models{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+  .tpl-nav-head,.tpl-nav-model{display:flex;align-items:center;gap:8px;min-height:44px;padding:10px 14px;
+    border:1px solid var(--line);background:var(--card);border-radius:8px;font:inherit;font-weight:600;
+    font-size:12px;color:var(--muted);cursor:pointer;text-align:left;transition:background .15s,border-color .15s,color .15s}
+  .tpl-nav-head:hover,.tpl-nav-model:hover{border-color:var(--open-border);color:var(--text)}
+  .tpl-nav-head.active-brand,.tpl-nav-home.active-home,.tpl-nav-model.active{
+    border-color:var(--accent-soft);background:var(--weekend);color:var(--accent-soft)}
+  .tpl-nav-head.active-brand .tpl-nav-name,.tpl-nav-home.active-home .tpl-nav-name,.tpl-nav-model.active>span:first-child{
+    text-decoration:underline;text-underline-offset:4px}
+  .tpl-nav-logo{width:24px;height:24px;flex:none}
   .tpl-nav-logo svg{width:100%;height:100%;display:block}
-  .tpl-nav-name{flex:1;font-size:13.5px}
-  .tpl-nav-head .tpl-count{min-width:22px;text-align:right;font-variant-numeric:tabular-nums}
-  .tpl-nav-model .tpl-count{font-variant-numeric:tabular-nums}
-  .tpl-nav-chev{flex:none;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
-    transform:rotate(-45deg);transition:transform .25s;margin-left:9px}
-  .tpl-nav-group.open .tpl-nav-chev{transform:rotate(45deg)}
-  .tpl-nav-models{display:none;flex-direction:column;gap:2px;padding:2px 4px 8px 30px}
-  .tpl-nav-group.open .tpl-nav-models{display:flex}
-  .tpl-nav-model{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;border:none;
-    background:transparent;border-radius:8px;font:inherit;font-weight:600;font-size:12.5px;color:var(--muted);cursor:pointer;text-align:left;transition:.12s}
-  .tpl-nav-model:hover{background:var(--fill-soft);color:var(--text)}
-  .tpl-nav-model.active{background:var(--brand);color:#fff}
-  .tpl-nav-model.active .tpl-count{color:#fff}
+  .tpl-nav .tpl-count{font:600 10px var(--font-mono);margin-left:0}
   .tpl-main{min-width:0}
-  @media (max-width:900px){
-    .tpl-layout{grid-template-columns:1fr;gap:14px}
-    .tpl-nav{position:static;max-height:none}
+  #page-shablony :is(button,input):focus-visible{outline:2px solid var(--accent-soft);outline-offset:3px}
+  #page-shablony button:active{transform:scale(.95)}
+  #page-shablony .tpl-toolbar{margin-bottom:12px}
+  #page-shablony .tpl-search{display:flex;align-items:center;gap:12px;min-width:0;min-height:52px;
+    padding:0 14px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+  #page-shablony .tpl-search::before{content:none}
+  #page-shablony .tpl-search .mi{color:var(--muted);flex:none}
+  #page-shablony .tpl-search input{min-width:0;padding:12px 0;border:0;background:transparent}
+  #page-shablony .tpl-search:focus-within{border-color:var(--accent-soft)}
+  #page-shablony .tpl-copyall{min-height:44px;background:var(--card);font-size:12px}
+  #page-shablony .tpl-copyall:disabled{opacity:.5;cursor:default;transform:none}
+  #page-shablony .tpl-hint{font-size:12px;line-height:1.7;margin:0 0 20px}
+  .tpl-results{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;color:var(--muted);font-size:12px;line-height:1.6}
+  .tpl-results-info{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .tpl-results strong{color:var(--text);font-weight:700}
+  #page-shablony .tpl-facets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px;padding:16px;box-shadow:none}
+  #page-shablony .tpl-facets[hidden]{display:none}
+  #page-shablony .tpl-chip,#page-shablony .tpl-facet-reset{min-height:44px;border-radius:8px}
+  #page-shablony .tpl-chip.active{background:var(--weekend);color:var(--accent-soft);border-color:var(--accent-soft);box-shadow:none}
+  #page-shablony .tpl-chip.active .tpl-count{color:var(--accent-soft)}
+  #page-shablony .tpl-chip.active{text-decoration:underline;text-underline-offset:4px}
+  #page-shablony .tpl-badge:is(.b-app,.b-part){background:var(--fill-soft);color:var(--text);border-color:var(--line)}
+  @media(max-width:720px){
+    .tpl-nav-brands,.tpl-nav-models{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+    .tpl-nav-head,.tpl-nav-model{flex:none;white-space:nowrap}
+    #page-shablony .tpl-copyall{padding:10px 12px;white-space:normal;max-width:160px}
+    #page-shablony .tpl-search{flex-basis:100%}
   }
+  @media(max-width:900px){#page-shablony .tpl-facets{grid-template-columns:1fr}}
 
   /* фильтры-фасеты */
   .tpl-facets{display:flex;flex-direction:column;gap:10px;margin:0 0 18px;padding:15px 16px;
@@ -345,15 +360,15 @@
   .tpl-badge.b-hybrid,.tpl-badge.b-all{background:var(--fill-soft);color:var(--muted);border:1px solid var(--line-strong)} /* b-all — сводка «все поддоны» */
   .tpl-badge.b-lock{background:rgba(209,31,45,.1);color:var(--accent-soft);border:1px solid rgba(209,31,45,.3)}
   .tpl-badge.b-check{background:rgba(240,180,41,.14);color:var(--warn);border:1px solid rgba(240,180,41,.42)} /* «Проверить цены» — внутренний флаг свежести, в буфер не уходит */
-  .tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,380px));justify-content:center;gap:16px;align-items:start}
+  .tpl-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
   .tpl-grid.is-landing{grid-template-columns:repeat(auto-fill,minmax(215px,1fr));justify-content:stretch}
-  .tpl-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;
+  .tpl-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;scroll-margin-top:calc(var(--navh,70px) + 20px);
     transition:border-color .15s,box-shadow .15s}
   .tpl-card:hover{border-color:var(--line-strong)}
   .tpl-card.open{border-color:var(--open-border);box-shadow:var(--shadow),0 0 0 1px var(--open-border)}
   .tpl-card.is-todo{border-style:dashed;opacity:.78}
 
-  .tpl-card-head{width:100%;display:flex;align-items:center;gap:13px;padding:15px 16px;
+  .tpl-card-head{width:100%;display:flex;align-items:center;gap:14px;padding:20px;
     background:transparent;border:none;font:inherit;color:inherit;text-align:left;cursor:pointer;transition:background .15s}
   .tpl-card-head:hover{background:var(--fill-soft)}
   .tpl-brand-block{display:flex;flex-direction:column;align-items:center;gap:7px;flex:none;width:auto;min-width:46px}
@@ -361,7 +376,7 @@
     white-space:nowrap;background:var(--tag-bg);border:1px solid var(--tag-border);padding:4px 8px;border-radius:6px}
   .tpl-brand-logo{width:32px;height:32px;display:block}
   .tpl-brand-logo svg{width:100%;height:100%;display:block}
-  .tpl-title{flex:1;font-family:var(--font-disp);font-weight:600;font-size:14.5px;line-height:1.34}
+  .tpl-title{flex:1;font-family:var(--font-disp);font-weight:700;font-size:17px;line-height:1.4;overflow-wrap:anywhere}
   .tpl-title-accent{color:var(--accent-soft);font-weight:700}
   .tpl-chevron{flex:none;width:18px;height:18px;position:relative;color:var(--muted);transition:transform .25s}
   .tpl-card.open .tpl-chevron{transform:rotate(180deg);color:var(--accent-soft)}
@@ -374,15 +389,28 @@
 
   .tpl-tags{display:flex;flex-wrap:wrap;gap:5px;padding:4px 16px 0}
   .tpl-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--chip-bg);color:var(--chip-text);border:1px solid var(--line)}
-  .tpl-body{margin:13px 16px;padding:14px 15px;background:var(--receipt);border:1px solid var(--line);border-radius:12px;
-    font-family:var(--font-mono);font-size:12px;line-height:1.72;white-space:pre-wrap;word-break:break-word;color:var(--code-text)}
+  .tpl-body{margin:16px 20px;padding:16px;background:var(--receipt);border:1px solid var(--line);border-radius:12px;
+    font-family:var(--font-mono);font-size:12px;line-height:1.8;white-space:pre-wrap;word-break:break-word;color:var(--code-text);max-height:360px;overflow:auto}
   .tpl-todo-note{margin:13px 16px;padding:22px 16px;text-align:center;color:var(--muted);font-size:13px;line-height:1.5;
     background:var(--fill-soft);border:1px dashed var(--line-strong);border-radius:12px}
-  .tpl-actions{padding:0 16px 16px;display:flex;gap:10px}
-  .tpl-copy{flex:1;padding:12px;border:none;border-radius:12px;background:var(--brand);color:#fff;font:inherit;font-weight:700;
-    font-size:13px;cursor:pointer;transition:background .15s,box-shadow .15s;box-shadow:0 0 16px rgba(209,31,45,.35)}
-  .tpl-copy:hover{background:var(--brand-hover);box-shadow:0 0 22px rgba(209,31,45,.5)}
-  .tpl-copy.ok{background:var(--ok);box-shadow:0 0 16px rgba(76,195,138,.4)}
+  .tpl-actions{padding:16px 20px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;justify-content:space-between}
+  .tpl-price{display:flex;flex-direction:column;gap:5px;min-width:0}
+  .tpl-price-label{font-size:11px;color:var(--muted)}
+  .tpl-price strong{font:600 17px var(--font-mono);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  .tpl-copy{min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--fill);
+    color:var(--text);font:inherit;font-weight:700;font-size:12px;cursor:pointer;flex:none;transition:background .15s,border-color .15s,color .15s}
+  .tpl-copy:hover{border-color:var(--accent-soft);color:var(--accent-soft);background:var(--weekend)}
+  .tpl-copy.ok{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)}
+  @media(max-width:720px){
+    .tpl-grid,.tpl-grid.is-landing{grid-template-columns:1fr}
+    .tpl-card-head{padding:16px;gap:12px}
+    .tpl-brand-block{min-width:40px}
+    .tpl-body{margin:12px 16px;padding:14px}
+    .tpl-actions{padding:16px;flex-wrap:wrap}
+    .tpl-copy{flex:1;min-width:140px}
+    .tpl-price{flex:1;min-width:140px}
+    .tpl-price strong{font-size:16px}
+  }
   .tpl-empty{grid-column:1/-1;padding:56px 24px;text-align:center;color:var(--muted);font-size:14px}
   .tpl-notfound{grid-column:1/-1;margin:-16px auto 8px;max-width:520px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.5}
   .tpl-notfound-btn{display:block;margin:12px auto 0;padding:11px 18px;border:1px solid var(--line-strong);border-radius:12px;
@@ -1333,7 +1361,7 @@
     .tablecard,.tpl-card,.note,.tpl-facets{border-color:#ddd}
     thead th{color:#fff}
     tbody td{border-color:#e6e6e6}
-    .tpl-body{color:#222;background:#f7f7f7;border-color:#e6e6e6}
+    .tpl-body{color:#222;background:#f7f7f7;border-color:#e6e6e6;max-height:none;overflow:visible}
     .t-person{border-color:#e6e6e6;background:#fafafa}
     .sched-overview{display:none !important}
     .sched-details>summary{display:block;border:0;padding:0;margin-bottom:8px;min-height:0}
@@ -1645,14 +1673,17 @@
     <!-- ===== Страница: Шаблоны ===== -->
     <div id="page-shablony" class="page" hidden>
       <div class="tpl-toolbar">
-        <div class="tpl-search"><input id="tpl-search" type="text" placeholder="Коробка, машина или номер фильтра: 8HP65, X5 G05, HX187KIT…" autocomplete="off"></div>
-        <button class="tpl-copyall" id="tpl-copyall" type="button">Копировать всё видимое</button>
+        <label class="tpl-search"><input id="tpl-search" type="text" aria-label="Найти шаблон по коробке, машине или номеру фильтра" aria-describedby="tpl-search-help" placeholder="Коробка, машина или номер фильтра…" autocomplete="off"></label>
       </div>
-      <div class="tpl-hint" id="tpl-hint" hidden>Выберите семейство коробки слева или начните вводить в поиск — модель (8HP65, DQ500), машину (X5 G05) или номер фильтра (HX187KIT, 1103298119).</div>
+      <div class="tpl-hint" id="tpl-search-help">Например: 8HP65, X5 G05 или HX187KIT. Выберите коробку — затем способ замены и комплектацию.</div>
       <div class="tpl-layout">
-        <aside class="tpl-nav" id="tpl-nav"></aside>
+        <nav class="tpl-nav" id="tpl-nav" aria-label="Выбор семейства и модели коробки"></nav>
         <section class="tpl-main">
           <div class="tpl-facets" id="tpl-facets" hidden></div>
+          <div class="tpl-results">
+            <div class="tpl-results-info"><strong id="tpl-result-title">Семейства коробок</strong><span id="tpl-hint"></span></div>
+            <button class="tpl-copyall" id="tpl-copyall" type="button">Копировать всё видимое</button>
+          </div>
           <div class="tpl-grid" id="tpl-grid"></div>
         </section>
       </div>
@@ -3324,11 +3355,9 @@
     return { label, lines, sum: lines.reduce((a, l) => a + (l.price || 0), 0) };
   }
 
-  // Блок услуги (варианты масла у одной коробки): заголовок услуги уходит в шапку документа, не в каждый вариант.
-  const serviceBlock = (variants, sink) => CDOC.block({ variants: variants.map(v => priceVariant(v.label, v.items, sink)) });
   /* Сводка «все поддоны» (BOXES[box].combo + карточка с combo:true): вариантом услуги
      становится каждый поддон, имя поддона — меткой варианта, «Итого» у каждого своё.
-     Дальше это обычный serviceBlock, поэтому заголовок услуги и хвост (мосты) — как везде. */
+     Дальше это обычный блок CDOC, поэтому заголовок услуги и хвост (мосты) — как везде. */
   const comboVariants = (svc, pans) => pans.flatMap(([fk, label]) => {
     const vs = svc.variants(fk);                               // обычно один вариант на поддон;
     return vs.map((v, i) =>                                    // будет несколько (масла) — метка уточнится
@@ -3348,9 +3377,9 @@
   const haldexBlock = (h, sink) => CDOC.block({ head: h.head, intro: h.intro,
     variants: h.variants.map(v => priceVariant(v.label, v.items, sink)) });
 
-  /* Смета шаблона → { text, stale, unknown }: АКПП (1-2 варианта) + при необходимости мосты/раздатка/Haldex.
+  /* Смета шаблона → { text, stale, unknown, items, totals }: АКПП + при необходимости мосты/раздатка/Haldex.
      text — то, что уходит клиенту; stale — «есть неподтверждённые цены» (бейдж на карточке);
-     unknown — «есть позиция без цены» (в тексте «уточню»). */
+     unknown — «есть позиция без цены» (в тексте «уточню»); totals — цены основных вариантов замены. */
   function tplDoc(t){
     const box = BOXES[t.box];
     let svc = box && box[t.type];
@@ -3362,8 +3391,10 @@
     const filterKey = combo ? combo.pans[0][0] : (t.filter || (box.filter ? box.filter[eng] : null));
     const head = typeof svc.head === "function" ? svc.head(filterKey) : svc.head; // head может зависеть от фильтра (7G-Tronic)
     const seen = [];                                                        // все позиции сметы → флаги свежести
-    const blocks = [serviceBlock(combo ? comboVariants(svc, combo.pans)     // заголовок услуги = шапка документа (CDOC.doc)
-                                       : svc.variants(filterKey), seen)];
+    // Эти же варианты дают текст сметы и цену на карточке; допуслуги в неё не складываем.
+    const primary = (combo ? comboVariants(svc, combo.pans) : svc.variants(filterKey))
+      .map(v => priceVariant(v.label, v.items, seen));
+    const blocks = [CDOC.block({ variants: primary })];
     if(t.diffs)         blocks.push(diffsMultiBlock(DIFFS_REGULAR, t.lock, seen)); // ZF: мосты + раздатка поузлово (Motul/оригинал), блокировка = LSD-масло зада
     if(t.diffsDetailed) blocks.push(diffsDetailedBlock(DIFFS_DETAILED, seen));     // поузловой расчёт мостов
     if(box.diffsBlock)  blocks.push(box.diffsBlock.variants               // сноска мостов на уровне коробки (Mercedes 9G/7G):
@@ -3375,7 +3406,8 @@
     return { text: CDOC.doc({ title: head, blocks }),
              stale:   seen.some(l => l.stale),
              unknown: seen.some(l => l.price == null),
-             items:   seen };   // позиции сметы: из них поиск достаёт номера деталей (docArts)
+             items:   seen,    // позиции сметы: из них поиск достаёт номера деталей (docArts)
+             totals:  primary.map(v => v.lines.some(l => l.price == null) ? null : v.sum) };
   }
   // Текст шаблона (то же, но только тело — для копирования, поиска и «Копировать всё видимое»)
   const tplBody = t => tplDoc(t).text;
@@ -4205,6 +4237,8 @@
     const facetsBox  = document.getElementById("tpl-facets");
     const searchInp  = document.getElementById("tpl-search");
     const copyAllBtn = document.getElementById("tpl-copyall");
+    const resultTitle = document.getElementById("tpl-result-title");
+    searchInp.insertAdjacentHTML("beforebegin", ICO.search);
     let activeBrand = "all", activeBox = "all", query = "", expandedBrand = null;
     const filters = { type:null, pan:null, engine:null, lock:null, axle:null };
     const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
@@ -4227,24 +4261,23 @@
     const boxCount   = (b,box) => TEMPLATES.filter(t=>t.brand===b && t.box===box).length;
     const boxesOf    = b => [...new Set(TEMPLATES.filter(t=>t.brand===b && t.box).map(t=>t.box))];
 
-    // Левая панель — дерево «семейство → модель». Раскрыто семейство expandedBrand; активна модель activeBox.
+    // Те же семейства и модели — двумя компактными рядами, как фильтры «Комплектов».
     function renderNav(){
-      const home = `<button class="tpl-nav-head tpl-nav-home ${activeBrand==="all"?"active-home":""}" data-home="1"><span class="tpl-nav-name">Все коробки</span>${cnt(TEMPLATES.length)}<span class="tpl-nav-chev" style="visibility:hidden"></span></button>`;
-      navBox.innerHTML = home + brands.map(b=>{
+      const home = `<button class="tpl-nav-head tpl-nav-home ${activeBrand==="all"?"active-home":""}" type="button" aria-pressed="${activeBrand==="all"}" data-home="1"><span class="tpl-nav-name">Все коробки</span>${cnt(TEMPLATES.length)}</button>`;
+      const families = brands.map(b=>{
         const open   = b===expandedBrand;
         const isCur  = b===activeBrand;
         const logo   = BRAND_LOGOS[b] || "";
-        const models = boxesOf(b).map(box=>
-          `<button class="tpl-nav-model ${(isCur&&box===activeBox)?"active":""}" data-brand="${esc(b)}" data-box="${esc(box)}">
-             <span>${esc(box)}</span>${cnt(boxCount(b,box))}</button>`).join("");
-        return `<div class="tpl-nav-group ${open?"open":""} ${isCur?"active-brand":""}" data-brand="${esc(b)}">
-          <button class="tpl-nav-head" data-brand="${esc(b)}">
+        return `<button class="tpl-nav-head ${isCur?"active-brand":""}" type="button" aria-pressed="${isCur}" aria-expanded="${open}" data-brand="${esc(b)}">
             ${logo?`<span class="tpl-nav-logo">${logo}</span>`:""}
-            <span class="tpl-nav-name">${esc(b)}</span>${cnt(brandCount(b))}<span class="tpl-nav-chev"></span>
-          </button>
-          <div class="tpl-nav-models">${models}</div>
-        </div>`;
+            <span class="tpl-nav-name">${esc(b)}</span>${cnt(brandCount(b))}
+          </button>`;
       }).join("");
+      const models = expandedBrand ? boxesOf(expandedBrand).map(box=>
+        `<button class="tpl-nav-model ${box===activeBox?"active":""}" type="button" aria-pressed="${box===activeBox}" data-brand="${esc(expandedBrand)}" data-box="${esc(box)}">
+          <span>${esc(box)}</span>${cnt(boxCount(expandedBrand,box))}</button>`).join("") : "";
+      navBox.innerHTML = `<div class="tpl-nav-brands">${home}${families}</div>`
+        + (models ? `<div class="tpl-nav-models" aria-label="Модели ${esc(expandedBrand)}">${models}</div>` : "");
     }
 
     // Базовый набор (марка+коробка) — из него строим фильтры
@@ -4261,7 +4294,7 @@
         if(vals.length < 2) return ""; // выбирать не из чего — ось скрываем
         const chips = vals.map(v=>{
           const n = base.filter(t=> f.get(t)===v && FACETS.every(o=> o.key===f.key || !filters[o.key] || o.get(t)===filters[o.key])).length;
-          return `<button class="tpl-chip ${filters[f.key]===v?"active":""}" data-facet="${f.key}" data-val="${esc(v)}">${esc(v)}${cnt(n)}</button>`;
+          return `<button class="tpl-chip ${filters[f.key]===v?"active":""}" type="button" aria-pressed="${filters[f.key]===v}" data-facet="${f.key}" data-val="${esc(v)}">${esc(v)}${cnt(n)}</button>`;
         }).join("");
         return `<div class="tpl-facet"><span class="tpl-facet-label">${esc(f.label)}</span>${chips}</div>`;
       }).filter(Boolean);
@@ -4364,13 +4397,13 @@
     function revealCards(){ mdBlurStagger(grid.querySelectorAll(".tpl-card, .tpl-tile")); }
     window.tplRevealCards = revealCards;
 
-    // Выбор семейства (клик по заголовку в дереве / по плитке старта): раскрываем и открываем первую коробку.
+    // Выбор семейства (кнопка в ряду / плитка старта): показываем модели и открываем первую коробку.
     function selectBrand(b){
       const boxes = boxesOf(b);
       activeBrand = b; activeBox = boxes[0] || "all"; expandedBrand = b;
       resetFilters(); renderNav(); renderFacets(); render(); revealCards();
     }
-    // Выбор конкретной модели коробки в дереве.
+    // Выбор конкретной модели коробки.
     function selectBox(b, box){
       activeBrand = b; activeBox = box; expandedBrand = b;
       resetFilters(); renderNav(); renderFacets(); render(); revealCards();
@@ -4452,9 +4485,16 @@
       // По умолчанию (никакая марка не выбрана и пустой поиск) — стартовый экран с плитками.
       const landing = activeBrand==="all" && !query;
       grid.classList.toggle("is-landing", landing);
-      hintEl.hidden = !landing;
-      if(landing){ renderLanding(); return; }
+      if(landing){
+        copyAllBtn.disabled = false;
+        resultTitle.textContent = "Семейства коробок";
+        hintEl.textContent = plural(TEMPLATES.length,"смета","сметы","смет");
+        renderLanding(); return;
+      }
       const list = visible();
+      resultTitle.textContent = query ? "Результаты поиска" : `${activeBrand} · ${activeBox}`;
+      hintEl.textContent = plural(list.length,"смета","сметы","смет");
+      copyAllBtn.disabled = !list.some(t => !t.todo && tplBody(t));
       // Подсказка «машина → коробка»: почему показаны эти карточки + напоминание проверить VIN.
       const cars = carsForQuery();
       const carHint = cars.length ? (
@@ -4509,6 +4549,9 @@
         const doc = tplDoc(t);
         const body = doc.text;
         const placeholder = t.todo || !body;   // нет данных по услуге → показываем как заготовку
+        const totals = doc.totals || [];
+        const amount = totals.some(n => n == null) || !totals.length ? "уточню"
+          : (Math.min(...totals) !== Math.max(...totals) ? "от " : "") + CDOC.money(Math.min(...totals));
         const badges = [`<span class="tpl-badge ${t.type==="Частичная"?"b-part":"b-app"}">${esc(t.type)}</span>`];
         if(t.combo) badges.push(`<span class="tpl-badge b-all">Все поддоны</span>`);   // сводка: в одном тексте все поддоны метода
         const eng = engineOf(t);
@@ -4518,10 +4561,9 @@
         // Бейдж живёт только на экране — в буфер уходит ровно смета (правило 9).
         if(doc.stale || doc.unknown) badges.push(`<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>`);
         return `<div class="tpl-card ${placeholder?"is-todo":""}">
-          <button class="tpl-card-head" type="button" aria-expanded="false">
+          <button class="tpl-card-head" type="button" aria-expanded="false" aria-controls="tpl-detail-${i}">
             <span class="tpl-brand-block">
-              <span class="tpl-brand-tag">${esc(t.brand)}</span>
-              ${logo ? `<span class="tpl-brand-logo">${logo}</span>` : ""}
+              ${logo ? `<span class="tpl-brand-logo">${logo}</span>` : `<span class="tpl-brand-tag">${esc(t.brand)}</span>`}
             </span>
             <span class="tpl-head-main">
               <span class="tpl-title">${t.titleAccent
@@ -4531,13 +4573,16 @@
             </span>
             <span class="tpl-chevron"></span>
           </button>
-          <div class="tpl-collapse"><div class="tpl-collapse-inner">
+          <div class="tpl-collapse" id="tpl-detail-${i}"><div class="tpl-collapse-inner">
             ${tags ? `<div class="tpl-tags">${tags}</div>` : ""}
             ${placeholder
               ? `<div class="tpl-todo-note">Шаблон ещё не заполнен — пришли цифры, и он появится здесь.</div>`
-              : `<div class="tpl-body">${esc(body)}</div>
-                 <div class="tpl-actions"><button class="tpl-copy" type="button" data-i="${i}">${ICO.copy} Копировать</button></div>`}
+              : `<div class="tpl-body">${esc(body)}</div>`}
           </div></div>
+          ${placeholder ? "" : `<div class="tpl-actions">
+            <div class="tpl-price"><span class="tpl-price-label">Замена масла${totals.length>1?" · варианты в смете":""}</span><strong>${esc(amount)}</strong></div>
+            <button class="tpl-copy" type="button" data-i="${i}">${ICO.copy} Копировать</button>
+          </div>`}
         </div>`;
       }).join("");
       bindArtOpen();
