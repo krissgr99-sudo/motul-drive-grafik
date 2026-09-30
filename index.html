@@ -2162,6 +2162,9 @@
     mb_diff_front_orig: ["Оригинальное трансмиссионное масло Mercedes-Benz 235.7 1л (передний дифференциал)", perL(RATES.mb_235_7, 1)],
     mb_diff_rear_orig:  ["Оригинальное трансмиссионное масло Mercedes-Benz 239.71/239.72 1л (задний дифференциал)", perL(RATES.mb_239_71, 1)],
     mb_diff_work_all:   ["Замена масла в переднем, заднем дифференциале и раздаточной коробке", 3000],  // пакетом дешевле поштучных работ Motul-варианта (1000 + 1000 + 1500): цена владельца 31.08.2026
+    // Продажа комплекта Mercedes: раздатка 1 л; Motul + Mercedes — единая цена владельца, без разбивки и работ.
+    kit_mb_transf_oil:  ["Оригинальное трансмиссионное масло Mercedes 236.15 A000989270411 1л (раздаточная коробка)", perL(RATES.mb_236_15_sm, 1)],
+    kit_mb_axles_motul:["Масло Motul для переднего и заднего дифференциала + оригинальное масло Mercedes 236.15 для раздатки", 12000],
     // Mercedes 7G-Tronic (722.9): 2 варианта — «+» на масле MB 236.15, обычный на Motul ATF6.
     // Фильтр (в сборе с прокладкой) и промывка BARDAHL — общие. Мосты/раздатка — как у 9G (MB9G_AXLES).
     oil_mb_7g_12:          ["Трансмиссионное масло Mercedes 236.15 A000989270411 12л", perL(RATES.mb_236_15, 12)],
@@ -2442,6 +2445,10 @@
                    "kit_torsen_g055_front", "kit_torsen_g055_rear", "kit_torsen_g060_front", "kit_torsen_g060_rear"],
     // Владелец подтвердил состав комплекта для поддона 006: масло ZF 6 л и оригинальный поддон.
     "2026-09-29": ["zf8hp", "oil_zf8hp_6", "filter_zf_8hp65"],
+    // Состав и цены продажи комплектов Mercedes подтверждены владельцем в сообщении.
+    "2026-09-30": ["mb_236_17", "oil_mb_9g_10", "filter_mb_9g", "bolt_mb_9g", "drain_mb_9g",
+                   "filter_sollo_9g", "filter_mahle_9g_f", "filter_zf_9g_f", "mb_235_7", "mb_239_71",
+                   "mb_236_15_sm", "mb_diff_front_orig", "mb_diff_rear_orig", "kit_mb_transf_oil", "kit_mb_axles_motul"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -2534,6 +2541,16 @@
   });
   const DIFFS_KIT_TORSEN_G055 = diffsKitTorsen(["kit_torsen_g055_front", "kit_torsen_vag_torsen", "kit_torsen_g055_rear"]);
   const DIFFS_KIT_TORSEN_G060 = diffsKitTorsen(["kit_torsen_g060_front", "kit_torsen_vag_torsen", "kit_torsen_g060_rear"]);
+
+  // Продажа масел Mercedes — отдельно от услуги MB9G_AXLES: без работ, раздатка 1 л.
+  const DIFFS_KIT_MB = {
+    head: "Также можем предложить масло для переднего, заднего дифференциала и раздатки.",
+    intro: "2 варианта:",
+    variants: [
+      { label: "Комплект оригинал Mercedes-Benz", items: ["mb_diff_front_orig", "kit_mb_transf_oil", "mb_diff_rear_orig"] },
+      { label: "Комплект Motul + Mercedes", items: ["kit_mb_axles_motul"] },
+    ],
+  };
 
   // 2.1) Детальные мосты/раздатка — поузловой расчёт, задний мост трёхсекционный. Цены в PRICE.
   const DIFFS_DETAILED = {
@@ -6843,18 +6860,31 @@
      Наборы, которые собираем и продаём — отправкой или вживую. Данные → авто-рендер:
      правь массив KITS, карточки/бейджи/состав/копи-текст строятся сами.
      Поле price — ПРОДАЖНАЯ цена комплекта (её ставит владелец), null → «уточню».
+     Без price цена складывается из items; variants — общая карточка из отдельных комплектов.
      Позиция состава (items[]) — одно из трёх:
        • "Название"            — просто строка, без цены;
        • ["Название", 1500]    — имя + цена позиции (розница);
        • { ref:"ключ_PRICE" }  — тянет имя+цену из единого прайса PRICE (свежесть honored:
-                                 протухла/без даты сверки → «уточню» + бейдж «Проверить цены»).
+                                 протухла/без даты сверки → прежняя цена + бейдж «Проверить цены»).
      format[] — как продаём: "отправка" | "вживую" (любой набор) → бейджи. hybrid:true → бейдж «Мягкий гибрид».
      addons   — необязательный апсел «также можем предложить», НЕ входит в цену комплекта. Два вида:
                 • { head, items:[…], note }        — плоский список позиций-альтернатив (три вида, без «Итого»);
                 • { block: DIFFS_KIT }             — готовый поузловой блок (варианты с «Итого»). Карточку, сводку
                                                      и копи-текст считает ОДИН расчёт kitAddonVariants (fail-closed).
-     При addons.block + price автоматически строится сводка «Итого» (kitAddonTotals):
+     При addons.block автоматически строится сводка «Итого» (kitAddonTotals):
      коробка + каждый вариант блока — в карточке (.kit-sum) и в копи-тексте. */
+  const MB9G_KIT_COMMON = {
+    sub: "Оригинальное масло Mercedes-Benz с допуском MB 236.17, 10 л. Комплект без работ.",
+    format: ["вживую", "отправка"],
+    addons: { block: DIFFS_KIT_MB },
+  };
+  const MB9G_KITS = [["mb", "Mercedes-Benz"], ["sollo", "Sollo"], ["mahle", "Mahle"], ["zf", "ZF"]]
+    .map(([filter, brand]) => ({
+      ...MB9G_KIT_COMMON,
+      name: `Mercedes 9G-Tronic · поддон ${brand} · масло 10 л`,
+      label: `С поддоном ${brand}`,
+      items: ["oil_mb_9g_10", ...MB9G_FILTER.fill[filter]].map(ref => ({ ref })),
+    }));
   const KITS = [
     // Пара «обычный мотор»: коробка = масло 5л + штатный поддон 437 (11000+9000=20000).
     // Апсел — комплект запчастей для мостов/раздатки: DIFFS_KIT (Motul 12000 / оригинал 25500)
@@ -6946,6 +6976,12 @@
       ],
       addons: { block: DIFFS_KIT_TORSEN_G060 },
     },
+    ...MB9G_KITS,
+    {
+      ...MB9G_KIT_COMMON,
+      name: "Mercedes 9G-Tronic · все поддоны · масло 10 л",
+      variants: MB9G_KITS,
+    },
     // Формат заполнения нового комплекта (скопируй объект выше и правь; addons — по желанию):
     // {
     //   name:  "Название комплекта",
@@ -6972,6 +7008,15 @@
   }
   const kitRub = n => Number(n).toLocaleString("ru-RU") + " ₽";
   const kitLc  = s => s.charAt(0).toLowerCase() + s.slice(1);   // «Комплект Motul» → «комплект Motul» (для строк сводки)
+  // Один расчёт состава и цены для отдельных комплектов и общей карточки с вариантами.
+  function kitBaseVariants(k){
+    return (k.variants || [k]).map(v => {
+      const lines = (v.items || []).map(kitLine);
+      const sum = v.price !== undefined ? v.price : lines.some(l => l.price == null) ? null
+        : lines.reduce((total, l) => total + l.price, 0);
+      return { label: k.variants ? v.label : null, lines, sum };
+    });
+  }
   // ЕДИНЫЙ расчёт вариантов апсел-блока — карточка, сводка и копи-текст считают ОДНО и то же
   // (иначе рассинхрон: одна сумма на экране, другая в буфере).
   // Вариант: { label, lines:[kitLine…], sum, stale }; sum — полная сумма по прежним ценам,
@@ -6987,21 +7032,23 @@
                stale: lines.some(l => l.stale) };
     });
   }
-  // Сводка «Итого»: коробка (price) + каждый вариант апсел-блока. Сумма полная — по прежним ценам;
+  // Сводка «Итого»: каждый комплект коробки + каждый вариант апсел-блока. Сумма полная — по прежним ценам;
   // «уточню» только если цены реально нет (позиция без числа), см. решение владельца 26.07.2026.
   function kitAddonTotals(k){
     const vars = kitAddonVariants(k.addons);
-    if(!vars || k.price == null) return null;
-    const itemsUnknown = (k.items || []).map(kitLine).some(l => l.price == null);
-    return vars.map(v => ({ label: v.label,
-      total: (itemsUnknown || v.lines.some(l => l.price == null)) ? null : k.price + v.sum }));
+    if(!vars) return null;
+    const bases = kitBaseVariants(k);
+    if(!k.variants && k.price === null) return null;
+    return bases.flatMap(base => vars.map(v => ({ label: `${base.label || "Коробка"} + ${kitLc(v.label)}`,
+      total: (base.sum == null || base.lines.some(l => l.price == null) || v.lines.some(l => l.price == null))
+        ? null : base.sum + v.sum })));
   }
   // Текст для клиента (ровно тело комплекта: состав + цена), без интерфейсных подписей (правило 9).
   function kitBodyText(k){
     const blocks = [];
-    // состав + продажная цена: «Цена комплекта» — цена владельца, НЕ сумма позиций (потому отдельная подпись «Итого»)
+    // Состав и цена из того же расчёта, что на экране: заданная price либо сумма позиций.
     blocks.push(CDOC.block({ head: "Состав",
-      variants: [{ label: null, lines: (k.items || []).map(kitLine), sum: k.price, totalLabel: "Цена комплекта" }] }));
+      variants: kitBaseVariants(k).map(v => ({ ...v, totalLabel: "Цена комплекта" })) }));
     if(k.addons){                                       // доп. предложение (апсел) — отдельным блоком, не в цене комплекта
       const vars = kitAddonVariants(k.addons);
       if(vars){                                         // блок-варианты: ТОТ ЖЕ расчёт, что карточка и сводка
@@ -7016,7 +7063,7 @@
     }
     const totals = kitAddonTotals(k);                   // сводка: коробка + каждый вариант мостов/раздатки
     if(totals) blocks.push(CDOC.block({ head: "Итого",
-      variants: [{ label: null, lines: totals.map(t => ({ name: `Коробка + ${kitLc(t.label)}`, price: t.total })) }] }));
+      variants: [{ label: null, lines: totals.map(t => ({ name: t.label, price: t.total })) }] }));
     if(k.note) blocks.push(k.note);
     return CDOC.doc({ title: k.name, sub: k.sub, blocks });
   }
@@ -7036,13 +7083,14 @@
     const listHtml = arr => arr.map(l =>
       `<div class="kit-row"><span class="kit-row-n">${esc(l.name)}</span>${
         l.price != null ? `<span class="kit-row-p">${esc(kitRub(l.price))}</span>` : ""}</div>`).join("");
-    // Апсел-блок «мосты/раздатка»: варианты уже посчитаны в kitAddonVariants — здесь только разметка.
-    const addonBlockHtml = vars => vars.map(v =>
+    // Варианты состава и допредложения уже посчитаны — здесь только разметка.
+    const variantBlockHtml = vars => vars.map(v =>
       `<div class="kit-var-lbl">${esc(v.label)}</div>
         <div class="kit-list">${listHtml(v.lines)}<div class="kit-row kit-total"><span class="kit-row-n">Итого</span>
-          <span class="kit-row-p">${v.lines.some(l => l.price == null) ? "уточню" : esc(kitRub(v.sum))}</span></div></div>`).join("");
+          <span class="kit-row-p">${v.sum == null || v.lines.some(l => l.price == null) ? "уточню" : esc(kitRub(v.sum))}</span></div></div>`).join("");
     const cards = KITS.map((k,i) => {
-      const items = (k.items || []).map(kitLine);
+      const bases = kitBaseVariants(k);
+      const items = bases.flatMap(v => v.lines);
       const ad = k.addons || null;
       const adVars = kitAddonVariants(ad);               // единый расчёт — тот же, что сводка и копи-текст
       const adLines = !ad ? [] : adVars ? adVars.flatMap(v => v.lines) : (ad.items || []).map(kitLine);
@@ -7053,7 +7101,9 @@
       (k.format || []).forEach(f =>
         badges.push(`<span class="tpl-badge b-hybrid">${KIT_FORMAT_ICO[f] || ""} ${esc(f)}</span>`));
       if(stale) badges.push(`<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>`); // цена не подтверждена (в смете она прежняя) — сигнал владельцу, в буфер не уходит
-      const priceTxt = k.price != null ? kitRub(k.price) : "уточню";
+      const priceTxt = k.variants
+        ? (bases.some(v => v.sum == null) ? "уточню" : `от ${kitRub(Math.min(...bases.map(v => v.sum)))}`)
+        : bases[0].sum != null ? kitRub(bases[0].sum) : "уточню";
       const list = listHtml(items);
       return `<div class="tpl-card">
         <button class="tpl-card-head" type="button" aria-expanded="false">
@@ -7066,13 +7116,14 @@
         </button>
         <div class="tpl-collapse"><div class="tpl-collapse-inner">
           ${k.sub ? `<div class="kit-sub">${esc(k.sub)}</div>` : ""}
-          ${list ? `<div class="kit-lbl">Состав</div><div class="kit-list">${list}</div>` : ""}
+          ${k.variants ? `<div class="kit-lbl">На выбор — ${bases.length} варианта</div>${variantBlockHtml(bases)}`
+            : list ? `<div class="kit-lbl">Состав</div><div class="kit-list">${list}</div>` : ""}
           ${!ad ? "" : adVars
-            ? `<div class="kit-lbl">${esc(ad.block.head)}</div>${addonBlockHtml(adVars)}${ad.block.note ? `<div class="kit-note">${esc(ad.block.note)}</div>` : ""}`
+            ? `<div class="kit-lbl">${esc(ad.block.head)}</div>${variantBlockHtml(adVars)}${ad.block.note ? `<div class="kit-note">${esc(ad.block.note)}</div>` : ""}`
             : `<div class="kit-lbl">${esc(ad.head || "Дополнительно")}</div><div class="kit-list">${listHtml((ad.items || []).map(kitLine))}</div>${ad.note ? `<div class="kit-note">${esc(ad.note)}</div>` : ""}`}
           ${(() => { const totals = kitAddonTotals(k); return !totals ? "" :
             `<div class="kit-sum"><div class="kit-sum-h">Итого</div>${totals.map(t =>
-              `<div class="kit-sum-row"><span class="kit-sum-n">Коробка + ${esc(kitLc(t.label))}</span><span class="kit-sum-v">${t.total != null ? esc(kitRub(t.total)) : "уточню"}</span></div>`).join("")}</div>`; })()}
+              `<div class="kit-sum-row"><span class="kit-sum-n">${esc(t.label)}</span><span class="kit-sum-v">${t.total != null ? esc(kitRub(t.total)) : "уточню"}</span></div>`).join("")}</div>`; })()}
           ${k.note ? `<div class="kit-note">${esc(k.note)}</div>` : ""}
           <div class="tpl-actions"><button class="tpl-copy" type="button" data-i="${i}">${ICO.copy} Копировать</button></div>
         </div></div>
