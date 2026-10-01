@@ -319,7 +319,7 @@
   var errEl  = document.getElementById("gate-err");
 
   var data = null, seq = 0, busy = false, curCh = 0, selMonth = null, actsOn = false;
-  var editing = null, savedId = null;   // открытая форма правки вывода и строка, которую только что сохранили
+  var editing = null, savedId = null;   // открытая форма правки операции и строка, которую только что сохранили
   var nf = new Intl.NumberFormat("ru-RU");
   function money(v){ return nf.format(Math.round(v)) + " ₽"; }
   function esc(s){ return String(s).replace(/[&<>"']/g, function(c){
@@ -502,12 +502,12 @@
       }
       var o = it.o;
       if(editing && editing.ch === ch.key && editing.id === o.id) return editHtml(ch, o);
-      // «Изменить» и «Отменить» — только у вывода, только с правом от сервера и только когда
+      // «Изменить» — у вывода и расхода, «Отменить» — у вывода; с правом от сервера и когда
       // открыта панель правок (тот же жест). У самых старых строк листа нет id — их правят в таблице.
       var btns = "";
-      if(o.kind === "wd" && o.id && actsOn){
-        if(canEdit()) btns += '<button class="obtn" type="button" data-edit="' + esc(o.id) + '">Изменить</button>';
-        if(canUndo()) btns += '<button class="obtn" type="button" data-undo="' + esc(o.id) + '">Отменить</button>';
+      if(o.id && actsOn){
+        if(canEdit(o)) btns += '<button class="obtn" type="button" data-edit="' + esc(o.id) + '">Изменить</button>';
+        if(o.kind === "wd" && canUndo()) btns += '<button class="obtn" type="button" data-undo="' + esc(o.id) + '">Отменить</button>';
       }
       return '<div class="op' + (o.kind === "spend" ? " spend" : "") + '" data-op="' + esc(o.id) + '">' +
              '<span>' + (o.kind === "spend" ? "Расход — −" : "Вывод — ") + money(o.amount) + '</span>' +
@@ -575,16 +575,16 @@
       .catch(function(){ actNote("Связи нет — не отменено.", "bad"); });
   }
 
-  /* ---------- правка ошибочного вывода ----------
-     Строка вывода превращается в форму: сумма, дата и время. Деньги двигаются сами, как у отмены:
+  /* ---------- правка вывода или расхода ----------
+     Строка операции превращается в форму: сумма, дата и время. Деньги двигаются сами, как у отмены:
      копилка считается «старт + продажи − операции», и новая сумма просто встаёт на место старой.
      Сервер правит ту же строку листа, прежние числа кладёт в колонку edits и наружу признака
-     правки не отдаёт. Право — от сервера (editOps), не файл.
+     правки не отдаёт. Права — от сервера: editOps для вывода, editSpend для расхода.
      Поле «Время» — только с правом editTime (16.09.2026): старый скрипт время не сохраняет, и форма
      без этого флага отвечала бы «Не сохранилось» на правку, у которой сумма и дата уже записаны.
      Выводы одного дня сервер отдаёт по времени — поправленный встаёт на своё место в ленте сам. */
-  function canEdit(){ return !!(data && data.editOps); }
-  function canEditTime(){ return canEdit() && !!data.editTime; }
+  function canEdit(o){ return !!(data && (o && o.kind === "spend" ? data.editSpend : data.editOps)); }
+  function canEditTime(){ return !!(data && data.editTime); }
   function hhmmNow(){ var d = new Date(); return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2); }
   // на день уже серверного окна намеренно: сервер считает его от полуночи UTC, и самый крайний
   // день он может отбить — пусть лучше форма не предложит его вовсе, чем «Не сохранилось»
@@ -596,26 +596,27 @@
   // что будет, если сохранить: ошибка (и в каком поле) или новая копилка
   function editCheck(ch, o){
     var a = parseAmt(editing.amount), dt = String(editing.date || "");
+    var spend = o.kind === "spend", max = spend ? Number(data.spendMax) : WD_MAX;
     // без права на время оно не наше дело: считаем его прежним и не шлём
     var tm = canEditTime() ? String(editing.time || "").slice(0, 5) : o.time;
     if(!(a > 0))   return { field:"amount", msg:"Введите сумму числом." };
-    if(a > WD_MAX) return { field:"amount", msg:"Больше " + money(WD_MAX) + " одним выводом сервер не примет." };
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(dt) || isNaN(parse(dt).getTime())) return { field:"date", msg:"Укажите дату." };
+    if(a > max) return { field:"amount", msg:"Больше " + money(max) + " одним " + (spend ? "расходом" : "выводом") + " сервер не примет." };
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(dt) || isNaN(parse(dt).getTime()) || ymd(parse(dt)) !== dt) return { field:"date", msg:"Укажите дату." };
     if(dt !== ymd(o.dt)){
-      if(dt > ymd(new Date())) return { field:"date", msg:"Дата вывода не может быть в будущем." };
-      if(dt < editMin())       return { field:"date", msg:"Дату можно перенести только в пределах двух последних месяцев." };
+      if(dt > ymd(new Date())) return { field:"date", msg:"Дата " + (spend ? "расхода" : "вывода") + " не может быть в будущем." };
+      if(!spend && dt < editMin()) return { field:"date", msg:"Дату можно перенести только в пределах двух последних месяцев." };
     }
     // у самых старых строк времени может не быть вовсе — тогда пустое поле не требуем
     if((tm !== "" || o.time !== "") && !/^([01]\d|2[0-3]):[0-5]\d$/.test(tm)) return { field:"time", msg:"Укажите время." };
     // будущее — только если время или дату трогали: вывод, отмеченный с часами Алексея на пару
     // минут впереди, не должен запрещать правку одной суммы
     if(canEditTime() && (tm !== o.time || dt !== ymd(o.dt)) && dt === ymd(new Date()) && tm > hhmmNow())
-      return { field:"time", msg:"Время вывода не может быть в будущем." };
+      return { field:"time", msg:"Время " + (spend ? "расхода" : "вывода") + " не может быть в будущем." };
     var raw = rawPotOf(ch), will = raw + o.amount - a;
     // больше, чем было в копилке, вывод не бывает — то же правило, что у «Отметить вывод» в портале,
     // в обоих каналах: у «Промывки» лишнее растворилось бы в нуле, а у «Масла» портал подписал бы
     // минус «расходы больше продаж», хотя расходов не было. Уменьшать вывод можно всегда.
-    if(a > o.amount && will < 0)
+    if(!spend && a > o.amount && will < 0)
       return { field:"amount", msg:"Больше " + money(o.amount + Math.max(0, raw)) + " не получится — в копилке столько нет." };
     if(a === o.amount && dt === ymd(o.dt) && tm === o.time)
       return { same:true, msg:(canEditTime() ? "Поменяйте сумму, дату или время" : "Поменяйте сумму или дату") + " — копилка пересчитается сама." };
@@ -634,12 +635,12 @@
   function editHtml(ch, o){
     var st = editState(ch, o), dis = editing.busy ? " disabled" : "";
     return '<div class="op ed" data-op="' + esc(o.id) + '">' +
-      '<div class="ed-top"><span>Правка вывода</span><span class="when">' + when(o) + '</span></div>' +
+      '<div class="ed-top"><span>Правка ' + (o.kind === "spend" ? "расхода" : "вывода") + '</span><span class="when">' + when(o) + '</span></div>' +
       '<div class="ed-grid' + (canEditTime() ? " t3" : "") + '">' +
         '<label class="ed-f ed-sum"><span class="ed-k">Сумма, ₽</span><input class="ed-in' + (st.field === "amount" ? " bad" : "") +
           '" id="ed-amount" type="text" inputmode="numeric" autocomplete="off" value="' + esc(editing.amount) + '"' + dis + '></label>' +
         '<label class="ed-f"><span class="ed-k">Дата</span><input class="ed-in' + (st.field === "date" ? " bad" : "") +
-          '" id="ed-date" type="date" min="' + editMin() + '" max="' + ymd(new Date()) + '" value="' + esc(editing.date) + '"' + dis + '></label>' +
+          '" id="ed-date" type="date"' + (o.kind === "spend" ? "" : ' min="' + editMin() + '"') + ' max="' + ymd(new Date()) + '" value="' + esc(editing.date) + '"' + dis + '></label>' +
         (canEditTime() ? '<label class="ed-f"><span class="ed-k">Время</span><input class="ed-in' + (st.field === "time" ? " bad" : "") +
           '" id="ed-time" type="time" value="' + esc(editing.time) + '"' + dis + '></label>' : "") +
       '</div>' +
@@ -673,7 +674,7 @@
     var b = e.target.closest("[data-edit],[data-ed-save],[data-ed-cancel]"); if(!b || !data) return;
     if(b.hasAttribute("data-edit")){
       var ch = data.channels[curCh], id = b.getAttribute("data-edit"), o = opById(ch, id);
-      if(!o || !canEdit()) return;
+      if(!o || !canEdit(o) || !actsOn) return;
       editing = { ch:ch.key, id:id, amount:String(o.amount), date:ymd(o.dt), time:o.time, busy:false, msg:"", tried:false };
       savedId = null;
       render();
@@ -720,13 +721,13 @@
         if(!editing || editing.id !== id) return;            // ушли на другой канал или месяц
         var cur = data.channels.filter(function(c){ return c.key === chKey; })[0];
         var n   = cur && opById(cur, id);
-        if(!n){ editing = null; render(); noteEl.textContent = "Этого вывода уже нет — его отменили."; return; }
+        if(!n){ editing = null; render(); noteEl.textContent = "Этой операции уже нет — её отменили."; return; }
         if(n.amount === amount && ymd(n.dt) === date && (!time || n.time === time)){
           editing = null; savedId = id; selMonth = mkey(n.dt);   // перенесли в другой месяц — едем за ним
           render(); showOp(id);
           return;
         }
-        editFail("Не сохранилось — вывод прежний. Нажмите «Сохранить» ещё раз.");
+        editFail("Не сохранилось — операция прежняя. Нажмите «Сохранить» ещё раз.");
       }, function(){
         editFail("Связь пропала — не видно, сохранилось ли. Нажмите «Сохранить» ещё раз: повтор безопасен.");
       }); }, 2500); })
