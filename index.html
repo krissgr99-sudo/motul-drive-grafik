@@ -1516,6 +1516,60 @@
     .nav-item{padding:9px 11px;flex:none}
   }
 
+  /* Зарплаты — персональные карточки, состав начисления и история движений. */
+  #page-zarplaty .ui-btn,#page-zarplaty .ui-input,#page-zarplaty .ui-select,#page-zarplaty .fb-undo{min-height:44px}
+  [data-theme="dark"] #page-zarplaty input{color-scheme:dark}
+  [data-theme="light"] #page-zarplaty input{color-scheme:light}
+  .pay-toolbar{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .pay-toolbar .ui-field{margin-right:auto;max-width:240px}
+  .pay-k{font-size:12px;font-weight:600;color:var(--muted)}
+  .pay-note{margin-top:12px;font-size:13px;color:var(--muted);line-height:1.5}
+  .pay-message{margin:12px 0;line-height:1.5;font-size:13px;min-height:20px;color:var(--muted)}
+  .pay-message.is-error{color:var(--accent-soft)}
+  .pay-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0}
+  .pay-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
+  .pay-card.is-selected{border-color:var(--brand)}
+  .pay-person{display:flex;align-items:center;gap:8px;border:0;background:none;color:var(--text);padding:0;width:100%;min-height:44px;text-align:left;cursor:pointer;font-family:var(--font-disp);font-size:18px;font-weight:700}
+  .pay-person:focus-visible{outline:2px solid var(--brand);outline-offset:4px;border-radius:6px}
+  .pay-person .fn-dot{flex:none}
+  .pay-person span:last-child{margin-left:auto;color:var(--muted);font-family:var(--font-text);font-size:12px;font-weight:500}
+  .pay-balance{font-family:var(--font-mono);font-size:23px;font-weight:600;margin:4px 0 16px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  .pay-lines{display:grid;gap:8px;font-size:12px;line-height:1.5}
+  .pay-line{display:flex;gap:12px;justify-content:space-between;color:var(--muted)}
+  .pay-line b{color:var(--text);font-family:var(--font-mono);font-size:12px;font-weight:500;white-space:nowrap}
+  .pay-divider{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+  .pay-card .ui-btn{width:100%;margin-top:16px}
+  .pay-warning{font-size:12px;line-height:1.5;color:var(--warn);margin:10px 0 0}
+  .pay-layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
+  .pay-layout .fb-form{margin:0}
+  .pay-form-grid{display:grid;gap:12px;margin-top:16px}
+  .pay-form-grid .ui-field span,.pay-toolbar .ui-field span{font-size:12px;color:var(--muted);font-weight:600}
+  .pay-form-grid .fb-send{min-height:44px;justify-self:start}
+  .pay-history-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;font-family:var(--font-disp);font-size:18px;font-weight:700}
+  .pay-check{display:flex;align-items:center;gap:8px;min-height:44px;font-family:var(--font-text);font-size:12px;font-weight:500;cursor:pointer}
+  .pay-check input{accent-color:var(--brand);width:18px;height:18px}
+  .pay-history{display:grid;gap:10px}
+  .pay-entry{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .pay-entry-top{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:600}
+  .pay-entry-top b{font-family:var(--font-mono);font-size:13px;white-space:nowrap}
+  .pay-entry-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px;font-size:12px;color:var(--muted)}
+  .pay-entry-note{margin-top:8px;font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+  .pay-entry.is-canceled .pay-entry-top{color:var(--muted);text-decoration:line-through}
+  .pay-settings{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-top:20px;padding:0 20px}
+  .pay-settings summary{padding:16px 0;min-height:52px;cursor:pointer;font-size:14px;font-weight:600}
+  .pay-settings form{padding-bottom:20px;max-width:720px}
+  .pay-part{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.6fr) 44px;gap:8px;margin-bottom:8px}
+  .pay-rate-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .pay-gate{max-width:520px;margin:0}
+  .pay-gate .ui-input{max-width:360px}
+  #page-zarplaty [hidden]{display:none!important}
+  @media(max-width:900px){.pay-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.pay-layout{grid-template-columns:1fr}}
+  @media(max-width:720px){
+    .pay-cards{grid-template-columns:1fr}.pay-history-h{flex-wrap:wrap}.pay-rate-row{grid-template-columns:1fr}
+    #page-zarplaty .ui-input,#page-zarplaty .ui-select{font-size:16px}.pay-toolbar .ui-field{max-width:none;flex:1 1 100%}
+    .pay-settings{padding:0 16px}.pay-part{grid-template-columns:minmax(0,1fr) 110px 44px}
+  }
+
   /* ═══════════════════════════════════════════════════════════════════════
      UI-KIT — переиспользуемые компоненты (аналог shadcn/ui без React).
      Красятся ТОЛЬКО через токены темы. Спека и «закон» — design/design-system.md §4.
@@ -1656,6 +1710,7 @@
         <button class="nav-item" data-page="prodazhi">Продажи</button>
         <button class="nav-item" data-page="yama">Яма</button>
         <button class="nav-item" data-page="shtrafy">Штрафы</button>
+        <button class="nav-item" data-page="zarplaty">Зарплаты</button>
         <button class="nav-item" data-page="zametki">Заметки</button>
       </nav>
       <button class="theme-btn" id="theme-btn" type="button" aria-label="Сменить тему"></button>
@@ -1889,6 +1944,70 @@
 
       <div class="fb-list-h" id="fn-list-h" hidden></div>
       <div class="fn-list" id="fn-list"></div>
+    </div>
+
+    <!-- ===== Страница: Зарплаты — персональные данные приходят только с сервера ===== -->
+    <div id="page-zarplaty" class="page" hidden>
+      <form class="fb-form pay-gate" id="pay-gate" autocomplete="off">
+        <div class="fb-h">Личный доступ</div>
+        <p class="fb-sub">Зарплаты доступны владельцу. Используйте свой личный ключ доступа.</p>
+        <label class="ui-field"><span class="fb-lbl">Личный ключ</span><input class="ui-input" id="pay-key" type="password" autocomplete="off" required></label>
+        <div class="fb-actions"><button class="fb-send" type="submit">Открыть зарплаты</button></div>
+        <p class="pay-message" id="pay-gate-message" role="status" aria-live="polite"></p>
+      </form>
+      <div id="pay-content" hidden>
+        <div class="pay-toolbar">
+          <label class="ui-field"><span>Месяц расчёта</span><input class="ui-input" id="pay-period" type="month"></label>
+          <button class="ui-btn" id="pay-refresh" type="button">Обновить</button>
+          <button class="ui-btn" id="pay-sync" type="button" hidden>Сверить замены</button>
+          <button class="ui-btn" id="pay-close" type="button">Закрыть доступ</button>
+        </div>
+        <div class="pay-message" id="pay-message" role="status" aria-live="polite"></div>
+        <div class="pay-cards" id="pay-cards"></div>
+        <div class="pay-layout">
+          <form class="fb-form" id="pay-form">
+            <div class="fb-h">Записать движение</div>
+            <div class="fb-sub">Аванс и выплата уменьшают остаток за выбранный месяц.</div>
+            <div class="pay-form-grid">
+              <label class="ui-field"><span>Сотрудник</span><select class="ui-select" id="pay-employee" required></select></label>
+              <label class="ui-field"><span>Что записать</span><select class="ui-select" id="pay-action"><option value="advance">Аванс</option><option value="payment">Выплата зарплаты</option><option value="bonus">Премия</option><option value="deduction">Дополнительное удержание</option></select></label>
+              <label class="ui-field"><span>Сумма, ₽</span><input class="ui-input" id="pay-amount" inputmode="decimal" autocomplete="off" required></label>
+              <label class="ui-field"><span>Дата выдачи</span><input class="ui-input" id="pay-date" type="date" required></label>
+              <label class="ui-field"><span>Комментарий</span><input class="ui-input" id="pay-note" maxlength="200" placeholder="Необязательно; для удержания — причина"></label>
+              <p class="pay-note" id="pay-form-period"></p>
+              <button class="fb-send" id="pay-save" type="submit">Записать аванс</button>
+              <button class="ui-btn" id="pay-retry" type="button" hidden>Повторить сохранение</button>
+            </div>
+          </form>
+          <div>
+            <div class="pay-history-h"><span id="pay-history-title">История</span><label class="pay-check"><input id="pay-show-canceled" type="checkbox">С отменёнными</label></div>
+            <div class="pay-history" id="pay-history"></div>
+          </div>
+        </div>
+        <details class="pay-settings" id="pay-settings">
+          <summary>Оклады и условия</summary>
+          <form id="pay-rate-form">
+            <p class="pay-note">Новые условия действуют с указанного месяца. Предыдущие месяцы сохраняют свои оклады.</p>
+            <div class="pay-form-grid">
+              <div class="pay-rate-row">
+                <label class="ui-field"><span>Сотрудник</span><input class="ui-input" id="pay-rate-name" list="pay-names" maxlength="40" required><datalist id="pay-names"></datalist></label>
+                <label class="ui-field"><span>Действует с месяца</span><input class="ui-input" id="pay-rate-period" type="month" required></label>
+              </div>
+              <label class="ui-field"><span>Цвет сотрудника</span><select class="ui-select" id="pay-rate-color"><option value="graphite">Графит</option><option value="red">Красный</option><option value="blue">Синий</option><option value="teal">Петроль</option></select></label>
+              <label class="ui-field"><span>День выплаты</span><select class="ui-select" id="pay-rate-payday"><option value="1">1-е следующего месяца</option><option value="26">26-е расчётного месяца</option></select></label>
+              <span class="pay-k">Части фиксированной зарплаты · название и сумма, ₽</span>
+              <div id="pay-parts"></div>
+              <button class="ui-btn" id="pay-add-part" type="button">Добавить часть</button>
+              <label class="pay-check"><input id="pay-rate-replacement" type="checkbox">Доплата за полные аппаратные замены</label>
+              <div class="pay-rate-row" id="pay-replacement-fields" hidden>
+                <label class="ui-field"><span>За одну замену, ₽</span><input class="ui-input" id="pay-rate-per-job" inputmode="decimal"></label>
+                <label class="ui-field"><span>Расчётный период замен</span><select class="ui-select" id="pay-rate-start-day"><option value="26">26-е прошлого → 25-е текущего</option><option value="27">27-е прошлого → 26-е текущего</option></select></label>
+              </div>
+              <button class="fb-send" type="submit">Сохранить условия</button>
+            </div>
+          </form>
+        </details>
+      </div>
     </div>
 
     <!-- ===== Страница: Заметки (пожелания команды) ===== -->
@@ -5222,12 +5341,12 @@
      его. Таймаут добавляет наблюдаемость, а не отнимает ответ. */
   const API_WAIT_MS = 30000;   // одно «сколько ждём Apps Script» на весь портал: чтение, запись и модуль ТО
   let jsonpSeq = 0;
-  function jsonpChannel(url, name, tag, onData){
+  function jsonpChannel(url, name, tag, onData, onError){
     const cb = "__mdj_" + tag + "_" + (++jsonpSeq);
     const s = document.createElement("script");
     let done = false;
     const finish = () => { done = true; clearTimeout(timer); s.remove(); };
-    const failed = why => { window.MDLOG && window.MDLOG.err("net", why + ": " + name, "jsonp:" + tag); };
+    const failed = why => { window.MDLOG && window.MDLOG.err("net", why + ": " + name, "jsonp:" + tag); if(onError) onError(new Error(why)); };
     /* {error:"backend"} — бэкенд сознался, что упал сам (страховка в doGet, 09.09.2026).
        Данными это не является: раздел должен остаться на кэше, ровно как при молчании канала.
        Ловим здесь, ОДНИМ местом на все каналы, а не учим каждый раздел заново отличать сбой
@@ -7076,6 +7195,7 @@
       { page:"prodazhi", ico:"chart",    name:"Продажи", hint:"Присадки и масло по дням" },
       { page:"yama",     ico:"list",     name:"Яма",     hint:"Журнал работ и мастера по дням" },
       { page:"shtrafy",  ico:"flag",     name:"Штрафы",  hint:"Дисциплина и лучший месяца" },
+      { page:"zarplaty", ico:"cash",     name:"Зарплаты",hint:"Оклады, авансы и выплаты" },
       { page:"zametki",  ico:"chat",     name:"Заметки", hint:"Пожелания команды" },
     ],
   };
@@ -9261,6 +9381,218 @@
     loadEngines();
   })();
 
+  /* ===================== Зарплаты: только подтверждённые сервером факты ===================== */
+  (function(){
+    const $ = id => document.getElementById(id);
+    const gate=$('pay-gate'), content=$('pay-content'), form=$('pay-form'), rateForm=$('pay-rate-form');
+    const TYPES={advance:'Аванс',payment:'Выплата зарплаты',bonus:'Премия',deduction:'Удержание'};
+    const BUTTONS={advance:'Записать аванс',payment:'Записать выплату',bonus:'Записать премию',deduction:'Записать удержание'};
+    const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const money = kop => kop == null ? '—' : (kop/100).toLocaleString('ru-RU',{maximumFractionDigits:2})+' ₽';
+    const localDate = () => new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Moscow',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+    const monthLabel = p => new Date(+p.slice(0,4),+p.slice(5,7)-1,1).toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
+    const dateLabel = d => /^\d{4}-\d{2}-\d{2}$/.test(d) ? d.slice(8,10)+'.'+d.slice(5,7)+'.'+d.slice(0,4) : d;
+    const amount = value => {
+      const raw=String(value).replace(/\s/g,'').replace(',','.');
+      if(!/^\d+(?:\.\d{1,2})?$/.test(raw)) return null;
+      const kop=Math.round(Number(raw)*100);
+      return Number.isSafeInteger(kop) && kop>=0 && kop<=1000000000 ? kop : null;
+    };
+    let key='', data=null, selected='', pending=null, generation=0, loading=false, allowCashKey=true;
+    try { allowCashKey=sessionStorage.getItem('md_payroll_closed')!=='1'; } catch(e){}
+    $('pay-period').value=localDate().slice(0,7); $('pay-period').max=localDate().slice(0,7);
+    $('pay-date').value=localDate(); $('pay-date').max=localDate(); $('pay-rate-period').value=localDate().slice(0,7);
+    function message(text,bad=false){ $('pay-message').textContent=text; $('pay-message').classList.toggle('is-error',bad); }
+    function busy(on){
+      form.querySelectorAll('input,select,button').forEach(e=>e.disabled=on && !(e.id==='pay-retry' && pending && !loading));
+      rateForm.querySelectorAll('input,select,button').forEach(e=>e.disabled=on);
+      $('pay-period').disabled=on; $('pay-cards').querySelectorAll('[data-pay-remaining]').forEach(e=>e.disabled=on);
+    }
+    function lock(text=''){
+      generation++; key=''; data=null; pending=null; loading=false;
+      try { sessionStorage.removeItem('md_payroll_key'); sessionStorage.setItem('md_payroll_closed','1'); } catch(e){}
+      ['pay-cards','pay-history','pay-employee','pay-names','pay-parts'].forEach(id=>$(id).innerHTML='');
+      form.reset(); rateForm.reset(); $('pay-settings').open=false; $('pay-key').value='';
+      $('pay-rate-per-job').value=''; $('pay-replacement-fields').hidden=true;
+      $('pay-gate-message').textContent=text; $('pay-message').textContent=''; $('pay-retry').hidden=true;
+      $('pay-form-period').textContent=''; $('pay-history-title').textContent='История';
+      content.hidden=true; gate.hidden=false; busy(false);
+    }
+    function read(period){
+      return new Promise((resolve,reject)=>jsonpChannel(SHEET_API+'?type=payroll&key='+encodeURIComponent(key)+'&period='+encodeURIComponent(period),'зарплаты','payroll',resolve,reject));
+    }
+    function line(label,value){ return `<div class="pay-line"><span>${esc(label)}</span><b>${money(value)}</b></div>`; }
+    function remainingToPay(s){
+      if(s.replacements && !s.replacements.complete){
+        return s.fixedKop == null ? null : s.fixedKop+s.bonusKop-s.deductionKop-s.advanceKop-s.paidKop;
+      }
+      return s.balanceKop;
+    }
+    function renderCards(){
+      $('pay-cards').innerHTML=data.employees.map(s=>{
+        const parts=s.rate ? s.rate.config.components.map(p=>line(p.label,p.amountKop)).join('') : '<p class="pay-note">В этом месяце оклад ещё не задан.</p>';
+        const rep=s.replacements, repLine=rep ? line(`Полные замены · ${rep.count == null ? 'нужно проверить' : rep.count+' × '+money(s.rate.config.replacement.rateKop)}`,s.replacementKop) : '';
+        const repNote=rep ? `<p class="pay-note">${dateLabel(rep.from)} — ${dateLabel(rep.to)}</p>${!rep.complete || !rep.closed ? `<p class="pay-warning">${rep.missing ? 'Есть работы без точного типа или даты. Доплата требует сверки.' : rep.unverifiedDates || data.sync.remaining ? 'Уточняем даты старых замен. Доплата предварительная.' : !rep.complete ? 'Журнал замен ещё не обновлён. Расчёт предварительный.' : 'Период замен ещё идёт. Доплата предварительная.'}</p>` : ''}` : '';
+        const status=s.balanceKop == null ? 'Нет расчёта' : s.balanceKop<0 ? 'Переплата' : s.balanceKop===0 ? 'Выплачено' : 'К выдаче';
+        return `<section class="pay-card${s.name===selected ? ' is-selected' : ''}" data-employee="${esc(s.name)}">
+          <button class="pay-person" type="button" data-pay-person="${esc(s.name)}" data-color="${esc(s.color)}" aria-pressed="${s.name===selected}"><i class="fn-dot"></i>${esc(s.name)}<span>${status}</span></button>
+          <div class="pay-balance">${money(s.balanceKop == null ? null : Math.abs(s.balanceKop))}</div>
+          ${s.dueDate ? `<p class="pay-note">День выплаты · ${dateLabel(s.dueDate)}${s.dueDate<localDate() && s.balanceKop>0 ? ' · есть остаток после срока' : ''}</p>` : ''}
+          <div class="pay-lines">${parts}${repLine}${s.bonusKop ? line('Премии',s.bonusKop) : ''}</div>${repNote}
+          <div class="pay-lines pay-divider">${line('Ручные удержания',s.deductionKop)}${line('Авансы',s.advanceKop)}${line('Выдана зарплата',s.paidKop)}</div>
+          ${remainingToPay(s)>0 ? `<button class="ui-btn" type="button" data-pay-remaining="${esc(s.name)}">Выплатить остаток</button>${rep && !rep.complete ? '<p class="pay-note">Подставит остаток фиксированной части. Доплату за замены уточним отдельно.</p>' : ''}` : ''}
+        </section>`;
+      }).join('');
+    }
+    function renderHistory(){
+      if(!data) return;
+      const showCanceled=$('pay-show-canceled').checked;
+      const cancels=new Map(data.ops.filter(r=>r.action==='cancel').map(r=>[r.ref,r]));
+      const ops=data.ops.filter(r=>r.employee===selected && r.period===data.period && TYPES[r.action] && (showCanceled || !cancels.has(r.id)));
+      const events=ops.map(r=>({...r,cancel:cancels.get(r.id)}));
+      events.sort((a,b)=>b.date.localeCompare(a.date));
+      $('pay-history-title').textContent=selected ? 'История · '+selected : 'История';
+      $('pay-history').innerHTML=events.length ? events.map(r=>`<div class="pay-entry${r.cancel ? ' is-canceled' : ''}">
+        <div class="pay-entry-top"><span>${esc(TYPES[r.action])}</span><b>${money(r.amountKop)}</b></div>
+        ${r.note ? `<div class="pay-entry-note">${esc(r.note)}</div>` : ''}
+        <div class="pay-entry-foot"><span>${dateLabel(r.date)}</span>${!r.cancel ? `<button class="fb-undo" type="button" data-pay-cancel="${esc(r.id)}"${pending ? ' disabled' : ''}>Отменить</button>` : ''}</div>
+        ${r.cancel ? `<p class="pay-note">Отменено ${dateLabel(r.cancel.date)} · ${esc(r.cancel.note)}</p>` : ''}
+      </div>`).join('') : '<div class="fb-empty">Движений за этот месяц пока нет. Запишите аванс или выплату — они появятся здесь.</div>';
+    }
+    function select(name){
+      selected=name; $('pay-employee').value=name;
+      document.querySelectorAll('.pay-card').forEach(c=>{ const active=c.dataset.employee===name; c.classList.toggle('is-selected',active); c.querySelector('.pay-person').setAttribute('aria-pressed',String(active)); });
+      renderHistory();
+    }
+    function render(){
+      const names=data.employees.map(s=>s.name);
+      if(!names.includes(selected)) selected=names[0] || '';
+      $('pay-employee').innerHTML=names.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join('');
+      $('pay-employee').value=selected; $('pay-names').innerHTML=names.map(name=>`<option value="${esc(name)}"></option>`).join('');
+      $('pay-period').value=data.period; $('pay-period').max=data.current;
+      $('pay-form-period').textContent='За '+monthLabel(data.period)+'. Дата выдачи может быть в другом месяце.';
+      renderCards(); renderHistory(); busy(!!pending);
+      $('pay-sync').hidden=!data.sync.remaining || !data.employees.some(s=>s.replacements);
+      $('pay-sync').disabled=!!pending;
+      if(!names.length){ message('Оклады ещё не заданы. Откройте «Оклады и условия» и добавьте сотрудников.'); $('pay-settings').open=true; }
+    }
+    async function load(){
+      if(!key || loading) return;
+      loading=true; const ownGeneration=++generation, period=$('pay-period').value; busy(true);
+      $('pay-gate-message').textContent='Проверяем доступ…'; message('Обновляем расчёт…');
+      try {
+        const result=await read(period);
+        if(ownGeneration!==generation) return;
+        if(result && ['key','keyoff','denied','token'].includes(result.error)) { allowCashKey=false; lock('Этот ключ не даёт доступа к зарплатам владельца.'); return; }
+        if(!result || result.payrollVersion!==1 || !Array.isArray(result.employees) || !Array.isArray(result.ops)) throw Error('Сервис зарплат пока недоступен.');
+        data=result; gate.hidden=true; content.hidden=false; $('pay-key').value='';
+        if(!$('pay-date').value) $('pay-date').value=localDate();
+        if(!$('pay-rate-period').value) $('pay-rate-period').value=localDate().slice(0,7);
+        try { sessionStorage.setItem('md_payroll_key',key); sessionStorage.removeItem('md_payroll_closed'); } catch(e){}
+        let confirmation='';
+        if(pending && (data.ops.some(r=>r.id===pending.id) || data.sync.lastId===pending.id)){
+          confirmation=pending.action==='sync-replacements' ? 'Даты замен уточняются. Осталось сверить заказов: '+data.sync.remaining+'. Сверка продолжится автоматически.' : 'Сохранено. Расчёт обновлён.';
+          pending=null; $('pay-retry').hidden=true; form.reset(); $('pay-date').value=localDate();
+        }
+        render();
+        message(confirmation || (pending ? 'Запись пока не подтверждена. Обновите данные или повторите сохранение: повтор не создаст вторую запись.' : 'Расчёт обновлён.'),!!pending);
+        $('pay-retry').hidden=!pending; $('pay-retry').disabled=false;
+      } catch(e){
+        if(ownGeneration!==generation) return;
+        if(data) $('pay-period').value=data.period;
+        const text=data ? 'Не удалось обновить данные. На экране предыдущий расчёт; повторите обновление.' : 'Не удалось открыть зарплаты. Проверьте связь и повторите вход; сервер зарплат должен быть обновлён.';
+        message(text,true); $('pay-gate-message').textContent=text;
+        if(pending){ $('pay-retry').hidden=false; $('pay-retry').disabled=false; }
+      } finally { if(ownGeneration===generation){loading=false;busy(!!pending);} }
+    }
+    async function send(rec){
+      if(pending && pending.id!==rec.id) return;
+      pending=rec; busy(true); renderHistory(); $('pay-retry').hidden=true;
+      message('Сохраняем. Ожидаем подтверждения…');
+      const ownGeneration=generation;
+      // Ответ no-cors не доказывает запись. Проверяем id в журнале даже при обрыве POST.
+      const timer=setTimeout(()=>{ if(ownGeneration===generation) load(); },API_WAIT_MS);
+      try { await postChannel(SHEET_API,{...rec,kind:'payroll',key},'зарплаты','payroll'); }
+      catch(e){}
+      finally { clearTimeout(timer); if(ownGeneration===generation) await load(); }
+    }
+    gate.addEventListener('submit',e=>{e.preventDefault(); if(loading) return; key=$('pay-key').value.trim(); if(key) load();});
+    window.payrollOpen=()=>{
+      $('pay-date').max=localDate(); $('pay-period').max=localDate().slice(0,7);
+      if(!key) try { key=sessionStorage.getItem('md_payroll_key') || (allowCashKey ? localStorage.getItem('md_cash_key') : '') || ''; } catch(e){}
+      if(key) load();
+    };
+    $('pay-close').addEventListener('click',()=>{allowCashKey=false; lock();});
+    $('pay-refresh').addEventListener('click',load); $('pay-period').addEventListener('change',load);
+    $('pay-sync').addEventListener('click',()=>{if(data && !pending) send({id:crypto.randomUUID(),action:'sync-replacements'});});
+    $('pay-employee').addEventListener('change',()=>select($('pay-employee').value));
+    $('pay-action').addEventListener('change',()=>{ $('pay-save').textContent=BUTTONS[$('pay-action').value]; form.querySelector('label:has(#pay-date) span').textContent=['payment','advance'].includes($('pay-action').value) ? 'Дата выдачи' : 'Дата записи'; });
+    $('pay-show-canceled').addEventListener('change',renderHistory);
+    $('pay-cards').addEventListener('click',e=>{
+      const b=e.target.closest('[data-pay-person],[data-pay-remaining]'); if(!b || pending || loading) return;
+      select(b.dataset.payPerson || b.dataset.payRemaining);
+      if(b.dataset.payRemaining){
+        const s=data.employees.find(s=>s.name===selected), kop=remainingToPay(s);
+        $('pay-action').value='payment'; $('pay-save').textContent=BUTTONS.payment; $('pay-amount').value=String(kop/100); $('pay-date').value=localDate();
+        if(s.replacements && !s.replacements.complete) message('Подставлен остаток фиксированной части: '+money(kop)+'. Доплата за замены требует сверки; после уточнения она останется к выдаче отдельно.');
+        else if(s.replacements && !s.replacements.closed) message('Подставлен остаток на сегодня: '+money(kop)+'. Период замен ещё идёт; новые замены увеличат остаток после этой выплаты.');
+        form.scrollIntoView({behavior:'smooth',block:'start'}); $('pay-amount').focus({preventScroll:true});
+      }
+    });
+    form.addEventListener('submit',e=>{
+      e.preventDefault(); if(!data || pending || loading || $('pay-period').value!==data.period) return;
+      const kop=amount($('pay-amount').value), employee=$('pay-employee').value, action=$('pay-action').value, date=$('pay-date').value, note=$('pay-note').value.trim();
+      if(kop==null || kop<=0){message('Введите сумму больше нуля, не более двух знаков после запятой.',true); $('pay-amount').focus(); return;}
+      if(!date || date>localDate()){message('Дата не может быть в будущем.',true);return;}
+      if(action==='deduction' && !note){message('Напишите причину удержания.',true);$('pay-note').focus();return;}
+      const s=data.employees.find(s=>s.name===employee);
+      if(!s || !s.rate){message('Сначала задайте оклад сотрудника для этого месяца.',true);return;}
+      if(['advance','payment'].includes(action) && s.balanceKop!=null && kop>s.balanceKop && !confirm(`После выдачи ${money(kop)} у ${employee} будет переплата ${money(kop-s.balanceKop)}. Записать?`)) return;
+      send({id:crypto.randomUUID(),action,employee,period:data.period,date,amountKop:kop,note,ref:''});
+    });
+    $('pay-retry').addEventListener('click',()=>{ if(pending) send(pending); });
+    $('pay-history').addEventListener('click',e=>{
+      const b=e.target.closest('[data-pay-cancel]'); if(!b || pending || loading || !data) return;
+      const r=data.ops.find(r=>r.id===b.dataset.payCancel); if(!r) return;
+      const note=prompt(`Отмена: ${TYPES[r.action]} · ${r.employee} · ${money(r.amountKop)}. Укажите причину; исходная запись сохранится в истории.`);
+      if(note==null) return;
+      if(!note.trim() || note.trim().length>200){message('Причина отмены — от 1 до 200 символов.',true);return;}
+      send({id:crypto.randomUUID(),action:'cancel',employee:r.employee,period:r.period,date:localDate(),amountKop:0,note:note.trim(),ref:r.id});
+    });
+    function addPart(label='Оклад',kop=null){
+      const div=document.createElement('div'); div.className='pay-part';
+      div.innerHTML=`<input class="ui-input" data-part-label aria-label="Название части оклада" maxlength="60" required value="${esc(label)}"><input class="ui-input" data-part-amount aria-label="Сумма части оклада, рубли" inputmode="decimal" required value="${kop==null ? '' : kop/100}"><button class="ui-btn" type="button" data-remove-part aria-label="Удалить часть оклада">×</button>`;
+      $('pay-parts').appendChild(div);
+    }
+    addPart();
+    $('pay-add-part').addEventListener('click',()=>{ if($('pay-parts').children.length<12) addPart(''); });
+    $('pay-parts').addEventListener('click',e=>{ if(e.target.closest('[data-remove-part]') && $('pay-parts').children.length>1) e.target.closest('.pay-part').remove(); });
+    $('pay-rate-replacement').addEventListener('change',()=>{$('pay-replacement-fields').hidden=!$('pay-rate-replacement').checked;});
+    $('pay-rate-name').addEventListener('change',()=>{
+      if(!data) return;
+      const name=$('pay-rate-name').value.trim();
+      const candidates=data.ops.filter(r=>r.action==='rate' && r.employee===name).sort((a,b)=>a.period.localeCompare(b.period));
+      const r=candidates[candidates.length-1]; $('pay-parts').innerHTML='';
+      if(!r){addPart();$('pay-rate-payday').value='1';$('pay-rate-replacement').checked=false;$('pay-replacement-fields').hidden=true;return;}
+      r.config.components.forEach(p=>addPart(p.label,p.amountKop)); $('pay-rate-color').value=r.config.color;
+      $('pay-rate-payday').value=String(r.config.payday || 1);
+      $('pay-rate-replacement').checked=!!r.config.replacement; $('pay-replacement-fields').hidden=!r.config.replacement;
+      $('pay-rate-per-job').value=r.config.replacement ? r.config.replacement.rateKop/100 : '';
+      $('pay-rate-start-day').value=String(r.config.replacement ? r.config.replacement.startDay : 26);
+    });
+    $('pay-settings').addEventListener('toggle',()=>{if($('pay-settings').open && !$('pay-parts').children.length) addPart();});
+    rateForm.addEventListener('submit',e=>{
+      e.preventDefault(); if(!data || pending || loading) return;
+      const employee=$('pay-rate-name').value.trim(), period=$('pay-rate-period').value;
+      const components=[...$('pay-parts').children].map(div=>({label:div.querySelector('[data-part-label]').value.trim(),amountKop:amount(div.querySelector('[data-part-amount]').value)}));
+      if(!employee || !/^\d{4}-(0[1-9]|1[0-2])$/.test(period) || !components.length || components.some(p=>!p.label || p.amountKop==null) || components.reduce((a,p)=>a+p.amountKop,0)>1000000000){message('Заполните сотрудника, месяц и все части оклада корректными суммами.',true);return;}
+      let replacement=null;
+      if($('pay-rate-replacement').checked){ const kop=amount($('pay-rate-per-job').value); if(!kop){message('Укажите положительную ставку за замену.',true);return;} replacement={rateKop:kop,startDay:Number($('pay-rate-start-day').value)}; }
+      if(data.ops.some(r=>r.action==='rate' && r.employee===employee && r.period<=period) && !confirm('Сохранить новые условия '+employee+' с '+monthLabel(period)+'? Расчёт с этого месяца изменится; предыдущие условия останутся в журнале.')) return;
+      send({id:crypto.randomUUID(),action:'rate',employee,period,date:localDate(),amountKop:0,note:'Условия зарплаты',ref:'',config:{color:$('pay-rate-color').value,payday:Number($('pay-rate-payday').value),components,replacement}});
+    });
+  })();
+
   /* ===================== Меню и страницы ===================== */
   const PAGES = {
     grafik:   { t:"График дежурств", r:SCHED_RANGE },
@@ -9271,6 +9603,7 @@
     prodazhi: { t:"Продажи",         r:"Присадки и масло · выручка и копилки по дням" },
     yama:     { t:"Яма",             r:"Работы по машинам · итог дня и доля мастеров" },
     shtrafy:  { t:"Штрафы",          r:"Дисциплина команды · кто, за что и сколько" },
+    zarplaty: { t:"Зарплаты",        r:"Оклады, авансы и выплаты · остаток по каждому сотруднику" },
     zametki:  { t:"Заметки и пожелания", r:"Что починить, что добавить — пиши, увидят все" },
   };
   const titleT = document.querySelector(".title .t");
@@ -9293,6 +9626,7 @@
   function showPage(id){
     cancelPageEntrance(); // быстрая навигация не наслаивает появления и не оставляет opacity:0
     if(id === "grafik") window.scheduleToday();
+    if(id === "zarplaty") window.payrollOpen();
     const isHome = (id === "glavnaya");
     document.querySelectorAll(".page").forEach(p => { p.hidden = (p.id !== "page-" + id); });
     document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.page === id));
