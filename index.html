@@ -2070,19 +2070,22 @@
      ДАННЫЕ — единственное место правок (люди, обязанности, график)
      ========================================================= */
   const DUTY = {
-    pair:  ["Авито","Max","ВКонтакте","Телефон","ZZAP"],
-    krist: ["Telegram","WhatsApp","Почта","Д2"],
+    avito: "Авито",
+    max:   "Max",
+    mail:  "Почта",
   };
+  DUTY.pair = [DUTY.avito,DUTY.max,"ВКонтакте","Телефон","ZZAP"];
+  DUTY.krist = ["Telegram","WhatsApp",DUTY.mail,"Д2"];
+  DUTY.ivan = [DUTY.avito,DUTY.max,DUTY.mail];
   DUTY.all = [...DUTY.pair, ...DUTY.krist];
 
-  /* Обязанностей у Ивана нет намеренно (решение владельца 12.09.2026): он четвёртый в графике,
-     но списки мессенджеров на нём не висят. Из-за этого «соло-день» считается не по головам,
-     а по людям С обязанностями — см. ROWS ниже. */
+  // Дата решения взята из системы: до неё обязанности в архиве не меняем.
+  const IVAN_DUTIES_FROM = new Date(2026, 9, 2);
   const PEOPLE = [
     { name:"Бекзод",    color:"red",      mode:"2 / 2",             duties:DUTY.pair,  soloAll:true  },
     { name:"Святослав", color:"graphite", mode:"2 / 2",             duties:DUTY.pair,  soloAll:true  },
     { name:"Кристиан",  color:"blue",     mode:"5 / 2",             duties:DUTY.krist, soloAll:false },
-    { name:"Иван",      color:"teal",     mode:"5 / 2",             duties:[],         soloAll:false },
+    { name:"Иван",      color:"teal",     mode:"5 / 2",             duties:DUTY.ivan,  soloAll:false },
   ];
 
   /* График строится ИЗ ПРАВИЛ, руками дни не перечисляем (иначе «кончается» в конце месяца).
@@ -2209,7 +2212,7 @@
   // Сегодняшняя дата устройства → ключ "ДД.ММ". График теперь генерируется вокруг «сегодня»
   // (всегда содержит текущий день), поэтому страховка годом больше не нужна.
   let todayKey = pad(now.getDate()) + "." + pad(now.getMonth() + 1);
-  // Пустой список обязанностей (Иван) не рисует пустую полосу — иначе под «На смене» висел бы отступ.
+  // Пустой список обязанностей в архиве не рисует пустую полосу под «На смене».
   const chips = (arr, cls) => arr.length ? `<div class="${cls}">${arr.map(d=>`<span class="chip">${d}</span>`).join("")}</div>` : "";
 
   // Полоска людей (видна только на мобильном)
@@ -2230,26 +2233,31 @@
     const work = [bek, sv, krist, ivan];                             // порядок как в PEOPLE; -1 = не в графике
     const [dd, mm] = date.split(".");
     const weekend = isWeekend(wd);
-    /* «Всё на одном» считается по людям С ОБЯЗАННОСТЯМИ, а не по головам: у Ивана их нет, и
-       день «Бекзод + Иван» по-прежнему оставляет все мессенджеры на Бекзоде. По головам соло
-       тоже бывает — в архиве до 13.09.2026 — тогда подпись прежняя. */
+    // Полная дата из начала живого окна: декабрь/январь не путают годы.
+    const day = new Date(now.getFullYear(), now.getMonth() - 1, index + 1);
+    const ivanOn = ivan === 1 && utc(day) >= utc(IVAN_DUTIES_FROM);
+    // До нового решения Иван без обязанностей; «всё на одном» считаем по обязанностям.
     const onHead = work.filter(v => v === 1).length;
-    const onDuty = PEOPLE.filter((p,i) => work[i] === 1 && p.duties.length).length;
+    const onDuty = PEOPLE.filter((p,i) => work[i] === 1 && p.duties.length
+      && (p.duties !== DUTY.ivan || ivanOn)).length;
     const solo = onDuty === 1;
     const cells = PEOPLE.map((p,i) => {
       const working = work[i] === 1, absent = work[i] === -1;
-      const takesAll = working && solo && p.soloAll;
+      // Подмена Кристиана сохраняется и в смены Ивана.
+      const coversKrist = working && krist !== 1 && p.soloAll;
+      const baseDuties = p.duties === DUTY.ivan && !ivanOn ? []
+        : (coversKrist ? DUTY.all : p.duties);
+      const duties = ivanOn && p.duties !== DUTY.ivan
+        ? baseDuties.filter(d => !DUTY.ivan.includes(d)) : baseDuties;
       return {
         ...p,
         working, absent,
-        duties: working ? (takesAll ? DUTY.all : p.duties) : [],
-        label: takesAll
+        duties: working ? duties : [],
+        label: coversKrist && solo
           ? (onHead === 1 ? "На смене один · всё на нём" : "Все обязанности на нём")
           : "На смене",
       };
     });
-    // Полная дата из начала живого окна: декабрь/январь не путают годы.
-    const day = new Date(now.getFullYear(), now.getMonth() - 1, index + 1);
     return { key: date, date: day, dd, mon: MON[mm] || "", wd, weekend, cells, past, onHead, solo };
   }); }
   let ROWS = scheduleRows();
