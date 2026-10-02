@@ -4577,15 +4577,20 @@
     };
 
     async function copyText(text, btn, okLabel){
-      try { await navigator.clipboard.writeText(text); }
+      let ok = false;
+      try { await navigator.clipboard.writeText(text); ok = true; }
       catch(e){
         const ta=document.createElement("textarea"); ta.value=text;
         ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
         ta.select();
-        let ok=false; try{ ok = document.execCommand("copy"); }catch(_){} ta.remove();
-        // оба способа отказали: кнопка скажет «Скопировано», а буфер пуст — самый обидный сбой,
-        // менеджер узнаёт о нём только у клиента. В журнал ошибок; сам ТЕКСТ сметы не пишем.
+        try{ ok = document.execCommand("copy"); }catch(_){} ta.remove();
+        // Отказ обоих способов отмечаем в журнале, без самого текста сметы.
         if(!ok) window.MDLOG && window.MDLOG.err("ui", "копирование в буфер не сработало", "copyText");
+      }
+      if(!ok){
+        if(btn){ clearTimeout(btn._copyT); btn.classList.remove("ok"); if(btn.dataset.copyLabel) btn.innerHTML = btn.dataset.copyLabel; }
+        alert("Не удалось скопировать. Выделите текст сметы и скопируйте вручную.");
+        return false;
       }
       if(btn){
         // okLabel — мостик к следующему шагу (Н5): после копирования сметы подсказываем «пришлите в WhatsApp».
@@ -4596,6 +4601,7 @@
         clearTimeout(btn._copyT);
         btn._copyT = setTimeout(()=>{ btn.innerHTML = btn.dataset.copyLabel; btn.classList.remove("ok"); }, 1600);
       }
+      return true;
     }
 
     // ③ Каскад проявления карточек/плиток (перенос Magic UI BlurFade со stagger).
@@ -5063,16 +5069,20 @@
 
     async function copyArt(btn){
       const t = btn.dataset.art;
-      try { await navigator.clipboard.writeText(t); }
+      let ok = false;
+      try { await navigator.clipboard.writeText(t); ok = true; }
       catch(e){
         const ta=document.createElement("textarea"); ta.value=t;
         ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
         ta.select();
-        let ok=false; try{ ok = document.execCommand("copy"); }catch(_){} ta.remove();
+        try{ ok = document.execCommand("copy"); }catch(_){} ta.remove();
         if(!ok) window.MDLOG && window.MDLOG.err("ui", "копирование в буфер не сработало", "copyArt");
       }
-      const old=btn.innerHTML; btn.innerHTML=ICO.check+" скопирован"; btn.classList.add("ok");
-      setTimeout(()=>{ btn.innerHTML=old; btn.classList.remove("ok"); }, 1200);
+      clearTimeout(btn._copyT);
+      if(!btn.classList.contains("ok")) btn.dataset.copyLabel = btn.innerHTML;
+      if(!ok){ btn.innerHTML = btn.dataset.copyLabel; btn.classList.remove("ok"); alert("Не удалось скопировать номер. Выделите его и скопируйте вручную."); return false; }
+      btn.innerHTML=ICO.check+" скопирован"; btn.classList.add("ok");
+      btn._copyT = setTimeout(()=>{ btn.innerHTML=btn.dataset.copyLabel; btn.classList.remove("ok"); }, 1200);
     }
 
     function render(){
@@ -5750,6 +5760,7 @@
        сервер дедупит по opId → ретрай идемпотентен, офлайн-расход не теряется. Запись висит
        с меткой «не сохранено», пока перечитка не увидит её в таблице (reconcile). ==== */
     let oilSending = false;
+    const oilTries = {};
     function sendPending(){
       const q = CH.oil.pend;
       if(oilSending || !q.length || !WITHDRAW_API) return;
@@ -5762,8 +5773,10 @@
           return;
         }
         const p = q[i++];
+        if(!CH.oil.pend.some(o => o.id === p.id) || (oilTries[p.id] || 0) >= 3) return next();
         if(Date.now() - parse(p.date).getTime() > 62 * 86400000) return next(); // окно дат сервера прошло — не шлём (висит как «не записано»)
         sentAny = true;
+        oilTries[p.id] = (oilTries[p.id] || 0) + 1;
         postChannel(WITHDRAW_API, { token: WITHDRAW_TOKEN, kind:"oil-op", opId:p.id, date:p.date, amount:p.amount, op:p.kind, note:p.note || "", time:p.time || "" },
                     "операции масла", "oil-op")
           .then(next)
@@ -5771,10 +5784,11 @@
       };
       next();
     }
-    window.addEventListener("online", sendPending);
-    function reconcilePending(server){
+    window.addEventListener("online", () => { Object.keys(oilTries).forEach(k => delete oilTries[k]); loadOps(); });
+    function reconcilePending(server, ack){
       const ids = {};
       server.forEach(o => { if(o && o.id) ids[o.id] = 1; });
+      if(Array.isArray(ack)) ack.forEach(id => { ids[id] = 1; });
       const left = CH.oil.pend.filter(p => !ids[p.id]);
       if(left.length !== CH.oil.pend.length){ CH.oil.pend = left; saveLS("md_oil_pending", left); }
     }
@@ -5818,7 +5832,8 @@
         if(data && Array.isArray(data.oilOps)){    // поле есть ТОЛЬКО у нового бэкенда: отсутствие ≠ «пусто», кэш не трогаем
           CH.oil.ops = data.oilOps; saveLS("md_oil_ops", data.oilOps);
           if(!CH.oil.connected){ CH.oil.connected = true; try { localStorage.setItem("md_oil_connected", "1"); } catch(e){} }
-          reconcilePending(data.oilOps);
+          reconcilePending(data.oilOps, data.oilAck);
+          sendPending(); // сначала подтверждение GET, потом досыл: отменённое не отправляем заново
           // очередь ещё не подтверждена (медленная запись Apps Script: waitLock до 5 с) →
           // страховочная перечитка, максимум две — потом ждём следующей загрузки/online
           const live = CH.oil.pend.some(p => Date.now() - parse(p.date).getTime() <= 62 * 86400000);
@@ -6171,7 +6186,7 @@
       });
     })();
     loadOps();     // свежие выводы владельца + операции масла из Google-таблицы
-    sendPending(); // досыл очереди операций масла, накопленной офлайн
+    // Досыл масла запускает успешный loadOps, после проверки обработанных id.
   })();
 
   /* ===================== ЯМА — журнал работ и доля мастеров =====================
@@ -6299,9 +6314,63 @@
     const save = () => { try { localStorage.setItem(CKEY, JSON.stringify(data)); } catch(e){} };
     const saveLocal = () => { try { localStorage.setItem(LKEY, JSON.stringify(local)); } catch(e){} };
 
+    // Очередь имён общая с /yama/. baseRev защищает более новую правку другого устройства.
+    let masterOut = {}, masterProtocol = false, masterT1 = 0, masterT2 = 0, masterLoad = 0;
+    const masterSending = new Set(), masterTries = {};
+    try { masterOut = JSON.parse(localStorage.getItem("md_yama_master_out") || "{}") || {}; } catch(e){}
+    function saveMasters(){ try { localStorage.setItem("md_yama_master_out", JSON.stringify(masterOut)); saveLocal(); return true; } catch(e){ return false; } }
+    const masterRows = () => (data && data.days || []).flatMap(d => d.rows);
+    function queueMaster(order, master){
+      const row = masterRows().find(r => r.order === order), old = masterOut[order];
+      const previous = old && !old.conflict ? (old.previous || []).concat(old.sent ? [old.id + "|" + old.master] : []).slice(-20) : [];
+      masterOut[order] = { id:"master-" + crypto.randomUUID(), master,
+        baseRev:old && !old.conflict ? old.baseRev : row && row.masterRev != null ? row.masterRev : null,
+        baseMaster:old && !old.conflict ? old.baseMaster : row && row.master || "", previous };
+      if(!saveMasters()){ if(old) masterOut[order] = old; else delete masterOut[order]; alert("Имя не сохранено: на устройстве нет места. Повторите после освобождения памяти."); return false; }
+      local[order] = master; saveLocal();
+      sendMasters();
+      return true;
+    }
+    function syncMasters(j){
+      masterProtocol = j.masterProtocol === 1;
+      const ack = Array.isArray(j.masterAck) ? j.masterAck : [];
+      for(const order of Object.keys(masterOut)) if(ack.includes(masterOut[order].id)){ delete masterOut[order]; delete local[order]; }
+      for(const row of masterRows()){
+        const p = masterOut[row.order];
+        if(!p){ if(local[row.order] === row.master) delete local[row.order]; continue; }
+        // Совпадение имени не подтверждает запрос: предыдущий POST ещё может изменить его.
+        if(!masterProtocol || p.conflict) continue;
+        if(p.baseRev == null && row.master === p.baseMaster) p.baseRev = row.masterRev;
+        if(p.baseRev !== row.masterRev && !(p.previous || []).includes(row.masterRev)){
+          p.conflict = true; delete local[row.order];
+          alert("Имя мастера изменено на другом устройстве. В заказе " + row.order + " сейчас: " + (row.master || "не выбран") + ". При необходимости выберите мастера снова.");
+        }
+      }
+      saveMasters();
+      sendMasters();
+    }
+    function sendMasters(){
+      if(!SHEET_API || !masterProtocol || navigator.onLine === false) return;
+      for(const order of Object.keys(masterOut)){
+        const p = masterOut[order];
+        if(p.conflict || p.baseRev == null || masterSending.has(order) || (masterTries[p.id] || 0) >= 3) continue;
+        masterSending.add(order); masterTries[p.id] = (masterTries[p.id] || 0) + 1; p.sent = true; saveMasters();
+        let device = "";
+        try { device = JSON.parse(localStorage.getItem("md_device") || '""'); } catch(e){}
+        let timer;
+        const request = postChannel(SHEET_API, { token:SHEET_TOKEN, kind:"yama-master", order, ...p, device }, "имя мастера (яма)", "yama-master");
+        Promise.race([request, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("timeout")), API_WAIT_MS); })])
+          .then(() => { clearTimeout(masterT1); clearTimeout(masterT2); masterT1 = setTimeout(load, 2500); masterT2 = setTimeout(load, 9000); })
+          .catch(() => {}).finally(() => { clearTimeout(timer); masterSending.delete(order); });
+      }
+    }
+    window.addEventListener("online", () => { Object.keys(masterTries).forEach(k => delete masterTries[k]); load(); });
+    for(const order of Object.keys(local)) if(!masterOut[order]) queueMaster(order, local[order]);
+
     // долг: записанное здесь и ещё не подтверждённое таблицей · отменённое здесь · кто записывает · форма
     let debtOut = [], debtDel = {}, debtAuthor = null, debtMode = null, debtHistOpen = false, debtShown = [];
     const debtDelTries = {};
+    let debtDelT1 = 0, debtDelT2 = 0;
     try { const o = JSON.parse(localStorage.getItem(DKEY_OUT) || "null"); if(Array.isArray(o)) debtOut = o; } catch(e){}
     try { const v = JSON.parse(localStorage.getItem(DKEY_DEL) || "null"); if(v && typeof v === "object") debtDel = v; } catch(e){}
     const saveDebtQueues = () => {
@@ -6515,22 +6584,24 @@
     function sendDebtDel(id){
       if(!SHEET_API) return;
       postChannel(SHEET_API, { token: SHEET_TOKEN, kind:"yama-debt-status", id, status: DEBT_GONE },
-                  "отмена записи долга ямы", "yama-debt-del").catch(() => {});
+                  "отмена записи долга ямы", "yama-debt-del").then(() => {
+        clearTimeout(debtDelT1); clearTimeout(debtDelT2);
+        debtDelT1 = setTimeout(load, 2500); debtDelT2 = setTimeout(load, 9000);
+      }).catch(() => {});
     }
     // досыл очереди: повтор безопасен — таблица дедуплицирует по id
     const flushDebtOut = () => debtOut.slice(0, DEBT_OUT_MAX).forEach(postDebt);
-    /* Перечитка подтверждает записи и отмены. Запись доехала — её id есть в ответе: в debt, а если её
-       уже успели отменить с другого устройства — в debtGone; из очереди убираем. Отмена доехала —
-       таблица больше не отдаёт запись действующей; пока отдаёт — повторяем, но не больше
-       DEBT_DEL_TRIES за загрузку, иначе «отдаёт → шлём → перечитываем» съело бы потолок записи. */
+    /* Подтверждение отмены — только debtGone. Пустой GET мог обогнать запись и ничего не
+       доказывает. Неподтверждённую отмену повторяем не больше DEBT_DEL_TRIES за загрузку. */
     function debtSync(j){
       if(!Array.isArray(j.debt)) return;               // старый скрипт таблицы: очереди не трогаем
-      const live = {}, seen = {};
-      j.debt.forEach(x => { if(x.id){ live[x.id] = 1; seen[x.id] = 1; } });
-      (Array.isArray(j.debtGone) ? j.debtGone : []).forEach(id => { seen[id] = 1; });
+      const seen = {};
+      j.debt.forEach(x => { if(x.id) seen[x.id] = 1; });
+      const gone = new Set(Array.isArray(j.debtGone) ? j.debtGone : []);
+      gone.forEach(id => { seen[id] = 1; });
       debtOut = debtOut.filter(x => !seen[x.id]);
       for(const k in debtDel){
-        if(!live[k]){ delete debtDel[k]; continue; }
+        if(gone.has(k)){ delete debtDel[k]; continue; }
         if((debtDelTries[k] = (debtDelTries[k] || 0) + 1) <= DEBT_DEL_TRIES) sendDebtDel(k);
       }
       saveDebtQueues();
@@ -6538,13 +6609,16 @@
 
     function load(){
       if(!SHEET_API) return;
+      const ownLoad = ++masterLoad;
       // токен обязателен: в ответе госномера машин, ручка не должна открываться случайному заходу
-      jsonpChannel(SHEET_API + "?type=yama&token=" + encodeURIComponent(SHEET_TOKEN),
+      jsonpChannel(SHEET_API + "?type=yama&token=" + encodeURIComponent(SHEET_TOKEN)
+        + "&masterIds=" + encodeURIComponent(Object.values(masterOut).map(p => p.id).join(",")),
                    "яма", "yama", j => {
+        if(ownLoad !== masterLoad) return;
         if(j && Array.isArray(j.days)){
           data = j;
           // имя, подтверждённое таблицей, из локальных снимаем — источник правды один
-          j.days.forEach(d => d.rows.forEach(r => { if(local[r.order] != null && local[r.order] === r.master) delete local[r.order]; }));
+          syncMasters(j);
           debtSync(j);                                 // то же для записей и отмен долга
           saveLocal(); save(); render();
         }
@@ -6566,16 +6640,9 @@
       const sel = e.target.closest(".ymaster");
       if(!sel) return;
       const order = sel.dataset.order, master = sel.value;
-      local[order] = master; saveLocal();
+      if(!queueMaster(order, master)){ render(); return; }
       sel.classList.toggle("is-empty", !master);
-      if(SHEET_API){
-        let device = "";
-        try { const v = JSON.parse(localStorage.getItem("md_device")); if(typeof v === "string") device = v; } catch(err){}
-        postChannel(SHEET_API, { token: SHEET_TOKEN, kind:"yama-master", order, master, device },
-                    "имя мастера (яма)", "yama-master")
-          .then(() => { setTimeout(load, 2500); setTimeout(load, 9000); })
-          .catch(() => {});
-      }
+      if(!masterProtocol) load();
     });
     if(monthEl) monthEl.addEventListener("change", () => { selMonth = monthEl.value; render(); });
 
@@ -6617,7 +6684,10 @@
       setTimeout(load, 2500); setTimeout(load, 9000);
     });
     // вернулась сеть — дослать записанное без неё
-    window.addEventListener("online", () => { if(debtOut.length){ flushDebtOut(); setTimeout(load, 2500); } });
+    window.addEventListener("online", () => {
+      Object.keys(debtDelTries).forEach(k => delete debtDelTries[k]);
+      if(debtOut.length || Object.keys(debtDel).length){ flushDebtOut(); setTimeout(load, 2500); }
+    });
 
     render();        // из кэша — мгновенно и офлайн
     flushDebtOut();  // досыл записей долга, не подтверждённых таблицей (повтор безопасен — дедуп по id)
@@ -6679,17 +6749,25 @@
     warnEl.insertAdjacentHTML("afterbegin", ICO.warn + " ");
 
     let notes = [];    // подтверждённые (из таблицы или кэша)
-    let pending = [];  // отправленные, ещё не увиденные в таблице
+    let pending = [];  // постоянная очередь: подтверждаем по id, а не по совпавшему тексту
+    try { const p = JSON.parse(localStorage.getItem("md_notes_out") || "null"); if(Array.isArray(p)) pending = p; } catch(e){}
+    let notesProtocol = false, notesSending = false, notesT1 = 0, notesT2 = 0, notesLoad = 0;
+    const noteTries = {};
     let author = null, cat = null, urg = URG_DEF, hintTimer = 0;
     let view = "active";   // какой список показываем: "active" | "archive"
-    const saveCache = () => { try { localStorage.setItem("md_notes", JSON.stringify([...pending, ...notes])); } catch(e){} };
+    const saveCache = () => {
+      try { localStorage.setItem("md_notes_out", JSON.stringify(pending)); }
+      catch(e){ return false; }
+      try { localStorage.setItem("md_notes", JSON.stringify(notes)); } catch(e){}
+      return true;
+    };
 
     // локальные отметки «отработано» (key → "готово" | ""): показываем сразу и офлайн,
     // до подтверждения таблицей; key = created + author + text.
     let override = {}, rendered = [];
     try { const o = JSON.parse(localStorage.getItem("md_notes_done") || "null"); if(o && typeof o === "object") override = o; } catch(e){}
     const saveOverride = () => { try { localStorage.setItem("md_notes_done", JSON.stringify(override)); } catch(e){} };
-    const keyOf    = n => `${n.created}${n.author}${n.text}`;
+    const keyOf    = n => n.id ? "id:" + n.id : `${n.created}${n.author}${n.text}`;
     const statusOf = n => { const k = keyOf(n); return (k in override) ? override[k] : String(n.status || ""); };
 
     // «2026-07-04 15:20» → «4 июля, 15:20»
@@ -6765,6 +6843,7 @@
             ${u.id === "mid" ? "" : `<span class="fb-urg u-${u.id}">${u.id === "hot" ? ICO.bolt + " " : ""}${u.label}</span>`}
             ${done ? `<span class="fb-done">${ICO.check} ${esc(done)}</span>` : ""}
             <span class="fb-when">${when(n.created)}</span>
+            ${pending.some(p => p.id === n.id) ? `<span class="fb-when">Ожидает отправки</span>` : ""}
           </div>
           <div class="fb-note-text">${esc(n.text)}</div>
           <div class="fb-note-foot">${done
@@ -6780,34 +6859,67 @@
     // читаем заметки из таблицы (JSONP — обходит CORS у Apps Script)
     function loadNotes(){
       if(!SHEET_API) return;
+      const ownLoad = ++notesLoad, oldOverride = { ...override };
       // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
       jsonpChannel(SHEET_API + "?type=notes&token=" + encodeURIComponent(SHEET_TOKEN),
                    "заметки", "notes", data => {
+        if(ownLoad !== notesLoad) return;
         if(data && Array.isArray(data.notes)){
           notes = data.notes;
-          // из pending убираем то, что уже долетело до таблицы
-          pending = pending.filter(p => !notes.some(n => n.text === p.text && n.author === p.author));
+          notesProtocol = data.notesProtocol === 1;
+          const ack = Array.isArray(data.noteAck) ? data.noteAck : [];
+          pending = pending.filter(p => !notes.some(n => n.id && n.id === p.id) && !ack.some(n => n.id === p.id));
           // локальную отметку гасим, когда таблица догнала её (или статус сменили руками);
           // «удалено» сверяем дословно — иначе чужое «готово» из таблицы воскресит удалённую
           const live = new Set();
-          for(const n of notes){
+          for(const n of [...notes, ...ack]){
             const k = keyOf(n), srv = String(n.status || "").trim(); live.add(k);
             if(!(k in override)) continue;
             const loc = override[k].trim();
-            if(loc.toLowerCase() === DELETED ? srv.toLowerCase() === DELETED : (loc !== "") === (srv !== "")) delete override[k];
+            if(oldOverride[k] === override[k] && loc.toLowerCase() === srv.toLowerCase()) delete override[k];
           }
           // сироты: строки в таблице уже нет (удалена совсем) — отметке жить незачем
           for(const k of Object.keys(override))
             if(!live.has(k) && !pending.some(p => keyOf(p) === k)) delete override[k];
           saveOverride();
-          warnEl.hidden = true;
+          warnEl.hidden = notesProtocol || !pending.length;
           saveCache(); render();
+          sendNotes();
         } else if(data){
           warnEl.hidden = false; // скрипт таблицы старый — заметок не отдаёт
         }
       });
     }
 
+    // После непрозрачного POST успех подтверждает GET. Три попытки на запрос до online/reload;
+    // очередь остаётся на устройстве и при busy, и при обрыве после серверной записи.
+    function recheckNotes(){
+      clearTimeout(notesT1); clearTimeout(notesT2);
+      notesT1 = setTimeout(loadNotes, 2500); notesT2 = setTimeout(loadNotes, 9000);
+    }
+    function sendNotes(){
+      if(!SHEET_API || !notesProtocol || notesSending || navigator.onLine === false) return;
+      const queue = pending.map(n => ({ token:SHEET_TOKEN, kind:"note", ...n, status:statusOf(n) }));
+      for(const n of notes){
+        const k = keyOf(n);
+        if(k in override) queue.push({ token:SHEET_TOKEN, kind:"note-status", id:n.id || "",
+          created:n.created, author:n.author, text:n.text, status:override[k] });
+      }
+      let i = 0;
+      notesSending = true;
+      const next = () => {
+        if(i >= queue.length){ notesSending = false; return; }
+        const body = queue[i++], key = body.kind + ":" + (body.id || keyOf(body)) + ":" + body.status;
+        if((noteTries[key] || 0) >= 3) return next();
+        noteTries[key] = (noteTries[key] || 0) + 1;
+        let timer;
+        const request = postChannel(SHEET_API, body, "заметки", body.kind);
+        Promise.race([request, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("timeout")), API_WAIT_MS); })])
+          .then(() => { recheckNotes(); next(); }).catch(() => { notesSending = false; }).finally(() => clearTimeout(timer));
+      };
+      next();
+    }
+    window.addEventListener("online", () => { Object.keys(noteTries).forEach(k => delete noteTries[k]); loadNotes(); });
     // отправка: сразу показываем в ленте (оптимистично) и шлём в таблицу фоном
     function send(){
       const text = textEl.value.trim();
@@ -6817,18 +6929,16 @@
       const d = new Date(), p = n => String(n).padStart(2, "0");
       const created = `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
       const urgLabel = urg.label;            // запоминаем ДО сброса чипа — иначе в таблицу уедет «Средняя»
-      pending.unshift({ created, cat: cat.label, author: author.name, text, status:"", urg: urgLabel });
+      const id = "note-" + crypto.randomUUID();
+      pending.unshift({ id, created, cat: cat.label, author: author.name, text, status:"", urg: urgLabel });
+      if(!saveCache()){ pending.shift(); hint("Не удалось сохранить на устройстве. Текст оставлен в форме — проверьте свободное место."); return; }
       view = "active";                       // свою заметку сразу видно, даже если смотрели архив
       saveCache(); render();
       textEl.value = "";
       urg = URG_DEF; pick(urgsEl, urgsEl.querySelector(`.fb-chip[data-urg="${URG_DEF.id}"]`));  // срочность не прилипает
-      hint("Заметка сохранена", true);
-      if(SHEET_API){
-        postChannel(SHEET_API, { token: SHEET_TOKEN, kind:"note", cat: cat.label, author: author.name, text, urg: urgLabel },
-                    "новая заметка", "note")
-          .then(() => { setTimeout(loadNotes, 2500); setTimeout(loadNotes, 9000); })
-          .catch(() => {});
-      }
+      hint("Сохранена на устройстве. Ожидает отправки в общую таблицу.");
+      sendNotes();
+      if(!notesProtocol) loadNotes();
     }
     sendEl.addEventListener("click", send);
     textEl.addEventListener("keydown", e => { if((e.ctrlKey || e.metaKey) && e.key === "Enter") send(); });
@@ -6854,7 +6964,10 @@
     function setStatus(n, status){
       disarm();
       override[keyOf(n)] = status;                 // оптимистично: карточка сразу гаснет/оживает/исчезает
+      const p = pending.find(p => p.id && p.id === n.id);
+      if(p){ p.status = status; saveCache(); }
       saveOverride(); render();
+      if(n.id){ sendNotes(); return; }
       if(SHEET_API){
         postChannel(SHEET_API, { token: SHEET_TOKEN, kind:"note-status",
                       created: n.created, author: n.author, text: n.text, status },
@@ -6865,7 +6978,7 @@
     }
 
     // сначала кэш (мгновенно и офлайн), затем свежие из таблицы
-    try { const c = JSON.parse(localStorage.getItem("md_notes") || "null"); if(Array.isArray(c)) notes = c; } catch(e){}
+    try { const c = JSON.parse(localStorage.getItem("md_notes") || "null"); if(Array.isArray(c)) notes = c.filter(n => !pending.some(p => p.id && p.id === n.id)); } catch(e){}
     render();
     loadNotes();
   })();
@@ -7085,16 +7198,13 @@
         if(data && Array.isArray(data.fines)){
           fines = data.fines;
           const ids = {}; fines.forEach(f => { if(f.id) ids[f.id] = 1; });
+          const gone = new Set(Array.isArray(data.fineGone) ? data.fineGone : []);
+          gone.forEach(id => { ids[id] = 1; });
           out = out.filter(f => !ids[f.id]);                 // долетевшее убираем из очереди
-          /* Отмена доехала, когда таблица перестала отдавать штраф действующим: новая ручка
-             отменённых не отдаёт вовсе, а старая (до обновления скрипта) отдаёт со статусом —
-             считаем оба случая подтверждением. Пока отдаёт как действующий — повторяем отмену,
-             но не больше DEL_TRIES за загрузку: иначе «отдаёт → шлём → перечитываем»
-             закрутилось бы в петлю и съело потолок записи. */
-          const liveIds = {};
-          fines.forEach(f => { if(f.id && String(f.status || "").trim() === "") liveIds[f.id] = 1; });
+          // Отмену подтверждают fineGone или явный status старого ответа, но не отсутствие
+          // штрафа в раннем GET. Повторы ограничены DEL_TRIES за загрузку.
           for(const k in del){
-            if(!liveIds[k]){ delete del[k]; continue; }
+            if(gone.has(k) || fines.some(f => f.id === k && String(f.status || "").trim())){ delete del[k]; continue; }
             if((delTries[k] = (delTries[k] || 0) + 1) <= DEL_TRIES) sendDel(k);
           }
           warnEl.hidden = true;
@@ -7151,7 +7261,13 @@
       setTimeout(loadFines, 2500); setTimeout(loadFines, 9000);
     });
     // отмена уходит в таблицу; «доехало» решает перечитка (ответ no-cors непрозрачен)
-    function sendDel(id){ post({ token: SHEET_TOKEN, kind:"fine-status", id: id, status: GONE }); }
+    let fineDelT1 = 0, fineDelT2 = 0;
+    function sendDel(id){
+      post({ token: SHEET_TOKEN, kind:"fine-status", id: id, status: GONE }).then(() => {
+        clearTimeout(fineDelT1); clearTimeout(fineDelT2);
+        fineDelT1 = setTimeout(loadFines, 2500); fineDelT2 = setTimeout(loadFines, 9000);
+      });
+    }
 
     // сначала кэш (мгновенно и офлайн), затем досыл очереди и свежие из таблицы
     try { const c = JSON.parse(localStorage.getItem("md_fines")  || "null"); if(Array.isArray(c)) fines = c; } catch(e){}
@@ -7161,7 +7277,7 @@
     render();
     flushOut();
     loadFines();
-    window.addEventListener("online", () => { flushOut(); setTimeout(loadFines, 2500); });
+    window.addEventListener("online", () => { Object.keys(delTries).forEach(k => delete delTries[k]); flushOut(); setTimeout(loadFines, 2500); });
   })();
 
   /* ===================== Анимации появления =====================
@@ -8036,6 +8152,16 @@
        Значит, запись всегда обычная — из каталога. */
     const byId = id => view().find(e => e.id === id) || null;
 
+    // updated — дата сверки цены, а не версия записи. Подтверждаем все сохраняемые поля.
+    function engineConfirmed(p, n){
+      // Те же пределы, что у kind:"engine" в GS: подтверждаем реально записываемые значения.
+      const limits = { id:60, name:80, fuel:20, oilKey:60, filterName:60, status:10, updated:10, extra:2000 };
+      return Object.keys(limits).every(k => {
+        const s = String(p[k] || "");
+        return (k === "id" || k === "name" ? s.trim() : s).slice(0, limits[k]) === String(n[k] || "");
+      }) && (Number(p.litres) || 0) === (Number(n.litres) || 0);
+      // filterPrice намеренно не сверяем: postEngine всегда пишет 0 (цены вводятся вручную).
+    }
     // читаем двигатели из таблицы (общий загрузчик каналов, как Заметки)
     function loadEngines(){
       if(!SHEET_API) return;
@@ -8044,7 +8170,7 @@
                    "двигатели ТО", "engines", data => {
         if(data && Array.isArray(data.engines)){
           engines = data.engines;
-          pending = pending.filter(p => !engines.some(n => n.id === p.id && n.updated === p.updated));
+          pending = pending.filter(p => !engines.some(n => engineConfirmed(p, n)));
           warnOld = false;
           saveCache(); updateAll();
         } else if(data){ warnOld = true; updateAll(); }   // старый скрипт — записи живут локально
@@ -8175,13 +8301,19 @@
       });
     }
     async function copyTo(text, btn, okLabel){
-      try { await navigator.clipboard.writeText(text); }
+      let ok = false;
+      try { await navigator.clipboard.writeText(text); ok = true; }
       catch(e){
         const ta = document.createElement("textarea"); ta.value = text;
         ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta);
         ta.select();
-        let ok=false; try { ok = document.execCommand("copy"); } catch(_){} ta.remove();
+        try { ok = document.execCommand("copy"); } catch(_){} ta.remove();
         if(!ok) window.MDLOG && window.MDLOG.err("ui", "копирование в буфер не сработало", "copyTo");
+      }
+      if(!ok){
+        if(btn){ clearTimeout(btn._copyT); btn.classList.remove("ok"); if(btn.dataset.copyLabel) btn.innerHTML = btn.dataset.copyLabel; }
+        alert("Не удалось скопировать. Выделите текст сметы и скопируйте вручную.");
+        return false;
       }
       if(btn){
         if(!btn.classList.contains("ok")) btn.dataset.copyLabel = btn.innerHTML;
@@ -8189,6 +8321,7 @@
         clearTimeout(btn._copyT);
         btn._copyT = setTimeout(() => { btn.innerHTML = btn.dataset.copyLabel; btn.classList.remove("ok"); }, 2200);
       }
+      return true;
     }
 
     /* ---- каркас рендерится один раз; список/карточку/форму обновляем по частям (фокус не теряем).
@@ -9261,9 +9394,10 @@
       else if(act === "slot-open"){ slotOpen[b.dataset.slot] = true; updateCard();
         const i = bodyEl.querySelector(`.to-slot-form[data-slot="${b.dataset.slot}"] [data-slot-name]`); if(i) i.focus(); }
       else if(act === "code"){                    // клик по номеру — в буфер уходит ТОЛЬКО номер (искать деталь)
-        copyTo(b.dataset.code || "");
-        b.classList.add("ok"); clearTimeout(b._codeT);
-        b._codeT = setTimeout(() => b.classList.remove("ok"), 1200);
+        copyTo(b.dataset.code || "").then(ok => {
+          clearTimeout(b._codeT); b.classList.toggle("ok", !!ok);
+          if(ok) b._codeT = setTimeout(() => b.classList.remove("ok"), 1200);
+        });
       }
       else if(act === "slot-close"){ slotOpen[b.dataset.slot] = false; updateCard(); }
       else if(act === "slot-del"){                       // убрали из сметы — забываем и в памяти машины

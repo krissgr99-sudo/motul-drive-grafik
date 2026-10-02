@@ -448,6 +448,56 @@
   /* ---------- данные ---------- */
   function save(){ try { lsSet(CKEY, JSON.stringify(data)); } catch(e){} }
   function saveLocal(){ try { lsSet(LKEY, JSON.stringify(local)); } catch(e){} }
+  // Очередь имён общая с порталом. baseRev защищает более новую правку другого устройства.
+  let masterOut = {}, masterProtocol = false;
+  const masterSending = new Set(), masterTries = {};
+  try { masterOut = JSON.parse(ls("md_yama_master_out") || "{}") || {}; } catch(e){}
+  function saveMasters(){ try { localStorage.setItem("md_yama_master_out", JSON.stringify(masterOut)); saveLocal(); return true; } catch(e){ return false; } }
+  const masterRows = () => (data && data.days || []).flatMap(d => d.rows);
+  function queueMaster(order, master){
+    const row = masterRows().find(r => r.order === order), old = masterOut[order];
+    const previous = old && !old.conflict ? (old.previous || []).concat(old.sent ? [old.id + "|" + old.master] : []).slice(-20) : [];
+    masterOut[order] = { id:"master-" + crypto.randomUUID(), master,
+      baseRev:old && !old.conflict ? old.baseRev : row && row.masterRev != null ? row.masterRev : null,
+      baseMaster:old && !old.conflict ? old.baseMaster : row && row.master || "", previous };
+    if(!saveMasters()){ if(old) masterOut[order] = old; else delete masterOut[order]; alert("Имя не сохранено: на устройстве нет места. Повторите после освобождения памяти."); return false; }
+    local[order] = master; saveLocal();
+    sendMasters();
+    return true;
+  }
+  function syncMasters(j){
+    masterProtocol = j.masterProtocol === 1;
+    const ack = Array.isArray(j.masterAck) ? j.masterAck : [];
+    for(const order of Object.keys(masterOut)) if(ack.includes(masterOut[order].id)){ delete masterOut[order]; delete local[order]; }
+    for(const row of masterRows()){
+      const p = masterOut[row.order];
+      if(!p){ if(local[row.order] === row.master) delete local[row.order]; continue; }
+      // Совпадение имени не подтверждает запрос: предыдущий POST ещё может изменить его.
+      if(!masterProtocol || p.conflict) continue;
+      if(p.baseRev == null && row.master === p.baseMaster) p.baseRev = row.masterRev;
+      if(p.baseRev !== row.masterRev && !(p.previous || []).includes(row.masterRev)){
+        p.conflict = true; delete local[row.order];
+        alert("Имя мастера изменено на другом устройстве. В заказе " + row.order + " сейчас: " + (row.master || "не выбран") + ". При необходимости выберите мастера снова.");
+      }
+    }
+    saveMasters();
+    sendMasters();
+  }
+  function sendMasters(){
+    if(!keyGet() || !masterProtocol || navigator.onLine === false) return;
+    for(const order of Object.keys(masterOut)){
+      const p = masterOut[order];
+      if(p.conflict || p.baseRev == null || masterSending.has(order) || (masterTries[p.id] || 0) >= 3) continue;
+      masterSending.add(order); masterTries[p.id] = (masterTries[p.id] || 0) + 1; p.sent = true; saveMasters();
+      let timer;
+      const request = fetch(API, { method:"POST", mode:"no-cors", headers:{ "Content-Type":"text/plain;charset=utf-8" },
+        body:JSON.stringify({ key:keyGet(), kind:"yama-master", order, ...p, device:deviceId() }) });
+      Promise.race([request, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("timeout")), 15000); })])
+        .then(scheduleReload).catch(() => {}).finally(() => { clearTimeout(timer); masterSending.delete(order); });
+    }
+  }
+  window.addEventListener("online", () => { Object.keys(masterTries).forEach(k => delete masterTries[k]); load(); });
+  for(const order of Object.keys(local)) if(!masterOut[order]) queueMaster(order, local[order]);
   // имя мастера: локальная отметка выигрывает, пока таблица её не подтвердила
   function masterOf(row){ return (local[row.order] != null ? local[row.order] : (row.master || "")); }
 
@@ -565,29 +615,14 @@
       if(!j || !Array.isArray(j.days)){ noAnswer(); return; }
       data = j;
       // имя, подтверждённое таблицей, из локальных снимаем — источник правды один
-      j.days.forEach(function(d){ d.rows.forEach(function(r){
-        if(local[r.order] != null && local[r.order] === r.master) delete local[r.order]; }); });
+      syncMasters(j);
       saveLocal(); save(); unlock(); render();
     };
     s.onerror = fail;
     setTimeout(fail, 15000);      // JSONP не умеет таймаутов сам
-    s.src = API + "?type=yama&key=" + encodeURIComponent(key) + "&callback=" + cb + "&t=" + Date.now();
+    s.src = API + "?type=yama&key=" + encodeURIComponent(key) + "&callback=" + cb + "&t=" + Date.now()
+      + "&masterIds=" + encodeURIComponent(Object.values(masterOut).map(p => p.id).join(","));
     document.head.appendChild(s);
-  }
-
-  function sendMaster(order, master, sel){
-    var key = keyGet();
-    if(!key) return;
-    var body = JSON.stringify({ key: key, kind: "yama-master", order: order,
-                                master: master, device: deviceId() });
-    fetch(API, { method: "POST", mode: "no-cors",
-      headers: { "Content-Type": "text/plain;charset=utf-8" }, body: body })
-      .then(function(){
-        // ответ no-cors прочитать нельзя — правду приносит перечитка журнала
-        if(sel){ sel.classList.add("saved"); setTimeout(function(){ sel.classList.remove("saved"); }, 1600); }
-        scheduleReload();
-      })
-      .catch(function(){});
   }
 
   /* Перечитка после отметки — ОДНА на серию, а не пара на каждую машину. Смена закрывает
@@ -732,11 +767,11 @@
     var sel = e.target.closest(".ymaster");
     if(!sel) return;
     var order = sel.dataset.order, master = sel.value;
-    local[order] = master; saveLocal();           // оптимистично: видно сразу и офлайн
+    if(!queueMaster(order, master)){ render(); return; }
     sel.classList.toggle("is-empty", !master);
     // счётчик «без мастера» в шапке дня полной перерисовкой не трогаем: она закрыла бы
     // раскрытый день прямо под пальцем. Обновится при ближайшей перечитке журнала.
-    sendMaster(order, master, sel);
+    if(!masterProtocol) load();
   });
 
   monEl.addEventListener("change", function(){ selMonth = monEl.value; render(); });
