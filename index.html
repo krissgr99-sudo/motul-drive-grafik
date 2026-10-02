@@ -422,11 +422,21 @@
     color:var(--text);font:inherit;font-weight:700;font-size:12px;cursor:pointer;flex:none;transition:background .15s,border-color .15s,color .15s}
   .tpl-copy:hover{border-color:var(--accent-soft);color:var(--accent-soft);background:var(--weekend)}
   .tpl-copy.ok{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)}
+  .tpl-build{flex-basis:100%}
+  .tpl-build[aria-pressed="true"]{border-color:var(--accent-soft);color:var(--accent-soft)}
+  .tpl-actions:has(.tpl-build){flex-wrap:wrap}
+  .tpl-builder{margin:16px 20px;padding:16px;background:var(--fill-soft);border:1px solid var(--line);border-radius:14px}
+  .tpl-builder[hidden]{display:none}
+  .tpl-builder p{margin:0 0 12px;color:var(--muted);font-size:12px;line-height:1.7}
+  .tpl-builder fieldset{border:0;padding:0;margin:12px 0 0;min-width:0}
+  .tpl-builder legend{font-weight:700;font-size:13px;margin-bottom:8px}
+  .tpl-addon-options{display:flex;flex-wrap:wrap;gap:8px}
   @media(max-width:720px){
     .tpl-grid,.tpl-grid.is-landing{grid-template-columns:1fr}
     .tpl-card-head{padding:16px;gap:12px}
     .tpl-brand-block{min-width:40px}
     .tpl-body{margin:12px 16px;padding:14px}
+    .tpl-builder{margin:12px 16px;padding:14px}
     .tpl-actions{padding:16px;flex-wrap:wrap}
     .tpl-copy{flex:1;min-width:140px}
     .tpl-price{flex:1;min-width:140px}
@@ -3544,10 +3554,45 @@
   const haldexBlock = (h, sink) => CDOC.block({ head: h.head, intro: h.intro,
     variants: h.variants.map(v => priceVariant(v.label, v.items, sink)) });
 
+  // Выбор допуслуги хранит только индекс её варианта; рецепты и цены остаются в исходных данных.
+  function tplAddonGroups(t){
+    const box = BOXES[t.box] || {}, groups = [];
+    const add = (id, title, kind, block, lock = false) => {
+      const labels = kind === "axles" ? ["Motul", ...(block.origKey ? ["Оригинал " + block.origBrand] : [])]
+        : kind === "detailed" ? ["Добавить"]
+        : block.variants.map((v, i) => /^\d/.test(v.label) ? "Вариант " + (i + 1) : v.label.replace(/:\s*$/, ""));
+      groups.push({ id, title, kind, block, lock, labels });
+    };
+    if(t.diffs) add("diffs", "Мосты и раздатка", "multi", DIFFS_REGULAR, t.lock);
+    if(t.diffsDetailed) add("detailed", "Трёхсекционный мост и раздатка", "detailed", DIFFS_DETAILED);
+    if(box.diffsBlock) add("box", "Мосты и раздатка", box.diffsBlock.variants ? "multi" : "detailed", box.diffsBlock);
+    const axles = t.axles || box.axles;
+    if(axles) add("axles", axles.head, "axles", axles);
+    if(box.haldex) add("haldex", "Муфта Haldex", "haldex", box.haldex);
+    return groups;
+  }
+  function tplAddonBlock(g, choice, sink){
+    if(choice === "none") return "";
+    let b = g.block;
+    const index = g.labels.findIndex((_, i) => choice === String(i));
+    if(index >= 0){
+      // Один вариант: убираем «2 варианта» и сравнение масел, которого в этой смете уже нет.
+      b = { ...b, intro: undefined, note: undefined };
+      if(g.kind === "axles"){
+        b.motulKey = index === 0 ? b.motulKey : undefined;
+        b.origKey = index === 1 ? b.origKey : undefined;
+      } else if(b.variants) b.variants = [b.variants[index]];
+    }
+    if(g.kind === "multi") return diffsMultiBlock(b, g.lock, sink);
+    if(g.kind === "detailed") return diffsDetailedBlock(b, sink);
+    if(g.kind === "axles") return axlesBlock(b, sink);
+    return haldexBlock(b, sink);
+  }
+
   /* Смета шаблона → { text, stale, unknown, items, totals }: АКПП + при необходимости мосты/раздатка/Haldex.
      text — то, что уходит клиенту; stale — «есть неподтверждённые цены» (бейдж на карточке);
      unknown — «есть позиция без цены» (в тексте «уточню»); totals — цены основных вариантов замены. */
-  function tplDoc(t){
+  function tplDoc(t, choices = {}){
     const box = BOXES[t.box];
     let svc = box && box[t.type];
     if(!svc) return { text: "", stale: false, unknown: false, items: [] };   // нет данных по услуге (заготовка) — пусто
@@ -3562,14 +3607,7 @@
     const primary = (combo ? comboVariants(svc, combo.pans) : svc.variants(filterKey))
       .map(v => priceVariant(v.label, v.items, seen));
     const blocks = [CDOC.block({ variants: primary })];
-    if(t.diffs)         blocks.push(diffsMultiBlock(DIFFS_REGULAR, t.lock, seen)); // ZF: мосты + раздатка поузлово (Motul/оригинал), блокировка = LSD-масло зада
-    if(t.diffsDetailed) blocks.push(diffsDetailedBlock(DIFFS_DETAILED, seen));     // поузловой расчёт мостов
-    if(box.diffsBlock)  blocks.push(box.diffsBlock.variants               // сноска мостов на уровне коробки (Mercedes 9G/7G):
-      ? diffsMultiBlock(box.diffsBlock, false, seen)                      //   2 варианта с «Итого» у каждого
-      : diffsDetailedBlock(box.diffsBlock, seen));                        //   или один поузловой список
-    const axles = t.axles || box.axles;                    // t.axles — переопределение блока мостов на карточке (Торсен G055/G060)
-    if(axles) blocks.push(axlesBlock(axles, seen));         // простой блок мостов (данные в коробке или карточке)
-    if(box.haldex) blocks.push(haldexBlock(box.haldex, seen));
+    tplAddonGroups(t).forEach(g => blocks.push(tplAddonBlock(g, choices[g.id], seen)));
     return { text: CDOC.doc({ title: head, blocks }),
              stale:   seen.some(l => l.stale),
              unknown: seen.some(l => l.price == null),
@@ -4408,6 +4446,8 @@
     searchInp.insertAdjacentHTML("beforebegin", ICO.search);
     let activeBrand = "all", activeBox = "all", query = "", expandedBrand = null;
     const filters = { type:null, pan:null, engine:null, lock:null, axle:null };
+    const drafts = new Map(); // по объекту TEMPLATES: поиск/фильтры/сверка не сбрасывают выбор и не меняют другие карточки
+    const currentDoc = t => tplDoc(t, drafts.get(t));
     const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
     const cnt = n => n ? `<span class="tpl-count">${n}</span>` : "";   // бейдж-счётчик у вкладок/фильтров
     const plural = (n,a,b,c) => { const m=n%100,d=n%10; return n+" "+(m>=11&&m<=14?c:d===1?a:d>=2&&d<=4?b:c); };
@@ -4660,7 +4700,7 @@
       const list = visible();
       resultTitle.textContent = query ? "Результаты поиска" : `${activeBrand} · ${activeBox}`;
       hintEl.textContent = plural(list.length,"смета","сметы","смет");
-      copyAllBtn.disabled = !list.some(t => !t.todo && tplBody(t));
+      copyAllBtn.disabled = !list.some(t => !t.todo && currentDoc(t).text);
       // Подсказка «машина → коробка»: почему показаны эти карточки + напоминание проверить VIN.
       const cars = carsForQuery();
       const carHint = cars.length ? (
@@ -4712,7 +4752,9 @@
       grid.innerHTML = carHint + artHint(true) + list.map((t,i)=>{
         const tags = tplTags(t).map(x=>`<span class="tpl-tag">${esc(x)}</span>`).join("");
         const logo = BRAND_LOGOS[t.brand] || "";
-        const doc = tplDoc(t);
+        const choices = drafts.get(t);
+        const doc = currentDoc(t);
+        const addons = tplAddonGroups(t);
         const body = doc.text;
         const placeholder = t.todo || !body;   // нет данных по услуге → показываем как заготовку
         const totals = doc.totals || [];
@@ -4726,8 +4768,8 @@
         // мягкий флаг «проверить»: цена не подтверждена (в смете она ПРЕЖНЯЯ) или позиции нет в PRICE.
         // Бейдж живёт только на экране — в буфер уходит ровно смета (правило 9).
         if(doc.stale || doc.unknown) badges.push(`<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>`);
-        return `<div class="tpl-card ${placeholder?"is-todo":""}">
-          <button class="tpl-card-head" type="button" aria-expanded="false" aria-controls="tpl-detail-${i}">
+        return `<div class="tpl-card ${placeholder?"is-todo":""} ${choices?"open":""}">
+          <button class="tpl-card-head" type="button" aria-expanded="${!!choices}" aria-controls="tpl-detail-${i}">
             <span class="tpl-brand-block">
               ${logo ? `<span class="tpl-brand-logo">${logo}</span>` : `<span class="tpl-brand-tag">${esc(t.brand)}</span>`}
             </span>
@@ -4741,6 +4783,13 @@
           </button>
           <div class="tpl-collapse" id="tpl-detail-${i}"><div class="tpl-collapse-inner">
             ${tags ? `<div class="tpl-tags">${tags}</div>` : ""}
+            ${!placeholder && addons.length ? `<div class="tpl-builder" id="tpl-builder-${i}" ${choices?"":"hidden"}>
+              <p>Смета на основе шаблона. Выберите допуслуги для клиента; масло и работы АКПП остаются прежними. Ниже — точный текст для копирования.</p>
+              ${addons.map(g => `<fieldset><legend>${esc(g.title)}</legend><div class="tpl-addon-options">
+                ${[["none", "Не добавлять"], ["all", g.labels.length===1 ? g.labels[0] : "Предложить варианты"], ...(g.labels.length>1 ? g.labels.map((label, n) => [String(n), label]) : [])].map(([id, label]) =>
+                  `<button class="tpl-chip ${(choices?.[g.id] || "all")===id?"active":""}" type="button" aria-pressed="${(choices?.[g.id] || "all")===id}" data-i="${i}" data-addon="${g.id}" data-choice="${id}">${esc(label)}</button>`).join("")}
+              </div></fieldset>`).join("")}
+            </div>` : ""}
             ${placeholder
               ? `<div class="tpl-todo-note">Шаблон ещё не заполнен — пришли цифры, и он появится здесь.</div>`
               : `<div class="tpl-body">${esc(body)}</div>`}
@@ -4748,6 +4797,7 @@
           ${placeholder ? "" : `<div class="tpl-actions">
             <div class="tpl-price"><span class="tpl-price-label">Замена масла${totals.length>1?" · варианты в смете":""}</span><strong>${esc(amount)}</strong></div>
             <button class="tpl-copy" type="button" data-i="${i}">${ICO.copy} Копировать</button>
+            ${addons.length ? `<button class="tpl-copy tpl-build" type="button" data-i="${i}" aria-pressed="${!!choices}" aria-controls="tpl-builder-${i}">${choices?"Вернуть исходный шаблон":"Собрать на основе"}</button>` : ""}
           </div>`}
         </div>`;
       }).join("");
@@ -4759,14 +4809,26 @@
           head.setAttribute("aria-expanded", open ? "true" : "false");
         });
       });
-      grid.querySelectorAll(".tpl-copy").forEach(btn=>{
+      grid.querySelectorAll(".tpl-copy:not(.tpl-build)").forEach(btn=>{
         btn.addEventListener("click", e=>{
           e.stopPropagation();
           const t = list[+btn.dataset.i];
-          copyText(tplBody(t), btn, ICO.check + " Вставьте в WhatsApp");
+          copyText(currentDoc(t).text, btn, ICO.check + " Вставьте в WhatsApp");
           if(window.MDLOG) window.MDLOG.copy(tplCode(t));   // А3: лог нажатия «Копировать» (буфер не трогаем, КЛ2)
         });
       });
+      grid.querySelectorAll(".tpl-build").forEach(btn => btn.addEventListener("click", () => {
+        const t = list[+btn.dataset.i];
+        if(drafts.has(t)) drafts.delete(t); else drafts.set(t, {});
+        render();
+        grid.querySelector(`.tpl-build[data-i="${btn.dataset.i}"]`)?.focus({ preventScroll:true });
+      }));
+      grid.querySelectorAll("[data-addon]").forEach(btn => btn.addEventListener("click", () => {
+        const t = list[+btn.dataset.i];
+        drafts.get(t)[btn.dataset.addon] = btn.dataset.choice;
+        render();
+        grid.querySelector(`[data-i="${btn.dataset.i}"][data-addon="${btn.dataset.addon}"][data-choice="${btn.dataset.choice}"]`)?.focus({ preventScroll:true });
+      }));
       equalizeHeads();
     }
 
@@ -4816,7 +4878,7 @@
     searchInp.addEventListener("input", ()=>{ query = searchInp.value.trim().toLowerCase(); render(); });
     copyAllBtn.addEventListener("click", ()=>{
       // между карточками разделитель ДЛИННЕЕ внутреннего (CDOC.SEP), иначе границы смет сливаются с границами блоков
-      const text = visible().map(t=>[t, tplBody(t)]).filter(([t,b])=>!t.todo && b)
+      const text = visible().map(t=>[t, currentDoc(t).text]).filter(([t,b])=>!t.todo && b)
         .map(([t,b])=>`${t.brand} · ${tplTitle(t)}\n\n${b}`).join(`\n\n${CDOC.SEP} ${CDOC.SEP}\n\n`);
       if(text) copyText(text, copyAllBtn);
     });
