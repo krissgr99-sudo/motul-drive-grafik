@@ -1963,16 +1963,15 @@
         <div class="pay-cards" id="pay-cards"></div>
         <div class="pay-layout">
           <form class="fb-form" id="pay-form">
-            <div class="fb-h">Записать движение</div>
-            <div class="fb-sub">Аванс и выплата уменьшают остаток за выбранный месяц.</div>
+            <div class="fb-h">Записать вывод</div>
+            <div class="fb-sub">Вывод уменьшает остаток за выбранный месяц.</div>
             <div class="pay-form-grid">
               <label class="ui-field"><span>Сотрудник</span><select class="ui-select" id="pay-employee" required></select></label>
-              <label class="ui-field"><span>Что записать</span><select class="ui-select" id="pay-action"><option value="advance">Аванс</option><option value="payment">Выплата зарплаты</option><option value="bonus">Премия</option><option value="deduction">Дополнительное удержание</option></select></label>
               <label class="ui-field"><span>Сумма, ₽</span><input class="ui-input" id="pay-amount" inputmode="decimal" autocomplete="off" required></label>
               <label class="ui-field"><span>Дата выдачи</span><input class="ui-input" id="pay-date" type="date" required></label>
-              <label class="ui-field"><span>Комментарий</span><input class="ui-input" id="pay-note" maxlength="200" placeholder="Необязательно; для удержания — причина"></label>
+              <label class="ui-field"><span>Комментарий</span><input class="ui-input" id="pay-note" maxlength="200" placeholder="Необязательно"></label>
               <p class="pay-note" id="pay-form-period"></p>
-              <button class="fb-send" id="pay-save" type="submit">Записать аванс</button>
+              <button class="fb-send" id="pay-save" type="submit">Записать вывод</button>
               <button class="ui-btn" id="pay-retry" type="button" hidden>Повторить сохранение</button>
             </div>
           </form>
@@ -7417,7 +7416,7 @@
       { page:"prodazhi", ico:"chart",    name:"Продажи", hint:"Присадки и масло по дням" },
       { page:"yama",     ico:"list",     name:"Яма",     hint:"Журнал работ и мастера по дням" },
       { page:"shtrafy",  ico:"flag",     name:"Штрафы",  hint:"Дисциплина и лучший месяца" },
-      { page:"zarplaty", ico:"cash",     name:"Зарплаты",hint:"Оклады, авансы и выплаты" },
+      { page:"zarplaty", ico:"cash",     name:"Зарплаты",hint:"Оклады и выводы" },
       { page:"zametki",  ico:"chat",     name:"Заметки", hint:"Пожелания команды" },
     ],
   };
@@ -9631,8 +9630,7 @@
   (function(){
     const $ = id => document.getElementById(id);
     const form=$('pay-form'), rateForm=$('pay-rate-form');
-    const TYPES={advance:'Аванс',payment:'Выплата зарплаты',bonus:'Премия',deduction:'Удержание'};
-    const BUTTONS={advance:'Записать аванс',payment:'Записать выплату',bonus:'Записать премию',deduction:'Записать удержание'};
+    const TYPES={advance:'Вывод',payment:'Вывод',bonus:'Премия',deduction:'Удержание'};
     const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const money = kop => kop == null ? '—' : (kop/100).toLocaleString('ru-RU',{maximumFractionDigits:2})+' ₽';
     const localDate = () => new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Moscow',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
@@ -9675,8 +9673,8 @@
           <div class="pay-balance">${money(s.balanceKop == null ? null : Math.abs(s.balanceKop))}</div>
           ${s.dueDate ? `<p class="pay-note">День выплаты · ${dateLabel(s.dueDate)}${s.dueDate<localDate() && s.balanceKop>0 ? ' · есть остаток после срока' : ''}</p>` : ''}
           <div class="pay-lines">${parts}${repLine}${s.bonusKop ? line('Премии',s.bonusKop) : ''}</div>${repNote}
-          <div class="pay-lines pay-divider">${line('Ручные удержания',s.deductionKop)}${line('Авансы',s.advanceKop)}${line('Выдана зарплата',s.paidKop)}</div>
-          ${remainingToPay(s)>0 ? `<button class="ui-btn" type="button" data-pay-remaining="${esc(s.name)}">Выплатить остаток</button>${rep && !rep.complete ? '<p class="pay-note">Подставит остаток фиксированной части. Доплату за замены уточним отдельно.</p>' : ''}` : ''}
+          <div class="pay-lines pay-divider">${line('Вывод',s.advanceKop+s.paidKop)}</div>
+          ${remainingToPay(s)>0 ? `<button class="ui-btn" type="button" data-pay-remaining="${esc(s.name)}">Вывести остаток</button>${rep && !rep.complete ? '<p class="pay-note">Подставит остаток фиксированной части. Доплату за замены уточним отдельно.</p>' : ''}` : ''}
         </section>`;
       }).join('');
     }
@@ -9693,7 +9691,7 @@
         ${r.note ? `<div class="pay-entry-note">${esc(r.note)}</div>` : ''}
         <div class="pay-entry-foot"><span>${dateLabel(r.date)}</span>${!r.cancel ? `<button class="fb-undo" type="button" data-pay-cancel="${esc(r.id)}"${pending ? ' disabled' : ''}>Отменить</button>` : ''}</div>
         ${r.cancel ? `<p class="pay-note">Отменено ${dateLabel(r.cancel.date)} · ${esc(r.cancel.note)}</p>` : ''}
-      </div>`).join('') : '<div class="fb-empty">Движений за этот месяц пока нет. Запишите аванс или выплату — они появятся здесь.</div>';
+      </div>`).join('') : '<div class="fb-empty">Движений за этот месяц пока нет. Запишите вывод — он появится здесь.</div>';
     }
     function select(name){
       selected=name; $('pay-employee').value=name;
@@ -9757,14 +9755,13 @@
     $('pay-refresh').addEventListener('click',load); $('pay-period').addEventListener('change',load);
     $('pay-sync').addEventListener('click',()=>{if(data && !pending) send({id:crypto.randomUUID(),action:'sync-replacements'});});
     $('pay-employee').addEventListener('change',()=>select($('pay-employee').value));
-    $('pay-action').addEventListener('change',()=>{ $('pay-save').textContent=BUTTONS[$('pay-action').value]; form.querySelector('label:has(#pay-date) span').textContent=['payment','advance'].includes($('pay-action').value) ? 'Дата выдачи' : 'Дата записи'; });
     $('pay-show-canceled').addEventListener('change',renderHistory);
     $('pay-cards').addEventListener('click',e=>{
       const b=e.target.closest('[data-pay-person],[data-pay-remaining]'); if(!b || pending || loading) return;
       select(b.dataset.payPerson || b.dataset.payRemaining);
       if(b.dataset.payRemaining){
         const s=data.employees.find(s=>s.name===selected), kop=remainingToPay(s);
-        $('pay-action').value='payment'; $('pay-save').textContent=BUTTONS.payment; $('pay-amount').value=String(kop/100); $('pay-date').value=localDate();
+        $('pay-amount').value=String(kop/100); $('pay-date').value=localDate();
         if(s.replacements && !s.replacements.complete) message('Подставлен остаток фиксированной части: '+money(kop)+'. Доплата за замены требует сверки; после уточнения она останется к выдаче отдельно.');
         else if(s.replacements && !s.replacements.closed) message('Подставлен остаток на сегодня: '+money(kop)+'. Период замен ещё идёт; новые замены увеличат остаток после этой выплаты.');
         form.scrollIntoView({behavior:'smooth',block:'start'}); $('pay-amount').focus({preventScroll:true});
@@ -9772,13 +9769,12 @@
     });
     form.addEventListener('submit',e=>{
       e.preventDefault(); if(!data || pending || loading || $('pay-period').value!==data.period) return;
-      const kop=amount($('pay-amount').value), employee=$('pay-employee').value, action=$('pay-action').value, date=$('pay-date').value, note=$('pay-note').value.trim();
+      const kop=amount($('pay-amount').value), employee=$('pay-employee').value, action='payment', date=$('pay-date').value, note=$('pay-note').value.trim();
       if(kop==null || kop<=0){message('Введите сумму больше нуля, не более двух знаков после запятой.',true); $('pay-amount').focus(); return;}
       if(!date || date>localDate()){message('Дата не может быть в будущем.',true);return;}
-      if(action==='deduction' && !note){message('Напишите причину удержания.',true);$('pay-note').focus();return;}
       const s=data.employees.find(s=>s.name===employee);
       if(!s || !s.rate){message('Сначала задайте оклад сотрудника для этого месяца.',true);return;}
-      if(['advance','payment'].includes(action) && s.balanceKop!=null && kop>s.balanceKop && !confirm(`После выдачи ${money(kop)} у ${employee} будет переплата ${money(kop-s.balanceKop)}. Записать?`)) return;
+      if(s.balanceKop!=null && kop>s.balanceKop && !confirm(`После выдачи ${money(kop)} у ${employee} будет переплата ${money(kop-s.balanceKop)}. Записать?`)) return;
       send({id:crypto.randomUUID(),action,employee,period:data.period,date,amountKop:kop,note,ref:''});
     });
     $('pay-retry').addEventListener('click',()=>{ if(pending) send(pending); });
@@ -9835,7 +9831,7 @@
     prodazhi: { t:"Продажи",         r:"Присадки и масло · выручка и копилки по дням" },
     yama:     { t:"Яма",             r:"Работы по машинам · итог дня и доля мастеров" },
     shtrafy:  { t:"Штрафы",          r:"Дисциплина команды · кто, за что и сколько" },
-    zarplaty: { t:"Зарплаты",        r:"Оклады, авансы и выплаты · остаток по каждому сотруднику" },
+    zarplaty: { t:"Зарплаты",        r:"Оклады и выводы · остаток по каждому сотруднику" },
     zametki:  { t:"Заметки и пожелания", r:"Что починить, что добавить — пиши, увидят все" },
   };
   const titleT = document.querySelector(".title .t");
