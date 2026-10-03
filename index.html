@@ -2076,6 +2076,40 @@
     plus:   _ic('<path d="M8 3v10M3 8h10"/>'),
   };
 
+  /* Скрытым разделам сохраняем данные и состояние, но DOM строим при открытии.
+     Начальные GET открытого раздела идут сразу; остальные — с интервалом в фоне.
+     Досыл очередей и перечитки после записи остаются независимыми от видимости. */
+  const pendingPageRenders = new Map(), initialPageLoads = [];
+  function deferHiddenRender(id, render){
+    if(document.getElementById("page-" + id).hidden){
+      pendingPageRenders.set(id, render);
+      return true;
+    }
+    pendingPageRenders.delete(id);
+    return false;
+  }
+  function runInitialLoad(job){
+    if(job.started) return;
+    job.started = true;
+    clearTimeout(job.timer);
+    job.load();
+  }
+  function deferInitialLoad(pages, load, hasPending = false){
+    const job = { pages, load, started:false, timer:0 };
+    initialPageLoads.push(job);
+    if(hasPending) runInitialLoad(job);  // запись с прошлого сеанса не ждёт входа в раздел
+  }
+  function openPageWork(id){
+    const render = pendingPageRenders.get(id);
+    if(render) render();
+    initialPageLoads.filter(job => job.pages.includes(id)).forEach(runInitialLoad);
+  }
+  function startBackgroundLoads(){
+    initialPageLoads.filter(job => !job.started).forEach((job, index) => {
+      job.timer = setTimeout(() => runInitialLoad(job), 4000 + index * 1500);
+    });
+  }
+
   /* =========================================================
      ДАННЫЕ — единственное место правок (люди, обязанности, график)
      ========================================================= */
@@ -2272,7 +2306,11 @@
   }); }
   let ROWS = scheduleRows();
 
+  let scheduleDetailsDirty = true;
   function renderScheduleDetails(){
+  // Подробный месяц не нужен до раскрытия; печать раскрывает и строит его сама.
+  if(!document.getElementById("sched-details").open){ scheduleDetailsDirty = true; return; }
+  scheduleDetailsDirty = false;
   // Тело таблицы (десктоп)
   document.getElementById("rows").innerHTML = ROWS.map(r => {
     const cells = r.cells.map(c => `
@@ -2360,7 +2398,8 @@
           <span class="sched-daynum">${Number(row.dd)}</span><span class="sched-daydots" aria-hidden="true">${row.cells.filter(c => c.working).map(c => `<i data-color="${c.color}"></i>`).join("")}</span></button>`;
       }).join("");
       if(focused !== undefined) grid.querySelector(`[data-sched-day="${focused}"]`)?.focus({preventScroll:true});
-      [el("rows"), el("cards")].forEach(parent => Array.from(parent.children).forEach((node, i) => { node.hidden = monthOf(ROWS[i]) !== month; }));
+      if(!scheduleDetailsDirty)
+        [el("rows"), el("cards")].forEach(parent => Array.from(parent.children).forEach((node, i) => { node.hidden = monthOf(ROWS[i]) !== month; }));
     }
     function select(index){ selected = index; month = monthOf(ROWS[selected]); render(); }
     function shiftMonth(step){
@@ -2390,7 +2429,15 @@
     });
     // В печати закрытый details тоже содержит таблицу. Экранное состояние восстанавливаем.
     let printOpen = null;
-    window.addEventListener("beforeprint", () => { if(printOpen === null) printOpen = details.open; details.open = true; });
+    details.addEventListener("toggle", () => {
+      if(details.open && scheduleDetailsDirty){ renderScheduleDetails(); render(); }
+    });
+    window.addEventListener("beforeprint", () => {
+      if(printOpen === null) printOpen = details.open;
+      details.open = true;
+      if(scheduleDetailsDirty) renderScheduleDetails();
+      render();
+    });
     window.addEventListener("afterprint", () => { if(printOpen !== null) details.open = printOpen; printOpen = null; });
     render();
   })();
@@ -4695,6 +4742,7 @@
 
     function render(){
       // По умолчанию (никакая марка не выбрана и пустой поиск) — стартовый экран с плитками.
+      if(deferHiddenRender("shablony", render)) return;
       const landing = activeBrand==="all" && !query;
       grid.classList.toggle("is-landing", landing);
       if(landing){
@@ -5087,6 +5135,7 @@
 
     function render(){
       const list = visible();
+      if(deferHiddenRender("tseny", render)) return;
       const groups = Object.keys(PART_CATS)
         .map(k=>[k, list.filter(p=>p[5]===k).sort((a,b)=> brandIdx[a[0]]-brandIdx[b[0]] || a[2].localeCompare(b[2],"ru") || a[4]-b[4])])
         .filter(([,l])=>l.length);
@@ -5479,7 +5528,7 @@
     }
   }
   // Ответ придёт через сотни мс — к этому моменту разделы объявлены и хуки на месте.
-  loadCheckedDates();
+  deferInitialLoad(["glavnaya", "shablony", "to", "tseny", "komplekty"], loadCheckedDates);
   /* Отправка подтверждения (зовёт экран сверки из «Цен»). Живёт здесь, а не в том IIFE:
      SHEET_API объявлен ниже него, и обращаться к нему оттуда можно было бы только по счастливой
      случайности — из отложенного обработчика. Пакет по 200 ключей: приёмник режет на 400,
@@ -5956,6 +6005,7 @@
 
     function render(){
       const ch = cur;
+      if(deferHiddenRender("prodazhi", render)) return;
       // вкладки каналов: активная подсвечена
       if(tabsEl) tabsEl.querySelectorAll(".sales-tab").forEach(b => {
         const act = b.dataset.ch === ch.key;
@@ -6171,7 +6221,7 @@
        вместе с номерами заказов и суммами чеков. Отметку settled оставляем здесь: у промывки
        есть встроенный резерв, и вывод не должен ждать ответа Apps Script. */
     CH.flush.settled = true; render();
-    (function loadSalesApi(){
+    function loadSalesApi(){
       // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
       jsonpChannel(SHEET_API + "?type=sales&token=" + encodeURIComponent(SHEET_TOKEN),
                    "продажи", "sales", j => {
@@ -6184,8 +6234,9 @@
             saveLS("md_sales_oil", j.oil); // кэш пишем один раз — при приходе свежих данных
         }
       });
-    })();
-    loadOps();     // свежие выводы владельца + операции масла из Google-таблицы
+    }
+    deferInitialLoad(["prodazhi"], loadSalesApi);
+    deferInitialLoad(["prodazhi"], loadOps, CH.oil.pend.length > 0);
     // Досыл масла запускает успешный loadOps, после проверки обработанных id.
   })();
 
@@ -6383,6 +6434,7 @@
 
     function render(){
       const days = (data && data.days) || [];
+      if(deferHiddenRender("yama", render)) return;
       // месяцы из данных; по умолчанию — самый свежий
       const months = [];
       days.forEach(d => { const k = d.date.slice(0, 7); if(months.indexOf(k) === -1) months.push(k); });
@@ -6691,7 +6743,7 @@
 
     render();        // из кэша — мгновенно и офлайн
     flushDebtOut();  // досыл записей долга, не подтверждённых таблицей (повтор безопасен — дедуп по id)
-    load();          // свежий журнал из таблицы
+    deferInitialLoad(["yama"], load, Object.keys(masterOut).length > 0 || debtOut.length > 0 || Object.keys(debtDel).length > 0);
   })();
 
   /* ===================== ЗАМЕТКИ (пожелания команды) =====================
@@ -6818,6 +6870,7 @@
 
     function render(){
       const byDate = (a,b) => String(b.created).localeCompare(String(a.created));
+      if(deferHiddenRender("zametki", render)) return;
       const all = [...pending, ...notes].filter(n => !isDel(n));   // удалённые не показываем нигде
       // активные — срочные сверху, внутри срочности новые первыми; архив — просто по дате
       const active  = all.filter(n => !statusOf(n).trim())
@@ -6980,7 +7033,7 @@
     // сначала кэш (мгновенно и офлайн), затем свежие из таблицы
     try { const c = JSON.parse(localStorage.getItem("md_notes") || "null"); if(Array.isArray(c)) notes = c.filter(n => !pending.some(p => p.id && p.id === n.id)); } catch(e){}
     render();
-    loadNotes();
+    deferInitialLoad(["zametki"], loadNotes, pending.length > 0 || Object.keys(override).length > 0);
   })();
 
   /* ===================== ШТРАФЫ (дисциплина команды) =====================
@@ -7109,6 +7162,7 @@
     /* ---- рендер: табло месяца, «лучший» и лента ---- */
     function render(){
       // отменённых в ленте нет вовсе: ни строки, ни числа в счёте, ни в «за всё время»
+      if(deferHiddenRender("shtrafy", render)) return;
       const all = [...out, ...fines].filter(f => !isGone(f))
         .sort((a,b) => String(b.created).localeCompare(String(a.created)));
       // месяцы селектора — те, что есть в данных, плюс текущий (даже если он пустой)
@@ -7276,7 +7330,7 @@
     month = curKey();
     render();
     flushOut();
-    loadFines();
+    deferInitialLoad(["shtrafy"], loadFines, out.length > 0 || Object.keys(del).length > 0);
     window.addEventListener("online", () => { Object.keys(delTries).forEach(k => delete delTries[k]); flushOut(); setTimeout(loadFines, 2500); });
   })();
 
@@ -7991,7 +8045,10 @@
     }
     return { refresh };
   })();
-  function renderKits(){ KITS_UI.refresh(); }
+  function renderKits(){
+    if(deferHiddenRender("komplekty", renderKits)) return;
+    KITS_UI.refresh();
+  }
   window.kitsRerender = renderKits;
 
   /* ===================== ТО (двигатель → масло, фильтры, работы) =====================
@@ -9268,7 +9325,10 @@
       const f = formWrap.querySelector("input[name=engName]");
       if(f && !e) f.focus();
     }
-    function updateAll(){ updateWarn(); updateList(); updateCard(); }
+    function updateAll(){
+      if(deferHiddenRender("to", updateAll)) return;
+      updateWarn(); updateList(); updateCard();
+    }
 
     /* ---- события ---- */
     searchEl.addEventListener("input", () => { query = searchEl.value; updateList(); });
@@ -9564,7 +9624,7 @@
     window.toRerender = function(){ updateAll(); };
 
     updateAll();
-    loadEngines();
+    deferInitialLoad(["to"], loadEngines, pending.length > 0);
   })();
 
   /* ===================== Зарплаты: только подтверждённые сервером факты ===================== */
@@ -9801,6 +9861,7 @@
     if(id === "zarplaty") window.payrollOpen();
     const isHome = (id === "glavnaya");
     document.querySelectorAll(".page").forEach(p => { p.hidden = (p.id !== "page-" + id); });
+    openPageWork(id);
     document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.page === id));
     if(mainnavEl) mainnavEl.hidden = isHome;     // вариант B: на Главной меню скрыто, навигация плитками
     if(pageheadEl) pageheadEl.hidden = isHome;   // на Главной свой hero — шапку раздела прячем
@@ -9828,6 +9889,7 @@
   let startPage = "glavnaya";
   try { const saved = localStorage.getItem("md_page"); if(saved && (saved === "glavnaya" || PAGES[saved])) startPage = saved; } catch(e){}
   showPage(startPage);
+  startBackgroundLoads();
 
   /* ===================== Кнопка «наверх» ===================== */
   (function(){
@@ -9970,7 +10032,9 @@
       reg.update().catch(function(){});
     }
 
-    window.addEventListener("load", function(){
+    // Не ждём window.load: его задерживают JSONP даже невидимых разделов.
+    // Этот скрипт уже стоит после разметки, кнопки и обработчики готовы.
+    (function registerUpdates(){
       navigator.serviceWorker.register("sw.js", { scope: "./" }).then(function(r){
         reg = r;
         if(r.waiting) offer();                      // обновление ждало ещё до того, как вкладку открыли
@@ -9982,7 +10046,7 @@
         setInterval(check, CHECK_MS);
         document.addEventListener("visibilitychange", function(){ if(!document.hidden) check(); });
       }).catch(function(){});
-    });
+    })();
   })();
 </script>
 </body>
