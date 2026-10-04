@@ -1542,10 +1542,11 @@
   .pay-person:focus-visible{outline:2px solid var(--brand);outline-offset:4px;border-radius:6px}
   .pay-person .fn-dot{flex:none}
   .pay-person span:last-child{margin-left:auto;color:var(--muted);font-family:var(--font-text);font-size:12px;font-weight:500}
-  .pay-balance{font-family:var(--font-mono);font-size:23px;font-weight:600;margin:4px 0 16px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
   .pay-lines{display:grid;gap:8px;font-size:12px;line-height:1.5}
   .pay-line{display:flex;gap:12px;justify-content:space-between;color:var(--muted)}
   .pay-line b{color:var(--text);font-family:var(--font-mono);font-size:12px;font-weight:500;white-space:nowrap}
+  .pay-line-primary{color:var(--text);font-size:16px;font-weight:700}
+  .pay-line-primary b{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
   .pay-divider{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
   .pay-card .ui-btn{width:100%;margin-top:16px}
   .pay-warning{font-size:12px;line-height:1.5;color:var(--warn);margin:10px 0 0}
@@ -1991,7 +1992,6 @@
                 <label class="ui-field"><span>Действует с месяца</span><input class="ui-input" id="pay-rate-period" type="month" required></label>
               </div>
               <label class="ui-field"><span>Цвет сотрудника</span><select class="ui-select" id="pay-rate-color"><option value="graphite">Графит</option><option value="red">Красный</option><option value="blue">Синий</option><option value="teal">Петроль</option></select></label>
-              <label class="ui-field"><span>День выплаты</span><select class="ui-select" id="pay-rate-payday"><option value="1">1-е следующего месяца</option><option value="26">26-е расчётного месяца</option></select></label>
               <span class="pay-k">Части фиксированной зарплаты · название и сумма, ₽</span>
               <div id="pay-parts"></div>
               <button class="ui-btn" id="pay-add-part" type="button">Добавить часть</button>
@@ -9651,22 +9651,23 @@
     function read(period){
       return new Promise((resolve,reject)=>jsonpChannel(SHEET_API+'?type=payroll&token='+encodeURIComponent(SHEET_TOKEN)+'&period='+encodeURIComponent(period),'зарплаты','payroll',resolve,reject));
     }
-    function line(label,value){ return `<div class="pay-line"><span>${esc(label)}</span><b>${money(value)}</b></div>`; }
+    function line(label,value,primary=false){ return `<div class="pay-line${primary ? ' pay-line-primary' : ''}"><span>${esc(label)}</span><b>${money(value)}</b></div>`; }
     function remainingToPay(s){
       return s.remainingKop == null ? s.balanceKop : s.remainingKop;
     }
     function renderCards(){
       $('pay-cards').innerHTML=data.employees.map(s=>{
-        const parts=s.rate ? s.rate.config.components.map(p=>line(p.label,p.amountKop)).join('') : '<p class="pay-note">В этом месяце оклад ещё не задан.</p>';
+        const rep=s.replacements;
+        const replacements=rep ? `<div class="pay-line" data-pay-replacements><span>Замены</span><b>${esc(rep.count)}${rep.complete ? '' : ' · предварительно'}</b></div><p class="pay-note">${money(rep.rateKop)} за каждую полную замену<br>${dateLabel(rep.from)} — ${dateLabel(rep.to)} · в оклад не входят</p>` : '';
         const archiveLine=!data.fixedOnly && s.replacementKop ? line('Доплата по прежним условиям',s.replacementKop) : '';
         const status=s.balanceKop == null ? 'Нет расчёта' : s.balanceKop<0 ? 'Переплата' : s.balanceKop===0 ? 'Выплачено' : 'К выдаче';
         return `<section class="pay-card${s.name===selected ? ' is-selected' : ''}" data-employee="${esc(s.name)}">
           <button class="pay-person" type="button" data-pay-person="${esc(s.name)}" data-color="${esc(s.color)}" aria-pressed="${s.name===selected}"><i class="fn-dot"></i>${esc(s.name)}<span>${status}</span></button>
-          <div class="pay-balance">${money(s.balanceKop == null ? null : Math.abs(s.balanceKop))}</div>
-          ${s.dueDate ? `<p class="pay-note">День выплаты · ${dateLabel(s.dueDate)}${s.dueDate<localDate() && s.balanceKop>0 ? ' · есть остаток после срока' : ''}</p>` : ''}
-          <div class="pay-lines">${parts}${archiveLine}${s.bonusKop ? line('Премии',s.bonusKop) : ''}</div>
-          <div class="pay-lines pay-divider">${line('Вывод',s.advanceKop+s.paidKop)}</div>
-          ${remainingToPay(s)>0 ? `<button class="ui-btn" type="button" data-pay-remaining="${esc(s.name)}">Вывести остаток</button>` : ''}
+          <div class="pay-lines">${line('Оклад:',s.fixedKop,true)}</div>
+          ${!s.rate ? '<p class="pay-note">В этом месяце оклад ещё не задан.</p>' : ''}
+          <div class="pay-lines">${replacements}${archiveLine}${s.bonusKop ? line('Премии',s.bonusKop) : ''}</div>
+          <div class="pay-lines pay-divider">${line('Выдано',s.advanceKop+s.paidKop)}${line('Остаток',remainingToPay(s))}</div>
+          ${remainingToPay(s)>0 ? `<button class="ui-btn" type="button" data-pay-remaining="${esc(s.name)}"><strong>Выдать</strong></button>` : ''}
         </section>`;
       }).join('');
     }
@@ -9787,9 +9788,8 @@
       const name=$('pay-rate-name').value.trim();
       const candidates=data.ops.filter(r=>r.action==='rate' && r.employee===name).sort((a,b)=>a.period.localeCompare(b.period));
       const r=candidates[candidates.length-1]; $('pay-parts').innerHTML='';
-      if(!r){addPart();$('pay-rate-payday').value='1';return;}
+      if(!r){addPart();return;}
       r.config.components.forEach(p=>addPart(p.label,p.amountKop)); $('pay-rate-color').value=r.config.color;
-      $('pay-rate-payday').value=String(r.config.payday || 1);
     });
     $('pay-settings').addEventListener('toggle',()=>{if($('pay-settings').open && !$('pay-parts').children.length) addPart();});
     busy(true);
@@ -9799,7 +9799,7 @@
       const components=[...$('pay-parts').children].map(div=>({label:div.querySelector('[data-part-label]').value.trim(),amountKop:amount(div.querySelector('[data-part-amount]').value)}));
       if(!employee || !/^\d{4}-(0[1-9]|1[0-2])$/.test(period) || !components.length || components.some(p=>!p.label || p.amountKop==null) || components.reduce((a,p)=>a+p.amountKop,0)>1000000000){message('Заполните сотрудника, месяц и все части оклада корректными суммами.',true);return;}
       if(data.ops.some(r=>r.action==='rate' && r.employee===employee && r.period<=period) && !confirm('Сохранить новые условия '+employee+' с '+monthLabel(period)+'? Расчёт с этого месяца изменится; предыдущие условия останутся в журнале.')) return;
-      send({id:crypto.randomUUID(),action:'rate',employee,period,date:localDate(),amountKop:0,note:'Условия зарплаты',ref:'',config:{color:$('pay-rate-color').value,payday:Number($('pay-rate-payday').value),components}});
+      send({id:crypto.randomUUID(),action:'rate',employee,period,date:localDate(),amountKop:0,note:'Условия зарплаты',ref:'',config:{color:$('pay-rate-color').value,components}});
     });
   })();
 
