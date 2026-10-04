@@ -9666,8 +9666,8 @@
           <div class="pay-lines">${line('Оклад:',s.fixedKop,true)}</div>
           ${!s.rate ? '<p class="pay-note">В этом месяце оклад ещё не задан.</p>' : ''}
           <div class="pay-lines">${replacements}${archiveLine}${s.bonusKop ? line('Премии',s.bonusKop) : ''}</div>
-          <div class="pay-lines pay-divider">${line('Выдано',s.advanceKop+s.paidKop)}${line('Остаток',remainingToPay(s))}</div>
-          ${remainingToPay(s)>0 ? `<button class="ui-btn" type="button" data-pay-remaining="${esc(s.name)}"><strong>Выдать</strong></button>` : ''}
+          <div class="pay-lines pay-divider">${line('Выдано',s.advanceKop+s.paidKop)}</div>
+          <button class="ui-btn" type="button" data-pay-remaining="${esc(s.name)}"><strong>Выдать</strong></button>
         </section>`;
       }).join('');
     }
@@ -9751,8 +9751,8 @@
       select(b.dataset.payPerson || b.dataset.payRemaining);
       if(b.dataset.payRemaining){
         const s=data.employees.find(s=>s.name===selected), kop=remainingToPay(s);
-        $('pay-amount').value=String(kop/100); $('pay-date').value=localDate();
-        message('Подставлен остаток: '+money(kop)+'.');
+        $('pay-amount').value=kop>0 ? String(kop/100) : ''; $('pay-date').value=localDate();
+        message(kop>0 ? 'Подставлена сумма выдачи: '+money(kop)+'.' : 'Введите сумму выдачи.');
         form.scrollIntoView({behavior:'smooth',block:'start'}); $('pay-amount').focus({preventScroll:true});
       }
     });
