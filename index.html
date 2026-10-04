@@ -807,6 +807,7 @@
       background:color-mix(in srgb, var(--cc) 18%, transparent);color:var(--cc);border:1px solid color-mix(in srgb, var(--cc) 38%, transparent)}
     .tpl-nav-head,.tpl-nav-model{min-height:44px}  /* строки дерева: группы и коробки — хит ≥44 */
     .tpl-copy{min-height:44px}                     /* «Копировать» в Шаблонах и Комплектах — хит ≥44 (правило 7) */
+    #page-tseny .pr-art{min-height:44px;min-width:44px}
   }
 
   /* ===================== ПРОДАЖИ ===================== */
@@ -1158,6 +1159,7 @@
   .fn-field{display:flex;flex-direction:column;gap:7px;min-width:0}
   .fn-field.grow{flex:1 1 220px}
   .fn-field .fb-lbl{margin:0}
+  #page-shtrafy label.fb-lbl{display:block}
   .fn-input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--fill);
     color:var(--text);font:inherit;font-size:14px;outline:none;transition:border-color .15s}
   .fn-input::placeholder{color:var(--muted)}
@@ -1926,15 +1928,15 @@
         <div class="fb-sub">Штраф увидят все, кто заходит на портал. Ошибся — отмени: штраф исчезнет и из счёта, и из истории.</div>
         <div class="fb-lbl">Кому</div>
         <div class="fb-chips" id="fn-who"></div>
-        <div class="fb-lbl">За что</div>
+        <label class="fb-lbl" for="fn-reason">За что</label>
         <input class="fn-input" id="fn-reason" maxlength="60" placeholder="Например: опоздание">
         <div class="fn-fields">
           <div class="fn-field amount">
-            <span class="fb-lbl">Сумма, ₽</span>
+            <label class="fb-lbl" for="fn-amount">Сумма, ₽</label>
             <input class="fn-input fn-amount" id="fn-amount" type="number" inputmode="numeric" min="0" step="100" placeholder="0">
           </div>
           <div class="fn-field grow">
-            <span class="fb-lbl">Комментарий</span>
+            <label class="fb-lbl" for="fn-comment">Комментарий</label>
             <input class="fn-input" id="fn-comment" maxlength="200" placeholder="Например: опоздал на 40 минут">
           </div>
         </div>
