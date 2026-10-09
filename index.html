@@ -2660,6 +2660,7 @@
     filter_lynx_lt1036: ["Фильтр LYNXauto LT-1036 с прокладкой в комплекте", 4400],   // Aisin U661F
     filter_lynx_lt1090: ["Фильтр LYNXauto LT-1090 с прокладкой в комплекте", 4400],   // Aisin U760E/U761E
     filter_lynx_lt1089: ["Фильтр LYNXauto LT-1089 с прокладкой в комплекте", 4400],   // Aisin A760F
+    filter_lynx_lt1240: ["Фильтр LYNXauto LT-1240 с прокладкой в комплекте", 3000],   // Jatco JF414E
     filter_a750:        ["Фильтр JS Asakashi JT541K", 6000],
     filter_r4a51:       ["Фильтр JS Asakashi JT208K", 3800],
     filter_ab60:        ["Фильтр JS Asakashi JT568K", 5300],
@@ -2699,6 +2700,7 @@
     work_full_a760:   ["Полная аппаратная замена масла в АКПП Aisin A760F с промывкой системы", 7000],
     work_full_r4a51:  ["Полная аппаратная замена масла в АКПП Aisin R4A51/V4A51 с промывкой системы", 6000],
     work_full_ab60:   ["Полная аппаратная замена масла в АКПП Aisin AB60E/F с промывкой системы", 6000],
+    work_full_jf414e: ["Полная аппаратная замена масла в АКПП Jatco JF414E с промывкой системы", 6000],
     work_full_re7:    ["Полная аппаратная замена масла в АКПП RE7R01A с промывкой системы", 6000],
     work_full_u340:   ["Полная аппаратная замена масла в АКПП Aisin U340-341E/F с промывкой системы", 6000],
     work_full_fw6el:  ["Полная аппаратная замена масла в АКПП Aisin FW6-EL с промывкой системы", 7000],
@@ -2885,6 +2887,8 @@
     "2026-09-30": ["mb_236_17", "oil_mb_9g_10", "filter_mb_9g", "bolt_mb_9g", "drain_mb_9g",
                    "filter_sollo_9g", "filter_mahle_9g_f", "filter_zf_9g_f", "mb_235_7", "mb_239_71",
                    "mb_236_15_sm", "mb_diff_front_orig", "mb_diff_rear_orig", "kit_mb_transf_oil", "kit_mb_axles_motul"],
+    // Jatco JF414E: состав и цены подтверждены владельцем в сообщении.
+    "2026-10-09": ["oil_motul_12", "bardahl", "filter_lynx_lt1240", "work_full_jf414e"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -3467,6 +3471,16 @@
       },
     },
 
+    /* ===== Jatco ===== */
+    "JF414E": {
+      "Аппаратная": {
+        head: "Полная аппаратная замена масла в АКПП Jatco JF414E",
+        variants: () => [
+          { label: "1.", items: ["oil_motul_12", "bardahl", "filter_lynx_lt1240", "work_full_jf414e"] },
+        ],
+      },
+    },
+
     /* ===== GM ===== */
     "6L45R/E": {
       "Аппаратная": {
@@ -3844,6 +3858,10 @@
       titleAccent:"RE0F11A JF015", extraTags:["RE0F11A", "JF015", "Nissan", "Motul Multi CVTF"] },
     { brand:"Вариаторы", box:"JF016E/JF017E", type:"Аппаратная", title:"Вариатор JF016E/JF017E (Nissan)",
       titleAccent:"JF016E/JF017E", extraTags:["JF016E", "JF017E", "Nissan", "Motul Multi CVTF"] },
+
+    /* ==================== Jatco ==================== */
+    { brand:"Jatco", box:"JF414E", type:"Аппаратная", title:"Jatco JF414E (Motul ATF6)",
+      titleAccent:"JF414E", extraTags:["JF414E", "JF 414E", "Motul ATF6", "12 л", "LYNXauto"] },
 
     /* ==================== GM ==================== */
     { brand:"GM", box:"6L45R/E", type:"Аппаратная", title:"GM 6L45R/E (Motul ATF6)",
