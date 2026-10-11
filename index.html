@@ -1556,15 +1556,12 @@
   .pay-form-grid .ui-field span,.pay-toolbar .ui-field span{font-size:12px;color:var(--muted);font-weight:600}
   .pay-form-grid .fb-send{min-height:44px;justify-self:start}
   .pay-history-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;font-family:var(--font-disp);font-size:18px;font-weight:700}
-  .pay-check{display:flex;align-items:center;gap:8px;min-height:44px;font-family:var(--font-text);font-size:12px;font-weight:500;cursor:pointer}
-  .pay-check input{accent-color:var(--brand);width:18px;height:18px}
   .pay-history{display:grid;gap:10px}
   .pay-entry{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
   .pay-entry-top{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:600}
   .pay-entry-top b{font-family:var(--font-mono);font-size:13px;white-space:nowrap}
   .pay-entry-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px;font-size:12px;color:var(--muted)}
   .pay-entry-note{margin-top:8px;font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
-  .pay-entry.is-canceled .pay-entry-top{color:var(--muted);text-decoration:line-through}
   .pay-settings{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-top:20px;padding:0 20px}
   .pay-settings summary{padding:16px 0;min-height:52px;cursor:pointer;font-size:14px;font-weight:600}
   .pay-settings form{padding-bottom:20px;max-width:720px}
@@ -1978,7 +1975,7 @@
             </div>
           </form>
           <div>
-            <div class="pay-history-h"><span id="pay-history-title">История</span><label class="pay-check"><input id="pay-show-canceled" type="checkbox">С отменёнными</label></div>
+            <div class="pay-history-h"><span id="pay-history-title">История</span></div>
             <div class="pay-history" id="pay-history"></div>
           </div>
         </div>
@@ -9691,17 +9688,13 @@
     }
     function renderHistory(){
       if(!data) return;
-      const showCanceled=$('pay-show-canceled').checked;
-      const cancels=new Map(data.ops.filter(r=>r.action==='cancel').map(r=>[r.ref,r]));
-      const ops=data.ops.filter(r=>r.employee===selected && r.period===data.period && TYPES[r.action] && (showCanceled || !cancels.has(r.id)));
-      const events=ops.map(r=>({...r,cancel:cancels.get(r.id)}));
+      const events=data.ops.filter(r=>r.employee===selected && r.period===data.period && TYPES[r.action]);
       events.sort((a,b)=>b.date.localeCompare(a.date));
       $('pay-history-title').textContent=selected ? 'История · '+selected : 'История';
-      $('pay-history').innerHTML=events.length ? events.map(r=>`<div class="pay-entry${r.cancel ? ' is-canceled' : ''}">
+      $('pay-history').innerHTML=events.length ? events.map(r=>`<div class="pay-entry">
         <div class="pay-entry-top"><span>${esc(TYPES[r.action])}</span><b>${money(r.amountKop)}</b></div>
         ${r.note ? `<div class="pay-entry-note">${esc(r.note)}</div>` : ''}
-        <div class="pay-entry-foot"><span>${dateLabel(r.date)}</span>${!r.cancel ? `<button class="fb-undo" type="button" data-pay-cancel="${esc(r.id)}"${pending ? ' disabled' : ''}>Отменить</button>` : ''}</div>
-        ${r.cancel ? `<p class="pay-note">Отменено ${dateLabel(r.cancel.date)} · ${esc(r.cancel.note)}</p>` : ''}
+        <div class="pay-entry-foot"><span>${dateLabel(r.date)}</span></div>
       </div>`).join('') : '<div class="fb-empty">Движений за этот месяц пока нет. Запишите вывод — он появится здесь.</div>';
     }
     function select(name){
@@ -9763,7 +9756,6 @@
     };
     $('pay-refresh').addEventListener('click',load); $('pay-period').addEventListener('change',load);
     $('pay-employee').addEventListener('change',()=>select($('pay-employee').value));
-    $('pay-show-canceled').addEventListener('change',renderHistory);
     $('pay-cards').addEventListener('click',e=>{
       const b=e.target.closest('[data-pay-person],[data-pay-remaining]'); if(!b || pending || loading) return;
       select(b.dataset.payPerson || b.dataset.payRemaining);
@@ -9785,14 +9777,6 @@
       send({id:crypto.randomUUID(),action,employee,period:data.period,date,amountKop:kop,note,ref:''});
     });
     $('pay-retry').addEventListener('click',()=>{ if(pending) send(pending); });
-    $('pay-history').addEventListener('click',e=>{
-      const b=e.target.closest('[data-pay-cancel]'); if(!b || pending || loading || !data) return;
-      const r=data.ops.find(r=>r.id===b.dataset.payCancel); if(!r) return;
-      const note=prompt(`Отмена: ${TYPES[r.action]} · ${r.employee} · ${money(r.amountKop)}. Укажите причину; исходная запись сохранится в истории.`);
-      if(note==null) return;
-      if(!note.trim() || note.trim().length>200){message('Причина отмены — от 1 до 200 символов.',true);return;}
-      send({id:crypto.randomUUID(),action:'cancel',employee:r.employee,period:r.period,date:localDate(),amountKop:0,note:note.trim(),ref:r.id});
-    });
     function addPart(label='Оклад',kop=null){
       const div=document.createElement('div'); div.className='pay-part';
       div.innerHTML=`<input class="ui-input" data-part-label aria-label="Название части оклада" maxlength="60" required value="${esc(label)}"><input class="ui-input" data-part-amount aria-label="Сумма части оклада, рубли" inputmode="decimal" required value="${kop==null ? '' : kop/100}"><button class="ui-btn" type="button" data-remove-part aria-label="Удалить часть оклада">×</button>`;
