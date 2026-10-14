@@ -2674,8 +2674,8 @@
     filter_gm_6l45:     ["Фильтр LYNXauto LT-1040", 6000],
     filter_dl501_coarse:     ["Фильтр грубой очистки Mahle (DL501)", 7000],
     filter_dl501_fine:       ["Фильтр тонкой очистки Mahle (DL501)", 3000],
-    filter_dq724_fine:  ["Фильтр тонкой очистки (DSG 724.020)", 4000],
-    filter_dq724_coarse:["Фильтр грубой очистки (DSG 724.020)", 10000],
+    filter_dq724_fine:  ["Фильтр DCT тонкой очистки (вставка) с прокладкой в комплекте", 4000],
+    filter_dq724_coarse:["Фильтр масляный DCT грубой очистки с прокладкой", 10000],
     // -- Вариаторы Nissan (прокладки/кольца/фильтры) --
     cvt_gasket_3jx0a:   ["Прокладка поддона Nissan 31397-3JX0A", 3000],
     cvt_ring_3jx3a:     ["Уплотнительное кольцо Nissan 31526-3JX3A", 350],
@@ -2709,7 +2709,7 @@
     work_full_fw6el:  ["Полная аппаратная замена масла в АКПП Aisin FW6-EL с промывкой системы", 7000],
     work_full_gm6l45: ["Полная аппаратная замена масла в АКПП GM 6L45R/E с промывкой системы", 6000],
     work_full_a6mf1:  ["Полная аппаратная замена масла в АКПП A6MF1-2/A8LF1 с промывкой системы", 5000],
-    work_full_dq724:  ["Полная замена масла в DSG 724.020 (DCT) с промывкой системы", 6000],
+    work_full_dq724:  ["Полная замена масла в DCT (DSG 724.020) с промывкой системы", 6000],
     work_full_dq500:  ["Полная замена масла в DSG DQ500 с промывкой системы", 6000],
     work_part_dq500:  ["Частичная замена масла в DSG DQ500", 3000],
     work_full_dq250:  ["Полная замена масла в DSG DQ250 с промывкой системы", 6000],
@@ -2900,7 +2900,9 @@
                    "mb_diff_front_orig", "mb_diff_front", "mb_transf_oil_ravenol",
                    "mb_diff_rear_orig", "mb_diff_rear",
                    // Замена масла в раздатке — 1000 везде (было 1500 в Motul-варианте Mercedes): слово владельца.
-                   "mb_transf_work"],
+                   "mb_transf_work",
+                   // DCT 724.020: названия фильтров и работы, состав и цены (Итого 44 700) подтверждены владельцем в сообщении.
+                   "motul_dctf", "oil_dctf_9", "filter_dq724_fine", "filter_dq724_coarse", "work_full_dq724"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -3402,7 +3404,7 @@
     /* ===== DSG / DCT ===== */
     "DCT 724.020": {
       "Аппаратная": {
-        head: "Полная замена масла в DSG 724.020 (DCT)",
+        head: "Полная аппаратная замена масла в DCT (DSG 724.020)",
         variants: () => [
           { label: "1.", items: ["oil_dctf_9", "filter_dq724_fine", "filter_dq724_coarse", "bardahl", "work_full_dq724"] },
         ],
