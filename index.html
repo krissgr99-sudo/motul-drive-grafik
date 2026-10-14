@@ -7878,8 +7878,10 @@
       if(base?.addons?.block && draft.addon !== "none"){
         const b = base.addons.block;
         const variants = draft.addon === "all" ? b.variants : b.variants.filter(v => addonId(v) === draft.addon);
+        // Один вариант: убираем «2 варианта» и сравнение масел, которого в этой смете уже нет.
         if(variants.length) k.addons = { ...base.addons, block:{ ...b, variants,
           intro:draft.addon === "all" ? b.intro : undefined,
+          note:draft.addon === "all" ? b.note : undefined,
           head:draft.addon === "all" ? b.head : "Также рекомендуем комплект для мостов и раздатки." } };
       }
       return k;
