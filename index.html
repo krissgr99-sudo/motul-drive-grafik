@@ -2584,21 +2584,20 @@
     work_full_9g:      ["Полная аппаратная замена масла в АКПП 9G-Tronic", 8000],
     work_fill_9g:      ["Полная замена масла в АКПП 9G-Tronic (методом слил и залил)", 4000],
     // Мосты + раздатка Mercedes (одинаковая сноска во всех шаблонах 9G и 7G, блок MB9G_AXLES):
-    // 2 варианта — оригинал Mercedes-Benz (Итого 21500) и Motul (Итого 14000).
-    // Исключение — редкая карточка 9G с Ravenol в раздатке (блок MB9G_AXLES_RAVENOL).
+    // 2 варианта — оригинал Mercedes-Benz (Итого 21500) и Motul (Итого 13500).
+    // Исключение — редкие карточки 9G с Ravenol в раздатке (блок MB9G_AXLES_RAVENOL).
     // Цены — суммарные по строке: Gear 300 = 2л×4500; масло раздатки Mercedes = 0,6л×2500 (общее для обоих вариантов).
     mb_diff_oil:    ["Масло трансмиссионное Motul Gear 300 75W90 105777 2л (передний и задний дифференциал)", perL(RATES.gear300, 2)],
     mb_diff_front:  ["Замена масла в переднем дифференциале", 1000],
     mb_diff_rear:   ["Замена масла в заднем дифференциале", 1000],
     mb_transf_oil:  ["Трансмиссионное масло Mercedes 236.15 A000989270411 0.6л (раздаточная коробка)", perL(RATES.mb_236_15_sm, 0.6)],
-    mb_transf_work: ["Замена масла в раздаточной коробке", 1500],
-    // Редкая вариация 9G (MB9G_AXLES_RAVENOL): Ravenol в раздатку, замена раздатки с ним — 1000.
-    mb_transf_oil_ravenol:  ["Трансмиссионное масло Ravenol (раздаточная коробка)", 2400],
-    mb_transf_work_ravenol: ["Замена масла в раздаточной коробке", 1000],
+    mb_transf_work: ["Замена масла в раздаточной коробке", 1000],   // везде 1000 — decisions/2026-10-14-zamena-razdatki-1000-vezde.md
+    // Редкая вариация 9G (MB9G_AXLES_RAVENOL): Ravenol в раздатку.
+    mb_transf_oil_ravenol: ["Трансмиссионное масло Ravenol (раздаточная коробка)", 2400],
     // Вариант «оригинал Mercedes-Benz»: масло в каждый мост по допуску (по 1 л) + одна строка работ на все три узла.
     mb_diff_front_orig: ["Оригинальное трансмиссионное масло Mercedes-Benz 235.7 1л (передний дифференциал)", perL(RATES.mb_235_7, 1)],
     mb_diff_rear_orig:  ["Оригинальное трансмиссионное масло Mercedes-Benz 239.71/239.72 1л (задний дифференциал)", perL(RATES.mb_239_71, 1)],
-    mb_diff_work_all:   ["Замена масла в переднем, заднем дифференциале и раздаточной коробке", 3000],  // пакетом дешевле поштучных работ Motul-варианта (1000 + 1000 + 1500): цена владельца 31.08.2026
+    mb_diff_work_all:   ["Замена масла в переднем, заднем дифференциале и раздаточной коробке", 3000],  // пакет — цена владельца 31.08.2026; сейчас равен поштучным работам Motul-варианта (1000 + 1000 + 1000)
     // Продажа комплекта Mercedes: раздатка 1 л; Motul + Mercedes — единая цена владельца, без разбивки и работ.
     kit_mb_transf_oil:  ["Оригинальное трансмиссионное масло Mercedes 236.15 A000989270411 1л (раздаточная коробка)", perL(RATES.mb_236_15_sm, 1)],
     kit_mb_axles_motul:["Масло Motul для переднего и заднего дифференциала + оригинальное масло Mercedes 236.15 для раздатки", 12000],
@@ -2898,8 +2897,10 @@
                    // Mercedes 722.906 / W7C700 с № 2834527: состав и цены подтверждены владельцем в сообщении.
                    "oil_motul_atf6_12", "filter_mahle_hx124d", "work_full_w7c700_wash",
                    // 9G-Tronic, мосты и раздатка с Ravenol: состав и цены подтверждены владельцем в сообщении.
-                   "mb_diff_front_orig", "mb_diff_front", "mb_transf_oil_ravenol", "mb_transf_work_ravenol",
-                   "mb_diff_rear_orig", "mb_diff_rear"],
+                   "mb_diff_front_orig", "mb_diff_front", "mb_transf_oil_ravenol",
+                   "mb_diff_rear_orig", "mb_diff_rear",
+                   // Замена масла в раздатке — 1000 везде (было 1500 в Motul-варианте Mercedes): слово владельца.
+                   "mb_transf_work"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -3042,7 +3043,7 @@
   };
 
   // Сноска «мосты + раздатка» для Mercedes — одинакова во всех карточках 9G и 7G. Два варианта
-  // (рендер diffsMultiBlock, у каждого свой «Итого»): оригинал Mercedes-Benz 21500 / Motul 14000.
+  // (рендер diffsMultiBlock, у каждого свой «Итого»): оригинал Mercedes-Benz 21500 / Motul 13500.
   // Раздатка в обоих вариантах на оригинальном Mercedes 236.15 — строка mb_transf_oil общая.
   const MB9G_AXLES = {
     head:  "Также можем предложить замену масла в переднем, заднем дифференциале и в раздаточной коробке.",
@@ -3054,11 +3055,11 @@
     ],
   };
   // Редкая вариация 9G-Tronic: в раздатку Ravenol вместо Mercedes 236.15. Те же два варианта
-  // (оригинал / Motul в мосты), замена раздатки с Ravenol — 1000. Подключается полем
-  // t.diffsBlock только у своей карточки; остальные 9G и 7G живут на MB9G_AXLES.
+  // (оригинал / Motul в мосты), замена каждого узла отдельной строкой. Подключается полем
+  // t.diffsBlock только у своих карточек; остальные 9G и 7G живут на MB9G_AXLES.
   const MB9G_AXLES_RAVENOL = { ...MB9G_AXLES, variants: [
-    { label: "Оригинал Mercedes-Benz:", items: ["mb_diff_front_orig", "mb_diff_front", "mb_transf_oil_ravenol", "mb_transf_work_ravenol", "mb_diff_rear_orig", "mb_diff_rear"] },
-    { label: "Motul:",                  items: ["mb_diff_oil", "mb_transf_oil_ravenol", "mb_diff_front", "mb_diff_rear", "mb_transf_work_ravenol"] },
+    { label: "Оригинал Mercedes-Benz:", items: ["mb_diff_front_orig", "mb_diff_front", "mb_transf_oil_ravenol", "mb_transf_work", "mb_diff_rear_orig", "mb_diff_rear"] },
+    { label: "Motul:",                  items: ["mb_diff_oil", "mb_transf_oil_ravenol", "mb_diff_front", "mb_diff_rear", "mb_transf_work"] },
   ] };
 
   // УВЕЛИЧЕННЫЕ поддоны 8HP: глубокий ZF 1087298361 (Jeep/Dodge) и алюминиевый M-версии (BMW M).
@@ -3933,6 +3934,11 @@
     { brand:"Mercedes", box:"9G-Tronic", type:"Слив-залив", filter:"zf",    title:"9G-Tronic · слив-залив · поддон ZF",
       code:"Mercedes·9G-Tronic·Слив-залив·Поддон ZF",
       extraTags:["9G-Tronic", "725.0", "Поддон ZF"] },
+    // Та же редкая вариация для слив-залива: все поддоны, Ravenol в раздатку (MB9G_AXLES_RAVENOL).
+    { brand:"Mercedes", box:"9G-Tronic", type:"Слив-залив", combo:true, diffsBlock: MB9G_AXLES_RAVENOL,
+      code:"Mercedes·9G-Tronic·Слив-залив·Все поддоны·Раздатка Ravenol",
+      title:"9G-Tronic · слив-залив · все поддоны · раздатка Ravenol", titleAccent:"раздатка Ravenol",
+      extraTags:["725.0", "Все поддоны", "MB", "SOLLO", "Mahle", "ZF", "Ravenol", "Раздатка Ravenol"] },
     // 7G-Tronic (722.9) — аппаратная замена с промывкой. 3 варианта по filter (у каждого свой code).
     { brand:"Mercedes", box:"7G-Tronic", type:"Аппаратная", filter:"plus", title:"7G-Tronic Plus (масло MB 236.15) с промывкой",
       code:"Mercedes·7G-Tronic·Аппаратная·Plus (MB 236.15)",
