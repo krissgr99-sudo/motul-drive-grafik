@@ -2583,14 +2583,18 @@
     work_full_9g_wash: ["Полная аппаратная замена масла в АКПП 9G-Tronic с промывкой системы", 8000],
     work_full_9g:      ["Полная аппаратная замена масла в АКПП 9G-Tronic", 8000],
     work_fill_9g:      ["Полная замена масла в АКПП 9G-Tronic (методом слил и залил)", 4000],
-    // Мосты + раздатка Mercedes (одинаковая сноска во всех 10 шаблонах 9G и 7G, блок MB9G_AXLES):
+    // Мосты + раздатка Mercedes (одинаковая сноска во всех шаблонах 9G и 7G, блок MB9G_AXLES):
     // 2 варианта — оригинал Mercedes-Benz (Итого 21500) и Motul (Итого 14000).
+    // Исключение — редкая карточка 9G с Ravenol в раздатке (блок MB9G_AXLES_RAVENOL).
     // Цены — суммарные по строке: Gear 300 = 2л×4500; масло раздатки Mercedes = 0,6л×2500 (общее для обоих вариантов).
     mb_diff_oil:    ["Масло трансмиссионное Motul Gear 300 75W90 105777 2л (передний и задний дифференциал)", perL(RATES.gear300, 2)],
     mb_diff_front:  ["Замена масла в переднем дифференциале", 1000],
     mb_diff_rear:   ["Замена масла в заднем дифференциале", 1000],
     mb_transf_oil:  ["Трансмиссионное масло Mercedes 236.15 A000989270411 0.6л (раздаточная коробка)", perL(RATES.mb_236_15_sm, 0.6)],
     mb_transf_work: ["Замена масла в раздаточной коробке", 1500],
+    // Редкая вариация 9G (MB9G_AXLES_RAVENOL): Ravenol в раздатку, замена раздатки с ним — 1000.
+    mb_transf_oil_ravenol:  ["Трансмиссионное масло Ravenol (раздаточная коробка)", 2400],
+    mb_transf_work_ravenol: ["Замена масла в раздаточной коробке", 1000],
     // Вариант «оригинал Mercedes-Benz»: масло в каждый мост по допуску (по 1 л) + одна строка работ на все три узла.
     mb_diff_front_orig: ["Оригинальное трансмиссионное масло Mercedes-Benz 235.7 1л (передний дифференциал)", perL(RATES.mb_235_7, 1)],
     mb_diff_rear_orig:  ["Оригинальное трансмиссионное масло Mercedes-Benz 239.71/239.72 1л (задний дифференциал)", perL(RATES.mb_239_71, 1)],
@@ -2598,13 +2602,16 @@
     // Продажа комплекта Mercedes: раздатка 1 л; Motul + Mercedes — единая цена владельца, без разбивки и работ.
     kit_mb_transf_oil:  ["Оригинальное трансмиссионное масло Mercedes 236.15 A000989270411 1л (раздаточная коробка)", perL(RATES.mb_236_15_sm, 1)],
     kit_mb_axles_motul:["Масло Motul для переднего и заднего дифференциала + оригинальное масло Mercedes 236.15 для раздатки", 12000],
-    // Mercedes 7G-Tronic (722.9): 2 варианта — «+» на масле MB 236.15, обычный на Motul ATF6.
-    // Фильтр (в сборе с прокладкой) и промывка BARDAHL — общие. Мосты/раздатка — как у 9G (MB9G_AXLES).
+    // Mercedes 7G-Tronic (722.9): 3 варианта — «+» на масле MB 236.15, обычный на Motul ATF6
+    // и 722.906 / W7C700 с серийного номера 2834527 (Motul ATF6, свой фильтр Mahle и своя цена работы).
+    // Промывка BARDAHL — общая. Мосты/раздатка — как у 9G (MB9G_AXLES).
     oil_mb_7g_12:          ["Трансмиссионное масло Mercedes 236.15 A000989270411 12л", perL(RATES.mb_236_15, 12)],
     oil_motul_atf6_12:     ["Трансмиссионное масло Motul ATF6 105774 12л", perL(RATES.motul_atf6, 12)],
     filter_mb_7g:          ["Фильтр АКПП с прокладкой в комплекте", 7000],
+    filter_mahle_hx124d:   ["Фильтр АКПП с прокладкой в комплекте Mahle HX124D", 6000],
     work_full_7g_wash:     ["Полная аппаратная замена масла в АКПП 7G-Tronic+ с промывкой системы", 6000],
     work_full_7g_std_wash: ["Полная аппаратная замена масла в АКПП 7G-Tronic с промывкой системы", 6000],
+    work_full_w7c700_wash: ["Полная аппаратная замена масла в АКПП 722.906 / W7C700 с промывкой системы", 7000],
     // Audi / Volkswagen — ZF 8HP65. 2 варианта масла (Motul ATF6 — есть выше; оригинал ZF8HP).
     // Фильтр-поддон ZF и работа с промывкой — общие. Мосты/Торсен — блок AXLES_TORSEN.
     oil_zf8hp_12:          ["Оригинальное трансмиссионное масло ZF8HP S671090312 12л", perL(RATES.zf8hp, 12)],
@@ -2678,7 +2685,7 @@
     cvt_ring_3vx0a:     ["Уплотнительное кольцо Nissan 31526-3VX0A", 650],
     cvt_filter_fine:    ["Фильтр тонкой очистки Nissan 31726-28X0A", 1650],
     cvt_filter_coarse:  ["Фильтр грубой очистки Nissan 3172828X0A", 5500],
-    re7_gasket_1xj0a:   ["Прокладка картера Nissan 31397-1XJ0A", 4100],
+    re7_gasket_1xj0a:   ["Прокладка картера Nissan 31397-1XJ0A", 4000],
     // -- Работы по коробкам --
     work_drainfill_2000: ["Частичная замена масла в АКПП (методом слил-залил)", 2000],
     work_full_8hp55:  ["Полная аппаратная замена масла в АКПП ZF 8HP55 с промывкой системы", 7000],
@@ -2886,6 +2893,13 @@
                    "mb_236_15_sm", "mb_diff_front_orig", "mb_diff_rear_orig", "kit_mb_transf_oil", "kit_mb_axles_motul"],
     // Jatco JF414E: состав и цены подтверждены владельцем в сообщении.
     "2026-10-09": ["oil_motul_12", "bardahl", "filter_lynx_lt1240", "work_full_jf414e"],
+    // Jatco RE7R01A: состав и цены подтверждены владельцем в сообщении.
+    "2026-10-14": ["oil_motul_15", "bardahl", "re7_gasket_1xj0a", "work_full_re7",
+                   // Mercedes 722.906 / W7C700 с № 2834527: состав и цены подтверждены владельцем в сообщении.
+                   "oil_motul_atf6_12", "filter_mahle_hx124d", "work_full_w7c700_wash",
+                   // 9G-Tronic, мосты и раздатка с Ravenol: состав и цены подтверждены владельцем в сообщении.
+                   "mb_diff_front_orig", "mb_diff_front", "mb_transf_oil_ravenol", "mb_transf_work_ravenol",
+                   "mb_diff_rear_orig", "mb_diff_rear"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -3039,6 +3053,13 @@
       { label: "Motul:",                  items: ["mb_diff_oil", "mb_transf_oil", "mb_diff_front", "mb_diff_rear", "mb_transf_work"] },
     ],
   };
+  // Редкая вариация 9G-Tronic: в раздатку Ravenol вместо Mercedes 236.15. Те же два варианта
+  // (оригинал / Motul в мосты), замена раздатки с Ravenol — 1000. Подключается полем
+  // t.diffsBlock только у своей карточки; остальные 9G и 7G живут на MB9G_AXLES.
+  const MB9G_AXLES_RAVENOL = { ...MB9G_AXLES, variants: [
+    { label: "Оригинал Mercedes-Benz:", items: ["mb_diff_front_orig", "mb_diff_front", "mb_transf_oil_ravenol", "mb_transf_work_ravenol", "mb_diff_rear_orig", "mb_diff_rear"] },
+    { label: "Motul:",                  items: ["mb_diff_oil", "mb_transf_oil_ravenol", "mb_diff_front", "mb_diff_rear", "mb_transf_work_ravenol"] },
+  ] };
 
   // УВЕЛИЧЕННЫЕ поддоны 8HP: глубокий ZF 1087298361 (Jeep/Dodge) и алюминиевый M-версии (BMW M).
   // С ними в коробку входит 13 л вместо 12, а при частичной сливается 6 л вместо 5 (владелец
@@ -3147,17 +3168,19 @@
         ],
       },
     },
-    // Mercedes 7G-Tronic (722.9): 2 варианта масла по t.filter (plus = MB 236.15, std = Motul ATF6).
+    // Mercedes 7G-Tronic (722.9): 3 варианта по t.filter (plus = MB 236.15, std = Motul ATF6,
+    // w7c700 = 722.906 / W7C700 с серийного номера 2834527 — Motul ATF6 и фильтр Mahle HX124D).
     // diffsBlock — сноска «мосты + раздатка», та же, что у 9G-Tronic (MB9G_AXLES).
     "7G-Tronic": {
       diffsBlock: MB9G_AXLES,
       "Аппаратная": {
-        head: fk => fk==="std" ? "Полная аппаратная замена масла в АКПП 7G-Tronic"
-                               : "Полная аппаратная замена масла в АКПП 7G-Tronic+",
+        head: fk => fk==="std"    ? "Полная аппаратная замена масла в АКПП 7G-Tronic"
+                  : fk==="w7c700" ? "Полная аппаратная замена масла в АКПП 722.906 / W7C700 (с серийного номера 2834527)"
+                                  : "Полная аппаратная замена масла в АКПП 7G-Tronic+",
         variants: fk => [
-          fk==="std"
-            ? { label: "1.", items: ["oil_motul_atf6_12", "bardahl", "filter_mb_7g", "work_full_7g_std_wash"] }
-            : { label: "1.", items: ["oil_mb_7g_12",      "bardahl", "filter_mb_7g", "work_full_7g_wash"] },
+          fk==="std"    ? { label: "1.", items: ["oil_motul_atf6_12", "bardahl", "filter_mb_7g",        "work_full_7g_std_wash"] }
+          : fk==="w7c700" ? { label: "1.", items: ["oil_motul_atf6_12", "bardahl", "filter_mahle_hx124d", "work_full_w7c700_wash"] }
+          :                 { label: "1.", items: ["oil_mb_7g_12",      "bardahl", "filter_mb_7g",        "work_full_7g_wash"] },
         ],
       },
     },
@@ -3618,7 +3641,8 @@
     };
     if(t.diffs) add("diffs", "Мосты и раздатка", "multi", DIFFS_REGULAR, t.lock);
     if(t.diffsDetailed) add("detailed", "Трёхсекционный мост и раздатка", "detailed", DIFFS_DETAILED);
-    if(box.diffsBlock) add("box", "Мосты и раздатка", box.diffsBlock.variants ? "multi" : "detailed", box.diffsBlock);
+    const diffsBlock = t.diffsBlock || box.diffsBlock;   // карточка может заменить сноску коробки (9G с Ravenol)
+    if(diffsBlock) add("box", "Мосты и раздатка", diffsBlock.variants ? "multi" : "detailed", diffsBlock);
     const axles = t.axles || box.axles;
     if(axles) add("axles", axles.head, "axles", axles);
     if(box.haldex) add("haldex", "Муфта Haldex", "haldex", box.haldex);
@@ -3823,8 +3847,6 @@
       titleAccent:"R4A51/V4A51", extraTags:["R4A51", "V4A51", "Motul Multi ATF", "JS Asakashi JT208K"] },
     { brand:"Aisin", box:"AB60E/F", type:"Аппаратная", title:"Aisin AB60E/F (Motul ATF6)",
       titleAccent:"AB60E/F", extraTags:["AB60E", "AB60F", "Motul ATF6", "JS Asakashi JT568K"] },
-    { brand:"Aisin", box:"RE7R01A", type:"Аппаратная", title:"RE7R01A (Motul ATF6)",
-      titleAccent:"RE7R01A", extraTags:["RE7R01A", "Motul ATF6"] },
     { brand:"Aisin", box:"U340-341E/F", type:"Аппаратная", title:"Aisin U340-341E/F (Motul ATF6)",
       titleAccent:"U340-341E/F", extraTags:["U340", "U341E", "U341F", "Motul ATF6", "JS Asakashi JT425K"] },
     { brand:"Aisin", box:"FW6-EL", type:"Аппаратная", title:"Aisin FW6-EL (Motul ATF6)",
@@ -3859,6 +3881,8 @@
     /* ==================== Jatco ==================== */
     { brand:"Jatco", box:"JF414E", type:"Аппаратная", title:"Jatco JF414E (Motul ATF6)",
       titleAccent:"JF414E", extraTags:["JF414E", "JF 414E", "Motul ATF6", "12 л", "LYNXauto"] },
+    { brand:"Jatco", box:"RE7R01A", type:"Аппаратная", title:"Jatco RE7R01A (Motul ATF6)",
+      titleAccent:"RE7R01A", extraTags:["RE7R01A", "7/1", "Nissan", "Infiniti", "Motul ATF6", "15 л"] },
 
     /* ==================== GM ==================== */
     { brand:"GM", box:"6L45R/E", type:"Аппаратная", title:"GM 6L45R/E (Motul ATF6)",
@@ -3888,6 +3912,11 @@
     { brand:"Mercedes", box:"9G-Tronic", type:"Аппаратная", filter:"zf",    title:"9G-Tronic · аппаратная · поддон ZF",
       code:"Mercedes·9G-Tronic·Аппаратная·Поддон ZF",
       extraTags:["9G-Tronic", "725.0", "Поддон ZF"] },
+    // Редкая вариация: все поддоны, а в мостах/раздатке — Ravenol в раздатку (MB9G_AXLES_RAVENOL).
+    { brand:"Mercedes", box:"9G-Tronic", type:"Аппаратная", combo:true, diffsBlock: MB9G_AXLES_RAVENOL,
+      code:"Mercedes·9G-Tronic·Аппаратная·Все поддоны·Раздатка Ravenol",
+      title:"9G-Tronic · аппаратная · все поддоны · раздатка Ravenol", titleAccent:"раздатка Ravenol",
+      extraTags:["725.0", "Все поддоны", "MB", "SOLLO", "Mahle", "ZF", "Ravenol", "Раздатка Ravenol"] },
     { brand:"Mercedes", box:"9G-Tronic", type:"Слив-залив", combo:true,
       code:"Mercedes·9G-Tronic·Слив-залив·Все поддоны",
       title:"9G-Tronic · слив-залив · все поддоны одним текстом", titleAccent:"все поддоны",
@@ -3904,13 +3933,16 @@
     { brand:"Mercedes", box:"9G-Tronic", type:"Слив-залив", filter:"zf",    title:"9G-Tronic · слив-залив · поддон ZF",
       code:"Mercedes·9G-Tronic·Слив-залив·Поддон ZF",
       extraTags:["9G-Tronic", "725.0", "Поддон ZF"] },
-    // 7G-Tronic (722.9) — аппаратная замена с промывкой. 2 варианта масла по filter (тоже свой code).
+    // 7G-Tronic (722.9) — аппаратная замена с промывкой. 3 варианта по filter (у каждого свой code).
     { brand:"Mercedes", box:"7G-Tronic", type:"Аппаратная", filter:"plus", title:"7G-Tronic Plus (масло MB 236.15) с промывкой",
       code:"Mercedes·7G-Tronic·Аппаратная·Plus (MB 236.15)",
       titleAccent:"7G-Tronic Plus", extraTags:["7G-Tronic Plus", "722.9", "Mercedes 236.15"] },
     { brand:"Mercedes", box:"7G-Tronic", type:"Аппаратная", filter:"std", title:"7G-Tronic (масло Motul ATF6) с промывкой",
       code:"Mercedes·7G-Tronic·Аппаратная·Motul ATF6",
       extraTags:["7G-Tronic", "722.9", "Motul ATF6"] },
+    { brand:"Mercedes", box:"7G-Tronic", type:"Аппаратная", filter:"w7c700", title:"722.906 / W7C700 с № 2834527 (Motul ATF6, Mahle HX124D) с промывкой",
+      code:"Mercedes·7G-Tronic·Аппаратная·722.906 W7C700",
+      titleAccent:"722.906 / W7C700", extraTags:["7G-Tronic", "722.9", "722.906", "W7C700", "7/1", "2834527", "Motul ATF6", "Mahle HX124D"] },
   ];
 
   // Страховка от повторения дефекта: две РАЗНЫЕ карточки с одинаковым кодом молча слиплись бы в дедупе
