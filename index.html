@@ -2663,6 +2663,7 @@
     filter_lynx_lt1036: ["Фильтр LYNXauto LT-1036 с прокладкой в комплекте", 4400],   // Aisin U661F
     filter_lynx_lt1090: ["Фильтр LYNXauto LT-1090 с прокладкой в комплекте", 4400],   // Aisin U760E/U761E
     filter_lynx_lt1089: ["Фильтр LYNXauto LT-1089 с прокладкой в комплекте", 4400],   // Aisin A760F
+    filter_lynx_lt1150: ["Фильтр LYNXauto LT-1150 с прокладкой в комплекте", 6000],   // Aisin V6AWH-M-DA
     filter_lynx_lt1240: ["Фильтр LYNXauto LT-1240 с прокладкой в комплекте", 3000],   // Jatco JF414E
     filter_a750:        ["Фильтр JS Asakashi JT541K", 6000],
     filter_r4a51:       ["Фильтр JS Asakashi JT208K", 3800],
@@ -2684,6 +2685,7 @@
     cvt_ring_3vx0a:     ["Уплотнительное кольцо Nissan 31526-3VX0A", 650],
     cvt_filter_fine:    ["Фильтр тонкой очистки Nissan 31726-28X0A", 1650],
     cvt_filter_coarse:  ["Фильтр грубой очистки Nissan 3172828X0A", 5500],
+    cvt_filters_jf011e: ["Комплект фильтров для вариатора (2824A028, 2824A007, 2705A049)", 11000],   // Jatco JF011E
     re7_gasket_1xj0a:   ["Прокладка картера Nissan 31397-1XJ0A", 4000],
     // -- Работы по коробкам --
     work_drainfill_2000: ["Частичная замена масла в АКПП (методом слил-залил)", 2000],
@@ -2704,6 +2706,7 @@
     work_full_r4a51:  ["Полная аппаратная замена масла в АКПП Aisin R4A51/V4A51 с промывкой системы", 6000],
     work_full_ab60:   ["Полная аппаратная замена масла в АКПП Aisin AB60E/F с промывкой системы", 6000],
     work_full_jf414e: ["Полная аппаратная замена масла в АКПП Jatco JF414E с промывкой системы", 6000],
+    work_full_v6awh:  ["Полная аппаратная замена масла в АКПП Aisin V6AWH-M-DA с промывкой системы", 7000],
     work_full_re7:    ["Полная аппаратная замена масла в АКПП RE7R01A с промывкой системы", 6000],
     work_full_u340:   ["Полная аппаратная замена масла в АКПП Aisin U340-341E/F с промывкой системы", 6000],
     work_full_fw6el:  ["Полная аппаратная замена масла в АКПП Aisin FW6-EL с промывкой системы", 7000],
@@ -2721,6 +2724,7 @@
     work_dq200:       ["Замена масла в DSG DQ-200", 4000],
     work_full_cvt_re0f11a: ["Полная замена масла в вариаторе RE0F11A JF015 с промывкой системы", 7000],
     work_full_cvt_jf016:   ["Полная замена масла в вариаторе JF016E/JF017E с промывкой системы", 7000],
+    work_full_cvt_jf011e:  ["Полная замена масла в вариаторе Jatco JF011E / W1CJA / F1CJA / F1CJC с промывкой системы", 7000],
     // ТО двигателя (раздел «ТО»): работы — расценки владельца. Фильтры кузова (возд./салон./топл.)
     // клиент-специфичны и вводятся в разделе по месту; строка работы подтягивается при заполнении слота.
     to_work_oil:   ["Замена масла в моторе", 1500],
@@ -2903,6 +2907,9 @@
                    "mb_transf_work",
                    // DCT 724.020: названия фильтров и работы, состав и цены (Итого 44 700) подтверждены владельцем в сообщении.
                    "motul_dctf", "oil_dctf_9", "filter_dq724_fine", "filter_dq724_coarse", "work_full_dq724"],
+    // Aisin V6AWH-M-DA (Итого 42 200) и вариатор Jatco JF011E (Итого 50 200): состав и цены подтверждены владельцем в сообщении.
+    "2026-10-15": ["motul_atf6", "oil_motul_15", "bardahl", "filter_lynx_lt1150", "work_full_v6awh",
+                   "motul_cvtf", "oil_cvtf_12", "cvt_filters_jf011e", "work_full_cvt_jf011e"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -3400,6 +3407,14 @@
         ],
       },
     },
+    "V6AWH-M-DA": {
+      "Аппаратная": {
+        head: "Полная аппаратная замена масла в АКПП Aisin V6AWH-M-DA",
+        variants: () => [
+          { label: "1.", items: ["oil_motul_15", "bardahl", "filter_lynx_lt1150", "work_full_v6awh"] },
+        ],
+      },
+    },
 
     /* ===== DSG / DCT ===== */
     "DCT 724.020": {
@@ -3490,6 +3505,14 @@
         head: "Полная замена масла в вариаторе JF016E/JF017E",
         variants: () => [
           { label: "1.", items: ["oil_cvtf_12", "bardahl", "cvt_gasket_1xf0d", "cvt_ring_3vx0a", "cvt_filter_fine", "cvt_filter_coarse", "work_full_cvt_jf016"] },
+        ],
+      },
+    },
+    "JF011E": {
+      "Аппаратная": {
+        head: "Полная замена масла в вариаторе Jatco JF011E / W1CJA / F1CJA / F1CJC",
+        variants: () => [
+          { label: "1.", items: ["oil_cvtf_12", "bardahl", "cvt_filters_jf011e", "work_full_cvt_jf011e"] },
         ],
       },
     },
@@ -3854,6 +3877,8 @@
       titleAccent:"U340-341E/F", extraTags:["U340", "U341E", "U341F", "Motul ATF6", "JS Asakashi JT425K"] },
     { brand:"Aisin", box:"FW6-EL", type:"Аппаратная", title:"Aisin FW6-EL (Motul ATF6)",
       titleAccent:"FW6-EL", extraTags:["FW6-EL", "Mazda", "Motul ATF6"] },
+    { brand:"Aisin", box:"V6AWH-M-DA", type:"Аппаратная", title:"Aisin V6AWH-M-DA (Motul ATF6)",
+      titleAccent:"V6AWH-M-DA", extraTags:["V6AWH", "V6AWH-M-DA", "6/1", "Motul ATF6", "15 л", "LYNXauto LT-1150", "LT-1150"] },
 
     /* ==================== DSG / DCT ==================== */
     { brand:"DSG / DCT", box:"DCT 724.020", type:"Аппаратная", title:"DCT 724.020 (2 фильтра)",
@@ -3880,6 +3905,9 @@
       titleAccent:"RE0F11A JF015", extraTags:["RE0F11A", "JF015", "Nissan", "Motul Multi CVTF"] },
     { brand:"Вариаторы", box:"JF016E/JF017E", type:"Аппаратная", title:"Вариатор JF016E/JF017E (Nissan)",
       titleAccent:"JF016E/JF017E", extraTags:["JF016E", "JF017E", "Nissan", "Motul Multi CVTF"] },
+    { brand:"Вариаторы", box:"JF011E", type:"Аппаратная", title:"Вариатор Jatco JF011E / W1CJA / F1CJA / F1CJC",
+      titleAccent:"JF011E", extraTags:["JF011E", "W1CJA", "F1CJA", "F1CJC", "1/1", "Jatco", "Mitsubishi", "Motul Multi CVTF",
+                                      "2824A028", "2824A007", "2705A049"] },
 
     /* ==================== Jatco ==================== */
     { brand:"Jatco", box:"JF414E", type:"Аппаратная", title:"Jatco JF414E (Motul ATF6)",
