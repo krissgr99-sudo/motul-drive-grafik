@@ -422,6 +422,11 @@
     color:var(--text);font:inherit;font-weight:700;font-size:12px;cursor:pointer;flex:none;transition:background .15s,border-color .15s,color .15s}
   .tpl-copy:hover{border-color:var(--accent-soft);color:var(--accent-soft);background:var(--weekend)}
   .tpl-copy.ok{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)}
+  .tpl-price + .tpl-copy{margin-left:auto}       /* обе кнопки копирования — рядом справа, цена слева */
+  .tpl-copy-codes{font-weight:600}                                /* «с номерами» — себе, второстепенная */
+  .tpl-copy-codes:not(.ok):not(:hover){color:var(--muted)}
+  .tpl-narrow{display:none}                      /* телефон: «С номерами» в одну строку, как соседние кнопки */
+  @media(max-width:720px){ .tpl-wide{display:none} .tpl-narrow{display:inline} }
   .tpl-build{flex-basis:100%}
   .tpl-build[aria-pressed="true"]{border-color:var(--accent-soft);color:var(--accent-soft)}
   .tpl-actions:has(.tpl-build){flex-wrap:wrap}
@@ -2477,20 +2482,24 @@
   // цена строки-масла = ставка × объём, округлённая до рубля
   const perL = (rate, litres) => Math.round(rate * litres);
 
-  // 1) Позиции прайса: ключ → [название, цена ₽]. Цены живут только здесь.
+  // 1) Позиции прайса: ключ → [название, цена ₽, артикул?]. Цены живут только здесь.
   //    Масла считаются из RATES (perL). Работы/фильтры — числом (одна строка = один источник).
+  //    Артикул (третий элемент) — ровно тот кусок названия, который клиенту не отправляем:
+  //    «Копировать» в Шаблонах печатает позицию без него, «Копировать с номерами» — целиком.
+  //    Новая деталь с номером → впиши номер и в название (поиск по номеру), и третьим элементом.
+  //    Допуск (236.17), вязкость, марку и линейку масла, коды коробок артикулом не считаем.
   const PRICE = {
-    oil_motul_12: ["Трансмиссионное масло Motul ATF6 105774 12л", perL(RATES.motul_atf6, 12)],
-    oil_zf_12:    ["Оригинальное трансмиссионное масло ZF8HP S671090312 12л", perL(RATES.zf8hp, 12)],
-    oil_zf_5:     ["Оригинальное трансмиссионное масло ZF8HP S671090312 5л", perL(RATES.zf8hp, 5)],
+    oil_motul_12: ["Трансмиссионное масло Motul ATF6 105774 12л", perL(RATES.motul_atf6, 12), "105774"],
+    oil_zf_12:    ["Оригинальное трансмиссионное масло ZF8HP S671090312 12л", perL(RATES.zf8hp, 12), "S671090312"],
+    oil_zf_5:     ["Оригинальное трансмиссионное масло ZF8HP S671090312 5л", perL(RATES.zf8hp, 5), "S671090312"],
     bardahl:      ["Промывочная присадка для АКПП BARDAHL", 2200],
-    filter_std:   ["Оригинальный Фильтр-поддон ZF 1087298437", 9000],
+    filter_std:   ["Оригинальный Фильтр-поддон ZF 1087298437", 9000, "1087298437"],
     filter_mild:  ["Оригинальный Фильтр-поддон ZF", 19000],
     work_full:    ["Полная аппаратная замена масла в АКПП ZF 8HP45-50-70-75-76 с промывкой системы", 6000],
     work_partial: ["Частичная замена масла в АКПП ZF 8HP45-50-70-75-76 с заменой фильтр-поддона", 3000],
     // Глубокий поддон 1087298361 (Jeep/Dodge и др.): масла те же, но объём 13 л; цена поддона = каталог PARTS.
-    oil_zf_13:    ["Оригинальное трансмиссионное масло ZF8HP S671090312 13л", perL(RATES.zf8hp, 13)],
-    filter_deep:  ["Оригинальный Фильтр-поддон ZF 1087298361 глубокий", 11000],
+    oil_zf_13:    ["Оригинальное трансмиссионное масло ZF8HP S671090312 13л", perL(RATES.zf8hp, 13), "S671090312"],
+    filter_deep:  ["Оригинальный Фильтр-поддон ZF 1087298361 глубокий", 11000, "1087298361"],
     // M-версия BMW: свой фильтр с прокладкой под алюминиевый поддон. Заправка та же, что у глубокого — 13 л.
     filter_m_alu: ["Фильтр АКПП с прокладкой BMW M-Версия для алюминиевого поддона", 11000],
     // Полный гибрид ZF 8HP60 (PHEV): заводское масло Hybrid2, оригинальный поддон BMW, работа 10000
@@ -2500,35 +2509,35 @@
     work_full_60:   ["Полная аппаратная замена масла в АКПП ZF 8HP60 с промывкой системы", 10000],
     work_part_60:   ["Частичная замена масла в АКПП ZF 8HP60 с заменой фильтр-поддона", 7000],
     // 6-ступка (ZF 6HP): на 1 литр масла больше, чем у 8-ступки (Motul +1800, ZF +2200 за литр)
-    oil_motul_13: ["Трансмиссионное масло Motul ATF6 105774 13л", perL(RATES.motul_atf6, 13)],
-    oil_zf6_13:   ["Оригинальное трансмиссионное масло ZF6HP S671090255 13л", perL(RATES.zf6hp, 13)],
-    filter_6hp:   ["Оригинальный Фильтр-поддон ZF 24152333903 / 24152333907", 9000],
+    oil_motul_13: ["Трансмиссионное масло Motul ATF6 105774 13л", perL(RATES.motul_atf6, 13), "105774"],
+    oil_zf6_13:   ["Оригинальное трансмиссионное масло ZF6HP S671090255 13л", perL(RATES.zf6hp, 13), "S671090255"],
+    filter_6hp:   ["Оригинальный Фильтр-поддон ZF 24152333903 / 24152333907", 9000, "24152333903 / 24152333907"],
     work_full_6hp:["Полная аппаратная замена масла в АКПП ZF 6HP с промывкой системы", 6000],
-    oil_zf6_6:    ["Оригинальное трансмиссионное масло ZF6HP S671090255 6л", perL(RATES.zf6hp, 6)],
+    oil_zf6_6:    ["Оригинальное трансмиссионное масло ZF6HP S671090255 6л", perL(RATES.zf6hp, 6), "S671090255"],
     work_part_6hp:["Частичная замена масла в АКПП ZF 6HP с заменой фильтр-поддона", 3000],
     // Мосты/раздатка ПОУЗЛОВО (diffsMultiBlock в «Шаблонах»). Motul: передний+задний диф на одной канистре
     //   Gear 300, раздатка на Multi DCTF. Оригинал BMW: по 1 л G OIL в каждый диф + BMW DTF-1 в раздатку.
     //   Задний мост «обычный» (diff_work_rear) или «трёхсекционный» (diff_oil_rear на Gear 300 LS + diff_work_rear3).
-    diff_oil_front:   ["Трансмиссионное масло Motul Gear 300 75W90 105777 1.5л", perL(RATES.gear300, 1.5)],
+    diff_oil_front:   ["Трансмиссионное масло Motul Gear 300 75W90 105777 1.5л", perL(RATES.gear300, 1.5), "105777"],
     diff_work_front:  ["Замена масла в переднем дифференциале", 1000],
     diff_work_rear:   ["Замена масла в заднем дифференциале", 1000],
-    diff_oil_transf:  ["Трансмиссионное масло Motul Multi DCTF 105786 0.6л", 1800],  // не по ставке: мелкий объём 3000/л
+    diff_oil_transf:  ["Трансмиссионное масло Motul Multi DCTF 105786 0.6л", 1800, "105786"],  // не по ставке: мелкий объём 3000/л
     diff_work_transf: ["Замена масла в раздаточной коробке", 1000],
-    diff_oil_rear:    ["Трансмиссионное масло Motul Gear 300 LS 75W90 синтетическое 105778 1.1л", perL(RATES.gear300_ls, 1.1)],
+    diff_oil_rear:    ["Трансмиссионное масло Motul Gear 300 LS 75W90 синтетическое 105778 1.1л", perL(RATES.gear300_ls, 1.1), "105778"],
     diff_work_rear3:  ["Замена масла в заднем дифференциале (трёхсекционный)", 3000],
     bmw_g_oil:        ["Оригинальное трансмиссионное масло BMW G OIL 1л", 10000],   // оригинал в мост (перёд/зад), по 1 л
     // С БЛОКИРОВКОЙ дифференциала «доплаты» нет: работы те же (1000×3), дороже само масло заднего моста —
     // ему нужен LSD-спек (решение владельца 04.09.2026). Motul: те же 1,5 л, но раздельно — 0,6 л перёд (Gear 300)
     // + 0,9 л зад (Gear 300 LS). Оригинал: перёд G OIL 10000, зад LSD 13000. Итоги прежние: 12450 / 31500.
-    diff_oil_front_lock: ["Трансмиссионное масло Motul Gear 300 75W90 105777 0.6л (передний дифференциал)", perL(RATES.gear300, 0.6)],
-    diff_oil_rear_lock:  ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 0.9л (задний дифференциал с блокировкой)", perL(RATES.gear300_ls, 0.9)],
+    diff_oil_front_lock: ["Трансмиссионное масло Motul Gear 300 75W90 105777 0.6л (передний дифференциал)", perL(RATES.gear300, 0.6), "105777"],
+    diff_oil_rear_lock:  ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 0.9л (задний дифференциал с блокировкой)", perL(RATES.gear300_ls, 0.9), "105778"],
     bmw_g_oil_lsd:       ["Оригинальное трансмиссионное масло BMW для дифференциала с блокировкой 1л", 13000],  // название без «LSD» — решение владельца 04.09.2026
     // Комплект (запчасти без работ) для мостов/раздатки — апсел в «Комплектах» (блок DIFFS_KIT). Раздатка — transfer_oil_*.
-    kit_diff_motul:   ["Трансмиссионное масло Motul Gear 300 75W90 105777 2л (в мосты)", perL(RATES.gear300, 2)],  // 9000
+    kit_diff_motul:   ["Трансмиссионное масло Motul Gear 300 75W90 105777 2л (в мосты)", perL(RATES.gear300, 2), "105777"],  // 9000
     kit_diff_orig:    ["Оригинальное трансмиссионное масло BMW G OIL (в мосты, 4 шт)", 20000],                     // оригинал в мосты, набором
     // Комплект С БЛОКИРОВКОЙ (LSD): задний мост на Gear 300 LS 105778, оригинал — 4 шт (2×6500 LSD + 2×5000). Блок DIFFS_KIT_LOCK.
-    kit_diff_motul_ls:  ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 1л (в мосты)", perL(RATES.gear300_ls, 1)], // 5500
-    kit_diff_motul_reg: ["Трансмиссионное масло Motul Gear 300 75W90 105777 1л (в мосты)",    perL(RATES.gear300, 1)],    // 4500
+    kit_diff_motul_ls:  ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 1л (в мосты)", perL(RATES.gear300_ls, 1), "105778"], // 5500
+    kit_diff_motul_reg: ["Трансмиссионное масло Motul Gear 300 75W90 105777 1л (в мосты)",    perL(RATES.gear300, 1), "105777"],    // 4500
     kit_diff_orig_lock: ["Оригинальное трансмиссионное масло BMW G OIL (в мосты, 4 шт)", 23000],                          // блокировка: 2×6500 (LSD) + 2×5000
     // Комплект (запчасти без работ) для мостов и Торсена Audi/VW — блоки DIFFS_KIT_TORSEN_G055/_G060, поузлово.
     // Названия и цены — владельца. Итоги: VAG G055 30000 / VAG G060 36800 / Motul 14500 — каждый ровно на 3000
@@ -2536,11 +2545,11 @@
     kit_torsen_motul_front: ["Motul Gear 300 75W90 для переднего дифференциала 1л", perL(RATES.gear300, 1)],    // 4500
     kit_torsen_motul_rear:  ["Motul Gear 300 75W90 для заднего дифференциала 1л",   perL(RATES.gear300, 1)],    // 4500
     kit_torsen_motul_ls:    ["Motul Gear 300 LS для торсена 1л",                     perL(RATES.gear300_ls, 1)], // 5500
-    kit_torsen_vag_torsen:  ["Трансмиссионное масло для ТОРСЕН VAG G055145A2 1л", 17000],   // общее у G055 и G060
+    kit_torsen_vag_torsen:  ["Трансмиссионное масло для ТОРСЕН VAG G055145A2 1л", 17000, "G055145A2"],   // общее у G055 и G060
     kit_torsen_g055_front:  ["Масло трансмиссионное для переднего дифф. 1л", 6500],
     kit_torsen_g055_rear:   ["Трансмиссионное масло для заднего дифф. VAG 1л", 6500],
-    kit_torsen_g060_front:  ["Масло трансмиссионное VAG G065190A2 для переднего дифф. 1л", 9900],
-    kit_torsen_g060_rear:   ["Трансмиссионное масло для заднего дифф. VAG G060190A2 1л", 9900],
+    kit_torsen_g060_front:  ["Масло трансмиссионное VAG G065190A2 для переднего дифф. 1л", 9900, "G065190A2"],
+    kit_torsen_g060_rear:   ["Трансмиссионное масло для заднего дифф. VAG G060190A2 1л", 9900, "G060190A2"],
     // Агрегатные «мосты/раздатка/Торсен» — Motul и Оригинал АЛЬТЕРНАТИВЫ (не слагаемые), «Итого» нет.
     // diffs_* = сумма поузловых (нужны «Комплектам»/addons, KITS); AXLES_* — X1/Торсен (axlesBlock). Цены здесь.
     diffs_motul_nolock:     ["Масло Motul +замена", 11550],
@@ -2555,26 +2564,26 @@
     // (в услуге у Motul своя строка 0.6 л — diff_oil_transf). Правило «считаем литр»: заправка 0.6 л,
     // но берём за целый литр, остаток клиенту. Цены плоские (не по ставке RATES).
     // Отдельной услуги «только раздатка» нет (→ decisions/2026-09-21-bez-otdelnoj-uslugi-razdatki.md).
-    transfer_oil_motul: ["Трансмиссионное масло Motul Multi DCTF 105786 1л", 3000],  // не по ставке: считаем литр, 3000/л
+    transfer_oil_motul: ["Трансмиссионное масло Motul Multi DCTF 105786 1л", 3000, "105786"],  // не по ставке: считаем литр, 3000/л
     transfer_oil_dtf1:  ["Оригинальное трансмиссионное масло BMW DTF-1 1л", 5500],   // не по ставке: оригинал, 5500/л
     // Aisin 8F22 (BMW X1 F48)
-    oil_motul_11:    ["Трансмиссионное масло Motul ATF6 105774 11л", perL(RATES.motul_atf6, 11)],
+    oil_motul_11:    ["Трансмиссионное масло Motul ATF6 105774 11л", perL(RATES.motul_atf6, 11), "105774"],
     work_full_aisin: ["Полная аппаратная замена масла в АКПП Aisin 8F22 с промывкой системы", 5000],
     // 09S (масло Ravenol, допуск AW2)
-    oil_ravenol_11:  ["Трансмиссионное масло Ravenol ATF T-ULV Fluid 1211146-001 11л", perL(RATES.ravenol_ulv, 11)],
+    oil_ravenol_11:  ["Трансмиссионное масло Ravenol ATF T-ULV Fluid 1211146-001 11л", perL(RATES.ravenol_ulv, 11), "1211146-001"],
     work_full_09s:   ["Полная аппаратная замена масла в АКПП с промывкой 09S/8G45", 5000],
     // Муфта Haldex (BMW X1 F48)
-    oil_haldex:       ["Трансмиссионное масло для муфты Haldex 101172 1шт", 3000],
+    oil_haldex:       ["Трансмиссионное масло для муфты Haldex 101172 1шт", 3000, "101172"],
     haldex_ring:      ["Уплотнительное кольцо BMW Haldex", 3500],
     work_haldex_cut:  ["Замена масла в муфте Haldex (методом спил)", 6000],
     work_haldex_full: ["Замена масла в муфте Haldex полным разбором", 10000],
     // Mercedes 9G-Tronic (725.0). Аппаратная — масло 13л + BARDAHL; слив-залив — масло 10л, без промывки.
     // Названия поддонов и работ — дословно как у пользователя (у Mahle/ZF аппарат./слив различаются).
-    oil_mb_9g_13:      ["Трансмиссионное масло Mercedes-Benz 236.17 A000989590411 13л", perL(RATES.mb_236_17, 13)],
-    oil_mb_9g_10:      ["Трансмиссионное масло Mercedes-Benz 236.17 A000989590411 10л", perL(RATES.mb_236_17, 10)],
-    filter_mb_9g:      ["Оригинальный Фильтр-поддон MB A7252703707", 22000],
-    bolt_mb_9g:        ["Болт поддона м6 MERCEDES-BENZ A0029909503 10шт", 3500],
-    drain_mb_9g:       ["Сливная пробка гидротрансформатора (бублик) Mercedes Benz A0019901117 1шт", 500],
+    oil_mb_9g_13:      ["Трансмиссионное масло Mercedes-Benz 236.17 A000989590411 13л", perL(RATES.mb_236_17, 13), "A000989590411"],
+    oil_mb_9g_10:      ["Трансмиссионное масло Mercedes-Benz 236.17 A000989590411 10л", perL(RATES.mb_236_17, 10), "A000989590411"],
+    filter_mb_9g:      ["Оригинальный Фильтр-поддон MB A7252703707", 22000, "A7252703707"],
+    bolt_mb_9g:        ["Болт поддона м6 MERCEDES-BENZ A0029909503 10шт", 3500, "A0029909503"],
+    drain_mb_9g:       ["Сливная пробка гидротрансформатора (бублик) Mercedes Benz A0019901117 1шт", 500, "A0019901117"],
     filter_sollo_9g:   ["Фильтр поддон SOLLO ZM PARTS (Germany) с болтами и трубками в комплекте", 14000],
     filter_mahle_9g_a: ["Фильтр поддон Mahle (Germany) с болтами и трубками в комплекте", 16000],
     filter_mahle_9g_f: ["Фильтр поддон Mahle (Germany) с болтами в комплекте", 16000],
@@ -2587,10 +2596,10 @@
     // 2 варианта — оригинал Mercedes-Benz (Итого 21500) и Motul (Итого 13500).
     // Исключение — редкие карточки 9G с Ravenol в раздатке (блок MB9G_AXLES_RAVENOL).
     // Цены — суммарные по строке: Gear 300 = 2л×4500; масло раздатки Mercedes = 0,6л×2500 (общее для обоих вариантов).
-    mb_diff_oil:    ["Масло трансмиссионное Motul Gear 300 75W90 105777 2л (передний и задний дифференциал)", perL(RATES.gear300, 2)],
+    mb_diff_oil:    ["Масло трансмиссионное Motul Gear 300 75W90 105777 2л (передний и задний дифференциал)", perL(RATES.gear300, 2), "105777"],
     mb_diff_front:  ["Замена масла в переднем дифференциале", 1000],
     mb_diff_rear:   ["Замена масла в заднем дифференциале", 1000],
-    mb_transf_oil:  ["Трансмиссионное масло Mercedes 236.15 A000989270411 0.6л (раздаточная коробка)", perL(RATES.mb_236_15_sm, 0.6)],
+    mb_transf_oil:  ["Трансмиссионное масло Mercedes 236.15 A000989270411 0.6л (раздаточная коробка)", perL(RATES.mb_236_15_sm, 0.6), "A000989270411"],
     mb_transf_work: ["Замена масла в раздаточной коробке", 1000],   // везде 1000 — decisions/2026-10-14-zamena-razdatki-1000-vezde.md
     // Редкая вариация 9G (MB9G_AXLES_RAVENOL): Ravenol в раздатку.
     mb_transf_oil_ravenol: ["Трансмиссионное масло Ravenol (раздаточная коробка)", 2400],
@@ -2599,94 +2608,94 @@
     mb_diff_rear_orig:  ["Оригинальное трансмиссионное масло Mercedes-Benz 239.71/239.72 1л (задний дифференциал)", perL(RATES.mb_239_71, 1)],
     mb_diff_work_all:   ["Замена масла в переднем, заднем дифференциале и раздаточной коробке", 3000],  // пакет — цена владельца 31.08.2026; сейчас равен поштучным работам Motul-варианта (1000 + 1000 + 1000)
     // Продажа комплекта Mercedes: раздатка 1 л; Motul + Mercedes — единая цена владельца, без разбивки и работ.
-    kit_mb_transf_oil:  ["Оригинальное трансмиссионное масло Mercedes 236.15 A000989270411 1л (раздаточная коробка)", perL(RATES.mb_236_15_sm, 1)],
+    kit_mb_transf_oil:  ["Оригинальное трансмиссионное масло Mercedes 236.15 A000989270411 1л (раздаточная коробка)", perL(RATES.mb_236_15_sm, 1), "A000989270411"],
     kit_mb_axles_motul:["Масло Motul для переднего и заднего дифференциала + оригинальное масло Mercedes 236.15 для раздатки", 12000],
     // Mercedes 7G-Tronic (722.9): 3 варианта — «+» на масле MB 236.15, обычный на Motul ATF6
     // и 722.906 / W7C700 с серийного номера 2834527 (Motul ATF6, свой фильтр Mahle и своя цена работы).
     // Промывка BARDAHL — общая. Мосты/раздатка — как у 9G (MB9G_AXLES).
-    oil_mb_7g_12:          ["Трансмиссионное масло Mercedes 236.15 A000989270411 12л", perL(RATES.mb_236_15, 12)],
-    oil_motul_atf6_12:     ["Трансмиссионное масло Motul ATF6 105774 12л", perL(RATES.motul_atf6, 12)],
+    oil_mb_7g_12:          ["Трансмиссионное масло Mercedes 236.15 A000989270411 12л", perL(RATES.mb_236_15, 12), "A000989270411"],
+    oil_motul_atf6_12:     ["Трансмиссионное масло Motul ATF6 105774 12л", perL(RATES.motul_atf6, 12), "105774"],
     filter_mb_7g:          ["Фильтр АКПП с прокладкой в комплекте", 7000],
-    filter_mahle_hx124d:   ["Фильтр АКПП с прокладкой в комплекте Mahle HX124D", 6000],
+    filter_mahle_hx124d:   ["Фильтр АКПП с прокладкой в комплекте Mahle HX124D", 6000, "HX124D"],
     work_full_7g_wash:     ["Полная аппаратная замена масла в АКПП 7G-Tronic+ с промывкой системы", 6000],
     work_full_7g_std_wash: ["Полная аппаратная замена масла в АКПП 7G-Tronic с промывкой системы", 6000],
     work_full_w7c700_wash: ["Полная аппаратная замена масла в АКПП 722.906 / W7C700 с промывкой системы", 7000],
     // Audi / Volkswagen — ZF 8HP65. 2 варианта масла (Motul ATF6 — есть выше; оригинал ZF8HP).
     // Фильтр-поддон ZF и работа с промывкой — общие. Мосты/Торсен — блок AXLES_TORSEN.
-    oil_zf8hp_12:          ["Оригинальное трансмиссионное масло ZF8HP S671090312 12л", perL(RATES.zf8hp, 12)],
-    filter_zf_8hp65:       ["Оригинальный Фильтр-поддон ZF 1103298006", 13000],
+    oil_zf8hp_12:          ["Оригинальное трансмиссионное масло ZF8HP S671090312 12л", perL(RATES.zf8hp, 12), "S671090312"],
+    filter_zf_8hp65:       ["Оригинальный Фильтр-поддон ZF 1103298006", 13000, "1103298006"],
     filter_sollo_8hp65:    ["Фильтр поддон Sollo Germany", 10000],   // неоригинальный поддон 8HP65 (вариант на масле Motul)
     work_full_8hp65_wash:  ["Полная аппаратная замена масла в АКПП ZF 8HP65 с промывкой системы", 7000],
-    oil_zf8hp_6:           ["Оригинальное трансмиссионное масло ZF8HP S671090312 6л", perL(RATES.zf8hp, 6)],
+    oil_zf8hp_6:           ["Оригинальное трансмиссионное масло ZF8HP S671090312 6л", perL(RATES.zf8hp, 6), "S671090312"],
     work_part_8hp65:       ["Частичная замена масла в АКПП ZF 8HP65 с заменой фильтра", 4000],
     // ZF 8HP65A — то же, что 8HP65, но другой фильтр-поддон (1103298119) и «A» в названиях работ.
-    filter_zf_8hp65a:      ["Оригинальный Фильтр-поддон ZF 1103298119", 16000],
+    filter_zf_8hp65a:      ["Оригинальный Фильтр-поддон ZF 1103298119", 16000, "1103298119"],
     work_full_8hp65a_wash: ["Полная аппаратная замена масла в АКПП ZF 8HP65A с промывкой системы", 7000],
     work_part_8hp65a:      ["Частичная замена масла в АКПП ZF 8HP65A с заменой фильтра", 4000],
 
     /* ================= КАТАЛОГ КОРОБОК (импорт полного прайса) ================= */
     // -- Масла (новые объёмы/типы) --
-    oil_motul_10:  ["Трансмиссионное масло Motul ATF6 105774 10л", perL(RATES.motul_atf6, 10)],
-    oil_motul_15:  ["Трансмиссионное масло Motul ATF6 105774 15л", perL(RATES.motul_atf6, 15)],
-    oil_motul_16:  ["Трансмиссионное масло Motul ATF6 105774 16л", perL(RATES.motul_atf6, 16)],
-    oil_zf_4:      ["Оригинальное трансмиссионное масло ZF8HP S671090312 4л", perL(RATES.zf8hp, 4)],
-    oil_zf_10:     ["Оригинальное трансмиссионное масло ZF8HP S671090312 10л", perL(RATES.zf8hp, 10)],
-    oil_multiatf_11: ["Трансмиссионное масло Motul Multi ATF 105784 11л", perL(RATES.motul_multiatf, 11)],
-    oil_multiatf_15: ["Трансмиссионное масло Motul Multi ATF 105784 15л", 25500],  // не по ставке: 1700/л
-    oil_multiatf_16: ["Трансмиссионное масло Motul Multi ATF 105784 16л", 27200],  // не по ставке: 1700/л
-    oil_toyota_16: ["Трансмиссионное масло Toyota ATF WS 08886-81210 16л", perL(RATES.toyota_ws, 16)],
-    oil_toyota_11: ["Трансмиссионное масло Toyota ATF WS 08886-81210 11л", perL(RATES.toyota_ws, 11)],
-    oil_dctf_9:    ["Трансмиссионное масло Motul Multi DCTF 105786 9л", perL(RATES.motul_dctf, 9)],
-    oil_dctf_5:    ["Трансмиссионное масло Motul Multi DCTF 105786 5л", perL(RATES.motul_dctf, 5)],
-    oil_dctf_35:   ["Трансмиссионное масло Motul Multi DCTF 105786 3.5л", 10500],  // не по ставке: мелкий объём 3000/л (публичный прайс DRIVE2, п. 14.2)
-    oil_dctf_2:    ["Трансмиссионное масло Motul Multi DCTF 105786 2л", perL(RATES.motul_dctf, 2)],
+    oil_motul_10:  ["Трансмиссионное масло Motul ATF6 105774 10л", perL(RATES.motul_atf6, 10), "105774"],
+    oil_motul_15:  ["Трансмиссионное масло Motul ATF6 105774 15л", perL(RATES.motul_atf6, 15), "105774"],
+    oil_motul_16:  ["Трансмиссионное масло Motul ATF6 105774 16л", perL(RATES.motul_atf6, 16), "105774"],
+    oil_zf_4:      ["Оригинальное трансмиссионное масло ZF8HP S671090312 4л", perL(RATES.zf8hp, 4), "S671090312"],
+    oil_zf_10:     ["Оригинальное трансмиссионное масло ZF8HP S671090312 10л", perL(RATES.zf8hp, 10), "S671090312"],
+    oil_multiatf_11: ["Трансмиссионное масло Motul Multi ATF 105784 11л", perL(RATES.motul_multiatf, 11), "105784"],
+    oil_multiatf_15: ["Трансмиссионное масло Motul Multi ATF 105784 15л", 25500, "105784"],  // не по ставке: 1700/л
+    oil_multiatf_16: ["Трансмиссионное масло Motul Multi ATF 105784 16л", 27200, "105784"],  // не по ставке: 1700/л
+    oil_toyota_16: ["Трансмиссионное масло Toyota ATF WS 08886-81210 16л", perL(RATES.toyota_ws, 16), "08886-81210"],
+    oil_toyota_11: ["Трансмиссионное масло Toyota ATF WS 08886-81210 11л", perL(RATES.toyota_ws, 11), "08886-81210"],
+    oil_dctf_9:    ["Трансмиссионное масло Motul Multi DCTF 105786 9л", perL(RATES.motul_dctf, 9), "105786"],
+    oil_dctf_5:    ["Трансмиссионное масло Motul Multi DCTF 105786 5л", perL(RATES.motul_dctf, 5), "105786"],
+    oil_dctf_35:   ["Трансмиссионное масло Motul Multi DCTF 105786 3.5л", 10500, "105786"],  // не по ставке: мелкий объём 3000/л (публичный прайс DRIVE2, п. 14.2)
+    oil_dctf_2:    ["Трансмиссионное масло Motul Multi DCTF 105786 2л", perL(RATES.motul_dctf, 2), "105786"],
     oil_httdctf_9: ["Трансмиссионное масло Motul HIGH TORQUE DCTF 9л", perL(RATES.motul_ht_dctf, 9)],
-    oil_g052182_9: ["Оригинальное трансмиссионное масло DSG DQ250/500 G052182A2 9л", perL(RATES.vag_g052182, 9)],
+    oil_g052182_9: ["Оригинальное трансмиссионное масло DSG DQ250/500 G052182A2 9л", perL(RATES.vag_g052182, 9), "G052182A2"],
     // DL-382, вариант «оригинал VAG»: два разных масла — гидравлика и механика, по 4 л каждое
-    oil_g055529_4: ["Трансмиссионное масло (гидравлика) VAG G055529A2 4л", perL(RATES.vag_g055529, 4)],
-    oil_g052549_4: ["Трансмиссионное масло (механика) VAG G052549A2 4л", perL(RATES.vag_g052549, 4)],
-    oil_gear300_4: ["Трансмиссионное масло Motul Gear 300 105777 4л", perL(RATES.gear300, 4)],
-    oil_gear300_38:["Трансмиссионное масло Motul Gear 300 105777 3.8л", perL(RATES.gear300, 3.8)],
+    oil_g055529_4: ["Трансмиссионное масло (гидравлика) VAG G055529A2 4л", perL(RATES.vag_g055529, 4), "G055529A2"],
+    oil_g052549_4: ["Трансмиссионное масло (механика) VAG G052549A2 4л", perL(RATES.vag_g052549, 4), "G052549A2"],
+    oil_gear300_4: ["Трансмиссионное масло Motul Gear 300 105777 4л", perL(RATES.gear300, 4), "105777"],
+    oil_gear300_38:["Трансмиссионное масло Motul Gear 300 105777 3.8л", perL(RATES.gear300, 3.8), "105777"],
     oil_cvtf_12:   ["Трансмиссионное масло Motul Multi CVTF 12л", perL(RATES.motul_cvtf, 12)],
-    oil_hf_1:      ["Жидкость ГУР Motul Multi HF 106399 1л", perL(RATES.motul_hf, 1)],
+    oil_hf_1:      ["Жидкость ГУР Motul Multi HF 106399 1л", perL(RATES.motul_hf, 1), "106399"],
     oil_kia_sp4_11:["Трансмиссионное масло Kia Sp4 11л", perL(RATES.kia_sp4, 11)],
     // -- Фильтры (новые) --
-    filter_mahle_hx189: ["Фильтр Mahle HX189KIT", 9000],
-    filter_mahle_hx187: ["Фильтр АКПП с прокладкой в комплекте Mahle HX187KIT", 4500],   // Aisin TR80SD 0C8 — как в прайсе DRIVE2, п. 6
-    filter_mahle_hx160: ["Фильтр Mahle HX160KIT", 4600],
-    filter_mahle_hx139: ["Фильтр Mahle HX139D", 4000],
-    filter_mahle_hx132: ["Фильтр Mahle HX132D", 4000],
+    filter_mahle_hx189: ["Фильтр Mahle HX189KIT", 9000, "HX189KIT"],
+    filter_mahle_hx187: ["Фильтр АКПП с прокладкой в комплекте Mahle HX187KIT", 4500, "HX187KIT"],   // Aisin TR80SD 0C8 — как в прайсе DRIVE2, п. 6
+    filter_mahle_hx160: ["Фильтр Mahle HX160KIT", 4600, "HX160KIT"],
+    filter_mahle_hx139: ["Фильтр Mahle HX139D", 4000, "HX139D"],
+    filter_mahle_hx132: ["Фильтр Mahle HX132D", 4000, "HX132D"],
     filter_tf60:        ["Фильтр АКПП Aisin TF60/61", 6000],
     filter_tf60_alt:    ["Фильтр АКПП Aisin TF60/61 (аналог)", 5000],
     filter_tf62:        ["Фильтр АКПП Aisin TF62SN", 4000],
     filter_u660:        ["Фильтр АКПП Aisin U660E/F", 4400],
-    filter_lynx_lt1036: ["Фильтр LYNXauto LT-1036 с прокладкой в комплекте", 4400],   // Aisin U661F
-    filter_lynx_lt1090: ["Фильтр LYNXauto LT-1090 с прокладкой в комплекте", 4400],   // Aisin U760E/U761E
-    filter_lynx_lt1089: ["Фильтр LYNXauto LT-1089 с прокладкой в комплекте", 4400],   // Aisin A760F
-    filter_lynx_lt1150: ["Фильтр LYNXauto LT-1150 с прокладкой в комплекте", 6000],   // Aisin V6AWH-M-DA
-    filter_lynx_lt1240: ["Фильтр LYNXauto LT-1240 с прокладкой в комплекте", 3000],   // Jatco JF414E
-    filter_a750:        ["Фильтр JS Asakashi JT541K", 6000],
-    filter_r4a51:       ["Фильтр JS Asakashi JT208K", 3800],
-    filter_ab60:        ["Фильтр JS Asakashi JT568K", 5300],
-    filter_u340:        ["Фильтр JS Asakashi JT425K", 3100],
+    filter_lynx_lt1036: ["Фильтр LYNXauto LT-1036 с прокладкой в комплекте", 4400, "LT-1036"],   // Aisin U661F
+    filter_lynx_lt1090: ["Фильтр LYNXauto LT-1090 с прокладкой в комплекте", 4400, "LT-1090"],   // Aisin U760E/U761E
+    filter_lynx_lt1089: ["Фильтр LYNXauto LT-1089 с прокладкой в комплекте", 4400, "LT-1089"],   // Aisin A760F
+    filter_lynx_lt1150: ["Фильтр LYNXauto LT-1150 с прокладкой в комплекте", 6000, "LT-1150"],   // Aisin V6AWH-M-DA
+    filter_lynx_lt1240: ["Фильтр LYNXauto LT-1240 с прокладкой в комплекте", 3000, "LT-1240"],   // Jatco JF414E
+    filter_a750:        ["Фильтр JS Asakashi JT541K", 6000, "JT541K"],
+    filter_r4a51:       ["Фильтр JS Asakashi JT208K", 3800, "JT208K"],
+    filter_ab60:        ["Фильтр JS Asakashi JT568K", 5300, "JT568K"],
+    filter_u340:        ["Фильтр JS Asakashi JT425K", 3100, "JT425K"],
     filter_fw6el:       ["Фильтр Mazda (FW6-EL)", 4500],
-    filter_6hp19_mahle: ["Фильтр Knecht/Mahle HX164D1", 5700],
+    filter_6hp19_mahle: ["Фильтр Knecht/Mahle HX164D1", 5700, "HX164D1"],
     filter_zf_6hp2:     ["Оригинальный Фильтр-поддон ZF 6HP19/21", 9000],
-    filter_gm_6l45:     ["Фильтр LYNXauto LT-1040", 6000],
+    filter_gm_6l45:     ["Фильтр LYNXauto LT-1040", 6000, "LT-1040"],
     filter_dl501_coarse:     ["Фильтр грубой очистки Mahle (DL501)", 7000],
     filter_dl501_fine:       ["Фильтр тонкой очистки Mahle (DL501)", 3000],
     filter_dq724_fine:  ["Фильтр DCT тонкой очистки (вставка) с прокладкой в комплекте", 4000],
     filter_dq724_coarse:["Фильтр масляный DCT грубой очистки с прокладкой", 10000],
     // -- Вариаторы Nissan (прокладки/кольца/фильтры) --
-    cvt_gasket_3jx0a:   ["Прокладка поддона Nissan 31397-3JX0A", 3000],
-    cvt_ring_3jx3a:     ["Уплотнительное кольцо Nissan 31526-3JX3A", 350],
-    cvt_filter_28x0a:   ["Фильтр Nissan 31726-28X0A", 2050],
-    cvt_gasket_1xf0d:   ["Прокладка поддона Nissan 31397-1XF0D", 2100],
-    cvt_ring_3vx0a:     ["Уплотнительное кольцо Nissan 31526-3VX0A", 650],
-    cvt_filter_fine:    ["Фильтр тонкой очистки Nissan 31726-28X0A", 1650],
-    cvt_filter_coarse:  ["Фильтр грубой очистки Nissan 3172828X0A", 5500],
-    cvt_filters_jf011e: ["Комплект фильтров для вариатора (2824A028, 2824A007, 2705A049)", 11000],   // Jatco JF011E
-    re7_gasket_1xj0a:   ["Прокладка картера Nissan 31397-1XJ0A", 4000],
+    cvt_gasket_3jx0a:   ["Прокладка поддона Nissan 31397-3JX0A", 3000, "31397-3JX0A"],
+    cvt_ring_3jx3a:     ["Уплотнительное кольцо Nissan 31526-3JX3A", 350, "31526-3JX3A"],
+    cvt_filter_28x0a:   ["Фильтр Nissan 31726-28X0A", 2050, "31726-28X0A"],
+    cvt_gasket_1xf0d:   ["Прокладка поддона Nissan 31397-1XF0D", 2100, "31397-1XF0D"],
+    cvt_ring_3vx0a:     ["Уплотнительное кольцо Nissan 31526-3VX0A", 650, "31526-3VX0A"],
+    cvt_filter_fine:    ["Фильтр тонкой очистки Nissan 31726-28X0A", 1650, "31726-28X0A"],
+    cvt_filter_coarse:  ["Фильтр грубой очистки Nissan 3172828X0A", 5500, "3172828X0A"],
+    cvt_filters_jf011e: ["Комплект фильтров для вариатора (2824A028, 2824A007, 2705A049)", 11000, "(2824A028, 2824A007, 2705A049)"],   // Jatco JF011E
+    re7_gasket_1xj0a:   ["Прокладка картера Nissan 31397-1XJ0A", 4000, "31397-1XJ0A"],
     // -- Работы по коробкам --
     work_drainfill_2000: ["Частичная замена масла в АКПП (методом слил-залил)", 2000],
     work_full_8hp55:  ["Полная аппаратная замена масла в АКПП ZF 8HP55 с промывкой системы", 7000],
@@ -3624,10 +3633,12 @@
     // (в названиях работ стоят коды коробок — «ZF 8HP65», а не номера запчастей).
     const l = !item
       ? (console.warn("PRICE: нет ключа", key), { name: `⚠ уточню: ${key}`, price: null, key })
-      : { name: item[0], price: item[1], stale: !isFresh(key), key };
+      : { name: item[0], price: item[1], stale: !isFresh(key), key, art: item[2] };
     if(sink) sink.push(l);
     return l;
   }
+  // Название для клиента: без артикула (третий элемент PRICE) и без опустевших скобок.
+  const plainName = (name, art) => name.replace(art, "").replace(/\(\s*\)/g, "").replace(/\s{2,}/g, " ").trim();
   // Вариант «список ключей PRICE» → {label, lines, sum}: «Итого» = сумма позиций, считается само.
   function priceVariant(label, keys, sink){
     const lines = keys.map(k => priceLine(k, sink));
@@ -3698,7 +3709,7 @@
   function tplDoc(t, choices = {}){
     const box = BOXES[t.box];
     let svc = box && box[t.type];
-    if(!svc) return { text: "", stale: false, unknown: false, items: [] };   // нет данных по услуге (заготовка) — пусто
+    if(!svc) return { text: "", plain: "", stale: false, unknown: false, items: [] };   // нет данных по услуге (заготовка) — пусто
     const eng = engineOf(t);
     if(svc[eng]) svc = svc[eng];           // мотор переопределяет услугу (полный гибрид = др. агрегат)
     const combo = t.combo && box.combo ? box.combo : null;   // сводка «все поддоны» этой же услуги
@@ -3711,7 +3722,12 @@
       .map(v => priceVariant(v.label, v.items, seen));
     const blocks = [CDOC.block({ variants: primary })];
     tplAddonGroups(t).forEach(g => blocks.push(tplAddonBlock(g, choices[g.id], seen)));
-    return { text: CDOC.doc({ title: head, blocks }),
+    const text = CDOC.doc({ title: head, blocks });
+    // plain — та же смета клиенту, без артикулов (как «Копировать» в «ТО»). Расчёт один: меняются
+    // только названия строк «• Название — цена», суммы и порядок те же.
+    const plain = seen.reduce((s, l) => l.art
+      ? s.split("• " + l.name + " — ").join("• " + plainName(l.name, l.art) + " — ") : s, text);
+    return { text, plain,
              stale:   seen.some(l => l.stale),
              unknown: seen.some(l => l.price == null),
              items:   seen,    // позиции сметы: из них поиск достаёт номера деталей (docArts)
@@ -4916,7 +4932,7 @@
           <div class="tpl-collapse" id="tpl-detail-${i}"><div class="tpl-collapse-inner">
             ${tags ? `<div class="tpl-tags">${tags}</div>` : ""}
             ${!placeholder && addons.length ? `<div class="tpl-builder" id="tpl-builder-${i}" ${choices?"":"hidden"}>
-              <p>Смета на основе шаблона. Выберите допуслуги для клиента; масло и работы АКПП остаются прежними. Ниже — точный текст для копирования.</p>
+              <p>Смета на основе шаблона. Выберите допуслуги для клиента; масло и работы АКПП остаются прежними. Ниже — текст сметы; «Копировать» отправит его без номеров деталей.</p>
               ${addons.map(g => `<fieldset><legend>${esc(g.title)}</legend><div class="tpl-addon-options">
                 ${[["none", "Не добавлять"], ["all", g.labels.length===1 ? g.labels[0] : "Предложить варианты"], ...(g.labels.length>1 ? g.labels.map((label, n) => [String(n), label]) : [])].map(([id, label]) =>
                   `<button class="tpl-chip ${(choices?.[g.id] || "all")===id?"active":""}" type="button" aria-pressed="${(choices?.[g.id] || "all")===id}" data-i="${i}" data-addon="${g.id}" data-choice="${id}">${esc(label)}</button>`).join("")}
@@ -4928,7 +4944,8 @@
           </div></div>
           ${placeholder ? "" : `<div class="tpl-actions">
             <div class="tpl-price"><span class="tpl-price-label">Замена масла${totals.length>1?" · варианты в смете":""}</span><strong>${esc(amount)}</strong></div>
-            <button class="tpl-copy" type="button" data-i="${i}">${ICO.copy} Копировать</button>
+            <button class="tpl-copy" type="button" data-i="${i}" title="Клиенту: смета без номеров деталей">${ICO.copy} Копировать</button>
+            ${doc.plain !== body ? `<button class="tpl-copy tpl-copy-codes" type="button" data-i="${i}" title="Та же смета с номерами деталей — себе: записать клиента, заказать деталь. Клиенту её не отправляем">${ICO.copy} <span class="tpl-wide">Копировать с номерами</span><span class="tpl-narrow">С номерами</span></button>` : ""}
             ${addons.length ? `<button class="tpl-copy tpl-build" type="button" data-i="${i}" aria-pressed="${!!choices}" aria-controls="tpl-builder-${i}">${choices?"Вернуть исходный шаблон":"Собрать на основе"}</button>` : ""}
           </div>`}
         </div>`;
@@ -4941,12 +4958,19 @@
           head.setAttribute("aria-expanded", open ? "true" : "false");
         });
       });
-      grid.querySelectorAll(".tpl-copy:not(.tpl-build)").forEach(btn=>{
+      grid.querySelectorAll(".tpl-copy:not(.tpl-build):not(.tpl-copy-codes)").forEach(btn=>{
         btn.addEventListener("click", e=>{
           e.stopPropagation();
           const t = list[+btn.dataset.i];
-          copyText(currentDoc(t).text, btn, ICO.check + " Вставьте в WhatsApp");
+          copyText(currentDoc(t).plain, btn, ICO.check + " Вставьте в WhatsApp");
           if(window.MDLOG) window.MDLOG.copy(tplCode(t));   // А3: лог нажатия «Копировать» (буфер не трогаем, КЛ2)
+        });
+      });
+      // «С номерами» — себе (запись, заказ детали). В MDLOG не пишем: метрика А3 считает сметы клиенту.
+      grid.querySelectorAll(".tpl-copy-codes").forEach(btn=>{
+        btn.addEventListener("click", e=>{
+          e.stopPropagation();
+          copyText(currentDoc(list[+btn.dataset.i]).text, btn, ICO.check + " Скопировано с номерами");
         });
       });
       grid.querySelectorAll(".tpl-build").forEach(btn => btn.addEventListener("click", () => {
@@ -5010,7 +5034,7 @@
     searchInp.addEventListener("input", ()=>{ query = searchInp.value.trim().toLowerCase(); render(); });
     copyAllBtn.addEventListener("click", ()=>{
       // между карточками разделитель ДЛИННЕЕ внутреннего (CDOC.SEP), иначе границы смет сливаются с границами блоков
-      const text = visible().map(t=>[t, currentDoc(t).text]).filter(([t,b])=>!t.todo && b)
+      const text = visible().map(t=>[t, currentDoc(t).plain]).filter(([t,b])=>!t.todo && b)   // клиенту — без номеров
         .map(([t,b])=>`${t.brand} · ${tplTitle(t)}\n\n${b}`).join(`\n\n${CDOC.SEP} ${CDOC.SEP}\n\n`);
       if(text) copyText(text, copyAllBtn);
     });
