@@ -1305,7 +1305,7 @@
   .to-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .to-form-title{font-family:var(--font-disp);font-weight:700;font-size:15px}
   .to-note{font-size:12px;color:var(--muted);line-height:1.45}
-  /* Подбор по VIN: ввод → карточка машины → варианты фильтров; цены сметы вводятся вручную.
+  /* Подбор по VIN: ввод → карточка машины → варианты фильтров; цены сметы — вписанные или из памяти машины.
      Данные дают ручки vin/part в Apps Script; ответа нет — блок молчит, слоты вводятся руками. */
   .to-vinpanel{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
     padding:24px;display:flex;flex-direction:column;gap:16px}
@@ -8164,8 +8164,10 @@
      Цены: масло = perL(RATES[ставка масла], паспортный литраж записи), работы — ключи PRICE
      (to_work_*); просроченная цена остаётся в смете прежним числом, «Итого» полное, поднимается
      бейдж «Проверить цены» (как в Шаблонах и Комплектах). «Уточню» — только когда цены нет вовсе.
-     Цены фильтров вводятся вручную в каждой смете и живут только в filterPrices.
-     Старые цены записи и цены VIN/part не подставляются (решение владельца 01.10.2026).
+     Цены фильтров вводит человек; введённую портал помнит за ЭТОЙ машиной и ЭТИМ номером
+     фильтра (extra.cars[ключ].pr) и сам подставляет её следующей такой же машине. Старше
+     FRESH_DAYS — число остаётся, горит «Проверить цены» (решение владельца 16.10.2026).
+     Старые цены записи, поле p памяти до 01.10.2026 и цены VIN/part не подставляются.
      Слоты воздушный/салонный/топливный зависят от КУЗОВА → живут не в самой записи, а в её
      памяти по машине (поле extra, ключ «марка|модель|кузов|двигатель|объём»): один двигатель
      помнит несколько кузовов и не выдаёт фильтры X5 за фильтры X7. Ключа машины нет (двигатель
@@ -8213,8 +8215,10 @@
     let brandFilter = "";
     let catOpen = true;                                // каталог двигателей развёрнут (после разбора VIN — нет)
     let slots = { air:null, cabin:null, fuel:null };   // фильтры кузова {name, code}
-    const emptyPrices = () => ({ oil:null, air:null, cabin:null, fuel:null });
-    let filterPrices = emptyPrices();                  // только текущая смета; не сохраняем в каталог
+    /* Цены текущей сметы. Ключа нет — человек цену не трогал, действует память машины (priceOf);
+       null — стёр или вписал неверное число («уточню»); число — вписал руками. */
+    const emptyPrices = () => ({});
+    let filterPrices = emptyPrices();                  // в каталог не идёт; в память машины — через withMemory
     let slotOpen = { air:false, cabin:false, fuel:false };
     let carSel = "";                                   // машина, выбранная руками чипом (ключ памяти)
     let rowEdit = null;                                // какая строка сметы правится целиком (фирма + номер + цена)
@@ -8286,6 +8290,30 @@
     /* Какая машина сейчас в смете. Разбор по VIN определяет её сам, но выбор РУКАМИ сильнее:
        его сделал человек, который смотрит на машину, а разбор мог остаться от предыдущей. */
     function curCarKey(){ return carSel || vinCarKey(); }
+    /* Цена фильтра, запомненная за машиной. Ключ — слот и номер без пробелов и дефисов
+       («air:LX111»), номера нет — фирма. Цена привязана к НОМЕРУ, а не к слоту: другой фильтр
+       не получит чужую цену, а перебор вариантов не стирает цену того, что выбирали раньше. */
+    const PR_MAX = 8;                                  // цен на одну машину; лишними уходят самые старые
+    const priceKey = (id, part) => {
+      if(!part || !part.name) return "";
+      const c = String(part.code || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+      return id + ":" + (c || "=" + nameKey(part.name)).slice(0, 26);
+    };
+    const filterPart = (e, id) => id === "oil" ? splitFilter(e && e.filterName) : slots[id];
+    const freshDay = iso => { const days = (new Date() - new Date(iso)) / 864e5;
+      return /^\d{4}-\d{2}-\d{2}$/.test(String(iso)) && days >= 0 && days <= FRESH_DAYS; };
+    function memPrice(e, id){
+      const k = priceKey(id, filterPart(e, id)), key = curCarKey();
+      const car = k && key && (extraOf(e).cars || {})[key];
+      const m = car && car.pr && car.pr[k];
+      return Array.isArray(m) && Number(m[0]) > 0 ? { p: Number(m[0]), d: String(m[1] || "") } : null;
+    }
+    // цена строки сметы: вписанная в этой смете, иначе запомненная за машиной (stale — старше FRESH_DAYS)
+    function priceOf(e, id){
+      if(filterPrices[id] !== undefined) return { p: filterPrices[id] };
+      const m = memPrice(e, id);
+      return m ? { p: m.p, mem: m.d, stale: !freshDay(m.d) } : { p: null };
+    }
     /* Id записи — из имени двигателя, а не случайный. Тот же двигатель, разобранный второй раз
        или на другом устройстве, попадает в ТУ ЖЕ строку листа (upsert по id), а не заводит
        двойника: каталог для того и общий. */
@@ -8415,18 +8443,20 @@
          пришла, строка сказала «уточню», и вписать в неё было нечего (06.09.2026). */
       const oilF = splitFilter(e.filterName);
       const oilPart = { name: oilF.name, code: oilF.code, cap: "Масляный фильтр" };
-      if(oilF.name){                                    // масляный фильтр записи — свежесть по дате updated
-        const p = filterPrices.oil;
+      if(oilF.name){                                    // цена — вписанная или запомненная за машиной
+        const pr = priceOf(e, "oil");
         // цифра в «фирме» и пустой номер = старая запись, номер вписан внутрь → предупредим
-        push("Масляный фильтр " + oilF.name, p,
-          { code: oilF.code, fixnum: !oilF.code && /\d/.test(oilF.name), edit: "oil", part: oilPart });
+        push("Масляный фильтр " + oilF.name, pr.p,
+          { code: oilF.code, fixnum: !oilF.code && /\d/.test(oilF.name), edit: "oil", part: oilPart,
+            stale: pr.stale, mem: pr.mem });
       } else push("Масляный фильтр — уточню", null, { edit: "oil", part: oilPart });
       pushKey("to_work_oil");
       for(const s of SLOTS){
         const v = slots[s.id];
         if(!v) continue;
-        push(s.label + " " + v.name, filterPrices[s.id], { slot: s.id, code: v.code, edit: "slot:" + s.id,
-          part: { name: v.name, code: v.code, cap: s.label } });
+        const pr = priceOf(e, s.id);
+        push(s.label + " " + v.name, pr.p, { slot: s.id, code: v.code, edit: "slot:" + s.id,
+          part: { name: v.name, code: v.code, cap: s.label }, stale: pr.stale, mem: pr.mem });
         pushKey(s.work);
       }
       return { rows, sum, stale, unknown, litres };
@@ -8503,7 +8533,7 @@
             </label>
             <button class="ui-btn ui-btn--primary" id="to-vin-go" type="button">${ICO.search} Разобрать</button>
           </div>
-          <div class="to-note">Цены фильтров вводятся вручную. Масло и работы считаются из прайса.</div>
+          <div class="to-note">Цену фильтра вводишь один раз — такая же машина получит её сама. Масло и работы считаются из прайса.</div>
         </div>
         <div id="to-vinbox"></div>
         <div id="to-warn" hidden></div>
@@ -8896,7 +8926,7 @@
       vinOwnEdit = "";
       if(vin.sel) vin.sel[slotId] = 0;               // номер сменился — выбор варианта начинаем заново
       manual[slotId] = false;
-      filterPrices[slotId] = null;                   // новый номер — цену вводим заново
+      delete filterPrices[slotId];                   // новый номер — его цена из памяти машины или пусто
       delete vin.price[slotId];
       updateVin(); updateCard();
       vinAskPrice(vin, slotId);
@@ -8930,8 +8960,8 @@
       applyMemory(rec, true);
     }
 
-    /* Память даёт только фирму и номер. Старые m.p и filterPrice не используются.
-       Ручные цены относятся к текущей смете; номера становятся якорями подбора вариантов. */
+    /* Память ставит фирму и номер; цены к ним приходят из pr этой машины сами (priceOf).
+       Старые m.p и filterPrice не используются; номера становятся якорями подбора вариантов. */
     function applyMemory(rec, seed){
       const key = curCarKey();
       const mem = carFilters(rec, key) || {};
@@ -8971,7 +9001,21 @@
       // подпись машины пишем один раз и больше не трогаем: она пришла из каталога вместе с
       // разбором, а выбранная руками машина своей подписи не имеет — её имя и есть ключ
       const t = (cars[key] && cars[key].t) || (key === vinCarKey() ? vinCarTitle() : "");
-      if(Object.keys(f).length){ cars[key] = { ts: todayISO(), f: f }; if(t) cars[key].t = t; }
+      /* Цены: вписанная в этой смете запоминается с сегодняшней датой, стёртая — забывается,
+         нетронутая остаётся с прежней датой — иначе любая правка литража «освежала» бы её. */
+      const pr = Object.assign({}, cars[key] && cars[key].pr);
+      for(const id of ["oil"].concat(SLOTS.map(s => s.id))){
+        const v = filterPrices[id], k = priceKey(id, filterPart(rec, id));
+        if(v === undefined || !k) continue;
+        if(v > 0) pr[k] = [v, todayISO()]; else delete pr[k];
+      }
+      Object.keys(pr).sort((a, b) => String((pr[b] || [])[1]).localeCompare(String((pr[a] || [])[1])))
+        .slice(PR_MAX).forEach(k => delete pr[k]);
+      if(Object.keys(f).length || Object.keys(pr).length){
+        cars[key] = { ts: todayISO(), f: f };
+        if(Object.keys(pr).length) cars[key].pr = pr;
+        if(t) cars[key].t = t;
+      }
       else delete cars[key];
       let list = Object.keys(cars);
       const oldestFirst = () => list.sort((a, b) => String(cars[a].ts || "").localeCompare(String(cars[b].ts || "")));
@@ -9306,15 +9350,18 @@
           >${ICO.warn} вынести номер</button>` : "";
         const pen = r.edit ? ` <button class="ui-btn ui-btn--ghost ui-btn--sm ui-btn--icon to-row-pen" type="button"
           data-act="row-edit" data-edit="${esc(r.edit)}"
-          title="Изменить фильтр: фирма и номер запомнятся, цена — только в этой смете"
+          title="Изменить фильтр: фирма, номер и цена запомнятся для этой машины"
           aria-label="Изменить фильтр">${ICO.edit}</button>` : "";
         // Поле цены видно сразу: пустое не означает ноль; Enter/уход из поля применяет ручную цену.
+        // Цена из памяти машины подписана датой: по ней видно, какая строка зажгла «Проверить цены».
         const money = r.p == null ? "уточню" : rub(r.p);
+        const memTip = r.mem ? ` title="${esc("С прошлой такой же машины, цена от " + r.mem.split("-").reverse().join(".")
+          + (r.stale ? ". Проверь и нажми Enter" : ""))}"` : "";
         const priceHtml = !r.edit
           ? `<span class="p${r.p == null ? " ask" : ""}">${money}</span>`
           : `<label class="to-price-field"><input class="to-price-inp" type="number" inputmode="numeric" min="1" max="200000" step="1"
                  data-act="price-set" data-edit="${esc(r.edit)}" data-focus="price:${esc(r.edit)}"
-                 value="${r.p == null ? "" : r.p}" placeholder="Цена" aria-label="${esc((r.part && r.part.cap) || "Фильтр")}: цена, ₽"><span>₽</span></label>`;
+                 value="${r.p == null ? "" : r.p}" placeholder="Цена"${memTip} aria-label="${esc((r.part && r.part.cap) || "Фильтр")}: цена, ₽"><span>₽</span></label>`;
         return `<div class="to-row"><span class="n">${esc(r.n)}</span>${code}${fix}${pen}${priceHtml}${del}</div>`;
       }).join("");
       const slotsHtml = SLOTS.map(sl => {
@@ -9345,12 +9392,12 @@
       const carsHtml = cars.length ? `<div class="to-cars"><span class="to-cap">Машина</span>` + cars.map(c => {
         const on = c.key === curKey;
         return `<span class="to-car-choice"><button class="to-carchip${on ? " active" : ""}" type="button" data-act="car-pick"
-          data-key="${esc(c.key)}" title="${on ? "Убрать фильтры этой машины из сметы" : "Подставить фильтры этой машины"}">${esc(c.label)}${
+          data-key="${esc(c.key)}" title="${on ? "Убрать фильтры этой машины из сметы" : "Подставить фильтры и цены этой машины"}">${esc(c.label)}${
           c.ts ? `<span class="f">${esc(c.ts.slice(8) + "." + c.ts.slice(5, 7))}</span>` : ""}</button>` +
           (on && c.ts ? ` <button class="ui-btn ui-btn--ghost ui-btn--sm ui-btn--icon to-carx" type="button"
             data-act="car-del" data-key="${esc(c.key)}"
-            title="Забыть фильтры этой машины" aria-label="Забыть машину">${ICO.close}</button>` : "") + `</span>`;
-      }).join("") + `${curKey ? "" : `<span class="to-note">выбери машину — фильтры подставятся</span>`}</div>` : "";
+            title="Забыть фильтры и цены этой машины" aria-label="Забыть машину">${ICO.close}</button>` : "") + `</span>`;
+      }).join("") + `${curKey ? "" : `<span class="to-note">выбери машину — фильтры и цены подставятся</span>`}</div>` : "";
       drawCard(
         `<div class="to-card">
           <span class="to-cap">Смета ТО</span>
@@ -9360,7 +9407,7 @@
             <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" data-act="edit">Изменить</button>
           </div>
           ${carsHtml}
-          <p class="to-note">Впиши цены фильтров для этой сметы. При выборе другой машины цены нужно ввести заново.</p>
+          <p class="to-note">Цены фильтров запоминаются за машиной и номером фильтра. Цена старше ${FRESH_DAYS} дней — «Проверить цены»: проверь и нажми Enter в поле.</p>
           <div class="to-litres">Масло:
             <span class="ui-select-wrap"><select class="ui-select" data-act="oil-set" data-focus="oil" aria-label="Моторное масло">${
               TO_OILS.map(o => `<option value="${esc(o.key)}"${o.key === e.oilKey ? " selected" : ""}>${
@@ -9416,7 +9463,7 @@
                 placeholder="HU 719/7 x" value="${e ? esc(splitFilter(e.filterName).code) : ""}"></label>
             <label class="ui-field"><span class="to-note">Цена масляного фильтра, ₽ (пусто = уточню)</span>
               <input class="ui-input" name="filterPrice" type="number" inputmode="numeric" min="1" max="200000" step="1"
-                placeholder="Цена для этой сметы" value="${e && e.id === selId && filterPrices.oil != null ? filterPrices.oil : ""}"></label>
+                placeholder="Цена для этой сметы" value="${e && e.id === selId && priceOf(e, "oil").p != null ? priceOf(e, "oil").p : ""}"></label>
           </div>
           <div class="to-actions">
             <button class="ui-btn ui-btn--primary" type="submit">${ICO.check} Сохранить</button>
@@ -9454,7 +9501,7 @@
         if((vin.sel[sl] || 0) === choice) return;  // повторный тап по тому же фильтру цену не стирает
         vin.sel[sl] = choice;
         manual[sl] = false;
-        filterPrices[sl] = null;                  // другой фильтр — цену вводим заново
+        delete filterPrices[sl];                  // другой фильтр — его цена из памяти машины или пусто
         vinApplySlots(); updateVin();
       }
       else if(act === "vin-clear"){ vin = null; vinRecId = null; vinInp.value = ""; updateVin(); }
@@ -9545,7 +9592,7 @@
         const x = extraOf(e);
         if(!x.cars || !x.cars[key]) return;
         // спрашиваем, как при удалении двигателя: память общая, стирается сразу на всех устройствах
-        if(!confirm("Забыть фильтры машины «" + carLabel(key, x.cars[key]) + "»? Память уйдёт со всех устройств.")) return;
+        if(!confirm("Забыть фильтры и цены машины «" + carLabel(key, x.cars[key]) + "»? Память уйдёт со всех устройств.")) return;
         delete x.cars[key];
         if(carSel === key) carSel = "";
         slots = { air:null, cabin:null, fuel:null };
@@ -9579,7 +9626,8 @@
         if(!name){ wrap.querySelector("[data-slot-name]").focus(); return; }
         if(price != null && (!isFinite(price) || price < 1 || price > 200000)){ wrap.querySelector("[data-slot-price]").focus(); return; }
         slots[b.dataset.slot] = { name, code };
-        filterPrices[b.dataset.slot] = price;
+        if(price == null) delete filterPrices[b.dataset.slot];   // цену не вписали — возьмём запомненную за машиной
+        else filterPrices[b.dataset.slot] = price;
         manual[b.dataset.slot] = true; slotOpen[b.dataset.slot] = false;
         setEngine(e);
       }
@@ -9591,8 +9639,9 @@
       else if(act === "row-cancel"){ rowEdit = null; updateCard(); }
       else if(act === "row-save"){ applyRow(b.dataset.edit); }
     });
-    /* Ручная цена живёт только в этой смете. Набор числа не пишет в общий каталог;
-       обновление записей и ответы подбора не вправе менять filterPrices. */
+    /* Ручная цена — в смету и в память этой машины (withMemory: pr, через паузу upsertSoon).
+       Карточку не перерисовываем — поле и кнопка под пальцем остаются; ответы подбора
+       filterPrices не меняют. */
     function updatePriceSummary(e){
       const s = smeta(e), total = bodyEl.querySelector(".to-total .p");
       if(total){ total.textContent = s.unknown ? "уточню" : rub(s.sum); total.classList.toggle("ask", s.unknown); }
@@ -9613,6 +9662,7 @@
       if(filterPrices[id] === price) return;                   // change и focusout не применяют дважды
       filterPrices[id] = price;
       manual[id] = true;
+      if(curCarKey()) saveEngine(withMemory(e), e);    // машины нет (двигатель руками) — помнить не за кем
       updatePriceSummary(e);                           // ввод не снимает поле и кнопку, на которую сейчас нажимают
     }
     bodyEl.addEventListener("input", ev => {
@@ -9660,6 +9710,8 @@
     bodyEl.addEventListener("focusout", ev => {
       if(drawing) return;                              // поле сняла перерисовка, а не человек ушёл
       const pi = ev.target.closest("[data-act=price-set]"); if(!pi) return;
+      // зашёл в поле и вышел, ничего не набрав, — запомненная цена не «подтверждается» сегодняшним днём
+      if(pi.value === pi.defaultValue) return;
       applyPrice(pi.dataset.edit, pi.value);
       pi.defaultValue = pi.value;
     });
@@ -9714,7 +9766,8 @@
       };
       if(!editId){ carSel = ""; slots = { air:null, cabin:null, fuel:null }; filterPrices = emptyPrices(); }
       filterPrices.oil = price > 0 ? price : null;
-      upsert(rec);
+      // правка выбранного двигателя: цена масляного запоминается за машиной, как из сметы
+      upsert(editId && editId === selId ? withMemory(rec) : rec);
       selId = rec.id;
       if(!editId) carSel = "";                    // завели НОВЫЙ двигатель — машина от прежнего к нему не относится
       manual.oil = true;                          // фирму и цену масляного только что задали руками
