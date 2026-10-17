@@ -227,6 +227,26 @@
   .home-tile[data-featured] .home-tile-ic svg{width:24px;height:24px}
   .home-tile[data-featured] .home-tile-name{font-size:18px}
   .home-tile[data-featured] .home-tile-hint{font-size:14px;margin-top:4px}
+  /* счётчик полных аппаратных замен: те же колонки, что у первого экрана («Сегодня» — под сменой);
+     цифры в ячейках, как у механического счётчика, прокручиваются один раз при входе */
+  .home-count{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;margin-top:16px}
+  .home-count[hidden]{display:none}
+  .home-count-card{min-width:0;padding:24px;border:1px solid var(--line);border-radius:20px;
+    background:var(--card);box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:center;gap:12px}
+  .home-count-head{display:flex;align-items:center;gap:8px}
+  .home-count-head svg{width:16px;height:16px;color:var(--muted);flex:none}
+  .home-count-tag{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .home-count-row{display:flex;align-items:center;gap:8px;min-width:0}
+  .home-count-plus{font-family:var(--font-mono);font-weight:600;font-size:24px;color:var(--muted)}
+  .home-count-none{font-family:var(--font-mono);font-weight:600;font-size:30px;color:var(--muted)}
+  .home-count-r{font-size:12.5px;font-weight:600;color:var(--muted)}
+  .odo{display:flex;align-items:center;gap:4px;font-family:var(--font-mono);font-weight:600;font-size:30px;
+    font-variant-numeric:tabular-nums;color:var(--text);--dh:1.4em}
+  .odo-cell{display:block;width:1em;height:var(--dh);overflow:hidden;border-radius:8px;
+    background:var(--card2);border:1px solid var(--line)}
+  .odo-cell.odo-g{margin-left:8px}
+  .odo-strip{display:flex;flex-direction:column;will-change:transform}
+  .odo-strip span{display:block;height:var(--dh);line-height:var(--dh);text-align:center}
   @media(max-width:960px){
     .home-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
     .home-tile[data-featured]{grid-column:auto}
@@ -240,6 +260,9 @@
     .home-ask-go{justify-content:center;min-height:48px}
     .home-tiles{grid-template-columns:1fr;margin-top:16px}
     .home-tile,.home-tile[data-featured]{min-height:88px;padding:16px;gap:12px}
+    .home-count{grid-template-columns:1fr;gap:12px;margin-top:12px}
+    .home-count-card{padding:20px}
+    .odo{font-size:26px}
   }
   @media(prefers-reduced-motion:reduce){
     .home-tile,.home-tile-go,.home-ask-go,.home-ask-field input{transition:none}
@@ -2071,6 +2094,7 @@
     list:   _ic('<path d="M6 4.4h7.4M6 8h7.4M6 11.6h7.4"/><path d="M2.8 4.4h.01M2.8 8h.01M2.8 11.6h.01"/>'),
     flag:   _ic('<path d="M4 14.2V2.2"/><path d="M4 2.8h8.2l-1.7 2.9 1.7 2.9H4"/>'),
     plus:   _ic('<path d="M8 3v10M3 8h10"/>'),
+    cycle:  _ic('<path d="M13.1 6.6A5.3 5.3 0 0 0 3.5 5"/><path d="M3.2 2.4v2.8H6"/><path d="M2.9 9.4a5.3 5.3 0 0 0 9.6 1.6"/><path d="M12.8 13.6v-2.8H10"/>'),
   };
 
   /* Скрытым разделам сохраняем данные и состояние, но DOM строим при открытии.
@@ -7499,6 +7523,30 @@
     }
     el._mdT = requestAnimationFrame(tick);
   }
+  // Счётчик в ячейках, как механический: каждая цифра — лента 0–9. При входе ленты крутятся
+  // от нуля (младшие разряды — больше оборотов), при обновлении докручиваются только изменившиеся
+  // разряды от прежнего числа. Возвращает анимации — их отменяет cancelPageEntrance.
+  const ODO_LOOPS = 2;
+  function mdOdometer(el, value, from, animate){
+    if(!el) return [];
+    const str = String(Math.max(0, Math.round(value))), old = from == null ? null : String(Math.max(0, Math.round(from)));
+    const len = (ODO_LOOPS + 2) * 10, strip = Array.from({ length:len }, (_, i) => `<span>${i % 10}</span>`).join("");
+    el.innerHTML = `<span class="vh">${Number(str).toLocaleString("ru-RU")}</span>` + [...str].map((d, i) =>
+      `<span class="odo-cell${i && (str.length - i) % 3 === 0 ? " odo-g" : ""}" aria-hidden="true"><span class="odo-strip">${strip}</span></span>`).join("");
+    const pos = n => `translateY(${(-n * 100 / len).toFixed(4)}%)`;
+    const run = animate && !reduceMotion() && !document.hidden && !!el.animate;
+    const anims = [];
+    el.querySelectorAll(".odo-strip").forEach((s, i) => {
+      const d = +str[i];
+      let a = 0, b = d;
+      if(old && old.length === str.length){ a = +old[i]; b = d >= a ? d : d + 10; }   // вперёд через 9 → 0
+      else b = Math.round(ODO_LOOPS * (i + 1) / str.length) * 10 + d;
+      s.style.transform = pos(b);
+      if(run && a !== b) anims.push(s.animate([{ transform:pos(a) }, { transform:pos(b) }],
+        { duration:1200, delay:120 + i * 45, easing:"cubic-bezier(.33,1,.68,1)", fill:"backwards" }));
+    });
+    return anims;
+  }
 
   /* ===================== ГЛАВНАЯ (первый экран — рабочий стол) =====================
      Инструмент, не лендинг. Данные экрана — единственный источник (правь здесь, не вёрстку).
@@ -7579,6 +7627,18 @@
           </div>
           ${shift}
         </div>
+        <div class="home-count" id="home-count" hidden>
+          <div class="home-count-card">
+            <div class="home-count-head">${ICO.cycle}<span class="home-count-tag">Полные аппаратные замены</span></div>
+            <div class="odo" id="home-count-total"></div>
+            <span class="home-count-r">всего</span>
+          </div>
+          <div class="home-count-card">
+            <div class="home-count-head">${ICO.wrench}<span class="home-count-tag">Сделано сегодня</span></div>
+            <div class="home-count-row" id="home-count-today"></div>
+            <span class="home-count-r">по журналу «Ямы»</span>
+          </div>
+        </div>
         <div class="home-tiles">${tiles}</div>
       </section>`;
     // поиск цены → раздел Шаблоны с этим запросом (переиспользуем существующий #tpl-search)
@@ -7598,8 +7658,58 @@
     const root = document.getElementById("page-glavnaya");
     if(!root) return;
     pageEntrance = [mdBlurIn(root.querySelector(".home-overview"), 0),
+                    mdFadeIn(root.querySelector(".home-count"), 60),
                     mdFadeIn(root.querySelector(".home-tiles"), 60)];
+    homeCountPaint(true);
   }
+
+  /* Счётчик полных аппаратных замен: всего и сегодня. Считает сервер (doGet?type=counter) по
+     журналу «Ямы» тем же правилом восьми названий, что Закулисье; здесь только показ.
+     Кэш md_repl — офлайн и до ответа сети карточка не пустует. «Сегодня» из кэша берём
+     только за сегодняшнюю московскую дату: вчерашнее число под этой подписью было бы враньём. */
+  const REPL_CKEY = "md_repl", REPL_REFRESH_MS = 60000;
+  let homeCount = null, homeCountAt = 0, homeCountPainted = null;
+  try {
+    const c = JSON.parse(localStorage.getItem(REPL_CKEY) || "null");
+    if(c && Number.isFinite(c.total) && Number.isFinite(c.today) && typeof c.date === "string") homeCount = c;
+  } catch(e){}
+  const mskDay = () => new Intl.DateTimeFormat("sv-SE", { timeZone:"Europe/Moscow" }).format(new Date());
+  // entry — вход на Главную: ленты крутятся от нуля; иначе (ответ сети) — от числа на экране
+  function homeCountPaint(entry){
+    const box = document.getElementById("home-count");
+    if(!box || !homeCount) return;
+    const page = document.getElementById("page-glavnaya"), visible = !!page && !page.hidden;
+    const day = homeCount.date === mskDay() ? homeCount.today : null;
+    const prev = entry ? null : homeCountPainted;
+    const todayEl = box.querySelector("#home-count-today");
+    box.hidden = false;
+    const anims = mdOdometer(box.querySelector("#home-count-total"), homeCount.total, prev && prev.total, visible);
+    if(day == null) todayEl.innerHTML = `<span class="home-count-none">—</span>`;
+    else {
+      todayEl.innerHTML = `${day > 0 ? `<span class="home-count-plus" aria-hidden="true">+</span>` : ""}<span class="odo"></span>`;
+      anims.push(...mdOdometer(todayEl.querySelector(".odo"), day, prev ? prev.today : null, visible));
+    }
+    homeCountPainted = { total:homeCount.total, today:day };
+    pageEntrance.push(...anims);
+  }
+  function homeCountLoad(){
+    if(!SHEET_API || Date.now() - homeCountAt < REPL_REFRESH_MS) return;
+    homeCountAt = Date.now();
+    jsonpChannel(SHEET_API + "?type=counter&token=" + encodeURIComponent(SHEET_TOKEN),
+                 "счётчик замен", "counter", data => {
+      if(!data || !Number.isFinite(data.total) || !Number.isFinite(data.today) || typeof data.date !== "string") return;
+      const next = { total:data.total, today:data.today, date:data.date };
+      try { localStorage.setItem(REPL_CKEY, JSON.stringify(next)); } catch(e){}
+      const p = homeCountPainted, same = !!p && p.total === next.total && p.today === (next.date === mskDay() ? next.today : null);
+      homeCount = next;
+      if(!same) homeCountPaint(!p);   // первый показ — как вход; дальше докручиваем изменившиеся разряды
+    });
+  }
+  // Главная открыта весь день на компьютере приёмки — вернулись во вкладку, число освежаем
+  document.addEventListener("visibilitychange", () => {
+    const page = document.getElementById("page-glavnaya");
+    if(!document.hidden && page && !page.hidden) homeCountLoad();
+  });
 
   /* ===================== КОМПЛЕКТЫ (наборы на продажу) =====================
      Наборы, которые собираем и продаём — отправкой или вживую. Данные → авто-рендер:
@@ -9995,6 +10105,7 @@
     syncNavH();                                  // меню то скрыто, то в две строки — липкой шапке нужна его высота
     if(isHome){
       homeReveal();
+      homeCountLoad();
     } else if(PAGES[id]){
       titleT.textContent = PAGES[id].t; titleR.textContent = PAGES[id].r;
       pageEntrance = [mdBlurIn(pageheadEl.querySelector(".title"), 0),
@@ -10065,6 +10176,7 @@
     if(enc(inp.value) === PASS_ENC){
       try { sessionStorage.setItem("md_auth","1"); } catch(e){}
       unlock();
+      homeCountPaint(true);   // счётчик Главной уже прокрутился за экраном входа — показываем вживую
     } else {
       err.textContent = "Неверный пароль. Попробуйте ещё раз.";
       inp.value = ""; inp.focus();
