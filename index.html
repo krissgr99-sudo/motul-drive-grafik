@@ -2719,6 +2719,7 @@
     cvt_filter_fine:    ["Фильтр тонкой очистки Nissan 31726-28X0A", 1650, "31726-28X0A"],
     cvt_filter_coarse:  ["Фильтр грубой очистки Nissan 3172828X0A", 5500, "3172828X0A"],
     cvt_filters_jf011e: ["Комплект фильтров для вариатора (2824A028, 2824A007, 2705A049)", 11000, "(2824A028, 2824A007, 2705A049)"],   // Jatco JF011E
+    cvt_filters_gamma:  ["Комплект фильтров для вариатора (ATG 052, ATG 051)", 6000, "(ATG 052, ATG 051)"],   // Gamma CVT C0GF1 / CF18
     re7_gasket_1xj0a:   ["Прокладка картера Nissan 31397-1XJ0A", 4000, "31397-1XJ0A"],
     // -- Работы по коробкам --
     work_drainfill_2000: ["Частичная замена масла в АКПП (методом слил-залил)", 2000],
@@ -2758,6 +2759,7 @@
     work_full_cvt_re0f11a: ["Полная замена масла в вариаторе RE0F11A JF015 с промывкой системы", 7000],
     work_full_cvt_jf016:   ["Полная замена масла в вариаторе JF016E/JF017E с промывкой системы", 7000],
     work_full_cvt_jf011e:  ["Полная замена масла в вариаторе Jatco JF011E / W1CJA / F1CJA / F1CJC с промывкой системы", 7000],
+    work_full_cvt_gamma:   ["Полная замена масла в вариаторе Gamma CVT C0GF1 / CF18 с промывкой системы", 7000],
     // ТО двигателя (раздел «ТО»): работы — расценки владельца. Фильтры кузова (возд./салон./топл.)
     // клиент-специфичны и вводятся в разделе по месту; строка работы подтягивается при заполнении слота.
     to_work_oil:   ["Замена масла в моторе", 1500],
@@ -2943,6 +2945,10 @@
     // Aisin V6AWH-M-DA (Итого 42 200) и вариатор Jatco JF011E (Итого 50 200): состав и цены подтверждены владельцем в сообщении.
     "2026-10-15": ["motul_atf6", "oil_motul_15", "bardahl", "filter_lynx_lt1150", "work_full_v6awh",
                    "motul_cvtf", "oil_cvtf_12", "cvt_filters_jf011e", "work_full_cvt_jf011e"],
+    // Вариатор Gamma CVT C0GF1 / CF18 (Итого 45 200) и комплект «глубокий поддон» ZF 1087298361 + масло 6 л (24 200):
+    // состав и цены подтверждены владельцем в сообщении.
+    "2026-10-19": ["motul_cvtf", "oil_cvtf_12", "bardahl", "cvt_filters_gamma", "work_full_cvt_gamma",
+                   "zf8hp", "oil_zf8hp_6", "filter_deep"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -3549,6 +3555,14 @@
         ],
       },
     },
+    "Gamma CVT C0GF1 / CF18": {
+      "Аппаратная": {
+        head: "Полная замена масла в вариаторе Gamma CVT C0GF1 / CF18",
+        variants: () => [
+          { label: "1.", items: ["oil_cvtf_12", "bardahl", "cvt_filters_gamma", "work_full_cvt_gamma"] },
+        ],
+      },
+    },
 
     /* ===== Jatco ===== */
     "JF414E": {
@@ -3948,6 +3962,9 @@
     { brand:"Вариаторы", box:"JF011E", type:"Аппаратная", title:"Вариатор Jatco JF011E / W1CJA / F1CJA / F1CJC",
       titleAccent:"JF011E", extraTags:["JF011E", "W1CJA", "F1CJA", "F1CJC", "1/1", "Jatco", "Mitsubishi", "Motul Multi CVTF",
                                       "2824A028", "2824A007", "2705A049"] },
+    { brand:"Вариаторы", box:"Gamma CVT C0GF1 / CF18", type:"Аппаратная", title:"Вариатор Gamma CVT C0GF1 / CF18",
+      titleAccent:"Gamma CVT", extraTags:["Gamma", "C0GF1", "CF18", "1/1", "Hyundai", "Kia", "Motul Multi CVTF",
+                                          "ATG 052", "ATG 051", "ATG052", "ATG051"] },
 
     /* ==================== Jatco ==================== */
     { brand:"Jatco", box:"JF414E", type:"Аппаратная", title:"Jatco JF414E (Motul ATF6)",
@@ -7843,6 +7860,18 @@
       ],
       addons: { block: DIFFS_KIT_TORSEN_G060 },
     },
+    // Глубокий поддон ZF 1087298361 (Jeep/Dodge): масло 6 л + поддон. Цена — сумма позиций PRICE (13 200 + 11 000).
+    // Своей группой: подпись группы берёт марку и литры из первой строки, у BMW-группы там 5 л.
+    {
+      id: "zf8hp-deep", group: "ZF 8HP · глубокий поддон", brand: "Jeep / Dodge", choice: "Глубокий поддон 1087298361",
+      name:  "ZF 8HP · глубокий поддон · масло 6 л",
+      price: PRICE.oil_zf8hp_6[1] + PRICE.filter_deep[1],
+      format:["вживую","отправка"],
+      items: [
+        { ref:"oil_zf8hp_6" },
+        { ref:"filter_deep" },
+      ],
+    },
     ...MB9G_KITS,
     {
       ...MB9G_KIT_COMMON,
@@ -8193,7 +8222,7 @@
       $("preview-title").textContent = mode === "builder" ? "Ваш комплект" : k.group;
       $("description").textContent = mode === "builder" ? draft.addon === "all" ? "Клиент увидит варианты допкомплекта и итог для каждого."
         : draft.addon === "none" ? "Только выбранный состав, без доппредложения." : "Клиент увидит один выбранный допкомплект."
-        : "Готовое предложение: комплект АКПП и отдельные варианты для мостов и раздатки.";
+        : k.addons ? "Готовое предложение: комплект АКПП и отдельные варианты для мостов и раздатки." : "Готовое предложение: комплект АКПП.";
       const bases = kitBaseVariants(k), totals = kitAddonTotals(k);
       const single = mode === "builder" && !["all","none"].includes(draft.addon);
       const values = single && totals ? totals.map(t => t.total) : bases.map(v => v.sum);
