@@ -2780,7 +2780,7 @@
     // Свечи BMW / Mercedes (раздел «ТО», типы — TO_PLUGS). Цена ЗА ШТУКУ: строка сметы = цена × число
     // свечей. Источник — документ владельца «Шаблоны ответов» (20.10.2026). Оригинала BMW накаливания
     // и оригинала Mercedes нет — предлагаем Bosch / NGK / Denso, как в документе.
-    // Цены замены свечи накаливания нет — ключа to_work_glow нет, в смете «уточню».
+    // Свечи накаливания НЕ меняем — только продаём (владелец, 20.10.2026): строки замены у них нет.
     plug_bmw_9664:   ["Свечи зажигания BMW 12120039664", 2400, "12120039664"],
     plug_bmw_5258:   ["Свечи зажигания BMW 12122455258", 2400, "12122455258"],
     plug_bmw_7704:   ["Свечи зажигания BMW 12120057704", 2400, "12120057704"],
@@ -2870,13 +2870,13 @@
     { id:"mb-glow",  brand:"MERCEDES", kind:"glow",  oem:["A0011597301", "A0011598001"],
       variants:[{ label:"Denso", item:"glow_denso_665" }] },
   ];
-  // вид свечи: подпись на экране, первая строка предложения, работа (ключ PRICE за штуку) и её имя,
-  // если ключа в прайсе ещё нет (тогда цена «уточню», число не выдумываем)
+  // вид свечи: подпись на экране, первая строка предложения и работа (ключ PRICE за штуку).
+  // work:null — работы нет вовсе: свечи накаливания только продаём, не меняем (владелец, 20.10.2026)
   const TO_PLUG_KIND = {
     spark: { cap:"Свечи зажигания",   lead:"Также можем предложить замену свечей зажигания.",
-             work:"to_work_plug", workName:"Замена свечей зажигания" },
-    glow:  { cap:"Свечи накаливания", lead:"Также можем предложить замену свечей накаливания.",
-             work:"to_work_glow", workName:"Замена свечей накаливания" },
+             work:"to_work_plug" },
+    glow:  { cap:"Свечи накаливания · только продажа", lead:"Также можем предложить свечи накаливания.",
+             work:null },
   };
 
   /* ---- Свежесть Уровня 0: дата сверки цены с прайсом поставщика. ----
@@ -3010,8 +3010,11 @@
     // состав и цены подтверждены владельцем в сообщении.
     "2026-10-19": ["motul_cvtf", "oil_cvtf_12", "bardahl", "cvt_filters_gamma", "work_full_cvt_gamma",
                    "zf8hp", "oil_zf8hp_6", "filter_deep"],
-    // замена второго воздушного / салонного — цена первого, подтвердил владелец 20.10.2026
-    "2026-10-20": ["to_work_air2", "to_work_cabin2"],
+    // замена второго воздушного / салонного — цена первого; свечи и замена свечи зажигания — цены
+    // документа «Шаблоны ответов», владелец подтвердил «актуальны» 20.10.2026
+    "2026-10-20": ["to_work_air2", "to_work_cabin2", "plug_bmw_9664", "plug_bmw_5258", "plug_bmw_7704",
+                   "plug_bmw_4ef60", "plug_bosch_5541", "plug_bosch_5555", "plug_ngk_90654",
+                   "glow_bosch_3001", "glow_bosch_3006", "glow_denso_665", "to_work_plug"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -8549,7 +8552,7 @@
     function plugOffer(e, withCodes){
       const { type, q } = plugState(e);
       if(!type || !q) return null;
-      const kind = TO_PLUG_KIND[type.kind], work = PRICE[kind.work];
+      const kind = TO_PLUG_KIND[type.kind], work = kind.work && PRICE[kind.work];
       let stale = !!work && !isFresh(kind.work);
       const variants = type.variants.map(v => {
         const item = PRICE[v.item];
@@ -8557,8 +8560,10 @@
         const lines = [
           item ? { name: (withCodes ? item[0] : plainName(item[0], item[2])) + ", " + q + " шт", price: item[1] * q }
                : { name: "⚠ уточню: " + v.item, price: null },
-          { name: (work ? work[0] : kind.workName) + ", " + q + " шт", price: work ? work[1] * q : null },
         ];
+        // работа — только у вида, который мы меняем; ключ вида есть, а позиции в прайсе нет — «уточню»
+        if(kind.work) lines.push(work ? { name: work[0] + ", " + q + " шт", price: work[1] * q }
+                                      : { name: "⚠ уточню: " + kind.work, price: null });
         const open = lines.some(l => l.price == null);
         return { label: v.label, lines, sum: open ? null : lines.reduce((a, l) => a + l.price, 0) };
       });
