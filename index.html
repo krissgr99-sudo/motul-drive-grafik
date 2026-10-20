@@ -1408,6 +1408,13 @@
     text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
   .to-upsell .h{display:block;color:var(--text);font-weight:700;margin-bottom:4px}
   .to-upsell .body{display:block;white-space:pre-line}   /* абзацы — как уйдут клиенту */
+  /* свечи BMW/Mercedes: выбор типа (номера оригинала мелко на кнопке), числа и просмотр того,
+     что уйдёт клиенту. Отделены чертой, как промывка: это предложение, а не строка сметы */
+  .to-plugs{display:flex;flex-direction:column;gap:8px;padding-top:10px;border-top:1px dashed var(--line)}
+  .to-plug-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .to-plugs .to-carchip{flex-wrap:wrap;max-width:100%;text-align:left}
+  .to-plugs .to-carchip .f{overflow-wrap:anywhere}
+  .to-plugs .to-upsell{margin-top:0;padding-top:0;border-top:0}
   @media(max-width:720px){
     .to-wrap{gap:16px}
     .to-wrap .ui-btn,.to-wrap .to-code{min-height:44px;min-width:44px}
@@ -2766,6 +2773,25 @@
     to_work_air:   ["Замена воздушного фильтра", 500],
     to_work_cabin: ["Замена салонного фильтра", 500],
     to_work_fuel:  ["Замена топливного фильтра", 1000],
+    // Второй воздушный / второй салонный — редкие кузова с двумя фильтрами: своя строка и своя
+    // замена по цене первого (решение владельца 20.10.2026).
+    to_work_air2:   ["Замена второго воздушного фильтра", 500],
+    to_work_cabin2: ["Замена второго салонного фильтра", 500],
+    // Свечи BMW / Mercedes (раздел «ТО», типы — TO_PLUGS). Цена ЗА ШТУКУ: строка сметы = цена × число
+    // свечей. Источник — документ владельца «Шаблоны ответов» (20.10.2026). Оригинала BMW накаливания
+    // и оригинала Mercedes нет — предлагаем Bosch / NGK / Denso, как в документе.
+    // Цены замены свечи накаливания нет — ключа to_work_glow нет, в смете «уточню».
+    plug_bmw_9664:   ["Свечи зажигания BMW 12120039664", 2400, "12120039664"],
+    plug_bmw_5258:   ["Свечи зажигания BMW 12122455258", 2400, "12122455258"],
+    plug_bmw_7704:   ["Свечи зажигания BMW 12120057704", 2400, "12120057704"],
+    plug_bmw_4ef60:  ["Свечи зажигания BMW 12125A4EF60", 3200, "12125A4EF60"],
+    plug_bosch_5541: ["Свечи зажигания Bosch 0242145541", 900, "0242145541"],
+    plug_bosch_5555: ["Свечи зажигания Bosch 0242145555", 900, "0242145555"],
+    plug_ngk_90654:  ["Свечи зажигания NGK 90654", 1400, "90654"],
+    glow_bosch_3001: ["Свечи накаливания Bosch 0250703001", 3300, "0250703001"],
+    glow_bosch_3006: ["Свечи накаливания Bosch 0250603006", 3300, "0250603006"],
+    glow_denso_665:  ["Свечи накаливания Denso DG665", 3200, "DG665"],
+    to_work_plug:    ["Замена свечей зажигания", 500],   // за одну свечу
     // Промывка двигателя — допредложение в конце сметы ТО (TO_UPSELL). В «Итого» не входит:
     // это отдельная строка под чертой. Цена — та же, что в «Продажах» (чеки по 2200 ₽/шт).
     // ОДИН флакон на любой мотор (решение владельца 27.07.2026) — на объём масла НЕ пересчитываем,
@@ -2816,6 +2842,41 @@
     ],
     price: "{цена}, в тот же приезд.",                  // {цена} ← PRICE.to_flush; нет цены → фраза не печатается
     remind: "Порекомендовать промывку двигателя",       // копия «с номерами» (себе, в запись): вместо описания — одна строка
+  };
+
+  /* ---- ТО: свечи BMW / Mercedes (данные → авто-рендер; план 2026-10-20-to-svechi-i-vtorye-filtry).
+     Тип свечи по двигателю НЕ угадываем: менеджер выбирает его кнопкой, сверив номер оригинала с
+     каталогом (oem — то, что видно на кнопке). Вид — от топлива двигателя: бензин → spark, дизель →
+     glow. Марка — первое слово имени двигателя (MERCEDES-BENZ считается MERCEDES). variants — что
+     предлагаем клиенту, каждый своим «Итого»; цена — PRICE[item] за штуку (поле item, а не key:
+     key:"…" с цифрами сканер секретов gitleaks принимает за API-ключ). Предложение уходит
+     ОТДЕЛЬНЫМ блоком после «Итого» ТО и в сумму работ не входит — как в документе владельца
+     («Также можем предложить…»). Новый тип — строка здесь + позиция в PRICE. ---- */
+  const TO_PLUGS = [
+    { id:"bmw-9664",  brand:"BMW", kind:"spark", oem:["12120039664", "12120038704", "12120038896", "12120040573"],
+      variants:[{ label:"Оригинал BMW", item:"plug_bmw_9664" }, { label:"Аналог Bosch", item:"plug_bosch_5541" }] },
+    { id:"bmw-5258",  brand:"BMW", kind:"spark", oem:["12122455258", "12120040551", "12120047375", "12120046646"],
+      variants:[{ label:"Оригинал BMW", item:"plug_bmw_5258" }, { label:"Аналог Bosch", item:"plug_bosch_5555" }] },
+    { id:"bmw-7704",  brand:"BMW", kind:"spark", oem:["12120057704"],
+      variants:[{ label:"Оригинал BMW", item:"plug_bmw_7704" }] },
+    { id:"bmw-4ef60", brand:"BMW", kind:"spark", oem:["12125A4EF60"],
+      variants:[{ label:"Оригинал BMW", item:"plug_bmw_4ef60" }] },
+    { id:"bmw-glow-3522", brand:"BMW", kind:"glow", oem:["12230053522"],
+      variants:[{ label:"Bosch", item:"glow_bosch_3001" }] },
+    { id:"bmw-glow-5934", brand:"BMW", kind:"glow", oem:["12230035934"],
+      variants:[{ label:"Bosch", item:"glow_bosch_3006" }] },
+    { id:"mb-spark", brand:"MERCEDES", kind:"spark", oem:["A0041597003", "A0041597903"],
+      variants:[{ label:"NGK", item:"plug_ngk_90654" }] },
+    { id:"mb-glow",  brand:"MERCEDES", kind:"glow",  oem:["A0011597301", "A0011598001"],
+      variants:[{ label:"Denso", item:"glow_denso_665" }] },
+  ];
+  // вид свечи: подпись на экране, первая строка предложения, работа (ключ PRICE за штуку) и её имя,
+  // если ключа в прайсе ещё нет (тогда цена «уточню», число не выдумываем)
+  const TO_PLUG_KIND = {
+    spark: { cap:"Свечи зажигания",   lead:"Также можем предложить замену свечей зажигания.",
+             work:"to_work_plug", workName:"Замена свечей зажигания" },
+    glow:  { cap:"Свечи накаливания", lead:"Также можем предложить замену свечей накаливания.",
+             work:"to_work_glow", workName:"Замена свечей накаливания" },
   };
 
   /* ---- Свежесть Уровня 0: дата сверки цены с прайсом поставщика. ----
@@ -2949,6 +3010,8 @@
     // состав и цены подтверждены владельцем в сообщении.
     "2026-10-19": ["motul_cvtf", "oil_cvtf_12", "bardahl", "cvt_filters_gamma", "work_full_cvt_gamma",
                    "zf8hp", "oil_zf8hp_6", "filter_deep"],
+    // замена второго воздушного / салонного — цена первого, подтвердил владелец 20.10.2026
+    "2026-10-20": ["to_work_air2", "to_work_cabin2"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -5349,7 +5412,7 @@
       { id:"rate", label:"Ставки масел (₽/л)", test: k => k in RATES },
       { id:"work", label:"Работы",             test: k => /(^|_)work(_|$)/.test(k) },
       { id:"oil",  label:"Масла (объёмы)",     test: k => /(^|_)oil(_|$)/.test(k) },
-      { id:"part", label:"Фильтры и запчасти", test: k => /^(filter|bolt|drain|cvt|kit|haldex)_|gasket|ring/.test(k) },
+      { id:"part", label:"Фильтры и запчасти", test: k => /^(filter|bolt|drain|cvt|kit|haldex|plug|glow)_|gasket|ring/.test(k) },
       { id:"axle", label:"Мосты и раздатка",   test: k => /^(diff|diffs|axles)_|_diff_/.test(k) },
       { id:"etc",  label:"Прочее",             test: () => true },
     ];
@@ -8341,10 +8404,15 @@
     };
 
     const CKEY = "md_to_engines";
+    /* Порядок здесь = порядок строк сметы. Второй воздушный и второй салонный (after) — редкие
+       кузова с двумя фильтрами (владелец, 20.10.2026): кнопка «+ Второй…» видна, только когда
+       первый уже в смете. По VIN их не подбираем — вписывают руками, память по машине та же. */
     const SLOTS = [
-      { id:"air",   label:"Воздушный фильтр", work:"to_work_air" },
-      { id:"cabin", label:"Салонный фильтр",  work:"to_work_cabin" },
-      { id:"fuel",  label:"Топливный фильтр", work:"to_work_fuel" },
+      { id:"air",    label:"Воздушный фильтр",        work:"to_work_air" },
+      { id:"air2",   label:"Второй воздушный фильтр", work:"to_work_air2",   after:"air" },
+      { id:"cabin",  label:"Салонный фильтр",         work:"to_work_cabin" },
+      { id:"cabin2", label:"Второй салонный фильтр",  work:"to_work_cabin2", after:"cabin" },
+      { id:"fuel",   label:"Топливный фильтр",        work:"to_work_fuel" },
     ];
     let engines = [];                                  // записи, подтверждённые таблицей
     let pending = [];                                  // отправленные, ещё не увиденные в таблице
@@ -8452,6 +8520,58 @@
       if(filterPrices[id] !== undefined) return { p: filterPrices[id] };
       const m = memPrice(e, id);
       return m ? { p: m.p, mem: m.d, stale: !freshDay(m.d) } : { p: null };
+    }
+    /* ---- Свечи (TO_PLUGS) ------------------------------------------------------
+       Свеча — свойство ДВИГАТЕЛЯ, а не кузова, поэтому выбор живёт в extra записи рядом с cars:
+       extra.plug = { t: id типа, q: штук }. Число по умолчанию — цилиндры по объёму из имени
+       («2.0» → 4, «3.0» → 6); объёма в имени нет («MERCEDES S450 256.930») — число выбирает
+       человек, и до этого предложение в копию не уходит: штуки не выдумываем. */
+    let plugDraft = null;                              // {id, q}: число, выбранное до типа свечи
+    const plugBrand = e => { const b = engBrand(e && e.name); return /^MERCEDES/.test(b) ? "MERCEDES" : b; };
+    const plugKind  = e => (e && e.fuel === "бензин") ? "spark" : (e && e.fuel === "дизель") ? "glow" : "";
+    const plugTypes = e => TO_PLUGS.filter(p => p.brand === plugBrand(e) && p.kind === plugKind(e));
+    // объём — одна цифра, точка, одна цифра отдельным словом: «2.0i», «3.0d», а не код мотора «651.950»
+    function cylFromName(name){
+      const m = String(name || "").match(/(?:^|\s)(\d)[.,](\d)(?=[a-zа-яё]*(?:\s|$))/i);
+      if(!m) return null;
+      const v = Number(m[1] + "." + m[2]);
+      return v < 1.55 ? 3 : v < 2.45 ? 4 : v < 3.6 ? 6 : v < 5.6 ? 8 : 12;
+    }
+    function plugState(e){
+      const mem = extraOf(e).plug || {};
+      const type = plugTypes(e).find(p => p.id === mem.t) || null;   // топливо сменили — чужой вид не предлагаем
+      const draft = plugDraft && e && plugDraft.id === e.id ? plugDraft.q : null;
+      return { type, q: Number(mem.q) > 0 ? Number(mem.q) : (draft || cylFromName(e && e.name)) };
+    }
+    /* Предложение свечей → блок CDOC: по варианту (оригинал / аналог) свечи × штук + замена × штук
+       и свой «Итого». Тип или число не выбраны — null, в копию ничего не идёт. Клиенту — без номера
+       (plainName, как в Шаблонах), себе — с номером. */
+    function plugOffer(e, withCodes){
+      const { type, q } = plugState(e);
+      if(!type || !q) return null;
+      const kind = TO_PLUG_KIND[type.kind], work = PRICE[kind.work];
+      let stale = !!work && !isFresh(kind.work);
+      const variants = type.variants.map(v => {
+        const item = PRICE[v.item];
+        if(item && !isFresh(v.item)) stale = true;
+        const lines = [
+          item ? { name: (withCodes ? item[0] : plainName(item[0], item[2])) + ", " + q + " шт", price: item[1] * q }
+               : { name: "⚠ уточню: " + v.item, price: null },
+          { name: (work ? work[0] : kind.workName) + ", " + q + " шт", price: work ? work[1] * q : null },
+        ];
+        const open = lines.some(l => l.price == null);
+        return { label: v.label, lines, sum: open ? null : lines.reduce((a, l) => a + l.price, 0) };
+      });
+      const unknown = variants.some(v => v.sum == null);
+      return { stale, unknown, text: CDOC.block({ head: kind.lead, variants }) };
+    }
+    // выбор свечи → в запись двигателя; setEngine заодно сохраняет память по текущей машине
+    function setPlug(e, val){
+      const x = extraOf(e);
+      if(val) x.plug = val; else delete x.plug;
+      // «{}», а не пустая строка: пустой extra читается из зеркала устройства (extraOf),
+      // и забытая свеча вернулась бы оттуда
+      setEngine(Object.assign({}, e, { extra: JSON.stringify(x) }));
     }
     /* Id записи — из имени двигателя, а не случайный. Тот же двигатель, разобранный второй раз
        или на другом устройстве, попадает в ТУ ЖЕ строку листа (upsert по id), а не заводит
@@ -8621,12 +8741,13 @@
        строка TO_UPSELL.remind: напоминание предложить промывку (правка владельца 26.09.2026).
        Расчёт у обеих версий один — smeta(e), расходиться суммам не из чего. */
     function bodyText(e, withCodes){
-      const s = smeta(e);
+      const s = smeta(e), plugs = plugOffer(e, withCodes);   // свечи — между сметой и промывкой
       return CDOC.doc({
         title:  "Техническое обслуживание " + e.name + (e.fuel ? " (" + e.fuel + ")" : ""),
         blocks: [CDOC.block({ variants: [{ label: null,
           lines: s.rows.map(r => ({ name: withCodes && r.code ? r.n + " " + r.code : r.n, price: r.p })),
           sum: s.unknown ? null : s.sum }] }),
+          plugs && plugs.text,
           withCodes ? TO_UPSELL.remind : upsell().text],
       });
     }
@@ -9455,10 +9576,41 @@
       el.focus();
       if(sel) try { el.setSelectionRange(sel[0], sel[1]); } catch(err){}
     }
+    /* Свечи в карточке: только у марок из TO_PLUGS. Топлива нет — сначала спросить его (от него
+       зависит вид свечи). Дальше — тип кнопкой (номера оригинала на ней же, сверить с каталогом),
+       число и просмотр того, что уйдёт клиенту. */
+    const PLUG_QTY = [3, 4, 6, 8, 12];
+    function plugsHtml(e, pl){
+      if(!TO_PLUGS.some(p => p.brand === plugBrand(e))) return "";
+      const kindId = plugKind(e);
+      if(!kindId) return `<div class="to-plugs"><span class="to-cap">Свечи</span>
+        <span class="to-note">Топливо двигателя не указано — от него зависят свечи</span>
+        <div class="to-plug-row">${["бензин", "дизель"].map(f =>
+          `<button class="to-carchip" type="button" data-act="plug-fuel" data-fuel="${f}">${f}</button>`).join("")}</div></div>`;
+      const kind = TO_PLUG_KIND[kindId], st = plugState(e);
+      const rubShort = key => PRICE[key] ? rub(PRICE[key][1]) : "уточню";
+      const opts = plugTypes(e).map(p => {
+        const on = !!st.type && st.type.id === p.id;
+        return `<button class="to-carchip${on ? " active" : ""}" type="button" data-act="plug-pick" data-plug="${esc(p.id)}"
+          aria-pressed="${on}">${esc(p.variants.map(v => v.label).join(" / "))} · ${esc(p.variants.map(v => rubShort(v.item)).join(" / "))}
+          <span class="f">${esc(p.oem.join(" · "))}</span></button>`;
+      }).join("");
+      const qty = PLUG_QTY.map(n => `<button class="to-carchip${st.q === n ? " active" : ""}" type="button"
+        data-act="plug-qty" data-q="${n}" aria-pressed="${st.q === n}">${n}</button>`).join("");
+      return `<div class="to-plugs" data-plug-kind="${kindId}">
+        <span class="to-cap">${esc(kind.cap)} · предложим после «Итого»</span>
+        <div class="to-plug-row">${opts}<button class="to-carchip${st.type ? "" : " active"}" type="button"
+          data-act="plug-none" aria-pressed="${!st.type}">Не предлагать</button></div>
+        <div class="to-plug-row"><span class="to-note">Штук:</span>${qty}</div>
+        ${st.type && !st.q ? `<span class="to-note" data-plug-need-qty>Выбери число свечей — без него предложение не уйдёт</span>` : ""}
+        ${pl ? `<div class="to-upsell"><span class="cap">Уйдёт в копии клиенту</span><span class="body">${esc(pl.text)}</span></div>` : ""}
+      </div>`;
+    }
     function updateCard(){
       const e = selId && byId(selId);
       if(!e){ bodyEl.innerHTML = ""; return; }
       const s = smeta(e), u = upsell();          // u — хвост копии клиенту (промывка), в «Итого» не входит
+      const pl = plugOffer(e);                   // предложение свечей — тоже после «Итого», в сумму не входит
       const rowsHtml = s.rows.map(r => {
         /* Строка фильтра правится целиком — фирма, номер и цена — прямо здесь (карандаш).
            Правка уходит в запись каталога: масляный в саму запись, фильтры кузова — в память
@@ -9505,6 +9657,7 @@
       }).join("");
       const slotsHtml = SLOTS.map(sl => {
         if(slots[sl.id]) return "";
+        if(sl.after && !slots[sl.after]) return "";      // второй фильтр — только к уже вписанному первому
         if(!slotOpen[sl.id])
           return `<button class="ui-btn ui-btn--secondary ui-btn--sm" type="button"
             data-act="slot-open" data-slot="${sl.id}">+ ${sl.label.replace(" фильтр","")}</button>`;
@@ -9542,7 +9695,7 @@
           <span class="to-cap">Смета ТО</span>
           <div class="to-card-top">
             <div class="to-card-title">${esc(e.name)}${e.fuel ? ` <span class="f">· ${esc(e.fuel)}</span>` : ""}</div>
-            ${s.stale || s.unknown || u.stale ? `<span class="tpl-badge b-check" data-to-price-status>${ICO.warn} Проверить цены</span>` : ""}
+            ${s.stale || s.unknown || u.stale || (pl && (pl.stale || pl.unknown)) ? `<span class="tpl-badge b-check" data-to-price-status>${ICO.warn} Проверить цены</span>` : ""}
             <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" data-act="edit">Изменить</button>
           </div>
           ${carsHtml}
@@ -9561,6 +9714,7 @@
           <div class="to-rows">${rowsHtml}</div>
           <div class="to-slots">${slotsHtml}</div>
           <div class="to-total">Итого <span class="p${s.unknown ? " ask" : ""}">${s.unknown ? "уточню" : rub(s.sum)}</span></div>
+          ${plugsHtml(e, pl)}
           <div class="to-actions">
             <button class="ui-btn ui-btn--primary" type="button" data-act="copy">${ICO.copy} Копировать</button>
             <button class="ui-btn ui-btn--secondary" type="button" data-act="copy-codes"
@@ -9777,6 +9931,15 @@
       }
       else if(act === "row-cancel"){ rowEdit = null; updateCard(); }
       else if(act === "row-save"){ applyRow(b.dataset.edit); }
+      // свечи: тип и число — в память двигателя; число до выбора типа держим черновиком
+      else if(act === "plug-pick"){ setPlug(e, { t: b.dataset.plug, q: plugState(e).q || null }); }
+      else if(act === "plug-qty"){
+        const q = Number(b.dataset.q), st = plugState(e);
+        if(st.type) setPlug(e, { t: st.type.id, q });
+        else { plugDraft = { id: e.id, q }; updateCard(); }
+      }
+      else if(act === "plug-none"){ setPlug(e, null); }
+      else if(act === "plug-fuel"){ setEngine(Object.assign({}, e, { fuel: b.dataset.fuel })); }
     });
     /* Ручная цена — в смету и в память этой машины (withMemory: pr, через паузу upsertSoon).
        Карточку не перерисовываем — поле и кнопка под пальцем остаются; ответы подбора
@@ -9785,7 +9948,8 @@
       const s = smeta(e), total = bodyEl.querySelector(".to-total .p");
       if(total){ total.textContent = s.unknown ? "уточню" : rub(s.sum); total.classList.toggle("ask", s.unknown); }
       const top = bodyEl.querySelector(".to-card-top"), badge = top && top.querySelector("[data-to-price-status]");
-      const needsCheck = s.stale || s.unknown || upsell().stale;
+      const pl = plugOffer(e);
+      const needsCheck = s.stale || s.unknown || upsell().stale || !!(pl && (pl.stale || pl.unknown));
       if(needsCheck && top && !badge){
         const mark = document.createElement("span"); mark.className = "tpl-badge b-check";
         mark.setAttribute("data-to-price-status", ""); mark.innerHTML = ICO.warn + " Проверить цены";
