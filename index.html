@@ -3043,12 +3043,17 @@
                    "plug_bmw_4ef60", "plug_bosch_5541", "plug_bosch_5555", "plug_ngk_90654",
                    "glow_bosch_3001", "glow_bosch_3006", "glow_denso_665", "to_work_plug"],
     // Range Rover: бутылка оригинала 7 000, поддон 9 000 (= 20 000 − масло ZF 5 л) и итоги мостов/раздатки по целым
-    // литрам — владелец выбрал в чате 21.10.2026. Motul в задний мост BMW и PDK — без слова владельца, даты нет.
+    // литрам — владелец выбрал в чате 21.10.2026.
     "2026-10-21": ["lr_oil", "filter_zf_rr", "kit_lr_motul_front", "kit_lr_motul_ls_rear2", "kit_lr_motul_ls_transf2",
                    "kit_lr_motul_ls_3", "kit_lr_tyk_1", "kit_lr_tyk_2", "kit_lr_048849_1", "kit_lr_019727_rear2",
                    "kit_lr_019727_transf2", "kit_lr_019727_3",
-                   // Santa Fe: DCTF 2 л за 4000 — выбор владельца в чате; остальные цены документа ждут его слова
-                   "oil_dctf_2_sf"],
+                   // Santa Fe: DCTF 2 л за 4000 — выбор владельца в чате
+                   "oil_dctf_2_sf",
+                   // владелец подтвердил «актуальны» 21.10.2026: BMW «только задний мост» (Motul 4500, оригинал
+                   // G OIL 10000 — общая позиция с мостами BMW), PDK HX285KIT 16000, Santa Fe (Gear 300 3 л,
+                   // замена 3000, Febi 3000, чистка сетки 3000)
+                   "kit_rear_motul", "bmw_g_oil", "kit_pdk_hx285",
+                   "oil_gear300_3", "work_dct_santafe", "oil_haldex_febi", "work_haldex_mesh"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
