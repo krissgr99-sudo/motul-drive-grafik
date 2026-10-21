@@ -2507,6 +2507,7 @@
     mb_236_15_sm:  2500,  // Mercedes 236.15 мелким объёмом (0,6 л в раздатку = 1500)
     mb_235_7:      8000,  // Mercedes-Benz 235.7 — оригинал в передний дифференциал
     mb_239_71:     9000,  // Mercedes-Benz 239.71/239.72 — оригинал в задний дифференциал
+    lr_oil:        7000,  // Land Rover LR019727 / LR048849 / TYK500010 — оригинал в мосты и раздатку, бутылка 1 л
     motor_0w:      2200,  // моторные Motul 0W30/0W40 (8100 X-Clean+ EFE, X-Max, Eco-nergy)
     motor_5w:      2000,  // моторные Motul 5W30/5W40 (8100, Specific 504/507)
   };
@@ -2570,6 +2571,25 @@
     kit_diff_motul_ls:  ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 1л (в мосты)", perL(RATES.gear300_ls, 1), "105778"], // 5500
     kit_diff_motul_reg: ["Трансмиссионное масло Motul Gear 300 75W90 105777 1л (в мосты)",    perL(RATES.gear300, 1), "105777"],    // 4500
     kit_diff_orig_lock: ["Оригинальное трансмиссионное масло BMW G OIL (в мосты, 4 шт)", 23000],                          // блокировка: 2×6500 (LSD) + 2×5000
+    // BMW «только задний мост» (блок DIFFS_KIT_REAR): Motul 1 л по ставке; оригинал — bmw_g_oil.
+    kit_rear_motul:     ["Трансмиссионное масло Motul Gear 300 75W90 105777 1л (задний дифференциал)", perL(RATES.gear300, 1), "105777"], // 4500
+    // Range Rover ZF 8HP (блоки DIFFS_KIT_LR): по целым литрам, одно масло в разных узлах — из общих бутылок
+    // (решение владельца 21.10.2026). Литры по узлам — документ «Шаблоны ответов»: раздатка односкоростная
+    // DCTF 0,75 / LR048849, двухскоростная LS 1,2 / LR019727; зад с блокировкой LS 1,2 / LR019727,
+    // без — Gear 300 0,8 / TYK500010; перед — Gear 300 0,5 / TYK500010. Motul Gear 300 2 л и DCTF 1 л — как у BMW.
+    filter_zf_rr:            ["Оригинальный Фильтр-поддон ZF для Range Rover", 9000],   // с маслом ZF 5 л — 20 000, номера в документе нет
+    kit_lr_motul_front:      ["Трансмиссионное масло Motul Gear 300 75W90 105777 1л (передний дифференциал)", perL(RATES.gear300, 1), "105777"],    // 4500
+    kit_lr_motul_ls_rear2:   ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 2л (задний дифференциал)", perL(RATES.gear300_ls, 2), "105778"], // 11000
+    kit_lr_motul_ls_transf2: ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 2л (раздаточная коробка)", perL(RATES.gear300_ls, 2), "105778"], // 11000
+    kit_lr_motul_ls_3:       ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 3л (задний дифференциал и раздаточная коробка)", perL(RATES.gear300_ls, 3), "105778"], // 16500
+    kit_lr_tyk_1:            ["Оригинальное трансмиссионное масло Land Rover TYK500010 1л (передний дифференциал)", perL(RATES.lr_oil, 1), "TYK500010"],
+    kit_lr_tyk_2:            ["Оригинальное трансмиссионное масло Land Rover TYK500010 2л (передний и задний дифференциал)", perL(RATES.lr_oil, 2), "TYK500010"],
+    kit_lr_048849_1:         ["Оригинальное трансмиссионное масло Land Rover LR048849 (Shell TF0870) 1л (раздаточная коробка)", perL(RATES.lr_oil, 1), "LR048849"],
+    kit_lr_019727_rear2:     ["Оригинальное трансмиссионное масло Land Rover LR019727 (Shell TF0753) 2л (задний дифференциал)", perL(RATES.lr_oil, 2), "LR019727"],
+    kit_lr_019727_transf2:   ["Оригинальное трансмиссионное масло Land Rover LR019727 (Shell TF0753) 2л (раздаточная коробка)", perL(RATES.lr_oil, 2), "LR019727"],
+    kit_lr_019727_3:         ["Оригинальное трансмиссионное масло Land Rover LR019727 (Shell TF0753) 3л (задний дифференциал и раздаточная коробка)", perL(RATES.lr_oil, 3), "LR019727"],
+    // Porsche PDK — комплект на продажу (документ «Шаблоны ответов»; та же цена у HX285KIT в каталоге «Цены»)
+    kit_pdk_hx285:           ["Комплект фильтров PDK Mahle HX285KIT (оригинальные номера Porsche 9A731707000, 9A731718900)", 16000, "HX285KIT"],
     // Комплект (запчасти без работ) для мостов и Торсена Audi/VW — блоки DIFFS_KIT_TORSEN_G055/_G060, поузлово.
     // Названия и цены — владельца. Итоги: VAG G055 30000 / VAG G060 36800 / Motul 14500 — каждый ровно на 3000
     // (работа) дешевле своей услуги AXLES_TORSEN (33000 / 39800 / 17500).
@@ -3015,6 +3035,11 @@
     "2026-10-20": ["to_work_air2", "to_work_cabin2", "plug_bmw_9664", "plug_bmw_5258", "plug_bmw_7704",
                    "plug_bmw_4ef60", "plug_bosch_5541", "plug_bosch_5555", "plug_ngk_90654",
                    "glow_bosch_3001", "glow_bosch_3006", "glow_denso_665", "to_work_plug"],
+    // Range Rover: бутылка оригинала 7 000, поддон 9 000 (= 20 000 − масло ZF 5 л) и итоги мостов/раздатки по целым
+    // литрам — владелец выбрал в чате 21.10.2026. Motul в задний мост BMW и PDK — без слова владельца, даты нет.
+    "2026-10-21": ["lr_oil", "filter_zf_rr", "kit_lr_motul_front", "kit_lr_motul_ls_rear2", "kit_lr_motul_ls_transf2",
+                   "kit_lr_motul_ls_3", "kit_lr_tyk_1", "kit_lr_tyk_2", "kit_lr_048849_1", "kit_lr_019727_rear2",
+                   "kit_lr_019727_transf2", "kit_lr_019727_3"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -3107,6 +3132,36 @@
   });
   const DIFFS_KIT_TORSEN_G055 = diffsKitTorsen(["kit_torsen_g055_front", "kit_torsen_vag_torsen", "kit_torsen_g055_rear"]);
   const DIFFS_KIT_TORSEN_G060 = diffsKitTorsen(["kit_torsen_g060_front", "kit_torsen_vag_torsen", "kit_torsen_g060_rear"]);
+
+  // 2.0.3) BMW «только задний мост» (задний привод) — комплект без работ, текст владельца. Итого: Motul 4500 / оригинал 10000.
+  const DIFFS_KIT_REAR = {
+    head:  "Также можем предложить масло для заднего дифференциала.",
+    intro: "2 варианта:",
+    note:  "Motul ничем не уступает оригиналу.",
+    variants: [
+      { label: "Масло Motul",  items: ["kit_rear_motul"] },
+      { label: "Оригинал BMW", items: ["bmw_g_oil"] },
+    ],
+  };
+  // 2.0.4) Range Rover ZF 8HP — четыре сочетания раздатки (одно-/двухскоростная) и заднего моста (без/с блокировкой).
+  //        Шапка и примечание общие, состав — по таблице владельца (21.10.2026), цены — в PRICE.
+  //        Итого Motul / оригинал Land Rover: 12000 / 21000, 18500 / 28000, 20000 / 28000, 21000 / 28000.
+  const diffsKitLr = (motul, lr) => ({
+    head:  "Также можем предложить масло для переднего, заднего дифференциала и раздаточной коробки.",
+    intro: "2 варианта:",
+    note:  "Motul ничем не уступает оригиналу.",
+    variants: [
+      { label: "Комплект Motul",               items: motul },
+      { label: "Комплект оригинал Land Rover", items: lr },
+    ],
+  });
+  const DIFFS_KIT_LR = {
+    oneSpeedOpen: diffsKitLr(["kit_diff_motul", "transfer_oil_motul"], ["kit_lr_tyk_2", "kit_lr_048849_1"]),
+    oneSpeedLock: diffsKitLr(["kit_lr_motul_front", "kit_lr_motul_ls_rear2", "transfer_oil_motul"],
+                             ["kit_lr_tyk_1", "kit_lr_019727_rear2", "kit_lr_048849_1"]),
+    twoSpeedOpen: diffsKitLr(["kit_diff_motul", "kit_lr_motul_ls_transf2"], ["kit_lr_tyk_2", "kit_lr_019727_transf2"]),
+    twoSpeedLock: diffsKitLr(["kit_lr_motul_front", "kit_lr_motul_ls_3"], ["kit_lr_tyk_1", "kit_lr_019727_3"]),
+  };
 
   // Продажа масел Mercedes — отдельно от услуги MB9G_AXLES: без работ, раздатка 1 л.
   const DIFFS_KIT_MB = {
@@ -7853,6 +7908,18 @@
       ],
       addons: { block: DIFFS_KIT_LOCK, lock: true },   // lock:true → бейдж «Блокировка» (доплаты нет — LSD уже в масле)
     },
+    // Задний привод: та же коробка, апсел — только масло заднего моста (документ, п. 1.1).
+    {
+      id: "zf8hp-rear", group: "ZF 8HP", brand: "BMW", choice: "Обычный · только задний мост",
+      name:  "ZF 8HP · масло 5 л · только задний мост",
+      price: 20000,
+      format:["вживую","отправка"],
+      items: [
+        { ref:"oil_zf_5" },
+        { ref:"filter_std" },
+      ],
+      addons: { block: DIFFS_KIT_REAR },
+    },
     // Пара «мягкий гибрид»: тот же расклад, но поддон мягкого гибрида (filter_mild 19000) → коробка 30000.
     {
       id: "zf8hp-mild", group: "ZF 8HP", brand: "BMW", choice: "Мягкий гибрид · без блокировки",
@@ -7938,12 +8005,36 @@
         { ref:"filter_deep" },
       ],
     },
+    // Range Rover ZF 8HP: коробка 11 000 + 9 000 = 20 000 (документ), четыре сочетания раздатки и заднего моста.
+    ...[["1s-open", "односкоростная", "без блокировки", DIFFS_KIT_LR.oneSpeedOpen],
+        ["1s-lock", "односкоростная", "с блокировкой",  DIFFS_KIT_LR.oneSpeedLock],
+        ["2s-open", "двухскоростная", "без блокировки", DIFFS_KIT_LR.twoSpeedOpen],
+        ["2s-lock", "двухскоростная", "с блокировкой",  DIFFS_KIT_LR.twoSpeedLock]].map(([id, transfer, rear, block]) => ({
+      id: `rr-zf8hp-${id}`, group: "Range Rover · ZF 8HP", brand: "Land Rover",
+      choice: `Раздатка ${transfer} · задний мост ${rear}`,
+      name:  `Range Rover · ZF 8HP · масло 5 л · раздатка ${transfer}, задний мост ${rear}`,
+      format:["вживую","отправка"],
+      items: [
+        { ref:"oil_zf_5" },
+        { ref:"filter_zf_rr" },
+      ],
+      addons: { block, lock: id !== "1s-open" },   // бейдж «Блокировка» — если она есть хоть в одном узле
+    })),
     ...MB9G_KITS,
     {
       ...MB9G_KIT_COMMON,
       id: "mb9g-all", choice: "Все поддоны — сравнение",
       name: "Mercedes 9G-Tronic · все поддоны · масло 10 л",
       variants: MB9G_KITS,
+    },
+    // Porsche PDK — комплект фильтров Mahle вместо оригинальных (документ «Шаблоны ответов»), без масла и допредложения.
+    {
+      id: "pdk-hx285", group: "Porsche PDK", brand: "Porsche", choice: "Mahle HX285KIT",
+      name:  "Porsche PDK · комплект фильтров Mahle HX285KIT",
+      format:["вживую","отправка"],
+      items: [
+        { ref:"kit_pdk_hx285" },
+      ],
     },
     // Формат заполнения нового комплекта (скопируй объект выше и правь; addons — по желанию):
     // {
@@ -8086,8 +8177,9 @@
     const groups = [...new Set(KITS.map(k => k.group))];
     const byId = id => KITS.find(k => k.id === id);
     const norm = s => foldLat(String(s).toLowerCase()).replace(/[^a-zа-яё0-9]/g, "");
-    const aliases = { мерседес:"Mercedes", мерс:"Mercedes", бмв:"BMW", ауди:"Audi", фольксваген:"VW", зф:"ZF" };
-    const query = s => s.replace(/мерседес|мерс|бмв|ауди|фольксваген|зф/gi, w => aliases[w.toLowerCase()]);
+    const aliases = { мерседес:"Mercedes", мерс:"Mercedes", бмв:"BMW", ауди:"Audi", фольксваген:"VW", зф:"ZF",
+                      рендж:"Range", ренж:"Range", ровер:"Rover", ленд:"Land", порше:"Porsche" };
+    const query = s => s.replace(/мерседес|мерс|бмв|ауди|фольксваген|зф|рендж|ренж|ровер|ленд|порше/gi, w => aliases[w.toLowerCase()]);
     const matches = (text, q) => query(q).trim().split(/\s+/).filter(Boolean).every(w => norm(text).includes(norm(w)));
     const addonId = v => "ref:" + v.items[0];
     const isGoods = ref => Object.hasOwn(PRICE, ref) && !/(^|_)work(_|$)/i.test(ref)
@@ -8182,7 +8274,7 @@
         const litres = oil.match(/\d+\s*л/gi)?.at(-1) || "";
         const word = rows.length === 1 ? "вариант" : rows.length < 5 ? "варианта" : "вариантов";
         return `<article class="kc-group"><button type="button" class="kc-group-head" data-group="${esc(group)}" aria-expanded="${!!open}">
-          <span><span class="kc-group-title">${esc(group)}</span><span class="kc-group-sub">${esc(rows[0].brand)} · масло ${esc(litres)}</span></span>
+          <span><span class="kc-group-title">${esc(group)}</span><span class="kc-group-sub">${esc(rows[0].brand)}${litres ? " · масло " + esc(litres) : ""}</span></span>
           <span class="kc-group-code">${rows.length} ${word}<br>${esc(from)} · ${open ? "−" : "+"}</span></button>${!open ? "" : rows.map(k => {
             const bases = kitBaseVariants(k);
             const amount = bases.every(v => v.sum != null) ? (k.variants ? "от " : "") + kitRub(Math.min(...bases.map(v => v.sum))) : "уточню";
