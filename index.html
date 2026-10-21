@@ -3231,6 +3231,14 @@
     twoSpeedOpen: diffsKitLr(["kit_diff_motul", "kit_lr_motul_ls_transf2"], ["kit_lr_tyk_2", "kit_lr_019727_transf2"]),
     twoSpeedLock: diffsKitLr(["kit_lr_motul_front", "kit_lr_motul_ls_3"], ["kit_lr_tyk_1", "kit_lr_019727_3"]),
   };
+  // 2.0.5) Range Rover в «Шаблонах» — УСЛУГА: масла те же, что в комплектах (DIFFS_KIT_LR, целые литры),
+  //        плюс замена в каждом узле, шапка — как у BMW (DIFFS_REGULAR). Состав руками не повторяем.
+  //        Итого Motul / оригинал Land Rover: 15000 / 24000, 21500 / 31000, 23000 / 31000, 24000 / 31000.
+  const DIFFS_LR = Object.fromEntries(Object.entries(DIFFS_KIT_LR).map(([combo, kit]) => [combo, {
+    head: DIFFS_REGULAR.head, intro: DIFFS_REGULAR.intro, note: DIFFS_REGULAR.note,
+    variants: kit.variants.map((v, i) => ({ label: ["Motul:", "Оригинал Land Rover:"][i],
+      items: [...v.items, "diff_work_front", "diff_work_rear", "diff_work_transf"] })),
+  }]));
 
   // Продажа масел Mercedes — отдельно от услуги MB9G_AXLES: без работ, раздатка 1 л.
   const DIFFS_KIT_MB = {
@@ -3808,6 +3816,10 @@
       },
     },
   };
+  // Range Rover ZF 8HP — коробка та же, что у BMW 8HP45-76 (масла, работы, варианты), поддон свой —
+  // filter_zf_rr из «Комплектов». Услуги — ссылки на BMW, а не копия: правятся в одном месте.
+  BOXES["Range Rover ZF 8HP"] = { filter: { "Обычная": "filter_zf_rr" },
+    "Аппаратная": BOXES["8HP45-76"]["Аппаратная"], "Частичная": BOXES["8HP45-76"]["Частичная"] };
 
   // ---- генераторы: тексты собираются отсюда, руками не дублируются ----
   // Мотор: "Обычная" | "Мягкий гибрид" | "Гибрид". Старый флаг hybrid:true = мягкий гибрид.
@@ -4359,6 +4371,21 @@
     { brand:"Mercedes", box:"7G-Tronic", type:"Аппаратная", filter:"w7c700", title:"722.906 / W7C700 с № 2834527 (Motul ATF6, Mahle HX124D) с промывкой",
       code:"Mercedes·7G-Tronic·Аппаратная·722.906 W7C700",
       titleAccent:"722.906 / W7C700", extraTags:["7G-Tronic", "722.9", "722.906", "W7C700", "7/1", "2834527", "Motul ATF6", "Mahle HX124D"] },
+
+    /* ==================== Land Rover ==================== */
+    // Range Rover ZF 8HP: аппаратная и частичная × четыре сочетания раздатки и заднего моста (как в «Комплектах»).
+    // Сочетание в автокод не входит → code свой; transfer — ось фильтра «Раздатка», lock — задний мост.
+    ...["Аппаратная", "Частичная"].flatMap(type => [
+      ["1s-open", "Односкоростная", false, DIFFS_LR.oneSpeedOpen],
+      ["1s-lock", "Односкоростная", true,  DIFFS_LR.oneSpeedLock],
+      ["2s-open", "Двухскоростная", false, DIFFS_LR.twoSpeedOpen],
+      ["2s-lock", "Двухскоростная", true,  DIFFS_LR.twoSpeedLock]].map(([id, transfer, lock, diffsBlock]) => ({
+      brand:"Land Rover", box:"Range Rover ZF 8HP", type, lock, transfer, diffsBlock,
+      code:`Land Rover·Range Rover ZF 8HP·${type}·${id}`,
+      title:`Range Rover · ${type.toLowerCase()} · раздатка ${transfer.toLowerCase()}, задний мост ${lock ? "с блокировкой" : "без блокировки"}`,
+      titleAccent:`раздатка ${transfer.toLowerCase()}`,
+      extraTags:["Range Rover", "Land Rover", "Рендж Ровер", "ZF 8HP", "Мосты", "Раздатка", `Раздатка ${transfer.toLowerCase()}`,
+                 "Motul", "Оригинал Land Rover"] }))),
 
     /* ==================== Ответы клиентам (не сметы: без цены, типа и допуслуг) ==================== */
     ...ANSWERS.map(a => ({ brand:ANSWERS_BRAND, box:a.group, title:a.title, answer:a.text.join("\n"), code:"answer·" + a.id })),
@@ -4929,6 +4956,7 @@
     "Вариаторы":      logoBadge("Вариаторы (CVT)", "CVT", 30),
     GM:               logoBadge("GM", "GM", 40),
     "Hyundai / Kia":  logoBadge("Hyundai / Kia", "H/K", 30),
+    "Land Rover":     logoBadge("Land Rover", "LR", 40),
     [ANSWERS_BRAND]:  logoBadge(ANSWERS_BRAND, "FAQ", 28),
     Mercedes:
 `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mercedes-Benz">
@@ -4954,7 +4982,7 @@
     const resultTitle = document.getElementById("tpl-result-title");
     searchInp.insertAdjacentHTML("beforebegin", ICO.search);
     let activeBrand = "all", activeBox = "all", query = "", expandedBrand = null;
-    const filters = { type:null, pan:null, engine:null, lock:null, axle:null };
+    const filters = { type:null, pan:null, engine:null, lock:null, axle:null, transfer:null };
     const drafts = new Map(); // по объекту TEMPLATES: поиск/фильтры/сверка не сбрасывают выбор и не меняют другие карточки
     const currentDoc = t => tplDoc(t, drafts.get(t));
     const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
@@ -4970,6 +4998,8 @@
       { key:"engine", label:"Мотор", get:engineOf,  order:["Обычная","Мягкий гибрид","Гибрид"] },
       { key:"lock",   label:"Блок.", get:lockOf,    order:["Без блокировки","С блокировкой"] },
       { key:"axle",   label:"Мост",  get:t=>t.diffsDetailed?"Трёхсекционный":"Обычный", order:["Обычный","Трёхсекционный"] },
+      // Раздатка Range Rover: одно- или двухскоростная (поле t.transfer); у остальных карточек оси нет.
+      { key:"transfer", label:"Раздатка", get:t=>t.transfer, order:["Односкоростная","Двухскоростная"] },
     ];
 
     const brands = [...new Set(TEMPLATES.map(t=>t.brand))];
