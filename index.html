@@ -13,7 +13,11 @@
 <meta name="apple-mobile-web-app-title" content="MOTUL-DRIVE">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Шрифты не держат первую отрисовку (аудит 2026-10-21): тот же адрес, стиль включается, когда загрузится;
+     до того — системный шрифт, как и при display=swap. Без JS — обычная ссылка в noscript. -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
 <style>
   /* =========================================================
      ТЕМЫ И ТОКЕНЫ — всё меняется отсюда (PERFORMANCE / motorsport dark)
@@ -258,8 +262,13 @@
     .home-shift-label{margin-top:12px}
     .home-ask{flex-direction:column;max-width:none}
     .home-ask-go{justify-content:center;min-height:48px}
-    .home-tiles{grid-template-columns:1fr;margin-top:16px}
-    .home-tile,.home-tile[data-featured]{min-height:88px;padding:16px;gap:12px}
+    /* плитки в две колонки: лентой в одну до «Заметок» было ~1800 px (аудит 2026-10-21);
+       главные (featured) — во всю ширину, у остальных иконка над названием, без подсказки */
+    .home-tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+    .home-tile{flex-direction:column;align-items:flex-start;justify-content:center;min-height:76px;padding:14px;gap:8px}
+    .home-tile:not([data-featured]) .home-tile-hint{display:none}
+    .home-tile:not([data-featured]) .home-tile-go{position:absolute;top:14px;right:14px}
+    .home-tile[data-featured]{grid-column:1/-1;flex-direction:row;align-items:center;min-height:88px;padding:16px;gap:12px}
     .home-count{grid-template-columns:1fr;gap:12px;margin-top:12px}
     .home-count-card{padding:20px}
     .odo{font-size:26px}
@@ -528,6 +537,9 @@
   .kc-receipt pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:400 12px/1.8 var(--font-mono);color:var(--code-text)}
   .kc-total{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-top:1px solid var(--line);font-size:12px}
   .kc-total strong{font:600 17px var(--font-mono);font-variant-numeric:tabular-nums}
+  .kc-total-more{display:grid;gap:6px;padding:0 20px 16px;font-size:12px;color:var(--muted)}
+  .kc-total-more div{display:flex;justify-content:space-between;gap:12px}
+  .kc-total-more b{font:600 13px var(--font-mono);color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap}
   .kc-actions{padding:0 20px 20px;display:grid;gap:10px}
   #page-komplekty .kc-primary,#page-komplekty .kc-secondary{min-height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:13px;padding:10px 12px}
   #page-komplekty .kc-primary{border:0;background:var(--brand);color:var(--tag-text)}
@@ -564,15 +576,19 @@
   @media(min-width:1001px){.kc-preview-card{max-height:calc(100dvh - var(--navh,70px) - 40px)}}
   @media(max-width:1000px){.kc-workbench{grid-template-columns:1fr}.kc-preview{position:static}}
   @media(max-width:720px){
-    #page-komplekty{padding-bottom:72px}
+    #page-komplekty{padding-bottom:112px}
+    .kc-receipt{max-height:none}   /* на телефоне чек целиком: вложенная прокрутка прятала «Итого» */
     .kc-tabs{width:100%}#page-komplekty .kc-tab{flex:1;padding:0 12px;font-size:12px}
     .kc-option{grid-template-columns:minmax(0,1fr) auto;gap:8px 12px}.kc-option-view{grid-column:1/-1}
     .kc-option-price{text-align:left;grid-column:1}.kc-copy-row{grid-column:2}
     .kc-group-head{padding:16px}.kc-group-title{font-size:18px}.kc-group-code{font-size:10px}
     .kc-caption{flex-direction:column;gap:4px}.kc-panel{padding:16px}.kc-panel-heading{flex-wrap:wrap}
     .kc-line{flex-wrap:wrap;gap:8px}.kc-line-name{flex-basis:100%}.kc-line-price{flex:1}
-    .kc-mobile{position:fixed;bottom:0;left:0;right:0;display:flex;gap:12px;padding:12px 16px;background:var(--card);border-top:1px solid var(--line);z-index:20}
-    .kc-mobile button{flex:1;min-width:0}.kc-status{bottom:88px}
+    .kc-mobile{position:fixed;bottom:0;left:0;right:0;display:flex;flex-wrap:wrap;gap:8px 12px;padding:10px 16px calc(12px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line);z-index:20}
+    .kc-mobile button{flex:1;min-width:0}.kc-status{bottom:120px}
+    .kc-mobile-what{flex-basis:100%;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    /* «наверх» лежал поверх «Копировать» нижней панели (аудит 2026-10-21) — поднимаем над ней */
+    body:has(#page-komplekty:not([hidden])) #to-top{bottom:120px}
   }
   @media(prefers-reduced-motion:reduce){#page-komplekty button{transition:none}}
 
@@ -700,7 +716,7 @@
   .sched-off-person{display:inline-flex;align-items:center;gap:6px}
   .sched-calendar{padding:16px}
   .sched-monthnav{display:flex;align-items:center;gap:8px;margin-bottom:16px}
-  .sched-monthnav h2{flex:1;font-family:var(--font-disp);font-size:18px;font-weight:700;text-transform:capitalize}
+  .sched-monthnav h2{flex:1;font-family:var(--font-disp);font-size:18px;font-weight:700}
   .sched-monthnav .ui-btn{width:44px;height:44px;padding:0;flex:none}
   #sched-month-prev svg{transform:rotate(180deg)}
   .sched-calendar-scroll{overflow-x:auto}
@@ -1324,6 +1340,7 @@
   .to-total .p{margin-left:auto;font-family:var(--font-mono)}
   .to-total .p.ask{color:var(--warn);font-family:inherit}
   .to-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .to-bar-sum,.to-short{display:none}   /* итог в панели и короткая подпись — только телефон (см. ≤720px) */
   .to-form{background:var(--card);border:1px solid var(--line-strong);border-radius:14px;padding:16px 18px;display:grid;gap:12px}
   .to-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .to-form-title{font-family:var(--font-disp);font-weight:700;font-size:15px}
@@ -1440,9 +1457,19 @@
     .to-slot-form .ui-input{grid-column:1/-1}
     .to-slot-form .ui-btn{min-height:44px}
     .to-actions .ui-btn{flex:1;min-height:44px}
-    /* две кнопки копирования на телефоне — каждая своей строкой: «Копировать с номерами»
-       в половину ширины ломается на две строки и читается хуже кнопки во всю ширину */
-    .to-card .to-actions .ui-btn{flex:1 1 100%}
+    /* Смета на телефоне длинная: «Копировать» была ~1500 px ниже начала (аудит 2026-10-21). Итог и
+       обе кнопки липнут к низу экрана, пока видна карточка; подпись второй — коротко «С номерами».
+       Пока печатают в поле сметы, панель отлипает — клавиатуру не загораживает. */
+    .to-card .to-actions{position:sticky;bottom:0;z-index:5;flex-wrap:wrap;gap:8px 10px;
+      margin:0 -16px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+      background:var(--card);border-top:1px solid var(--line)}
+    .to-card:has(input:focus, select:focus) .to-actions{position:static}
+    .to-card .to-actions .ui-btn{flex:1 1 0}
+    .to-bar-sum{display:flex;flex-basis:100%;align-items:baseline;gap:8px;font-size:13px;color:var(--muted)}
+    .to-bar-sum b{margin-left:auto;font:600 16px var(--font-mono);color:var(--text);font-variant-numeric:tabular-nums}
+    .to-bar-sum b.ask{color:var(--warn);font-family:inherit}
+    .to-long{display:none}.to-short{display:inline}
+    body:has(#page-to:not([hidden])) #to-top{bottom:112px}   /* «наверх» — над панелью, а не на «С номерами» */
     .to-litres input{min-height:44px}
   }
 
@@ -1522,7 +1549,10 @@
     .logo{margin-right:auto}
     .theme-btn{order:1}
     .mainnav{order:2;width:100%;margin:0;gap:6px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;
-      scrollbar-width:none;-webkit-overflow-scrolling:touch}
+      scrollbar-width:none;-webkit-overflow-scrolling:touch;
+      /* мягкие края: видно, что строка листается (аудит 2026-10-21) */
+      -webkit-mask-image:linear-gradient(to right,transparent,#000 16px,#000 calc(100% - 16px),transparent);
+      mask-image:linear-gradient(to right,transparent,#000 16px,#000 calc(100% - 16px),transparent)}
     .mainnav::-webkit-scrollbar{display:none}
     .mainnav .nav-item{flex:none;min-height:44px}
     /* плашка обновления в 375px: версия уходит второй строкой под заголовок — так обе кнопки
@@ -1546,7 +1576,9 @@
     .logo{margin-right:auto}
     .theme-btn{order:1}
     .mainnav{order:2;width:100%;margin:0;gap:6px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;
-      scrollbar-width:none;-webkit-overflow-scrolling:touch}
+      scrollbar-width:none;-webkit-overflow-scrolling:touch;
+      -webkit-mask-image:linear-gradient(to right,transparent,#000 16px,#000 calc(100% - 16px),transparent);
+      mask-image:linear-gradient(to right,transparent,#000 16px,#000 calc(100% - 16px),transparent)}
     .mainnav::-webkit-scrollbar{display:none}
     .mainnav .nav-item{flex:none}
   }
@@ -1991,14 +2023,14 @@
       <div id="pay-content">
         <div class="pay-toolbar">
           <label class="ui-field"><span>Месяц расчёта</span><input class="ui-input" id="pay-period" type="month"></label>
-          <button class="ui-btn" id="pay-refresh" type="button">Обновить</button>
+          <button class="ui-btn ui-btn--secondary" id="pay-refresh" type="button">Обновить</button>
         </div>
         <div class="pay-message" id="pay-message" role="status" aria-live="polite"></div>
         <div class="pay-cards" id="pay-cards"></div>
         <div class="pay-layout">
           <form class="fb-form" id="pay-form">
             <div class="fb-h">Записать вывод</div>
-            <div class="fb-sub">Вывод уменьшает остаток за выбранный месяц.</div>
+            <div class="fb-sub">Запись выдачи денег сотруднику за выбранный месяц.</div>
             <div class="pay-form-grid">
               <label class="ui-field"><span>Сотрудник</span><select class="ui-select" id="pay-employee" required></select></label>
               <label class="ui-field"><span>Сумма, ₽</span><input class="ui-input" id="pay-amount" inputmode="decimal" autocomplete="off" required></label>
@@ -2026,7 +2058,7 @@
               <label class="ui-field"><span>Цвет сотрудника</span><select class="ui-select" id="pay-rate-color"><option value="graphite">Графит</option><option value="red">Красный</option><option value="blue">Синий</option><option value="teal">Петроль</option></select></label>
               <span class="pay-k">Части фиксированной зарплаты · название и сумма, ₽</span>
               <div id="pay-parts"></div>
-              <button class="ui-btn" id="pay-add-part" type="button">Добавить часть</button>
+              <button class="ui-btn ui-btn--secondary" id="pay-add-part" type="button">Добавить часть</button>
               <button class="fb-send" type="submit">Сохранить условия</button>
             </div>
           </form>
@@ -2115,6 +2147,12 @@
     }
     pendingPageRenders.delete(id);
     return false;
+  }
+  /* Поиск на каждую букву перерисовывал раздел целиком: «масло» на телефоне — пять перерисовок
+     по 250–400 мс подряд (аудит 2026-10-21). Ждём паузу в наборе и рисуем один раз. */
+  function afterTyping(fn, ms = 150){
+    let t = 0;
+    return () => { clearTimeout(t); t = setTimeout(fn, ms); };
   }
   function runInitialLoad(job){
     if(job.started) return;
@@ -2410,7 +2448,8 @@
       el("sched-month-prev").disabled = monthIndex === 0;
       el("sched-month-next").disabled = monthIndex === months.length - 1;
       const monthRows = ROWS.filter(row => monthOf(row) === month);
-      const monthTitle = fmt(monthRows[0].date, {month:"long", year:"numeric"});
+      const monthName = fmt(monthRows[0].date, {month:"long", year:"numeric"});
+      const monthTitle = monthName.charAt(0).toUpperCase() + monthName.slice(1);   // заглавная только у месяца: capitalize давал «2026 Г.»
       el("sched-month-title").textContent = monthTitle;
       el("sched-details-title").textContent = "Подробный график · " + monthTitle;
       el("sched-window").textContent = "Доступно: " + fmt(ROWS[0].date, {day:"numeric", month:"short", year:"numeric"})
@@ -2441,20 +2480,36 @@
     el("sched-month-prev").addEventListener("click", () => shiftMonth(-1));
     el("sched-month-next").addEventListener("click", () => shiftMonth(1));
     grid.addEventListener("click", e => { const btn = e.target.closest("[data-sched-day]"); if(btn) select(Number(btn.dataset.schedDay)); });
-    window.scheduleToday = function(){
+    // Пересчёт всего, что зависит от «сегодня». true — сутки сменились.
+    function rollDay(){
       const fresh = new Date();
-      if(utc(fresh) !== utc(now)){
-        now = fresh; SCHEDULE = buildSchedule(); todayKey = pad(now.getDate()) + "." + pad(now.getMonth() + 1);
-        ROWS = scheduleRows(); SCHED_RANGE = scheduleRange();
-        PAGES.grafik.r = SCHED_RANGE;
-        if(!el("page-grafik").hidden) titleR.textContent = SCHED_RANGE;
-        renderScheduleDetails(); renderHome();
-      }
+      if(utc(fresh) === utc(now)) return false;
+      now = fresh; SCHEDULE = buildSchedule(); todayKey = pad(now.getDate()) + "." + pad(now.getMonth() + 1);
+      ROWS = scheduleRows(); SCHED_RANGE = scheduleRange();
+      PAGES.grafik.r = SCHED_RANGE;
+      if(!el("page-grafik").hidden) titleR.textContent = SCHED_RANGE;
+      renderScheduleDetails(); renderHome();
+      homeCountPaint(true);                                     // renderHome пересоздал карточку счётчика
+      if(!el("page-glavnaya").hidden) homeCountLoad();          // «сегодня» у счётчика — уже за новые сутки
+      return true;
+    }
+    window.scheduleToday = function(){
+      rollDay();
       select(ROWS.findIndex(r => r.key === todayKey));
     };
-    document.addEventListener("visibilitychange", () => {
-      if(!document.hidden && !el("page-grafik").hidden && utc(new Date()) !== utc(now)) window.scheduleToday();
-    });
+    /* Смена суток без перезагрузки (аудит 2026-10-21): Главная на ПК приёмки открыта весь день,
+       и утром карточка «На смене» показывала вчерашних людей. Проверяем при возврате во вкладку,
+       при входе на Главную и таймером на полночь. Открыт График — он сам встаёт на сегодня;
+       иначе сегодня выберется при входе в него (showPage → scheduleToday). */
+    window.scheduleNewDay = () => {
+      if(el("page-grafik").hidden) rollDay();
+      else if(utc(new Date()) !== utc(now)) window.scheduleToday();
+    };
+    document.addEventListener("visibilitychange", () => { if(!document.hidden) window.scheduleNewDay(); });
+    (function atMidnight(){
+      const next = new Date(); next.setHours(24, 0, 5, 0);
+      setTimeout(() => { window.scheduleNewDay(); atMidnight(); }, next - Date.now());
+    })();
     // В печати закрытый details тоже содержит таблицу. Экранное состояние восстанавливаем.
     let printOpen = null;
     details.addEventListener("toggle", () => {
@@ -5322,6 +5377,15 @@
     // подтвердил) → бейджи «Проверить цены» должны погаснуть сразу, а не после перезагрузки.
     // Состояние раздела (марка/коробка/фильтры/поиск) живёт в замыкании и не сбрасывается.
     window.tplRerender = () => { render(); equalizeSoon(); };
+    /* Запрос извне (поиск цены на Главной, «Коробка» в ТО) приходит в чистые Шаблоны (аудит 2026-10-21).
+       Без сброса оставались марка, коробка и фильтры прошлого захода: «DQ500» после ZF → 8HP давал
+       ложное «Ничего не найдено» и ложную запись «не нашёл». Звать ДО showPage — тогда отложенный
+       рендер скрытой вкладки отрисует один раз и сразу с запросом. */
+    window.tplSearchFrom = q => {
+      activeBrand = "all"; activeBox = "all"; expandedBrand = null; resetFilters();
+      searchInp.value = q; query = q.trim().toLowerCase();
+      renderNav(); renderFacets(); render();
+    };
     // при изменении ширины окна заголовки переносятся иначе — пересчитываем
     let eqRaf;
     window.addEventListener("resize", () => {
@@ -5349,7 +5413,7 @@
       filters[k] = (filters[k]===v) ? null : v; // повторный клик снимает ось
       renderFacets(); render();
     });
-    searchInp.addEventListener("input", ()=>{ query = searchInp.value.trim().toLowerCase(); render(); });
+    searchInp.addEventListener("input", afterTyping(()=>{ query = searchInp.value.trim().toLowerCase(); render(); }));
     copyAllBtn.addEventListener("click", ()=>{
       // между карточками разделитель ДЛИННЕЕ внутреннего (CDOC.SEP), иначе границы смет сливаются с границами блоков
       const text = visible().map(t=>[t, currentDoc(t).plain]).filter(([t,b])=>!t.todo && b)   // клиенту — без номеров
@@ -5453,12 +5517,12 @@
     ["BREMBO", "A00247", "Датчик износа тормозных колодок BMW X5 (E70)", 1, 500, "misc"],
     ["ZF", "1126298001", "Фильтр-поддон АКПП ZF Гибрид", 10, 24000, "pans"],
     ["ZF", "1126298159", "Фильтр-поддон АКПП ZF Гибрид", 10, 24000, "pans"],
-    ["BMW", "24007855263", "Фильтр АКПП с прокладкой BMW M-Версия для алюминиевого поддона", 10, 10000, "pans"],
+    ["BMW", "24007855263", "Фильтр АКПП с прокладкой BMW M-Версия для алюминиевого поддона", 10, 20000, "pans"],
     ["ZF", "1091298081", "Комплект для замены масла в АКПП", 10, 24000, "kits"],
     ["BMW", "24117588895", "Комплект для замены масла в АКПП", 10, 28000, "kits"],
     ["ZF", "1104298059", "Фильтр-поддон АКПП", 10, 14000, "pans"],
     ["ZF", "1104298018", "Фильтр-поддон АКПП гибрид", 10, 16000, "pans"],
-    ["BMW", "24118632189", "Фильтр-поддон АКПП гибрид", 10, 16000, "pans"],
+    ["BMW", "24118632189", "Фильтр-поддон АКПП гибрид", 10, 18500, "pans"],
     ["ZF", "1109298030", "Фильтр-поддон АКПП гибрид ZF Original Part Germany", 10, 12000, "pans"],
     ["BMW", "24119503407", "BMW M-Версия алюминиевый поддон с фильтром и прокладкой", 10, 30000, "pans"],
     ["ZF", "671090548", "Масло трансмиссионное ZF Lifeguard Hybrid2 для гибридных авто. ZF Original Part Germany", 36, RATES.zf_hybrid2, "oils"],  // цена из RATES
@@ -5467,9 +5531,9 @@
     ["BMW", "24115A13223", "Поддон АКПП ZF 8HP60", 10, 40000, "pans"],
     ["Bentley", "0D6398359A", "ZF8HP95A ОРИГИНАЛ 100%", 100, 19000, "pans"],
     ["Lamborgini", "0D6398359A", "ZF8HP95A ОРИГИНАЛ 100%", 100, 19000, "pans"],
-    ["Bentley", "0D6398359", "ZF8HP95A ОРИГИНАЛ 100%", 100, 26000, "pans"],
-    ["Lamborgini", "0D6398359", "ZF8HP95A ОРИГИНАЛ 100%", 100, 26000, "pans"],
-    ["VAG", "0D6398359", "ZF8HP95A ОРИГИНАЛ 100%", 100, 26000, "pans"],
+    ["Bentley", "0D6398359", "ZF8HP95A ОРИГИНАЛ 100%", 100, 43000, "pans"],
+    ["Lamborgini", "0D6398359", "ZF8HP95A ОРИГИНАЛ 100%", 100, 43000, "pans"],
+    ["VAG", "0D6398359", "ZF8HP95A ОРИГИНАЛ 100%", 100, 43000, "pans"],
     ["BMW", "24115A8B427", "Поддон АКПП ZF 8HP80", 10, 36000, "pans"],
     ["BMW", "83225A28F03", "Масло трансмиссионное ZF Lifeguard Hybrid2 для гибридных авто. ZF Original Part Germany", 36, RATES.zf_hybrid2, "oils"],  // цена из RATES
     ["ZF", "1111298031", "Фильтр-поддон АКПП гибрид ZF Original Part Germany", 10, 12000, "pans"],
@@ -5483,7 +5547,7 @@
     ["BMW", "24115A86559", "Комплект Фильтр + Прокладка + Болты. ZF Original Part Germany", 10, 45000, "kits"],
     ["PORSCHE", "0PD115466A", "Фильтр масляный Porsche 911. Оригинал", 10, 7600, "misc"],
     ["CHRYSLER", "68233701AC", "Поддон АКПП ZF 8HP50 глубокий. ZF Оригинал", 10, 10900, "pans"],
-    ["BMW", "24007855263", "комплект Фильтр + Прокладка + Болты", 10, 12000, "kits"],
+    ["BMW", "24007855263", "комплект Фильтр + Прокладка + Болты", 10, 20000, "kits"],
     ["BLUE PRINT", "ADBP220058", "Фильтр воздушный Porsche Panamera 971", 4, 2900, "misc"],
   ];
 
@@ -5506,11 +5570,16 @@
     const brandIdx = Object.fromEntries(brands.map((b,i)=>[b,i]));
 
     const hay = p => (p[0]+" "+p[1]+" "+p[2]).toLowerCase();
+    /* Поиск по словам (аудит 2026-10-21): «bmw поддон» — каждое слово где угодно в строке. Слово с
+       цифрой ещё сверяется с артикулом скелетом artNorm, как «по номеру» в Шаблонах: «23731-JA11B»
+       и «0D5398009А» с русской «А» находят свою деталь. */
+    let words = [];
+    const hit = (p, w) => hay(p).includes(w) || (/\d/.test(w) && artNorm(p[1]).includes(artNorm(w)));
     // useCat/useBrand=false — счётчики фасета считаются без «своего» фильтра
     const match = (p, useCat, useBrand) =>
       (!useCat   || cat==="all"   || p[5]===cat) &&
       (!useBrand || brand==="all" || p[0]===brand) &&
-      (!query || hay(p).includes(query));
+      words.every(w => hit(p, w));
     const visible = () => PARTS.filter(p=>match(p,true,true));
 
     const chip = (val,label,n,active) =>
@@ -5532,7 +5601,7 @@
       brandRow.querySelectorAll(".tpl-chip").forEach(c=>
         c.addEventListener("click", ()=>{ brand = (c.dataset.val===brand) ? "all" : c.dataset.val; update(); }));
       const reset = document.getElementById("pr-reset");
-      if(reset) reset.addEventListener("click", ()=>{ cat="all"; brand="all"; query=""; searchInp.value=""; update(); });
+      if(reset) reset.addEventListener("click", ()=>{ cat="all"; brand="all"; query=""; words=[]; searchInp.value=""; update(); });
     }
 
     async function copyArt(btn){
@@ -5561,10 +5630,10 @@
         .filter(([,l])=>l.length);
       if(!list.length){
         const msg = "Ничего не найдено — поменяйте запрос или сбросьте фильтры.";
-        rowsEl.innerHTML  = `<tr><td colspan="5" class="pr-empty">${msg}</td></tr>`;
-        cardsEl.innerHTML = `<div class="pr-empty">${msg}</div>`;
+        html.rows  = `<tr><td colspan="5" class="pr-empty">${msg}</td></tr>`;
+        html.cards = `<div class="pr-empty">${msg}</div>`;
       } else {
-        rowsEl.innerHTML = groups.map(([k,l])=>
+        html.rows = groups.map(([k,l])=>
           `<tr class="pr-group"><td colspan="5"><span class="pr-group-name">${esc(PART_CATS[k])}</span><span class="pr-group-cnt">${l.length}</span></td></tr>`
           + l.map(p=>`<tr>
               <td><span class="tpl-brand-tag">${esc(p[0])}</span></td>
@@ -5573,7 +5642,7 @@
               <td><span class="pr-stock">${fmt(p[3])} шт</span></td>
               <td class="pr-price-cell"><span class="pr-price">${fmt(p[4])} ₽</span></td>
             </tr>`).join("")).join("");
-        cardsEl.innerHTML = groups.map(([k,l])=>
+        html.cards = groups.map(([k,l])=>
           `<div class="pr-group-h">${esc(PART_CATS[k])}<span class="tpl-count">${l.length}</span></div>`
           + l.map(p=>`<div class="pr-card">
               <div class="pr-card-top">
@@ -5585,15 +5654,26 @@
               <div class="pr-card-foot"><span class="pr-stock">В наличии · ${fmt(p[3])} шт</span></div>
             </div>`).join("")).join("");
       }
+      paint(false);
       countEl.textContent = list.length === PARTS.length
         ? `${plural(PARTS.length,"позиция","позиции","позиций")} · клик по артикулу копирует его`
         : `Показано ${plural(list.length,"позиция","позиции","позиций")} из ${PARTS.length}`;
-      [rowsEl, cardsEl].forEach(box=> box.querySelectorAll(".pr-art").forEach(btn=>
-        btn.addEventListener("click", ()=>copyArt(btn))));
     }
+    /* В DOM — только видимая раскладка (аудит 2026-10-21): таблица и карточки вместе давали ~3000
+       узлов, самый тяжёлый раздел. Вторая дорисуется при смене ширины и перед печатью. */
+    const narrow = matchMedia("(max-width:720px)"), html = { rows:"", cards:"" };
+    function paint(both){
+      rowsEl.innerHTML  = both || !narrow.matches ? html.rows : "";
+      cardsEl.innerHTML = both || narrow.matches ? html.cards : "";
+    }
+    narrow.addEventListener("change", () => paint(false));
+    window.addEventListener("beforeprint", () => paint(true));
+    [rowsEl, cardsEl].forEach(box => box.addEventListener("click", e => {
+      const btn = e.target.closest(".pr-art"); if(btn) copyArt(btn);
+    }));
 
     function update(){ renderFacets(); render(); }
-    searchInp.addEventListener("input", ()=>{ query = searchInp.value.trim().toLowerCase(); update(); });
+    searchInp.addEventListener("input", afterTyping(()=>{ query = searchInp.value.trim().toLowerCase(); words = query.split(/\s+/).filter(Boolean); update(); }));
     update();
   })();
 
@@ -6017,14 +6097,22 @@
     /* Единственная запись в обход postChannel — и намеренно: это транспорт САМОГО журнала.
        Сообщить «журнал не отправился» он мог бы только в себя же, то есть в ту очередь,
        которая и не уезжает. Молчание этого канала видно иначе: события копятся в md_events
-       и приезжают позже — с честным временем сбоя (ts), а не временем досыла. */
+       и приезжают позже — с честным временем сбоя (ts), а не временем досыла.
+       Подряд идущие copy/demand уходят ОДНИМ запросом kind:"evt-batch" (аудит 2026-10-21): поштучный
+       досыл очереди после обрыва связи съедал лимит записи сервера. Ошибки (err) — по одной: у них
+       свой канал и свой дедуп. EVT_BATCH = EVT_BATCH_MAX в Apps Script, меняются парой. */
+    const EVT_BATCH = 10;
     function flush(){
       if(flushing || !queue.length) return;
       flushing = true;
+      let n = 0;
+      while(n < queue.length && n < EVT_BATCH && (queue[n].kind === "copy" || queue[n].kind === "demand")) n++;
+      const sent = queue.slice(0, n || 1);
+      const body = n ? { token: SHEET_TOKEN, kind:"evt-batch", items: sent.map(({ token, ...ev }) => ev) } : sent[0];
       fetch(SHEET_API, { method:"POST", mode:"no-cors",
         headers:{ "Content-Type":"text/plain;charset=utf-8" },
-        body: JSON.stringify(queue[0]) })
-        .then(() => { queue.shift(); save(QKEY, queue); flushing=false; if(queue.length) flush(); })  // ушло (opaque) → снять с очереди, дальше
+        body: JSON.stringify(body) })
+        .then(() => { queue = queue.filter(ev => sent.indexOf(ev) < 0); save(QKEY, queue); flushing=false; if(queue.length) flush(); })  // ушло (opaque) → снять с очереди, дальше
         .catch(() => { flushing=false; });                                                            // офлайн → оставить в очереди, повтор при online/load
     }
     function enqueue(ev){
@@ -6265,7 +6353,7 @@
       // финансовая очередь падает ГРОМКО: при переполнении отказываем в новой записи,
       // а не выталкиваем молча старую недоставленную (это была бы тихая потеря денег)
       if(CH.oil.pend.length >= 20){
-        alert("Очередь несохранённых операций переполнена (20) — операция НЕ записана.\nПроверь интернет и бэкенд таблицы, дождись доставки и повтори.");
+        alert("Уже 20 операций ждут отправки — эта НЕ записана.\nПроверь интернет, дождись отправки и повтори. Не уходит долго — сообщи владельцу.");
         return false;
       }
       const d = new Date(), p = n => String(n).padStart(2, "0");
@@ -6344,7 +6432,7 @@
       if(amount > pot){ alert("В копилке только " + money(pot) + " — вывести больше нельзя. Вывод не отмечен."); return; }
       // потолок сервера один на оба канала: раньше проверяли только масло, но и вывод «Промывки»
       // выше него бэкенд отклоняет молча (no-cors). Теперь сумму можно разделить на части.
-      if(amount > WD_MAX){ alert("Вывод больше " + money(WD_MAX) + " одной операцией сервер не примет (потолок-предохранитель WITHDRAW_MAX в таблице). Раздели на части или подними потолок."); return; }
+      if(amount > WD_MAX){ alert("Больше " + money(WD_MAX) + " одним выводом записать нельзя. Раздели на части или напиши владельцу."); return; }
       const rest = pot - amount;
       if(!confirm("Отметить вывод " + money(amount) + (ch.person ? " (" + ch.person + ")" : "") + "?\n" +
                   (rest > 0 ? "В копилке останется " + money(rest) + "." : "Копилка обнулится."))) return;
@@ -6384,7 +6472,7 @@
         amount = parseAmount(s);
         if(!(amount > 0)){ alert("Сумму разобрать не получилось — расход не записан."); return; }
       }
-      if(amount > SPEND_MAX){ alert("Больше " + money(SPEND_MAX) + " одним расходом нельзя (потолок-предохранитель SPEND_MAX в таблице). Разбей на части или попроси владельца поднять потолок."); return; }
+      if(amount > SPEND_MAX){ alert("Больше " + money(SPEND_MAX) + " одним расходом записать нельзя. Раздели на части или напиши владельцу."); return; }
       let note = prompt("На что потратил? Коротко, без имён и телефонов клиентов.\nНапример: масло 5W-30. Можно оставить пустым.");
       if(note === null) return;
       note = note.trim().slice(0, 80);
@@ -6477,7 +6565,7 @@
       kopEl.hidden = false;
       if(virgin){
         kopEl.className = "kopilka empty";
-        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">Масло · Алексей</div><div class="kopilka-v">—</div><div class="kopilka-sub">Канал ещё не подключён: жду первые данные из Google-таблицы (робот пересчитывает каждые 15 минут). Если долго пусто — обнови бэкенд-скрипт таблицы (Deploy → New version).</div></div>`;
+        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">Масло · Алексей</div><div class="kopilka-v">—</div><div class="kopilka-sub">Канал ещё не подключён: жду первые данные из Google-таблицы (робот пересчитывает каждые 15 минут). Если долго пусто — сообщи владельцу.</div></div>`;
       } else {
         const kopSub = (lastW ? `Прошлый вывод: ${opWhen(lastW)} — ${money(lastW.amount)}.` : "Выводов ещё не было.")
           + (isLive ? "" : " Только просмотр — вывод отмечается в текущем месяце.");
@@ -6572,7 +6660,7 @@
         ? "Считаются моторные масла Motul и Ravenol — правила в листе «Масла» Google-таблицы. "
         : `Товар: ${ch.data.product}. `;
       noteEl.textContent = virgin
-        ? "Канал масла появится после обновления бэкенд-скрипта таблицы — данные подтянутся сами."
+        ? "Канал масла скоро появится — данные подтянутся сами. Долго пусто — сообщи владельцу."
         : src + (days.length
           ? "Нажми на день, чтобы увидеть заказ-наряды. Данные обновляются автоматически каждые 15 минут."
           : (selAgg && selAgg.sum
@@ -7188,11 +7276,8 @@
       { id:"del",   icon:ICO.trash, label:"Убрать" },
       { id:"other", icon:ICO.chat, label:"Другое" },
     ];
-    const AUTHORS = [
-      { name:"Бекзод",    color:"red" },
-      { name:"Святослав", color:"graphite" },
-      { name:"Кристиан",  color:"blue" },
-    ];
+    // Авторы — из PEOPLE графика: ручной список забыл Ивана, и его заметки красились чужим цветом (аудит 2026-10-21)
+    const AUTHORS = PEOPLE.map(p => ({ name:p.name, color:p.color }));
     // Срочность: label уходит в таблицу (колонка urgency) и читается там глазами.
     // «Средняя» — значение по умолчанию: у старых заметок поля нет, метку им не рисуем.
     const URGS = [
@@ -7868,6 +7953,7 @@
   function renderHome(){
     const root = document.getElementById("page-glavnaya");
     if(!root) return;
+    const typed = (root.querySelector("#home-ask-input") || {}).value || "";   // смена суток перерисует Главную — набранное не теряем
     const tiles = HOME.tiles.map(t =>
       `<button class="home-tile" type="button" data-goto="${t.page}"${t.featured ? " data-featured" : ""}>
         <span class="home-tile-ic">${ICO[t.ico]||""}</span>
@@ -7935,14 +8021,15 @@
         </div>
         <div class="home-tiles">${tiles}</div>
       </section>`;
-    // поиск цены → раздел Шаблоны с этим запросом (переиспользуем существующий #tpl-search)
+    // поиск цены → раздел Шаблоны с этим запросом (общий поиск Шаблонов, tplSearchFrom)
     const ask = root.querySelector("#home-ask");
     const askInput = root.querySelector("#home-ask-input");
+    if(askInput && typed) askInput.value = typed;
     if(ask) ask.addEventListener("submit", e => {
       e.preventDefault();
+      window.tplSearchFrom(askInput.value.trim());
       showPage("shablony");
-      const ts = document.getElementById("tpl-search");
-      if(ts){ ts.value = askInput.value.trim(); ts.dispatchEvent(new Event("input", { bubbles:true })); ts.focus(); }
+      document.getElementById("tpl-search").focus();
     });
     root.querySelectorAll(".home-tile").forEach(b =>
       b.addEventListener("click", () => showPage(b.dataset.goto)));
@@ -8318,10 +8405,11 @@
     <div class="kc-preview-head"><div class="kc-eyebrow">Сообщение клиенту</div><h2 id="kc-preview-title"></h2><p class="kc-note" id="kc-description"></p></div>
     <div class="kc-receipt"><pre id="kc-text"></pre></div>
     <div class="kc-total"><span id="kc-sum-label">Комплект АКПП</span><strong id="kc-sum"></strong></div>
+    <div class="kc-total-more" id="kc-sum-more" hidden></div>
     <div class="kc-warning" id="kc-warning" hidden>Проверить цены: есть позиции без свежего подтверждения. В сообщении сохраняются текущие суммы.</div>
     <div class="kc-actions"><button class="kc-primary" type="button" id="kc-copy">${ICO.copy} Копировать клиенту</button><button class="kc-secondary" type="button" id="kc-edit">Собрать на основе</button></div>
   </div><p class="kc-note">Предпросмотр показывает точный текст, который попадёт в буфер. Затем вставьте его в переписку с клиентом.</p></aside></div>
-  <div class="kc-mobile"><button class="kc-secondary" type="button" id="kc-jump">Посмотреть текст</button><button class="kc-primary" type="button" id="kc-mobile-copy">${ICO.copy} Копировать</button></div>
+  <div class="kc-mobile"><span class="kc-mobile-what" id="kc-mobile-what"></span><button class="kc-secondary" type="button" id="kc-jump">Посмотреть текст</button><button class="kc-primary" type="button" id="kc-mobile-copy">${ICO.copy} Копировать</button></div>
   <div class="kc-status" id="kc-status" role="status" hidden></div>`;
   /* Состояние раздела живёт отдельно от DOM: сверка цен обновляет расчёт,
      не сбрасывая черновик. Сохранённый шаблон — только рецепт, никогда не цена. */
@@ -8529,6 +8617,7 @@
         currentText = ""; $("text").textContent = "Измените запрос или соберите набор в конструкторе.";
         $("preview-title").textContent = "Комплект не найден"; $("description").textContent = "";
         $("sum-label").textContent = "Комплект АКПП"; $("sum").textContent = "—";
+        $("sum-more").hidden = true; $("mobile-what").textContent = "";
         $("warning").hidden = true; $("copy").disabled = true; $("mobile-copy").disabled = true; $("edit").hidden = true; return;
       }
       const k = mode === "builder" ? makeDraftKit() : byId(selectedId);
@@ -8542,6 +8631,16 @@
       const values = single && totals ? totals.map(t => t.total) : bases.map(v => v.sum);
       $("sum-label").textContent = single ? "Весь выбранный набор" : mode === "builder" && !draft.baseId ? "Цена комплекта" : "Комплект АКПП";
       $("sum").textContent = values.some(s => s == null) ? "уточню" : (values.length > 1 ? "от " : "") + kitRub(Math.min(...values));
+      /* Итог «коробка + мосты» — те же kitAddonTotals, что блок «Итого» в тексте: был виден только
+         прокруткой чека (аудит 2026-10-21). Внизу телефона — что именно уйдёт по «Копировать». */
+      const more = $("sum-more");
+      more.replaceChildren(...(single || !totals ? [] : totals).map(t => {
+        const row = document.createElement("div"), name = document.createElement("span"), sum = document.createElement("b");
+        name.textContent = t.label; sum.textContent = t.total == null ? "уточню" : kitRub(t.total);
+        row.append(name, sum); return row;
+      }));
+      more.hidden = !more.children.length;
+      $("mobile-what").textContent = $("sum").textContent + " · " + (mode === "builder" ? draft.title : k.name);   // сумма первой: длинное имя режется многоточием
       $("warning").hidden = !(bases.some(v => v.lines.some(l => l.stale)) || (kitAddonVariants(k.addons) || []).some(v => v.stale));
       $("edit").hidden = mode === "builder";
       const invalid = mode === "builder" && (!draft.rows.length || [...$("lines").querySelectorAll("input")].some(input => !input.checkValidity()));
@@ -9574,7 +9673,7 @@
       if(vin.status === "key"){
         // keyoff — ключа нет на СЕРВЕРЕ, вводить нечего: показываем только объяснение
         const off = vin.err === "keyoff";
-        const msg = off ? "Подбор выключен на сервере: не задан ключ VIN_KEY в свойствах скрипта."
+        const msg = off ? "Подбор по VIN временно выключен — сообщи владельцу. Смета собирается как обычно, фильтры — руками."
           : vin.err === "key" ? "Ключ не подошёл. Введи ещё раз."
           : "Подбор по VIN закрыт ключом. Введи его один раз — дальше он запомнится на этом устройстве.";
         vinBox.innerHTML = `<div class="to-note">${esc(msg)}</div>` + (off ? "" :
@@ -9591,7 +9690,7 @@
          подождать или чинить. Отдельно важен slow: разбор к этому моменту почти наверняка
          дописался на сервере, и повтор через минуту отдаст его из листа мгновенно. */
       if(vin.status === "err"){
-        const msg = vin.err === "auth" ? "Каталог не пустил: проверь логин RAVENOL в свойствах скрипта."
+        const msg = vin.err === "auth" ? "Каталог временно не пускает — сообщи владельцу. Смета собирается как обычно, фильтры — руками."
           : vin.err === "notfound" ? "Каталог не знает этот VIN — фильтры вводим руками, как раньше."
           : vin.err === "vin" ? "Это не похоже на VIN."
           : vin.err === "budget" ? "На сегодня лимит новых разборов исчерпан. Уже разобранные машины открываются как обычно, новую — руками или завтра."
@@ -9668,7 +9767,7 @@
            подтверждение на выходе. Поэтому «по кроссу» теперь жёлтый, наравне с аналогом. */
         const mark = !a ? ""
           : a.src === "own"  ? `<span class="to-src" title="Номер вписан вручную из дилерского каталога по VIN: ${anchorTxt}. Он запомнен для этой машины и бьёт любой подбор">свой номер</span>`
-          : a.src === "mem"  ? `<span class="to-src to-src--mem" title="Так эту машину уже собирали: ${anchorTxt} запомнен по кузову и двигателю. Цену введи вручную. Не тот номер — впиши свой">как в прошлый раз</span>`
+          : a.src === "mem"  ? `<span class="to-src to-src--mem" title="Так эту машину уже собирали: ${anchorTxt} запомнен по кузову и двигателю. Цена — из памяти машины, если её уже вписывали. Не тот номер — впиши свой">как в прошлый раз</span>`
           : a.src === "vin"  ? `<span class="to-src" title="Каталог производителя подтвердил по VIN: ${anchorTxt}. Варианты ниже подобраны от этого номера">каталог</span>`
           : a.src === "oem"  ? `<span class="to-src to-src--warn" title="Каталог эту машину по VIN НЕ знает. ${anchorTxt} получен кроссом от оригинального номера из кросс-таблицы — сверьте по машине перед отправкой клиенту">по кроссу</span>`
           : `<span class="to-src to-src--warn" title="Каталог машину не подтвердил — ${anchorTxt} взят из кросс-таблицы. Проверьте номер перед отправкой клиенту">аналог</span>`;
@@ -9723,7 +9822,7 @@
             ${Number(eSel && eSel.litres) > 0
               ? "Литраж масла помню с прошлого раза — проверь его и правь, если у этой машины он другой."
               : "Остался паспортный литраж масла: впиши один раз, и он запомнится."}
-            Номера фильтров запомнятся. Цены вводи вручную в смете ниже.</div>
+            Номера и цены фильтров запомнятся за этой машиной.</div>
         </div>`;
     }
 
@@ -9952,7 +10051,8 @@
             <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" data-act="edit">Изменить</button>
           </div>
           ${carsHtml}
-          <p class="to-note">Цены фильтров запоминаются за машиной и номером фильтра. Цена старше ${FRESH_DAYS} дней — «Проверить цены»: проверь и нажми Enter в поле.</p>
+          <p class="to-note">Цены фильтров запоминаются за машиной и номером фильтра. Цена старше ${FRESH_DAYS} дней — «Проверить цены»: проверь и нажми Enter в поле.${
+            curKey ? "" : " Машина не выбрана — цены этой сметы не запомнятся."}</p>
           <div class="to-litres">Масло:
             <span class="ui-select-wrap"><select class="ui-select" data-act="oil-set" data-focus="oil" aria-label="Моторное масло">${
               TO_OILS.map(o => `<option value="${esc(o.key)}"${o.key === e.oilKey ? " selected" : ""}>${
@@ -9969,9 +10069,10 @@
           <div class="to-total">Итого <span class="p${s.unknown ? " ask" : ""}">${s.unknown ? "уточню" : rub(s.sum)}</span></div>
           ${plugsHtml(e, pl)}
           <div class="to-actions">
+            <span class="to-bar-sum">Итого <b class="${s.unknown ? "ask" : ""}">${s.unknown ? "уточню" : rub(s.sum)}</b></span>
             <button class="ui-btn ui-btn--primary" type="button" data-act="copy">${ICO.copy} Копировать</button>
             <button class="ui-btn ui-btn--secondary" type="button" data-act="copy-codes"
-              title="Та же смета, но с номерами фильтров — себе: записать клиента, заказать деталь. Клиенту её не отправляем">${ICO.copy} Копировать с номерами</button>
+              title="Та же смета, но с номерами фильтров — себе: записать клиента, заказать деталь. Клиенту её не отправляем">${ICO.copy} <span class="to-long">Копировать с номерами</span><span class="to-short">С номерами</span></button>
           </div>
           <div class="to-upsell"><span class="cap">Уйдёт в копии клиенту</span>
             <span class="h">${esc(u.lead)}</span><span class="body">${esc(u.body)}</span></div>
@@ -10017,7 +10118,7 @@
             ${e ? `<button class="ui-btn ui-btn--ghost" type="button" data-act="form-del">${ICO.trash} Удалить</button>` : ""}
           </div>
           <div class="to-note">Запись сохранится для всех устройств. Цены масла и работ считаются из прайса;
-            цена фильтра действует только в текущей смете и в каталог не сохраняется.</div>
+            цену фильтра запоминает выбранная машина (VIN или чип «Машина»), а не запись двигателя.</div>
         </form>`;
       const f = formWrap.querySelector("input[name=engName]");
       if(f && !e) f.focus();
@@ -10028,7 +10129,7 @@
     }
 
     /* ---- события ---- */
-    searchEl.addEventListener("input", () => { query = searchEl.value; updateList(); });
+    searchEl.addEventListener("input", afterTyping(() => { query = searchEl.value; updateList(); }));
     brandsEl.addEventListener("click", ev => {
       const b = ev.target.closest("[data-brand]"); if(!b) return;
       brandFilter = b.dataset.brand; updateList();
@@ -10053,13 +10154,12 @@
       else if(act === "vin-clear"){ vin = null; vinRecId = null; vinInp.value = ""; updateVin(); }
       else if(act === "vin-code"){ copyTo(b.dataset.code, b, "Номер скопирован"); }
       /* Коробка этой машины → «Шаблоны» с её запросом. Тем же приёмом, что поиск цены на
-         Главной: переключаем вкладку и кладём запрос в общий #tpl-search — вся логика подбора
+         Главной: запрос уходит в общий поиск Шаблонов (tplSearchFrom) — вся логика подбора
          (варианты по c.allow, фильтры, «Итого») остаётся одна на портал. Фокус в поле НЕ ставим:
          на телефоне он выбросил бы клавиатуру поверх только что открытых карточек. */
       else if(act === "vin-tpl"){
+        window.tplSearchFrom(b.dataset.q || "");
         showPage("shablony");
-        const ts = document.getElementById("tpl-search");
-        if(ts){ ts.value = b.dataset.q || ""; ts.dispatchEvent(new Event("input", { bubbles:true })); }
       }
       else if(act === "vinkey-save"){ vinKeySave(); }
       else if(act === "vin-own"){                 // открыть поле «свой номер» и сразу дать печатать
@@ -10348,7 +10448,7 @@
     const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const money = kop => kop == null ? '—' : (kop/100).toLocaleString('ru-RU',{maximumFractionDigits:2})+' ₽';
     const localDate = () => new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Moscow',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-    const monthLabel = p => new Date(+p.slice(0,4),+p.slice(5,7)-1,1).toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
+    const monthLabel = p => new Date(+p.slice(0,4),+p.slice(5,7)-1,1).toLocaleDateString('ru-RU',{month:'long',year:'numeric'}).replace(/\s*г\.$/,'');   // «октябрь 2026» — иначе «2026 г..» перед точкой
     const dateLabel = d => /^\d{4}-\d{2}-\d{2}$/.test(d) ? d.slice(8,10)+'.'+d.slice(5,7)+'.'+d.slice(0,4) : d;
     const amount = value => {
       const raw=String(value).replace(/\s/g,'').replace(',','.');
@@ -10385,7 +10485,7 @@
           ${!s.rate ? '<p class="pay-note">В этом месяце оклад ещё не задан.</p>' : ''}
           <div class="pay-lines">${replacements}${archiveLine}${s.bonusKop ? line('Премии',s.bonusKop) : ''}</div>
           <div class="pay-lines pay-divider">${line('Выдано',s.advanceKop+s.paidKop)}</div>
-          <button class="ui-btn" type="button" data-pay-remaining="${esc(s.name)}"><strong>Выдать</strong></button>
+          <button class="ui-btn ui-btn--secondary" type="button" data-pay-remaining="${esc(s.name)}"><strong>Выдать</strong></button>
         </section>`;
       }).join('');
     }
@@ -10432,7 +10532,8 @@
           pending=null; $('pay-retry').hidden=true; form.reset(); $('pay-date').value=localDate();
         }
         render();
-        message(confirmation || (pending ? 'Запись пока не подтверждена. Обновите данные или повторите сохранение: повтор не создаст вторую запись.' : 'Расчёт обновлён.'),!!pending);
+        if(data.employees.length || confirmation || pending)   // пустой список: подсказку из render() не затираем
+          message(confirmation || (pending ? 'Запись пока не подтверждена. Обновите данные или повторите сохранение: повтор не создаст вторую запись.' : 'Расчёт обновлён.'),!!pending);
         $('pay-retry').hidden=!pending; $('pay-retry').disabled=false;
       } catch(e){
         if(ownGeneration!==generation) return;
@@ -10482,7 +10583,7 @@
     $('pay-retry').addEventListener('click',()=>{ if(pending) send(pending); });
     function addPart(label='Оклад',kop=null){
       const div=document.createElement('div'); div.className='pay-part';
-      div.innerHTML=`<input class="ui-input" data-part-label aria-label="Название части оклада" maxlength="60" required value="${esc(label)}"><input class="ui-input" data-part-amount aria-label="Сумма части оклада, рубли" inputmode="decimal" required value="${kop==null ? '' : kop/100}"><button class="ui-btn" type="button" data-remove-part aria-label="Удалить часть оклада">×</button>`;
+      div.innerHTML=`<input class="ui-input" data-part-label aria-label="Название части оклада" maxlength="60" required value="${esc(label)}"><input class="ui-input" data-part-amount aria-label="Сумма части оклада, рубли" inputmode="decimal" required value="${kop==null ? '' : kop/100}"><button class="ui-btn ui-btn--secondary" type="button" data-remove-part aria-label="Удалить часть оклада">×</button>`;
       $('pay-parts').appendChild(div);
     }
     addPart();
@@ -10518,7 +10619,7 @@
     prodazhi: { t:"Продажи",         r:"Присадки и масло · выручка и копилки по дням" },
     yama:     { t:"Яма",             r:"Работы по машинам · итог дня и доля мастеров" },
     shtrafy:  { t:"Штрафы",          r:"Дисциплина команды · кто, за что и сколько" },
-    zarplaty: { t:"Зарплаты",        r:"Оклады и выводы · остаток по каждому сотруднику" },
+    zarplaty: { t:"Зарплаты",        r:"Оклады и выдачи по каждому сотруднику" },
     zametki:  { t:"Заметки и пожелания", r:"Что починить, что добавить — пиши, увидят все" },
   };
   const titleT = document.querySelector(".title .t");
@@ -10541,14 +10642,24 @@
   function showPage(id){
     cancelPageEntrance(); // быстрая навигация не наслаивает появления и не оставляет opacity:0
     if(id === "grafik") window.scheduleToday();
+    if(id === "glavnaya") window.scheduleNewDay();
     if(id === "zarplaty") window.payrollOpen();
     const isHome = (id === "glavnaya");
     document.querySelectorAll(".page").forEach(p => { p.hidden = (p.id !== "page-" + id); });
     openPageWork(id);
-    document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.page === id));
+    document.querySelectorAll(".nav-item").forEach(n => {
+      const on = n.dataset.page === id;
+      n.classList.toggle("active", on);
+      if(on) n.setAttribute("aria-current", "page"); else n.removeAttribute("aria-current");
+    });
     if(mainnavEl) mainnavEl.hidden = isHome;     // вариант B: на Главной меню скрыто, навигация плитками
     if(pageheadEl) pageheadEl.hidden = isHome;   // на Главной свой hero — шапку раздела прячем
     syncNavH();                                  // меню то скрыто, то в две строки — липкой шапке нужна его высота
+    // ≤1120px пункты листаются вбок — активный ставим в середину полосы, а не оставляем за краем (аудит 2026-10-21)
+    const activeNav = !isHome && mainnavEl && mainnavEl.querySelector(".nav-item.active");
+    if(activeNav && mainnavEl.scrollWidth > mainnavEl.clientWidth)
+      mainnavEl.scrollLeft += activeNav.getBoundingClientRect().left - mainnavEl.getBoundingClientRect().left
+                              - (mainnavEl.clientWidth - activeNav.offsetWidth) / 2;
     if(isHome){
       homeReveal();
       homeCountLoad();
