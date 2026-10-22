@@ -8218,6 +8218,19 @@
       ],
       addons: { block: DIFFS_KIT_LOCK, lock: true },
     },
+    // Пара BMW ZF 6HP: масло ZF6HP 6 л + поддон 6HP — как в частичной замене (BOXES["6HP (BMW)"]); цена — сумма
+    // позиций PRICE (13 200 + 9 000). Мосты и раздатка — те же комплекты, что у BMW 8HP: от коробки они не зависят.
+    ...[["base", "без блокировки", { block: DIFFS_KIT }],
+        ["lock", "с блокировкой",  { block: DIFFS_KIT_LOCK, lock: true }]].map(([id, lock, addons]) => ({
+      id: `zf6hp-${id}`, group: "ZF 6HP", brand: "BMW", choice: lock.charAt(0).toUpperCase() + lock.slice(1),
+      name:  `ZF 6HP · масло 6 л · мосты и раздатка ${lock}`,
+      format:["вживую","отправка"],
+      items: [
+        { ref:"oil_zf6_6" },
+        { ref:"filter_6hp" },
+      ],
+      addons,
+    })),
     // Пара Audi / VW — ZF 8HP65: масло 6 л + поддон 1103298006. Цена — сумма позиций PRICE.
     // Мосты и Торсен — те же комплекты запчастей G055/G060, что у поддона 119, без работ.
     {
