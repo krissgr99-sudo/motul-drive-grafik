@@ -2593,6 +2593,7 @@
   //    Артикул (третий элемент) — ровно тот кусок названия, который клиенту не отправляем:
   //    «Копировать» в Шаблонах печатает позицию без него, «Копировать с номерами» — целиком.
   //    Новая деталь с номером → впиши номер и в название (поиск по номеру), и третьим элементом.
+  //    Номеров в названии несколько (марка + оригинальные в скобках) → третьим элементом список кусков.
   //    Допуск (236.17), вязкость, марку и линейку масла, коды коробок артикулом не считаем.
   const PRICE = {
     oil_motul_12: ["Трансмиссионное масло Motul ATF6 105774 12л", perL(RATES.motul_atf6, 12), "105774"],
@@ -2663,7 +2664,8 @@
     kit_lr_019727_transf2:   ["Оригинальное трансмиссионное масло Land Rover LR019727 (Shell TF0753) 2л (раздаточная коробка)", perL(RATES.lr_oil, 2), "LR019727"],
     kit_lr_019727_3:         ["Оригинальное трансмиссионное масло Land Rover LR019727 (Shell TF0753) 3л (задний дифференциал и раздаточная коробка)", perL(RATES.lr_oil, 3), "LR019727"],
     // Porsche PDK — комплект на продажу (документ «Шаблоны ответов»; та же цена у HX285KIT в каталоге «Цены»)
-    kit_pdk_hx285:           ["Комплект фильтров PDK Mahle HX285KIT (оригинальные номера Porsche 9A731707000, 9A731718900)", 16000, "HX285KIT"],
+    kit_pdk_hx285:           ["Комплект фильтров PDK Mahle HX285KIT (оригинальные номера Porsche 9A731707000, 9A731718900)", 16000,
+                              ["HX285KIT", "(оригинальные номера Porsche 9A731707000, 9A731718900)"]],
     // Комплект (запчасти без работ) для мостов и Торсена Audi/VW — блоки DIFFS_KIT_TORSEN_G055/_G060, поузлово.
     // Названия и цены — владельца. Итоги: VAG G055 30000 / VAG G060 36800 / Motul 14500 — каждый ровно на 3000
     // (работа) дешевле своей услуги AXLES_TORSEN (33000 / 39800 / 17500).
@@ -3926,7 +3928,9 @@
     return l;
   }
   // Название для клиента: без артикула (третий элемент PRICE) и без опустевших скобок.
-  const plainName = (name, art) => name.replace(art, "").replace(/\(\s*\)/g, "").replace(/\s{2,}/g, " ").trim();
+  // art — строка или список кусков (номер марки + оригинальные номера в скобках); пустой — название как есть.
+  const plainName = (name, art) => [].concat(art || []).reduce((s, a) => s.replace(a, ""), name)
+    .replace(/\(\s*\)/g, "").replace(/\s+\)/g, ")").replace(/\s{2,}/g, " ").trim();
   // Вариант «список ключей PRICE» → {label, lines, sum}: «Итого» = сумма позиций, считается само.
   function priceVariant(label, keys, sink){
     const lines = keys.map(k => priceLine(k, sink));
@@ -5471,8 +5475,10 @@
     searchInp.addEventListener("input", afterTyping(()=>{ query = searchInp.value.trim().toLowerCase(); render(); }));
     copyAllBtn.addEventListener("click", ()=>{
       // между карточками разделитель ДЛИННЕЕ внутреннего (CDOC.SEP), иначе границы смет сливаются с границами блоков
-      const text = visible().map(t=>[t, currentDoc(t).plain]).filter(([t,b])=>!t.todo && b)   // клиенту — без номеров
-        .map(([t,b])=>`${t.brand} · ${tplTitle(t)}\n\n${b}`).join(`\n\n${CDOC.SEP} ${CDOC.SEP}\n\n`);
+      // клиенту — без номеров, и в заголовке карточки тоже («…Mahle HX124D»): вырезаем артикулы её позиций
+      const text = visible().map(t=>[t, currentDoc(t)]).filter(([t,d])=>!t.todo && d.plain)
+        .map(([t,d])=>`${t.brand} · ${plainName(tplTitle(t), d.items.flatMap(l => l.art || []))}\n\n${d.plain}`)
+        .join(`\n\n${CDOC.SEP} ${CDOC.SEP}\n\n`);
       if(text) copyText(text, copyAllBtn);
     });
     renderNav(); renderFacets(); render();
@@ -8379,8 +8385,8 @@
       if(!p) return { name:`⚠ уточню: ${it.ref}`, price:null, stale:true };
       const name = p[0] + (qty === 1 ? "" : " × " + qty);
       if(!Number.isFinite(p[1]) || !Number.isInteger(qty) || qty < 1 || qty > 99)
-        return { name, price:null, stale:true };
-      return { name, price:p[1] * qty, stale: !isFresh(it.ref) };
+        return { name, price:null, stale:true, art:p[2] };
+      return { name, price:p[1] * qty, stale: !isFresh(it.ref), art:p[2] };
     }
     return { name:String(it), price:null };
   }
@@ -8422,28 +8428,35 @@
         ? null : base.sum + v.sum })));
   }
   // Текст для клиента (ровно тело комплекта: состав + цена), без интерфейсных подписей (правило 9).
-  function kitBodyText(k){
-    const blocks = [];
+  // Клиенту — без артикулов (как «Копировать» в Шаблонах и «ТО»): из строк состава и из заголовка
+  // вырезаем третий элемент PRICE. codes=true — та же смета с номерами, себе (заказать, собрать).
+  function kitBodyText(k, codes = false){
+    const blocks = [], arts = [];
+    const own = lines => lines.map(l => {                 // расчёт тот же, меняются только названия строк
+      if(l.art) arts.push(...[].concat(l.art));
+      return codes || !l.art ? l : { ...l, name: plainName(l.name, l.art) };
+    });
     // Состав и цена из того же расчёта, что на экране: заданная price либо сумма позиций.
     blocks.push(CDOC.block({ head: "Состав",
-      variants: kitBaseVariants(k).map(v => ({ ...v, totalLabel: "Цена комплекта" })) }));
+      variants: kitBaseVariants(k).map(v => ({ ...v, lines: own(v.lines), totalLabel: "Цена комплекта" })) }));
     if(k.addons){                                       // доп. предложение (апсел) — отдельным блоком, не в цене комплекта
       const vars = kitAddonVariants(k.addons);
       if(vars){                                         // блок-варианты: ТОТ ЖЕ расчёт, что карточка и сводка
         const b = k.addons.block;
         blocks.push(CDOC.block({ head: b.head, intro: b.intro, note: b.note,
-          variants: vars.map(v => ({ label: v.label, lines: v.lines,
+          variants: vars.map(v => ({ label: v.label, lines: own(v.lines),
             sum: v.lines.some(l => l.price == null) ? null : v.sum })) }));  // «уточню» — только если цены нет вовсе
       } else {                                          // плоский список позиций-альтернатив
         blocks.push(CDOC.block({ head: k.addons.head || "Дополнительно", note: k.addons.note,
-          variants: [{ label: null, lines: (k.addons.items || []).map(kitLine) }] }));
+          variants: [{ label: null, lines: own((k.addons.items || []).map(kitLine)) }] }));
       }
     }
     const totals = kitAddonTotals(k);                   // сводка: коробка + каждый вариант мостов/раздатки
     if(totals) blocks.push(CDOC.block({ head: "Итого",
       variants: [{ label: null, lines: totals.map(t => ({ name: t.label, price: t.total })) }] }));
     if(k.note) blocks.push(k.note);
-    return CDOC.doc({ title: k.name, sub: k.sub, blocks });
+    // заголовок комплекта тоже бывает с номером («…Mahle HX285KIT») — клиенту без него
+    return CDOC.doc({ title: codes ? k.name : plainName(k.name, arts), sub: k.sub, blocks });
   }
 
   const KIT_UI_SHELL = `
@@ -8487,8 +8500,8 @@
     <div class="kc-total"><span id="kc-sum-label">Комплект АКПП</span><strong id="kc-sum"></strong></div>
     <div class="kc-total-more" id="kc-sum-more" hidden></div>
     <div class="kc-warning" id="kc-warning" hidden>Проверить цены: есть позиции без свежего подтверждения. В сообщении сохраняются текущие суммы.</div>
-    <div class="kc-actions"><button class="kc-primary" type="button" id="kc-copy">${ICO.copy} Копировать клиенту</button><button class="kc-secondary" type="button" id="kc-edit">Собрать на основе</button></div>
-  </div><p class="kc-note">Предпросмотр показывает точный текст, который попадёт в буфер. Затем вставьте его в переписку с клиентом.</p></aside></div>
+    <div class="kc-actions"><button class="kc-primary" type="button" id="kc-copy">${ICO.copy} Копировать клиенту</button><button class="kc-secondary" type="button" id="kc-copy-codes" title="Тот же текст с номерами деталей — себе: собрать, заказать. Клиенту его не отправляем">${ICO.copy} Копировать с номерами</button><button class="kc-secondary" type="button" id="kc-edit">Собрать на основе</button></div>
+  </div><p class="kc-note">Предпросмотр показывает точный текст, который попадёт в буфер: клиенту — без номеров деталей. Затем вставьте его в переписку с клиентом.</p></aside></div>
   <div class="kc-mobile"><span class="kc-mobile-what" id="kc-mobile-what"></span><button class="kc-secondary" type="button" id="kc-jump">Посмотреть текст</button><button class="kc-primary" type="button" id="kc-mobile-copy">${ICO.copy} Копировать</button></div>
   <div class="kc-status" id="kc-status" role="status" hidden></div>`;
   /* Состояние раздела живёт отдельно от DOM: сверка цен обновляет расчёт,
@@ -8513,7 +8526,7 @@
       && (!Object.hasOwn(PRICE, ref) || isGoods(ref));
     const rowKey = rows => JSON.stringify(rows.map(r => [r.ref, r.qty || 1]).sort((a,b) => a[0].localeCompare(b[0])));
     let mode = "catalog", selectedId = KITS[0].id, filter = "Все", openGroup = groups[0];
-    let draft = null, currentText = "", timer, saved = [], mounted = false;
+    let draft = null, currentText = "", currentCodes = "", timer, saved = [], mounted = false;
 
     function readSaved(){
       try {
@@ -8694,14 +8707,14 @@
     }
     function renderPreview(){
       if(mode === "catalog" && $("count").textContent === "0"){
-        currentText = ""; $("text").textContent = "Измените запрос или соберите набор в конструкторе.";
+        currentText = currentCodes = ""; $("text").textContent = "Измените запрос или соберите набор в конструкторе.";
         $("preview-title").textContent = "Комплект не найден"; $("description").textContent = "";
         $("sum-label").textContent = "Комплект АКПП"; $("sum").textContent = "—";
         $("sum-more").hidden = true; $("mobile-what").textContent = "";
-        $("warning").hidden = true; $("copy").disabled = true; $("mobile-copy").disabled = true; $("edit").hidden = true; return;
+        $("warning").hidden = true; $("copy").disabled = true; $("copy-codes").disabled = true; $("mobile-copy").disabled = true; $("edit").hidden = true; return;
       }
       const k = mode === "builder" ? makeDraftKit() : byId(selectedId);
-      currentText = kitBodyText(k); $("text").textContent = currentText;
+      currentText = kitBodyText(k); currentCodes = kitBodyText(k, true); $("text").textContent = currentText;
       $("preview-title").textContent = mode === "builder" ? "Ваш комплект" : k.group;
       $("description").textContent = mode === "builder" ? draft.addon === "all" ? "Клиент увидит варианты допкомплекта и итог для каждого."
         : draft.addon === "none" ? "Только выбранный состав, без доппредложения." : "Клиент увидит один выбранный допкомплект."
@@ -8724,8 +8737,10 @@
       $("warning").hidden = !(bases.some(v => v.lines.some(l => l.stale)) || (kitAddonVariants(k.addons) || []).some(v => v.stale));
       $("edit").hidden = mode === "builder";
       const invalid = mode === "builder" && (!draft.rows.length || [...$("lines").querySelectorAll("input")].some(input => !input.checkValidity()));
-      $("copy").disabled = invalid; $("mobile-copy").disabled = invalid; $("save").disabled = invalid;
+      $("copy").disabled = invalid; $("copy-codes").disabled = invalid; $("mobile-copy").disabled = invalid; $("save").disabled = invalid;
+      $("copy-codes").hidden = currentCodes === currentText;   // номеров в составе нет — второй кнопке нечего добавить
     }
+    // eventName === false — копия «с номерами», себе: в MDLOG не пишем, метрика А3 считает тексты клиенту
     async function copyText(text, eventName){
       if(!text) return;
       let ok = false;
@@ -8734,7 +8749,8 @@
         const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
         document.body.appendChild(ta); ta.select(); try { ok = document.execCommand("copy"); } catch(e){} ta.remove();
       }
-      if(ok){ if(window.MDLOG) window.MDLOG.copy(eventName || "Комплект·Конструктор"); notify("Скопировано. Вставьте текст в переписку с клиентом."); }
+      if(ok && eventName === false) notify("Скопировано с номерами — это себе, клиенту не отправляем.");
+      else if(ok){ if(window.MDLOG) window.MDLOG.copy(eventName || "Комплект·Конструктор"); notify("Скопировано. Вставьте текст в переписку с клиентом."); }
       else { if(window.MDLOG) window.MDLOG.err("ui", "копирование в буфер не сработало", "kit-copy"); notify("Не удалось скопировать. Выделите текст в предпросмотре и скопируйте его вручную."); }
     }
     function refresh(){
@@ -8754,6 +8770,7 @@
         $("edit").onclick = () => { loadKit(selectedId); setMode("builder"); };
         $("copy").onclick = () => copyText(currentText, mode === "catalog" ? "Комплект·" + byId(selectedId).name : null);
         $("mobile-copy").onclick = $("copy").onclick;
+        $("copy-codes").onclick = () => copyText(currentCodes, false);
         $("jump").onclick = () => $("preview").scrollIntoView({ behavior:"auto", block:"start" });
         $("blank").onclick = () => { draft = { baseId:null, title:"Комплект запчастей", rows:[], addon:"none" }; renderBuilder(); renderPreview(); };
         $("save").onclick = () => {
