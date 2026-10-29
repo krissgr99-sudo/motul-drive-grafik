@@ -2813,6 +2813,7 @@
     oil_zf_4:      ["Оригинальное трансмиссионное масло ZF8HP S671090312 4л", perL(RATES.zf8hp, 4), "S671090312"],
     oil_zf_10:     ["Оригинальное трансмиссионное масло ZF8HP S671090312 10л", perL(RATES.zf8hp, 10), "S671090312"],
     oil_multiatf_11: ["Трансмиссионное масло Motul Multi ATF 105784 11л", perL(RATES.motul_multiatf, 11), "105784"],
+    oil_multiatf_14: ["Трансмиссионное масло Motul Multi ATF 105784 14л", perL(RATES.motul_multiatf, 14), "105784"],
     oil_multiatf_15: ["Трансмиссионное масло Motul Multi ATF 105784 15л", 25500, "105784"],  // не по ставке: 1700/л
     oil_multiatf_16: ["Трансмиссионное масло Motul Multi ATF 105784 16л", 27200, "105784"],  // не по ставке: 1700/л
     oil_toyota_16: ["Трансмиссионное масло Toyota ATF WS 08886-81210 16л", perL(RATES.toyota_ws, 16), "08886-81210"],
@@ -2853,6 +2854,7 @@
     filter_lynx_lt1089: ["Фильтр LYNXauto LT-1089 с прокладкой в комплекте", 4400, "LT-1089"],   // Aisin A760F
     filter_lynx_lt1150: ["Фильтр LYNXauto LT-1150 с прокладкой в комплекте", 6000, "LT-1150"],   // Aisin V6AWH-M-DA
     filter_lynx_lt1240: ["Фильтр LYNXauto LT-1240 с прокладкой в комплекте", 3000, "LT-1240"],   // Jatco JF414E
+    filter_lt1158:      ["Фильтр для АКПП LT1158", 2800, "LT1158"],   // Honda Pilot 5-ступенчатая
     filter_a750:        ["Фильтр АКПП с прокладкой в комплекте JS Asakashi JT541K", 6000, "JT541K"],
     filter_r4a51:       ["Фильтр АКПП с прокладкой в комплекте JS Asakashi JT208K", 3800, "JT208K"],
     filter_ab60:        ["Фильтр АКПП с прокладкой в комплекте JS Asakashi JT568K", 5300, "JT568K"],
@@ -2895,6 +2897,7 @@
     work_full_r4a51:  ["Полная аппаратная замена масла в АКПП Aisin R4A51/V4A51 с промывкой системы", 6000],
     work_full_ab60:   ["Полная аппаратная замена масла в АКПП Aisin AB60E/F с промывкой системы", 6000],
     work_full_jf414e: ["Полная аппаратная замена масла в АКПП Jatco JF414E с промывкой системы", 6000],
+    work_full_pilot5: ["Полная аппаратная замена масла в 5-ступенчатой АКПП Honda Pilot с промывкой системы", 7000],
     work_full_v6awh:  ["Полная аппаратная замена масла в АКПП Aisin V6AWH-M-DA с промывкой системы", 7000],
     work_full_re7:    ["Полная аппаратная замена масла в АКПП RE7R01A с промывкой системы", 6000],
     work_full_u340:   ["Полная аппаратная замена масла в АКПП Aisin U340-341E/F с промывкой системы", 6000],
@@ -3177,6 +3180,8 @@
                    "oil_gear300_3", "work_dct_santafe", "oil_haldex_febi", "work_haldex_mesh"],
     // Комплект 9G-Tronic «поддон ZF + масло ZF 236.17»: состав и «Итого» 44 000 — владелец в чате 23.10.2026.
     "2026-10-23": ["zf_236_17", "oil_zf_9g_10", "filter_zf_9g_kit"],
+    // Honda Pilot, 5-ступенчатая АКПП: состав и цены (Итого 37 200) — владелец в чате 29.10.2026.
+    "2026-10-29": ["motul_multiatf", "oil_multiatf_14", "bardahl", "filter_lt1158", "work_full_pilot5"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -3883,6 +3888,16 @@
         ],
       },
     },
+
+    /* ===== Honda ===== */
+    "Pilot 5АКПП": {
+      "Аппаратная": {
+        head: "Полная аппаратная замена масла в 5-ступенчатой АКПП Honda Pilot",
+        variants: () => [
+          { label: "1.", items: ["oil_multiatf_14", "bardahl", "filter_lt1158", "work_full_pilot5"] },
+        ],
+      },
+    },
   };
   // Range Rover ZF 8HP — коробка та же, что у BMW 8HP45-76 (масла, работы, варианты), поддон свой —
   // filter_zf_rr из «Комплектов». Услуги — ссылки на BMW, а не копия: правятся в одном месте.
@@ -4396,6 +4411,10 @@
       titleAccent:"A6MF1-2 / A8LF1", extraTags:["A6MF1", "A6MF2", "A8LF1", "Motul ATF6", "Kia Sp4"] },
     { brand:"Hyundai / Kia", box:"Santa Fe DCT", type:"Аппаратная", title:"Hyundai Santa Fe · робот + мосты и Haldex",
       titleAccent:"Santa Fe", extraTags:["Santa Fe", "Hyundai", "Робот", "DCT", "Motul Multi DCTF", "Gear 300", "Мосты", "Haldex", "Febi"] },
+
+    /* ==================== Honda ==================== */
+    { brand:"Honda", box:"Pilot 5АКПП", type:"Аппаратная", title:"Honda Pilot · 5-ступенчатая АКПП (Motul Multi ATF)",
+      titleAccent:"Pilot", extraTags:["Honda", "Pilot", "5 ступеней", "5АКПП", "Motul Multi ATF", "14 л", "LT1158"] },
 
     /* ==================== Mercedes ==================== */
     // 9G-Tronic (725.0). 4 аппаратные + 4 слив-залив, отличаются поддоном (t.filter).
@@ -5038,6 +5057,7 @@
     "Вариаторы":      logoBadge("Вариаторы (CVT)", "CVT", 30),
     GM:               logoBadge("GM", "GM", 40),
     "Hyundai / Kia":  logoBadge("Hyundai / Kia", "H/K", 30),
+    Honda:            logoBadge("Honda", "H", 48),
     "Land Rover":     logoBadge("Land Rover", "LR", 40),
     [ANSWERS_BRAND]:  logoBadge(ANSWERS_BRAND, "FAQ", 28),
     Mercedes:
