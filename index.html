@@ -231,6 +231,26 @@
   .home-tile[data-featured] .home-tile-ic svg{width:24px;height:24px}
   .home-tile[data-featured] .home-tile-name{font-size:18px}
   .home-tile[data-featured] .home-tile-hint{font-size:14px;margin-top:4px}
+  .home-tile-count{font-size:12px;font-weight:600;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+  .home-tile-count b{color:var(--brand);font-weight:700}
+  /* единый поиск под полем (аудит 2026-10-29, 3.3): строка на раздел — где и сколько нашлось */
+  .home-found{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+  .home-found[hidden],.home-top[hidden]{display:none}
+  .home-found-row{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;
+    background:var(--fill);color:var(--text);font:inherit;font-size:14px;text-align:left;cursor:pointer;transition:border-color .15s,background .15s}
+  .home-found-row:hover{border-color:var(--open-border);background:var(--fill-hover)}
+  .home-found-row:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+  .home-found-name{font-weight:700}
+  .home-found-n{color:var(--muted);font-variant-numeric:tabular-nums}
+  .home-found-row svg{width:14px;height:14px;margin-left:auto;color:var(--muted);flex:none}
+  .home-found-none{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
+  /* «Часто копируют» (3.4): чипы ходовых карточек Шаблонов по журналу копий */
+  .home-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:16px}
+  .home-top-l{flex-basis:100%;font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .home-top-chip{max-width:100%;min-height:36px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card2);
+    color:var(--text);font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:border-color .15s}
+  .home-top-chip:hover{border-color:var(--open-border)}
+  .home-top-chip:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
   /* счётчик полных аппаратных замен: те же колонки, что у первого экрана («Сегодня» — под сменой);
      цифры в ячейках, как у механического счётчика, прокручиваются один раз при входе */
   .home-count{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;margin-top:16px}
@@ -272,6 +292,7 @@
     .home-count{grid-template-columns:1fr;gap:12px;margin-top:12px}
     .home-count-card{padding:20px}
     .odo{font-size:26px}
+    .home-top-chip{min-height:44px}
   }
   @media(prefers-reduced-motion:reduce){
     .home-tile,.home-tile-go,.home-ask-go,.home-ask-field input{transition:none}
@@ -293,6 +314,20 @@
   .tpl-search input::placeholder{color:var(--muted)}
   .tpl-search input:focus{border-color:var(--c-red);background:var(--fill-hover)}
   .tpl-search::before{content:"⌕";position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:19px;color:var(--muted)}
+  /* Поиск: своя «×» вместо системной (аудит 2026-10-29, 4b) — видна, пока в поле есть текст;
+     Esc очищает сам браузер. Системную «×» прячем: на iPhone её нет, на Android она мелкая. */
+  input[type=search]{-webkit-appearance:none;appearance:none}
+  input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-search-decoration{-webkit-appearance:none;display:none}
+  .sx-box{position:relative;flex:1;min-width:200px}
+  .sx-box .ui-input{width:100%}
+  .sx-clear{position:absolute;right:2px;top:50%;transform:translateY(-50%);width:44px;height:44px;display:inline-flex;
+    align-items:center;justify-content:center;padding:0;border:0;border-radius:10px;background:none;color:var(--muted);cursor:pointer}
+  .sx-clear:hover{color:var(--text);background:var(--fill-hover)}
+  .sx-clear .mi{width:16px;height:16px}
+  input:placeholder-shown ~ .sx-clear{display:none}
+  #pr-search,#home-ask-input,#to-search{padding-right:48px}
+  #page-shablony .tpl-search .sx-clear,.kc-search .sx-clear{position:static;transform:none;flex:none;margin-right:-10px}
+  .tpl-card.is-pinned{outline:2px solid var(--brand);outline-offset:3px}   /* карточка, открытая чипом «Часто копируют» */
   .tpl-copyall{padding:13px 16px;border-radius:12px;border:1px solid var(--line);background:var(--fill);color:var(--text);
     font:inherit;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;transition:.15s}
   .tpl-copyall:hover{border-color:var(--c-red);color:var(--accent-soft);background:rgba(209,31,45,.1)}
@@ -973,6 +1008,12 @@
   .yama-sum .ys .k{display:block;font-size:12px;color:var(--muted);letter-spacing:.02em}
   .yama-sum .ys .v{display:block;font-family:"Space Grotesk",system-ui,sans-serif;
     font-size:21px;font-weight:600;color:var(--text);margin-top:3px}
+  /* «Без мастера: N» (аудит 2026-10-29, 4c) — плитка-фильтр: нажата → в днях только машины без имени */
+  .yama-sum .ys-free{font:inherit;text-align:left;cursor:pointer;min-height:44px;transition:border-color .15s}
+  .yama-sum .ys-free:hover{border-color:var(--open-border)}
+  .yama-sum .ys-free:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+  .yama-sum .ys-free .v{color:var(--warn)}
+  .yama-sum .ys-free[aria-pressed="true"]{border-color:var(--brand)}
   /* шапка дня-гармошки: слева дата, справа три числа — свёрнутый день читается без раскрытия */
   .yday .dhead{cursor:pointer}
   .yday .dhead .dbadge{margin-left:0}
@@ -1442,7 +1483,7 @@
     .to-eng{padding:12px;min-height:80px;font-size:12px}
     .to-vin > .ui-btn{width:100%;justify-content:center}
     .to-vin-label{flex-basis:100%}
-    .to-bar .ui-input{min-width:0;flex-basis:100%}
+    .to-bar .ui-input,.to-bar .sx-box{min-width:0;flex-basis:100%}
     .to-cat-top{gap:8px}
     .to-cat-count{order:3;width:100%}
     .to-card .to-code{max-width:100%;overflow-wrap:anywhere}
@@ -1856,7 +1897,7 @@
     <!-- ===== Страница: Шаблоны ===== -->
     <div id="page-shablony" class="page" hidden>
       <div class="tpl-toolbar">
-        <label class="tpl-search"><input id="tpl-search" type="text" aria-label="Найти шаблон по коробке, машине или номеру фильтра" aria-describedby="tpl-search-help" placeholder="Коробка, машина или номер фильтра…" autocomplete="off"></label>
+        <label class="tpl-search"><input id="tpl-search" type="search" enterkeyhint="search" aria-label="Найти шаблон по коробке, машине или номеру фильтра" aria-describedby="tpl-search-help" placeholder="Коробка, машина или номер фильтра…" autocomplete="off"><button class="sx-clear" type="button" aria-label="Очистить поиск"><svg class="mi" aria-hidden="true" focusable="false" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4.2 4.2 7.6 7.6M11.8 4.2 4.2 11.8"/></svg></button></label>
       </div>
       <div class="tpl-hint" id="tpl-search-help">Например: 8HP65, X5 G05 или HX187KIT. Выберите коробку — затем способ замены и комплектацию.</div>
       <div class="tpl-layout">
@@ -1878,7 +1919,7 @@
     <!-- ===== Страница: Цены ===== -->
     <div id="page-tseny" class="page" hidden>
       <div class="tpl-toolbar">
-        <div class="tpl-search"><input id="pr-search" type="text" placeholder="Найти: артикул, марка, 8HP, поддон, Motul…" autocomplete="off"></div>
+        <div class="tpl-search"><input id="pr-search" type="search" enterkeyhint="search" aria-label="Найти в прайсе" placeholder="Найти: артикул, марка, 8HP, поддон, Motul…" autocomplete="off"><button class="sx-clear" type="button" aria-label="Очистить поиск"><svg class="mi" aria-hidden="true" focusable="false" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4.2 4.2 7.6 7.6M11.8 4.2 4.2 11.8"/></svg></button></div>
         <button class="ui-btn ui-btn--secondary" id="pc-open" type="button"></button>
       </div>
       <!-- Сверка цен: владелец подтверждает, что цены прайса всё ещё верны (рендерится в JS) -->
@@ -3857,6 +3898,18 @@
   // (иначе две разные карточки дали бы один код и слиплись в дедупе «устройство+карточка+минута»).
   const tplCode  = t => t.code || [t.brand, t.box, t.type, engineOf(t), t.lock?"lock":"nolock"].filter(Boolean).join("·");
 
+  /* «Отправить» (аудит 2026-10-29, 3.1): на телефоне смета уходит в WhatsApp / Max / Telegram через
+     системное окно «Поделиться» — ровно тот же клиентский текст, что у «Копировать» (правило 9, CDOC);
+     «С номерами» остаётся копированием — это себе. Кнопка есть только там, где такое окно существует
+     и экран сенсорный: на ПК остаётся копирование. shareText: true — ушло, null — человек закрыл окно
+     сам, false — окно не открылось (тогда раздел копирует как обычно). */
+  const CAN_SHARE = typeof navigator.share === "function" && matchMedia("(pointer:coarse)").matches;
+  const shareBtn = attrs => CAN_SHARE ? `<button ${attrs} type="button" title="Отправить клиенту в мессенджер — без номеров деталей">${ICO.send} Отправить</button>` : "";
+  async function shareText(text){
+    try { await navigator.share({ text }); return true; }
+    catch(e){ return e && e.name === "AbortError" ? null : false; }
+  }
+
   /* ===== ЕДИНЫЙ ФОРМАТ КОПИРУЕМОГО ТЕКСТА (Шаблоны · Комплекты · ТО) =====
      Один источник правды для того, что уходит клиенту в WhatsApp. Раньше формат жил в трёх
      местах и разъехался (где-то «12000 руб.» слитно с названием, где-то «17500р», где-то буллиты).
@@ -5120,13 +5173,15 @@
       return true;                                             // базовые оси всегда ок
     };
 
-    const visible = () => {
-      const cars = carsForQuery();  // машины, совпавшие с запросом
+    // q и scoped — для единого поиска с Главной (аудит 2026-10-29, 3.3): тот же отбор по запросу,
+    // но без марки, коробки и фильтров раздела — как в «чистых» Шаблонах после tplSearchFrom.
+    const visible = (q = query, scoped = true) => {
+      const cars = carsMatching(q);  // машины, совпавшие с запросом
       return TEMPLATES.filter(t=>{
-        if(activeBrand!=="all" && t.brand!==activeBrand) return false;
-        if(activeBox!=="all" && t.box!==activeBox) return false;
-        for(const f of FACETS){ if(filters[f.key] && f.get(t)!==filters[f.key]) return false; }
-        if(query){
+        if(scoped && activeBrand!=="all" && t.brand!==activeBrand) return false;
+        if(scoped && activeBox!=="all" && t.box!==activeBox) return false;
+        if(scoped) for(const f of FACETS){ if(filters[f.key] && f.get(t)!==filters[f.key]) return false; }
+        if(q){
           if(cars.length){
             // Запрос распознан как МАШИНА → показываем только её подходящие карточки
             // (её коробка == t.box И вариант карточки разрешён). Текстовый поиск не подмешиваем,
@@ -5136,11 +5191,11 @@
             // Обычный текстовый поиск по коробке/тегам/телу карточки.
             const doc = tplDoc(t);
             const hay = (t.brand+" "+(t.box||"")+" "+tplTitle(t)+" "+tplTags(t).join(" ")+" "+doc.text).toLowerCase();
-            if(hay.includes(query)) return true;
+            if(hay.includes(q)) return true;
             // Поиск ПО НОМЕРУ детали: сравниваем скелеты, поэтому «lt1036» находит «LT-1036»,
             // а кусок номера («1036», «hx187») — весь номер. Это второй заход, а не замена
             // текстовому поиску: всё, что находилось раньше, находится и сейчас.
-            const qa = artQuery(query);
+            const qa = artQuery(q);
             if(!(qa && artHas(docArts(doc), qa))) return false;
           }
         }
@@ -5377,6 +5432,7 @@
             ${isAnswer(t) ? `<div class="tpl-price"><span class="tpl-price-label">Готовый ответ</span></div>`
               : `<div class="tpl-price"><span class="tpl-price-label">Замена масла${totals.length>1?" · варианты в смете":""}</span><strong>${esc(amount)}</strong></div>`}
             <button class="tpl-copy" type="button" data-i="${i}" title="Клиенту: смета без номеров деталей">${ICO.copy} Копировать</button>
+            ${shareBtn(`class="tpl-copy tpl-share" data-i="${i}"`)}
             ${doc.plain !== body ? `<button class="tpl-copy tpl-copy-codes" type="button" data-i="${i}" title="Та же смета с номерами деталей — себе: записать клиента, заказать деталь. Клиенту её не отправляем">${ICO.copy} <span class="tpl-wide">Копировать с номерами</span><span class="tpl-narrow">С номерами</span></button>` : ""}
             ${addons.length ? `<button class="tpl-copy tpl-build" type="button" data-i="${i}" aria-pressed="${!!choices}" aria-controls="tpl-builder-${i}">${choices?"Вернуть исходный шаблон":"Собрать на основе"}</button>` : ""}
           </div>`}
@@ -5390,12 +5446,22 @@
           head.setAttribute("aria-expanded", open ? "true" : "false");
         });
       });
-      grid.querySelectorAll(".tpl-copy:not(.tpl-build):not(.tpl-copy-codes)").forEach(btn=>{
+      grid.querySelectorAll(".tpl-copy:not(.tpl-build):not(.tpl-copy-codes):not(.tpl-share)").forEach(btn=>{
         btn.addEventListener("click", e=>{
           e.stopPropagation();
           const t = list[+btn.dataset.i];
           copyText(currentDoc(t).plain, btn, ICO.check + " Вставьте в WhatsApp");
           if(window.MDLOG) window.MDLOG.copy(tplCode(t));   // А3: лог нажатия «Копировать» (буфер не трогаем, КЛ2)
+        });
+      });
+      // «Отправить» — тот же клиентский текст; в журнал А3 идёт как «Копировать», если смета ушла
+      grid.querySelectorAll(".tpl-share").forEach(btn=>{
+        btn.addEventListener("click", async e=>{
+          e.stopPropagation();
+          const t = list[+btn.dataset.i], text = currentDoc(t).plain;
+          const ok = await shareText(text);
+          if(ok === false) copyText(text, btn, ICO.check + " Вставьте в WhatsApp");
+          if(ok !== null && window.MDLOG) window.MDLOG.copy(tplCode(t));
         });
       });
       // «С номерами» — себе (запись, заказ детали). В MDLOG не пишем: метрика А3 считает сметы клиенту.
@@ -5444,6 +5510,27 @@
       activeBrand = "all"; activeBox = "all"; expandedBrand = null; resetFilters();
       searchInp.value = q; query = q.trim().toLowerCase();
       renderNav(); renderFacets(); render();
+    };
+    // «Частые» с Главной (аудит 2026-10-29, 3.4): открыть коробку карточки и подсветить саму карточку.
+    // Карточку ищем после кадра — скрытая вкладка рисуется в showPage, а не здесь.
+    window.tplOpenCode = code => {
+      const t = TEMPLATES.find(x => tplCode(x) === code);
+      if(!t) return false;
+      searchInp.value = ""; query = "";
+      selectBox(t.brand, t.box);
+      requestAnimationFrame(() => {
+        const card = grid.querySelectorAll(".tpl-card")[visible().indexOf(t)];
+        if(!card) return;
+        card.classList.add("is-pinned");
+        card.scrollIntoView({ block:"center" });
+        setTimeout(() => card.classList.remove("is-pinned"), 2400);
+      });
+      return true;
+    };
+    window.tplCount = q => {
+      q = q.trim().toLowerCase();
+      const list = q ? visible(q, false) : [];
+      return { cards: list.filter(t => !isAnswer(t)).length, answers: list.filter(isAnswer).length };
     };
     // при изменении ширины окна заголовки переносятся иначе — пересчитываем
     let eqRaf;
@@ -5591,9 +5678,9 @@
     ["ZF", "1090298126", "Оригинальный фильтр поддон ZF", 10, 7000, "pans"],
     ["BMW", "24115A13223", "Поддон АКПП ZF 8HP60", 10, 40000, "pans"],
     ["Bentley", "0D6398359A", "ZF8HP95A ОРИГИНАЛ 100%", 100, 19000, "pans"],
-    ["Lamborgini", "0D6398359A", "ZF8HP95A ОРИГИНАЛ 100%", 100, 19000, "pans"],
+    ["Lamborghini", "0D6398359A", "ZF8HP95A ОРИГИНАЛ 100%", 100, 19000, "pans"],
     ["Bentley", "0D6398359", "ZF8HP95A ОРИГИНАЛ 100%", 100, 43000, "pans"],
-    ["Lamborgini", "0D6398359", "ZF8HP95A ОРИГИНАЛ 100%", 100, 43000, "pans"],
+    ["Lamborghini", "0D6398359", "ZF8HP95A ОРИГИНАЛ 100%", 100, 43000, "pans"],
     ["VAG", "0D6398359", "ZF8HP95A ОРИГИНАЛ 100%", 100, 43000, "pans"],
     ["BMW", "24115A8B427", "Поддон АКПП ZF 8HP80", 10, 36000, "pans"],
     ["BMW", "83225A28F03", "Масло трансмиссионное ZF Lifeguard Hybrid2 для гибридных авто. ZF Original Part Germany", 36, RATES.zf_hybrid2, "oils"],  // цена из RATES
@@ -5735,6 +5822,15 @@
 
     function update(){ renderFacets(); render(); }
     searchInp.addEventListener("input", afterTyping(()=>{ query = searchInp.value.trim().toLowerCase(); words = query.split(/\s+/).filter(Boolean); update(); }));
+    // Единый поиск с Главной (аудит 2026-10-29, 3.3): то же правило слов (hit), без категории и марки
+    window.pricesCount = q => {
+      const ws = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+      return ws.length ? PARTS.filter(p => ws.every(w => hit(p, w))).length : 0;
+    };
+    window.pricesSearchFrom = q => {
+      cat = "all"; brand = "all"; searchInp.value = q;
+      query = q.trim().toLowerCase(); words = query.split(/\s+/).filter(Boolean); update();
+    };
     update();
   })();
 
@@ -7000,6 +7096,10 @@
 
     // имя мастера: локальная отметка выигрывает, пока таблица её не подтвердила
     const masterOf = row => (local[row.order] != null ? local[row.order] : (row.master || ""));
+    let noMasterOnly = false;   // фильтр плитки «Без мастера» (аудит 2026-10-29, 4c); не запоминается — компьютер общий
+    sumEl.addEventListener("click", e => {
+      if(e.target.closest('[data-act="free"]')){ noMasterOnly = !noMasterOnly; render(); }
+    });
 
     function render(){
       const days = (data && data.days) || [];
@@ -7019,16 +7119,25 @@
       // сводка месяца: только машины — денежный итог месяца с экрана убран (решение владельца);
       // деньги остались там, где ими работают: итог дня в шапке и сумма по машине в строке
       const cars = shown.reduce((a, d) => a + d.rows.length, 0);
+      const free = shown.reduce((a, d) => a + d.rows.filter(r => !masterOf(r)).length, 0);
+      if(!free) noMasterOnly = false;
       sumEl.hidden = !shown.length;
       sumEl.innerHTML = shown.length ? `
-        <div class="ys"><span class="k">Машин за месяц</span><span class="v">${nf.format(cars)}</span></div>` : "";
+        <div class="ys"><span class="k">Машин за месяц</span><span class="v">${nf.format(cars)}</span></div>${free ? `
+        <button class="ys ys-free" type="button" data-act="free" aria-pressed="${noMasterOnly}"
+          title="${noMasterOnly ? "Показать все машины" : "Показать только машины без мастера"}"><span class="k">Без мастера</span><span class="v">${nf.format(free)}</span></button>` : ""}` : "";
 
       let oddTotal = 0, unsureTotal = 0;   // сколько «некруглых» цен и «?» во всех показанных днях — для подписи внизу
-      daysEl.innerHTML = shown.map((d, i) => {
+      let firstDay = true;
+      daysEl.innerHTML = shown.map(d => {
         const dt = parse(d.date);
         const итог = d.rows.reduce((s, r) => s + r.sum, 0);
+        // фильтр «без мастера»: в дне только машины без имени, шапка дня — по всему дню; такие дни раскрыты
+        const rows = noMasterOnly ? d.rows.filter(r => !masterOf(r)) : d.rows;
+        if(!rows.length) return "";
+        const open = firstDay || noMasterOnly; firstDay = false;
         let dayOdd = 0;   // свёрнутый день тоже должен признаться, что внутри есть что проверить
-        const cars = d.rows.map(r => {
+        const cars = rows.map(r => {
           // чип работы; «некруглую» цену и «?» помечаем и считаем — счёт уходит в бейдж шапки дня
           const chip = (name, v, cls, unsure) => {
             const odd = isOdd(v);
@@ -7066,8 +7175,8 @@
         }).join("");
         // день = гармошка (механика «Продаж»): свежий раскрыт, остальные свёрнуты —
         // в свёрнутом виде день всё равно показывает главное: машины, работы, долю мастеров
-        return `<div class="daycard sday yday${i === 0 ? " open" : ""}">
-          <button class="sday-btn" type="button" aria-expanded="${i === 0}">
+        return `<div class="daycard sday yday${open ? " open" : ""}">
+          <button class="sday-btn" type="button" aria-expanded="${open}">
             <div class="dhead">
               <span class="dnum">${dt.getDate()}</span><span class="dmon">${MON[dt.getMonth()]}</span>
               <span class="dbadge">${WD[dt.getDay()]}</span>
@@ -7084,9 +7193,13 @@
         </div>`;
       }).join("");
 
+      // «Обновлено … в 19:15» — момент прогона робота (updatedAt); старый сервер без него — прежняя дата
       const upd = data && data.updated ? parse(data.updated) : null;
-      updEl.textContent = upd && !isNaN(upd.getTime())
-        ? `Обновлено ${upd.getDate()} ${MON[upd.getMonth()]} ${upd.getFullYear()}` : "";
+      const at = data && data.updatedAt ? new Date(data.updatedAt) : null;
+      const hm = d => String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+      updEl.textContent = at && !isNaN(at.getTime())
+        ? `Обновлено ${at.toDateString() === new Date().toDateString() ? "сегодня" : at.getDate() + " " + MON[at.getMonth()]} в ${hm(at)}`
+        : upd && !isNaN(upd.getTime()) ? `Обновлено ${upd.getDate()} ${MON[upd.getMonth()]} ${upd.getFullYear()}` : "";
       noteEl.textContent = !data
         ? "Журнал появится после обновления скрипта таблицы — работы подтянутся из LiveSklad сами."
         : (shown.length
@@ -7434,8 +7547,14 @@
       if(b){ author = AUTHORS.find(a => a.name === savedA); pick(authorsEl, b); }
     } catch(e){}
 
+    // Плитка «Заметки» на Главной (аудит 2026-10-29, 4d): те же правила «активна» и «срочно», что у списка
+    window.notesSummary = () => {
+      const active = [...pending, ...notes].filter(n => !isDel(n) && !statusOf(n).trim());
+      return { active: active.length, hot: active.filter(n => urgOf(n).id === "hot").length };
+    };
     function render(){
       const byDate = (a,b) => String(b.created).localeCompare(String(a.created));
+      if(window.homeNotesPaint) window.homeNotesPaint();   // список скрыт, а плитка Главной видна — считаем всегда
       if(deferHiddenRender("zametki", render)) return;
       const all = [...pending, ...notes].filter(n => !isDel(n));   // удалённые не показываем нигде
       // активные — срочные сверху, внутри срочности новые первыми; архив — просто по дате
@@ -8008,8 +8127,29 @@
       { page:"yama",     ico:"list",     name:"Яма",     hint:"Журнал работ и мастера по дням" },
       { page:"shtrafy",  ico:"flag",     name:"Штрафы",  hint:"Дисциплина и лучший месяца" },
       { page:"zarplaty", ico:"cash",     name:"Зарплаты",hint:"Оклады и выводы" },
-      { page:"zametki",  ico:"chat",     name:"Заметки", hint:"Пожелания команды" },
+      { page:"zametki",  ico:"chat",     name:"Заметки", hint:"Пожелания команды", badge:"notes" },
     ],
+    // единый поиск (аудит 2026-10-29, 3.3): разделы по порядку — Enter ведёт в первый, где что-то нашлось;
+    // считают функции самих разделов, своих правил поиска у Главной нет
+    find: [
+      { page:"shablony",  name:"Шаблоны",   n: q => { const c = window.tplCount(q); return c.cards + c.answers; },
+        say: q => { const c = window.tplCount(q);
+          return [c.cards && ruN(c.cards, "смета", "сметы", "смет"), c.answers && ruN(c.answers, "ответ", "ответа", "ответов")].filter(Boolean).join(" · "); } },
+      { page:"komplekty", name:"Комплекты", n: q => window.kitsCount ? window.kitsCount(q) : 0,
+        say: q => ruN(window.kitsCount(q), "комплект", "комплекта", "комплектов") },
+      { page:"tseny",     name:"Цены",      n: q => window.pricesCount ? window.pricesCount(q) : 0,
+        say: q => ruN(window.pricesCount(q), "позиция", "позиции", "позиций") },
+    ],
+    topLabel: "Часто копируют",
+  };
+  const ruN = (n, one, few, many) => n + " " + (n % 10 === 1 && n % 100 !== 11 ? one
+    : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? few : many);
+  const hEsc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  // запрос извне (Главная, ссылка #раздел?q=…) — в «чистый» раздел, теми же функциями, что у самих разделов
+  window.searchInto = (page, q) => {
+    if(page === "shablony") window.tplSearchFrom(q);
+    else if(page === "komplekty" && window.kitsSearchFrom) window.kitsSearchFrom(q);
+    else if(page === "tseny" && window.pricesSearchFrom) window.pricesSearchFrom(q);
   };
   function renderHome(){
     const root = document.getElementById("page-glavnaya");
@@ -8020,7 +8160,8 @@
         <span class="home-tile-ic">${ICO[t.ico]||""}</span>
         <span class="home-tile-tx">
           <span class="home-tile-name">${t.name}</span>
-          <span class="home-tile-hint">${t.hint}</span>
+          <span class="home-tile-hint">${t.hint}</span>${t.badge ? `
+          <span class="home-tile-count" data-badge="${t.badge}" hidden></span>` : ""}
         </span>
         <span class="home-tile-go">${ICO.arrow}</span>
       </button>`).join("");
@@ -8061,10 +8202,13 @@
             <form class="home-ask" id="home-ask" role="search">
               <div class="home-ask-field">
                 <span class="home-ask-ico">${ICO.search}</span>
-                <input id="home-ask-input" type="text" autocomplete="off" placeholder="${HOME.askPlaceholder}" aria-label="Коробка, машина клиента или номер фильтра">
+                <input id="home-ask-input" type="search" enterkeyhint="search" autocomplete="off" placeholder="${HOME.askPlaceholder}" aria-label="Коробка, машина клиента или номер фильтра">
+                <button class="sx-clear" type="button" aria-label="Очистить поиск">${ICO.close}</button>
               </div>
               <button class="home-ask-go" type="submit">${HOME.askGo} ${ICO.arrow}</button>
             </form>
+            <div class="home-found" id="home-found" aria-live="polite" hidden></div>
+            <div class="home-top" id="home-top" hidden></div>
           </div>
           ${shift}
         </div>
@@ -8086,15 +8230,62 @@
     const ask = root.querySelector("#home-ask");
     const askInput = root.querySelector("#home-ask-input");
     if(askInput && typed) askInput.value = typed;
+    const go = (page, q) => {
+      window.searchInto(page, q);
+      showPage(page, { top:true });
+      if(page === "shablony") document.getElementById("tpl-search").focus();
+    };
     if(ask) ask.addEventListener("submit", e => {
       e.preventDefault();
-      window.tplSearchFrom(askInput.value.trim());
-      showPage("shablony");
-      document.getElementById("tpl-search").focus();
+      const q = askInput.value.trim(), hit = q && HOME.find.find(f => f.n(q) > 0);
+      go(hit ? hit.page : "shablony", q);   // ничего нигде — Шаблоны: там «не нашёл» пишет пробел каталога
+    });
+    // под полем — где что нашлось; тап по строке открывает раздел уже с запросом
+    const foundEl = root.querySelector("#home-found");
+    const paintFound = () => {
+      const q = askInput.value.trim();
+      if(!q){ foundEl.hidden = true; foundEl.innerHTML = ""; return; }
+      const rows = HOME.find.filter(f => f.n(q) > 0).map(f =>
+        `<button class="home-found-row" type="button" data-page="${f.page}">
+          <span class="home-found-name">${f.name}</span><span class="home-found-n">${f.say(q)}</span>${ICO.arrow}
+        </button>`).join("");
+      foundEl.innerHTML = rows || `<p class="home-found-none">Нигде не нашлось. «${HOME.askGo}» откроет Шаблоны — там можно отметить «не нашёл».</p>`;
+      foundEl.hidden = false;
+    };
+    askInput.addEventListener("input", afterTyping(paintFound, 250));
+    if(typed) paintFound();
+    foundEl.addEventListener("click", e => {
+      const b = e.target.closest(".home-found-row");
+      if(b) go(b.dataset.page, askInput.value.trim());
+    });
+    root.querySelector("#home-top").addEventListener("click", e => {
+      const b = e.target.closest(".home-top-chip");
+      if(b && window.tplOpenCode(b.dataset.code)) showPage("shablony", { top:true });
     });
     root.querySelectorAll(".home-tile").forEach(b =>
       b.addEventListener("click", () => showPage(b.dataset.goto)));
+    homeTopPaint();
+    homeNotesPaint();
   }
+  /* «Частые» (аудит 2026-10-29, 3.4): коды карточек — homeTop (ручка type=top, homeTopLoad);
+     на экран попадают только карточки, которые есть в этом файле. */
+  function homeTopPaint(){
+    const box = document.getElementById("home-top");
+    if(!box) return;
+    const list = homeTop.map(code => TEMPLATES.find(t => tplCode(t) === code)).filter(Boolean);
+    box.hidden = !list.length;
+    box.innerHTML = list.length ? `<span class="home-top-l">${HOME.topLabel}</span>` + list.map(t =>
+      `<button class="home-top-chip" type="button" data-code="${hEsc(tplCode(t))}">${hEsc(tplTitle(t))}</button>`).join("") : "";
+  }
+  // Плитка «Заметки» (аудит 2026-10-29, 4d): сколько в работе и сколько срочных — из модуля Заметок
+  function homeNotesPaint(){
+    const el = document.querySelector('#page-glavnaya [data-badge="notes"]');
+    const s = el && window.notesSummary && window.notesSummary();
+    if(!el) return;
+    el.hidden = !(s && s.active);
+    if(s && s.active) el.innerHTML = `${s.active} в работе${s.hot ? ` · <b>${s.hot} срочно</b>` : ""}`;
+  }
+  window.homeNotesPaint = homeNotesPaint;
   // Две согласованные группы: рабочий блок и входы в разделы. Поиск не запускает появление.
   function homeReveal(){
     const root = document.getElementById("page-glavnaya");
@@ -8147,10 +8338,31 @@
       if(!same) homeCountPaint(!p);   // первый показ — как вход; дальше докручиваем изменившиеся разряды
     });
   }
+  /* «Часто копируют» (аудит 2026-10-29, 3.4): коды карточек — своя ручка type=top, потому что счётчик
+     отдаёт наружу только два числа и дату (must-keep №17). Сервер пересчитывает раз в 6 часов — и мы
+     спрашиваем не чаще (кэш md_top); сбой — повтор не раньше чем через 10 минут. */
+  const TOP_CKEY = "md_top", TOP_TTL_MS = 6 * 3600000;
+  let homeTop = [], homeTopAt = 0;
+  try {
+    const c = JSON.parse(localStorage.getItem(TOP_CKEY) || "null");
+    if(c && Array.isArray(c.top) && Number.isFinite(c.at)){ homeTop = c.top.filter(x => typeof x === "string"); homeTopAt = c.at; }
+  } catch(e){}
+  function homeTopLoad(){
+    if(!SHEET_API || Date.now() - homeTopAt < TOP_TTL_MS) return;
+    homeTopAt = Date.now();
+    jsonpChannel(SHEET_API + "?type=top&token=" + encodeURIComponent(SHEET_TOKEN), "часто копируют", "top", data => {
+      if(!data || !Array.isArray(data.top)) return;
+      homeTop = data.top.filter(c => typeof c === "string").slice(0, 6);
+      try { localStorage.setItem(TOP_CKEY, JSON.stringify({ at:homeTopAt, top:homeTop })); } catch(e){}
+      homeTopPaint();
+    }, () => { homeTopAt = Date.now() - TOP_TTL_MS + 600000; });
+  }
+  // Первому экрану чипы не нужны (до ответа видны из кэша): в фоновую догрузку, не в стартовые GET
+  deferInitialLoad([], homeTopLoad);
   // Главная открыта весь день на компьютере приёмки — вернулись во вкладку, число освежаем
   document.addEventListener("visibilitychange", () => {
     const page = document.getElementById("page-glavnaya");
-    if(!document.hidden && page && !page.hidden) homeCountLoad();
+    if(!document.hidden && page && !page.hidden){ homeCountLoad(); homeTopLoad(); }
   });
 
   /* ===================== КОМПЛЕКТЫ (наборы на продажу) =====================
@@ -8466,7 +8678,7 @@
   </div>
   <div class="kc-workbench"><div class="kc-left">
     <section id="kc-catalog" role="tabpanel" aria-labelledby="kc-catalog-tab">
-      <label class="kc-search">${ICO.search}<input id="kc-search" aria-label="Найти комплект" placeholder="Коробка, поддон, артикул или слово…"><span class="kc-counter" id="kc-count"></span></label>
+      <label class="kc-search">${ICO.search}<input id="kc-search" type="search" enterkeyhint="search" aria-label="Найти комплект" placeholder="Коробка, поддон, артикул или слово…"><span class="kc-counter" id="kc-count"></span><button class="sx-clear" type="button" aria-label="Очистить поиск">${ICO.close}</button></label>
       <div class="kc-filters" id="kc-filters"></div>
       <div class="kc-caption"><span>Комплекты без работ · вживую и отправкой</span><span>Нажмите вариант, чтобы увидеть состав</span></div>
       <div class="kc-groups" id="kc-groups"></div>
@@ -8485,7 +8697,7 @@
         <div class="kc-filters" id="kc-addons"></div>
       </div>
       <div class="kc-panel"><div class="kc-panel-heading"><h2>Добавить из прайса</h2></div>
-        <label class="kc-search">${ICO.search}<input id="kc-product-search" aria-label="Найти позицию" placeholder="Название, номер фильтра, масло…"></label>
+        <label class="kc-search">${ICO.search}<input id="kc-product-search" type="search" enterkeyhint="search" aria-label="Найти позицию" placeholder="Название, номер фильтра, масло…"><button class="sx-clear" type="button" aria-label="Очистить поиск">${ICO.close}</button></label>
         <div class="kc-products" id="kc-products"></div>
         <p class="kc-note">Добавляется указанная позиция целиком: литраж или пакет уже написан в её названии. Количество — число таких позиций.</p>
       </div>
@@ -8500,9 +8712,9 @@
     <div class="kc-total"><span id="kc-sum-label">Комплект АКПП</span><strong id="kc-sum"></strong></div>
     <div class="kc-total-more" id="kc-sum-more" hidden></div>
     <div class="kc-warning" id="kc-warning" hidden>Проверить цены: есть позиции без свежего подтверждения. В сообщении сохраняются текущие суммы.</div>
-    <div class="kc-actions"><button class="kc-primary" type="button" id="kc-copy">${ICO.copy} Копировать клиенту</button><button class="kc-secondary" type="button" id="kc-copy-codes" title="Тот же текст с номерами деталей — себе: собрать, заказать. Клиенту его не отправляем">${ICO.copy} Копировать с номерами</button><button class="kc-secondary" type="button" id="kc-edit">Собрать на основе</button></div>
+    <div class="kc-actions"><button class="kc-primary" type="button" id="kc-copy">${ICO.copy} Копировать клиенту</button>${shareBtn('class="kc-secondary" id="kc-share"')}<button class="kc-secondary" type="button" id="kc-copy-codes" title="Тот же текст с номерами деталей — себе: собрать, заказать. Клиенту его не отправляем">${ICO.copy} Копировать с номерами</button><button class="kc-secondary" type="button" id="kc-edit">Собрать на основе</button></div>
   </div><p class="kc-note">Предпросмотр показывает точный текст, который попадёт в буфер: клиенту — без номеров деталей. Затем вставьте его в переписку с клиентом.</p></aside></div>
-  <div class="kc-mobile"><span class="kc-mobile-what" id="kc-mobile-what"></span><button class="kc-secondary" type="button" id="kc-jump">Посмотреть текст</button><button class="kc-primary" type="button" id="kc-mobile-copy">${ICO.copy} Копировать</button></div>
+  <div class="kc-mobile"><span class="kc-mobile-what" id="kc-mobile-what"></span><button class="kc-secondary" type="button" id="kc-jump">Посмотреть текст</button><button class="kc-primary" type="button" id="kc-mobile-copy">${ICO.copy} Копировать</button>${shareBtn('class="kc-secondary" id="kc-mobile-share"')}</div>
   <div class="kc-status" id="kc-status" role="status" hidden></div>`;
   /* Состояние раздела живёт отдельно от DOM: сверка цен обновляет расчёт,
      не сбрасывая черновик. Сохранённый шаблон — только рецепт, никогда не цена. */
@@ -8595,11 +8807,19 @@
         renderFilters(); renderCatalog();
       });
     }
+    const kitHay = k => [k.name, k.brand, k.group, k.choice, ...kitBaseVariants(k).flatMap(v => v.lines.map(l => l.name)),
+      ...(kitAddonVariants(k.addons) || []).flatMap(v => v.lines.map(l => l.name))].join(" ");
+    // Единый поиск с Главной (аудит 2026-10-29, 3.3): тот же отбор, что в каталоге, второй копии правил нет
+    window.kitsCount = q => q.trim() ? KITS.filter(k => matches(kitHay(k), q)).length : 0;
+    let pendingQ = null;   // запрос пришёл до первого показа раздела: поля ещё нет, кладём при монтаже (refresh)
+    window.kitsSearchFrom = q => {
+      filter = "Все";
+      if(!mounted){ pendingQ = q; return; }
+      setMode("catalog"); $("search").value = q; renderFilters(); renderCatalog();
+    };
     function renderCatalog(){
       const q = $("search").value;
-      const visible = KITS.filter(k => (filter === "Все" || k.brand === filter) && matches([
-        k.name, k.brand, k.group, k.choice, ...kitBaseVariants(k).flatMap(v => v.lines.map(l => l.name)),
-        ...(kitAddonVariants(k.addons) || []).flatMap(v => v.lines.map(l => l.name))].join(" "), q));
+      const visible = KITS.filter(k => (filter === "Все" || k.brand === filter) && matches(kitHay(k), q));
       if(visible.length && !visible.some(k => k.id === selectedId)) selectedId = visible[0].id;
       $("count").textContent = visible.length;
       $("groups").innerHTML = groups.map(group => {
@@ -8738,6 +8958,7 @@
       $("edit").hidden = mode === "builder";
       const invalid = mode === "builder" && (!draft.rows.length || [...$("lines").querySelectorAll("input")].some(input => !input.checkValidity()));
       $("copy").disabled = invalid; $("copy-codes").disabled = invalid; $("mobile-copy").disabled = invalid; $("save").disabled = invalid;
+      for(const id of ["share", "mobile-share"]) if($(id)) $(id).disabled = invalid;
       $("copy-codes").hidden = currentCodes === currentText;   // номеров в составе нет — второй кнопке нечего добавить
     }
     // eventName === false — копия «с номерами», себе: в MDLOG не пишем, метрика А3 считает тексты клиенту
@@ -8770,6 +8991,16 @@
         $("edit").onclick = () => { loadKit(selectedId); setMode("builder"); };
         $("copy").onclick = () => copyText(currentText, mode === "catalog" ? "Комплект·" + byId(selectedId).name : null);
         $("mobile-copy").onclick = $("copy").onclick;
+        // «Отправить» (3.1): тот же клиентский текст; ушло — в журнал, как копирование; окно не открылось — копируем
+        const share = () => {
+          const text = currentText, ev = mode === "catalog" ? "Комплект·" + byId(selectedId).name : null;
+          shareText(text).then(ok => {
+            if(ok === false) copyText(text, ev);
+            else if(ok && window.MDLOG) window.MDLOG.copy(ev || "Комплект·Конструктор");
+          });
+        };
+        if($("share")) $("share").onclick = share;
+        if($("mobile-share")) $("mobile-share").onclick = share;
         $("copy-codes").onclick = () => copyText(currentCodes, false);
         $("jump").onclick = () => $("preview").scrollIntoView({ behavior:"auto", block:"start" });
         $("blank").onclick = () => { draft = { baseId:null, title:"Комплект запчастей", rows:[], addon:"none" }; renderBuilder(); renderPreview(); };
@@ -8781,6 +9012,7 @@
           const next = old ? saved.map(s => s.id === old.id ? entry : s) : [...saved, entry];
           if(writeSaved(next)) notify("Шаблон сохранён в этом браузере.");
         };
+        if(pendingQ != null){ $("search").value = pendingQ; pendingQ = null; }
         renderFilters();
       }
       // Сверка может прийти во время ввода количества: запоминаем фокус и каретку.
@@ -9257,8 +9489,8 @@
               aria-expanded="true" aria-controls="to-list"></button>
           </div>
           <div class="to-bar" id="to-bar">
-            <input class="ui-input" id="to-search" type="text" autocomplete="off"
-              placeholder="Найти двигатель: B47, N55, OM651…" aria-label="Поиск двигателя">
+            <span class="sx-box"><input class="ui-input" id="to-search" type="search" enterkeyhint="search" autocomplete="off"
+              placeholder="Найти двигатель: B47, N55, OM651…" aria-label="Поиск двигателя"><button class="sx-clear" type="button" aria-label="Очистить поиск">${ICO.close}</button></span>
             <button class="ui-btn ui-btn--secondary" id="to-add" type="button">${ICO.plus} Двигатель</button>
           </div>
           <div class="to-brands" id="to-brands" role="group" aria-label="Марка двигателя"></div>
@@ -10168,6 +10400,7 @@
           <div class="to-actions">
             <span class="to-bar-sum">Итого <b class="${s.unknown ? "ask" : ""}">${s.unknown ? "уточню" : rub(s.sum)}</b></span>
             <button class="ui-btn ui-btn--primary" type="button" data-act="copy">${ICO.copy} Копировать</button>
+            ${shareBtn('class="ui-btn ui-btn--secondary" data-act="share"')}
             <button class="ui-btn ui-btn--secondary" type="button" data-act="copy-codes"
               title="Та же смета, но с номерами фильтров — себе: записать клиента, заказать деталь. Клиенту её не отправляем">${ICO.copy} <span class="to-long">Копировать с номерами</span><span class="to-short">С номерами</span></button>
           </div>
@@ -10310,6 +10543,10 @@
       if(!e) return;
       // смету отправляют клиенту → недописанное в таблицу отправляем сейчас, а не через паузу
       if(act === "copy"){ flushSave(); copyTo(bodyText(e), b); if(window.MDLOG) MDLOG.copy("ТО·" + e.name); }
+      else if(act === "share"){   // «Отправить» (3.1): тот же текст клиенту; окно не открылось — копируем
+        flushSave(); const text = bodyText(e);
+        shareText(text).then(ok => { if(ok === false) copyTo(text, b); if(ok !== null && window.MDLOG) MDLOG.copy("ТО·" + e.name); });
+      }
       // копия себе (с номерами) в MDLOG не идёт: метрика А3 считает СМЕТЫ, ушедшие клиенту,
       // а эта кнопка обычно жмётся сразу после «Копировать» — один расчёт стал бы двумя событиями
       else if(act === "copy-codes"){ copyTo(bodyText(e, true), b, "Скопировано с номерами"); }
@@ -10739,7 +10976,30 @@
     if(h) document.documentElement.style.setProperty("--navh", h + "px");
   }
   window.addEventListener("resize", syncNavH);
-  function showPage(id){
+  /* «Назад» и адрес раздела (аудит 2026-10-29, 3.2). Переход пишет #раздел в историю браузера:
+     системная «Назад» на телефоне возвращает в прошлый раздел, а не закрывает портал, ярлыки
+     значка (manifest shortcuts) и ссылки «…#shablony?q=DQ500» открывают нужное место. Память
+     вкладки md_page (must-keep №4) остаётся — адрес главнее только при открытии по ссылке.
+     Прокрутка раздела помнится до закрытия вкладки (4f); новый запрос ведёт наверх (opt.top). */
+  const pageScroll = {};
+  let curPage = null;
+  try { history.scrollRestoration = "manual"; } catch(e){}   // прокрутку ставит showPage, браузер не перебивает
+  const pageUrl = id => id === "glavnaya" ? location.pathname + location.search : "#" + id;
+  function hashRoute(){
+    let raw = location.hash.slice(1);
+    try { raw = decodeURIComponent(raw); } catch(e){}   // битый адрес («…?q=100%») не должен ронять запуск портала
+    const [h, qs] = raw.split("?");
+    const id = (h === "glavnaya" || PAGES[h]) ? h : null;
+    return id ? { id, q: new URLSearchParams(qs || "").get("q") } : null;
+  }
+  function showPage(id, opt){
+    opt = opt || {};
+    const same = id === curPage;
+    if(curPage) pageScroll[curPage] = window.scrollY;
+    if(!opt.fromHistory && !same){
+      try { history[curPage ? "pushState" : "replaceState"]({ page:id }, "", pageUrl(id)); } catch(e){}
+    }
+    curPage = id;
     cancelPageEntrance(); // быстрая навигация не наслаивает появления и не оставляет opacity:0
     if(id === "grafik") window.scheduleToday();
     if(id === "glavnaya") window.scheduleNewDay();
@@ -10773,8 +11033,13 @@
     if(id === "prodazhi" && window.salesReveal)    window.salesReveal();    // ② счётчик денег
     try { localStorage.setItem("md_page", id); } catch(e){}  // запомнить вкладку для следующей загрузки
     closeMenu();
-    window.scrollTo(0, 0);
+    window.scrollTo(0, (same || opt.top) ? 0 : (pageScroll[id] || 0));   // повторный тап по разделу — наверх
   }
+  window.addEventListener("popstate", e => {
+    const r = hashRoute(), id = (e.state && e.state.page) || (r ? r.id : "glavnaya");
+    if(r && r.q != null && r.id === id && window.searchInto){ window.searchInto(id, r.q); showPage(id, { fromHistory:true, top:true }); }
+    else if(id !== curPage) showPage(id, { fromHistory:true });
+  });
   document.querySelectorAll(".nav-item").forEach(n => n.addEventListener("click", () => showPage(n.dataset.page)));
   if(homeLogo) homeLogo.addEventListener("click", () => showPage("glavnaya"));
   document.addEventListener("keydown", e => { if(e.key === "Escape") closeMenu(); });
@@ -10783,8 +11048,24 @@
   renderKits();
   let startPage = "glavnaya";
   try { const saved = localStorage.getItem("md_page"); if(saved && (saved === "glavnaya" || PAGES[saved])) startPage = saved; } catch(e){}
+  const startRoute = hashRoute();   // ссылка или ярлык значка: адрес главнее памяти вкладки
+  if(startRoute){ startPage = startRoute.id; if(startRoute.q != null && window.searchInto) window.searchInto(startPage, startRoute.q); }
   showPage(startPage);
   startBackgroundLoads();
+
+  /* ===================== Поиск: «×» (аудит 2026-10-29, 4b) =====================
+     Очистка зовёт обычный input — раздел перерисуется своим же обработчиком, отдельной логики нет.
+     Esc в поле type="search" браузер очищает сам и тоже шлёт input — своего обработчика не нужно. */
+  function sxClear(inp){
+    if(!inp) return;
+    inp.value = "";
+    inp.dispatchEvent(new Event("input", { bubbles:true }));
+    inp.focus();
+  }
+  document.addEventListener("click", e => {
+    const b = e.target.closest(".sx-clear");
+    if(b){ e.preventDefault(); sxClear(b.parentElement.querySelector("input")); }
+  });
 
   /* ===================== Кнопка «наверх» ===================== */
   (function(){
