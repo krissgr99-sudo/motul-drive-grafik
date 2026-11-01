@@ -35,7 +35,7 @@
   [data-theme="dark"]{
     --bg:#0a0b0e; --card:#13151b; --card2:#1a1d24;
     --line:rgba(255,255,255,.08); --line-strong:rgba(255,255,255,.16);
-    --text:#f1f3f6; --muted:#8a909c;
+    --text:#f1f3f6; --muted:#a2a8b3;
     --head:#1a1d24; --head-date:#d11f2d; --rowhover:rgba(255,255,255,.035);
     --chip-bg:rgba(255,255,255,.06); --chip-text:#c2c7d0;
     --brand:#d11f2d;                 /* фирменный красный — заливки кнопок/бейджей */
@@ -74,7 +74,7 @@
     --shadow:0 8px 24px rgba(20,25,40,.06);
     --grid:rgba(20,25,40,.022); --glow:rgba(209,31,45,.05);
     --gate-bg:radial-gradient(900px 500px at 50% -10%, rgba(209,31,45,.28), transparent 60%), linear-gradient(165deg,#08090c,#11131a);
-    --warn:#b8801b;
+    --warn:#805910;
     --fill:#ffffff; --fill-hover:#eef1f5; --fill-soft:#f6f7f9;
     --receipt:#f6f7f9; --code-text:#3a414e; --hair:#e6e8ec;
     --today-bg:#ffffff; --today-border:#f1c4c8;
@@ -170,135 +170,6 @@
   /* ===================== ГЛАВНАЯ (первый экран — рабочий стол менеджера) =====================
      Не лендинг: инструмент. Главное действие — быстрый поиск цены замены, ниже — вход в разделы.
      Красное — только на действии (кнопка/фокус/ховер плитки), не заливкой (§0: один акцент). */
-  .home{padding:8px 0 24px}
-  .home-overview{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:stretch}
-  .home-intro,.home-shift{min-width:0;padding:24px;border:1px solid var(--line);border-radius:20px;
-    background:var(--card);box-shadow:var(--shadow)}
-  .home-eyebrow{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;
-    text-transform:uppercase;color:var(--muted);margin-bottom:16px}
-  /* карточка смены — живой контекст рабочего дня, без отдельного списка сотрудников */
-  .home-shift{display:flex;flex-direction:column;justify-content:center}
-  .home-shift-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-  .home-shift-head svg{width:16px;height:16px;color:var(--muted);flex:none}
-  .home-shift-tag{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
-  .home-shift-date{font-family:var(--font-disp);font-weight:700;font-size:16px;color:var(--text);line-height:1.4}
-  .home-shift-label{font-size:12.5px;font-weight:600;color:var(--muted);margin-top:16px}
-  .home-shift-people{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-  .home-shift-p{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;
-    background:var(--card2);font-weight:700;font-size:13px;color:var(--text)}
-  .home-shift-dot{width:6px;height:6px;border-radius:50%;background:var(--cc,var(--muted));flex:none}
-  .home-title{font-family:var(--font-disp);font-weight:800;font-size:clamp(24px,3.2vw,30px);line-height:1.12;
-    letter-spacing:-.2px;margin:0 0 12px}
-  .home-sub{font-size:14px;line-height:1.55;color:var(--muted);max-width:54ch;margin:0 0 24px}
-  .home-sub b{color:var(--text);font-weight:700}
-  /* строка «узнать цену» — идиома .tpl-search, крупнее; ведёт в Шаблоны с запросом */
-  .home-ask{display:flex;gap:10px;width:100%}
-  .home-ask-field{position:relative;flex:1;min-width:0}
-  .home-ask-ico{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--muted);display:flex;pointer-events:none}
-  .home-ask-ico svg{width:18px;height:18px}
-  .home-ask-field input{width:100%;padding:15px 14px 15px 44px;border-radius:12px;border:1px solid var(--line);
-    background:var(--fill);color:var(--text);font:inherit;font-size:15px;outline:none;transition:border-color .15s,background .15s}
-  .home-ask-field input::placeholder{color:var(--muted)}
-  .home-ask-field input:focus{border-color:var(--c-red);background:var(--fill-hover)}
-  .home-ask-go{display:inline-flex;align-items:center;gap:8px;padding:15px 20px;border:none;border-radius:12px;
-    background:var(--brand);color:#fff;font:inherit;font-weight:700;font-size:14px;letter-spacing:.2px;cursor:pointer;white-space:nowrap;
-    box-shadow:0 0 16px rgba(209,31,45,.35);transition:background .15s,box-shadow .15s,transform .15s}
-  .home-ask-go:hover{background:var(--brand-hover);box-shadow:0 0 22px rgba(209,31,45,.5)}
-  .home-ask-go:active{transform:scale(.95);box-shadow:none}
-  .home-ask-go:focus-visible{outline:none;box-shadow:0 0 16px rgba(209,31,45,.35),0 0 0 3px rgba(209,31,45,.28)}
-  .home-ask-go svg{width:16px;height:16px;flex:none}
-  /* плитки-лаунчер разделов — идиома .tpl-tile (красная левая полоса и стрелка на ховере) */
-  .home-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:24px;text-align:left}
-  .home-tile{position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;min-height:96px;padding:16px;cursor:pointer;text-align:left;
-    background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);font:inherit;color:inherit;
-    transition:border-color .15s,box-shadow .15s,transform .15s}
-  .home-tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brand);opacity:0;transition:opacity .15s}
-  .home-tile:hover{border-color:var(--open-border);transform:translateY(-3px);box-shadow:var(--shadow),0 6px 20px rgba(0,0,0,.10)}
-  .home-tile:hover::before{opacity:1}
-  .home-tile:active{transform:scale(.95);box-shadow:none}
-  .home-tile:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
-  .home-tile-ic{width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:10px;
-    background:var(--fill-soft);border:1px solid var(--line);color:var(--text)}
-  .home-tile-ic svg{width:18px;height:18px}
-  .home-tile-tx{display:flex;flex-direction:column;min-width:0}
-  .home-tile-name{font-family:var(--font-disp);font-weight:700;font-size:15px;letter-spacing:.2px}
-  .home-tile-hint{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.35}
-  .home-tile-go{margin-left:auto;flex:none;color:var(--muted);display:flex;transition:color .15s,transform .15s}
-  .home-tile-go svg{width:16px;height:16px}
-  .home-tile:hover .home-tile-go{color:var(--accent-soft);transform:translateX(3px)}
-  .home-tile[data-featured]{grid-column:span 2;min-height:112px;padding:24px;gap:16px}
-  .home-tile[data-featured] .home-tile-ic{width:48px;height:48px;border-radius:12px}
-  .home-tile[data-featured] .home-tile-ic svg{width:24px;height:24px}
-  .home-tile[data-featured] .home-tile-name{font-size:18px}
-  .home-tile[data-featured] .home-tile-hint{font-size:14px;margin-top:4px}
-  .home-tile-count{font-size:12px;font-weight:600;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
-  .home-tile-count b{color:var(--brand);font-weight:700}
-  /* единый поиск под полем (аудит 2026-10-29, 3.3): строка на раздел — где и сколько нашлось */
-  .home-found{display:flex;flex-direction:column;gap:6px;margin-top:12px}
-  .home-found[hidden],.home-top[hidden]{display:none}
-  .home-found-row{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;
-    background:var(--fill);color:var(--text);font:inherit;font-size:14px;text-align:left;cursor:pointer;transition:border-color .15s,background .15s}
-  .home-found-row:hover{border-color:var(--open-border);background:var(--fill-hover)}
-  .home-found-row:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
-  .home-found-name{font-weight:700}
-  .home-found-n{color:var(--muted);font-variant-numeric:tabular-nums}
-  .home-found-row svg{width:14px;height:14px;margin-left:auto;color:var(--muted);flex:none}
-  .home-found-none{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
-  /* «Часто копируют» (3.4): чипы ходовых карточек Шаблонов по журналу копий */
-  .home-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:16px}
-  .home-top-l{flex-basis:100%;font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
-  .home-top-chip{max-width:100%;min-height:36px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card2);
-    color:var(--text);font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:border-color .15s}
-  .home-top-chip:hover{border-color:var(--open-border)}
-  .home-top-chip:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
-  /* счётчик полных аппаратных замен: те же колонки, что у первого экрана («Сегодня» — под сменой);
-     цифры в ячейках, как у механического счётчика, прокручиваются один раз при входе */
-  .home-count{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;margin-top:16px}
-  .home-count[hidden]{display:none}
-  .home-count-card{min-width:0;padding:24px;border:1px solid var(--line);border-radius:20px;
-    background:var(--card);box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:center;gap:12px}
-  .home-count-head{display:flex;align-items:center;gap:8px}
-  .home-count-head svg{width:16px;height:16px;color:var(--muted);flex:none}
-  .home-count-tag{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
-  .home-count-row{display:flex;align-items:center;gap:8px;min-width:0}
-  .home-count-plus{font-family:var(--font-mono);font-weight:600;font-size:24px;color:var(--muted)}
-  .home-count-none{font-family:var(--font-mono);font-weight:600;font-size:30px;color:var(--muted)}
-  .home-count-r{font-size:12.5px;font-weight:600;color:var(--muted)}
-  .odo{display:flex;align-items:center;gap:4px;font-family:var(--font-mono);font-weight:600;font-size:30px;
-    font-variant-numeric:tabular-nums;color:var(--text);--dh:1.4em}
-  .odo-cell{display:block;width:1em;height:var(--dh);overflow:hidden;border-radius:8px;
-    background:var(--card2);border:1px solid var(--line)}
-  .odo-cell.odo-g{margin-left:8px}
-  .odo-strip{display:flex;flex-direction:column;will-change:transform}
-  .odo-strip span{display:block;height:var(--dh);line-height:var(--dh);text-align:center}
-  @media(max-width:960px){
-    .home-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .home-tile[data-featured]{grid-column:auto}
-  }
-  @media(max-width:720px){
-    .home{padding:0 0 24px}
-    .home-overview{grid-template-columns:1fr;gap:12px}
-    .home-intro,.home-shift{padding:20px}
-    .home-shift-label{margin-top:12px}
-    .home-ask{flex-direction:column;max-width:none}
-    .home-ask-go{justify-content:center;min-height:48px}
-    /* плитки в две колонки: лентой в одну до «Заметок» было ~1800 px (аудит 2026-10-21);
-       главные (featured) — во всю ширину, у остальных иконка над названием, без подсказки */
-    .home-tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
-    .home-tile{flex-direction:column;align-items:flex-start;justify-content:center;min-height:76px;padding:14px;gap:8px}
-    .home-tile:not([data-featured]) .home-tile-hint{display:none}
-    .home-tile:not([data-featured]) .home-tile-go{position:absolute;top:14px;right:14px}
-    .home-tile[data-featured]{grid-column:1/-1;flex-direction:row;align-items:center;min-height:88px;padding:16px;gap:12px}
-    .home-count{grid-template-columns:1fr;gap:12px;margin-top:12px}
-    .home-count-card{padding:20px}
-    .odo{font-size:26px}
-    .home-top-chip{min-height:44px}
-  }
-  @media(prefers-reduced-motion:reduce){
-    .home-tile,.home-tile-go,.home-ask-go,.home-ask-field input{transition:none}
-    .home-tile:hover,.home-tile:active,.home-tile:hover .home-tile-go,.home-ask-go:active{transform:none}
-  }
-
   .page[hidden]{display:none}
   .placeholder{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
     padding:72px 24px;text-align:center}
@@ -347,40 +218,9 @@
   /* стартовый экран — плитки семейств коробок */
   .tpl-hint{margin:-2px 2px 14px;font-size:13px;color:var(--muted)}
   .tpl-hint[hidden]{display:none}
-  .tpl-tile{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:14px;padding:18px 18px 16px;text-align:left;cursor:pointer;
-    background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);
-    font:inherit;color:inherit;transition:border-color .15s,box-shadow .15s,transform .15s}
-  .tpl-tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brand);opacity:0;transition:opacity .15s}
-  .tpl-tile:hover{border-color:var(--open-border);box-shadow:var(--shadow),0 6px 20px rgba(0,0,0,.10);transform:translateY(-3px)}
-  .tpl-tile:hover::before{opacity:1}
-  .tpl-tile-go{position:absolute;top:15px;right:16px;font-size:17px;line-height:1;color:var(--muted);transition:color .15s,transform .15s}
-  .tpl-tile:hover .tpl-tile-go{color:var(--accent-soft);transform:translateX(3px)}
-  .tpl-tile-top{display:flex;align-items:center;gap:13px;min-width:0}
-  .tpl-tile-logo{width:46px;height:46px;flex:none}
-  .tpl-tile-logo svg{width:100%;height:100%;display:block}
-  .tpl-tile-head{display:flex;flex-direction:column;min-width:0}
-  .tpl-tile-name{font-family:var(--font-disp);font-weight:800;font-size:18px;line-height:1.1;letter-spacing:.2px}
-  .tpl-tile-meta{font-family:var(--font-mono);font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:.3px;margin-top:5px;white-space:nowrap}
-  .tpl-tile-models{display:flex;flex-wrap:wrap;gap:6px;padding-top:13px;border-top:1px solid var(--line)}
-  .tpl-tile-chip{font-family:var(--font-mono);font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:6px;
-    background:var(--chip-bg);color:var(--chip-text);border:1px solid var(--line)}
-  .tpl-tile-more{font-size:10.5px;font-weight:700;color:var(--accent-soft);align-self:center}
   /* Каталог в стиле «Комплектов»: семейства и модели над карточками. */
   .tpl-layout{display:grid;gap:20px;min-width:0}
   .tpl-nav{min-width:0}
-  .tpl-nav-brands,.tpl-nav-models{display:flex;flex-wrap:wrap;gap:8px}
-  .tpl-nav-models{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
-  .tpl-nav-head,.tpl-nav-model{display:flex;align-items:center;gap:8px;min-height:44px;padding:10px 14px;
-    border:1px solid var(--line);background:var(--card);border-radius:8px;font:inherit;font-weight:600;
-    font-size:12px;color:var(--muted);cursor:pointer;text-align:left;transition:background .15s,border-color .15s,color .15s}
-  .tpl-nav-head:hover,.tpl-nav-model:hover{border-color:var(--open-border);color:var(--text)}
-  .tpl-nav-head.active-brand,.tpl-nav-home.active-home,.tpl-nav-model.active{
-    border-color:var(--accent-soft);background:var(--weekend);color:var(--accent-soft)}
-  .tpl-nav-head.active-brand .tpl-nav-name,.tpl-nav-home.active-home .tpl-nav-name,.tpl-nav-model.active>span:first-child{
-    text-decoration:underline;text-underline-offset:4px}
-  .tpl-nav-logo{width:24px;height:24px;flex:none}
-  .tpl-nav-logo svg{width:100%;height:100%;display:block}
-  .tpl-nav .tpl-count{font:600 10px var(--font-mono);margin-left:0}
   .tpl-main{min-width:0}
   #page-shablony :is(button,input):focus-visible{outline:2px solid var(--accent-soft);outline-offset:3px}
   #page-shablony button:active{transform:scale(.95)}
@@ -448,72 +288,6 @@
   .tpl-badge.b-hybrid,.tpl-badge.b-all{background:var(--fill-soft);color:var(--muted);border:1px solid var(--line-strong)} /* b-all — сводка «все поддоны» */
   .tpl-badge.b-lock{background:rgba(209,31,45,.1);color:var(--accent-soft);border:1px solid rgba(209,31,45,.3)}
   .tpl-badge.b-check{background:rgba(240,180,41,.14);color:var(--warn);border:1px solid rgba(240,180,41,.42)} /* «Проверить цены» — внутренний флаг свежести, в буфер не уходит */
-  .tpl-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
-  .tpl-grid.is-landing{grid-template-columns:repeat(auto-fill,minmax(215px,1fr));justify-content:stretch}
-  .tpl-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;scroll-margin-top:calc(var(--navh,70px) + 20px);
-    transition:border-color .15s,box-shadow .15s}
-  .tpl-card:hover{border-color:var(--line-strong)}
-  .tpl-card.open{border-color:var(--open-border);box-shadow:var(--shadow),0 0 0 1px var(--open-border)}
-  .tpl-card.is-todo{border-style:dashed;opacity:.78}
-
-  .tpl-card-head{width:100%;display:flex;align-items:center;gap:14px;padding:20px;
-    background:transparent;border:none;font:inherit;color:inherit;text-align:left;cursor:pointer;transition:background .15s}
-  .tpl-card-head:hover{background:var(--fill-soft)}
-  .tpl-brand-block{display:flex;flex-direction:column;align-items:center;gap:7px;flex:none;width:auto;min-width:46px}
-  .tpl-brand-tag{font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--tag-text);
-    white-space:nowrap;background:var(--tag-bg);border:1px solid var(--tag-border);padding:4px 8px;border-radius:6px}
-  .tpl-brand-logo{width:32px;height:32px;display:block}
-  .tpl-brand-logo svg{width:100%;height:100%;display:block}
-  .tpl-title{flex:1;font-family:var(--font-disp);font-weight:700;font-size:17px;line-height:1.4;overflow-wrap:anywhere}
-  .tpl-title-accent{color:var(--accent-soft);font-weight:700}
-  .tpl-chevron{flex:none;width:18px;height:18px;position:relative;color:var(--muted);transition:transform .25s}
-  .tpl-card.open .tpl-chevron{transform:rotate(180deg);color:var(--accent-soft)}
-  .tpl-chevron::before{content:"";position:absolute;left:3px;top:4px;width:8px;height:8px;
-    border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);border-radius:1px}
-
-  .tpl-collapse{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}
-  .tpl-card.open .tpl-collapse{grid-template-rows:1fr}
-  .tpl-collapse-inner{overflow:hidden;min-height:0}
-
-  .tpl-tags{display:flex;flex-wrap:wrap;gap:5px;padding:4px 16px 0}
-  .tpl-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--chip-bg);color:var(--chip-text);border:1px solid var(--line)}
-  .tpl-body{margin:16px 20px;padding:16px;background:var(--receipt);border:1px solid var(--line);border-radius:12px;
-    font-family:var(--font-mono);font-size:12px;line-height:1.8;white-space:pre-wrap;word-break:break-word;color:var(--code-text);max-height:360px;overflow:auto}
-  .tpl-todo-note{margin:13px 16px;padding:22px 16px;text-align:center;color:var(--muted);font-size:13px;line-height:1.5;
-    background:var(--fill-soft);border:1px dashed var(--line-strong);border-radius:12px}
-  .tpl-actions{padding:16px 20px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;justify-content:space-between}
-  .tpl-price{display:flex;flex-direction:column;gap:5px;min-width:0}
-  .tpl-price-label{font-size:11px;color:var(--muted)}
-  .tpl-price strong{font:600 17px var(--font-mono);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-  .tpl-copy{min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--fill);
-    color:var(--text);font:inherit;font-weight:700;font-size:12px;cursor:pointer;flex:none;transition:background .15s,border-color .15s,color .15s}
-  .tpl-copy:hover{border-color:var(--accent-soft);color:var(--accent-soft);background:var(--weekend)}
-  .tpl-copy.ok{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)}
-  .tpl-price + .tpl-copy{margin-left:auto}       /* обе кнопки копирования — рядом справа, цена слева */
-  .tpl-copy-codes{font-weight:600}                                /* «с номерами» — себе, второстепенная */
-  .tpl-copy-codes:not(.ok):not(:hover){color:var(--muted)}
-  .tpl-narrow{display:none}                      /* телефон: «С номерами» в одну строку, как соседние кнопки */
-  @media(max-width:720px){ .tpl-wide{display:none} .tpl-narrow{display:inline} }
-  .tpl-build{flex-basis:100%}
-  .tpl-build[aria-pressed="true"]{border-color:var(--accent-soft);color:var(--accent-soft)}
-  .tpl-actions:has(.tpl-build){flex-wrap:wrap}
-  .tpl-builder{margin:16px 20px;padding:16px;background:var(--fill-soft);border:1px solid var(--line);border-radius:14px}
-  .tpl-builder[hidden]{display:none}
-  .tpl-builder p{margin:0 0 12px;color:var(--muted);font-size:12px;line-height:1.7}
-  .tpl-builder fieldset{border:0;padding:0;margin:12px 0 0;min-width:0}
-  .tpl-builder legend{font-weight:700;font-size:13px;margin-bottom:8px}
-  .tpl-addon-options{display:flex;flex-wrap:wrap;gap:8px}
-  @media(max-width:720px){
-    .tpl-grid,.tpl-grid.is-landing{grid-template-columns:1fr}
-    .tpl-card-head{padding:16px;gap:12px}
-    .tpl-brand-block{min-width:40px}
-    .tpl-body{margin:12px 16px;padding:14px}
-    .tpl-builder{margin:12px 16px;padding:14px}
-    .tpl-actions{padding:16px;flex-wrap:wrap}
-    .tpl-copy{flex:1;min-width:140px}
-    .tpl-price{flex:1;min-width:140px}
-    .tpl-price strong{font-size:16px}
-  }
   .tpl-empty{grid-column:1/-1;padding:56px 24px;text-align:center;color:var(--muted);font-size:14px}
   .tpl-notfound{grid-column:1/-1;margin:-16px auto 8px;max-width:520px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.5}
   .tpl-notfound-btn{display:block;margin:12px auto 0;padding:11px 18px;border:1px solid var(--line-strong);border-radius:12px;
@@ -1750,6 +1524,157 @@
   .theme-btn:active,.tpl-copy:active,.tpl-copyall:active,.tpl-notfound-btn:active,
   .kopilka-btn:active,.fb-send:active,.tpl-facet-reset:active,.sales-tab:active{transform:scale(.95)}
   .tpl-copy:active{box-shadow:none}
+  /* Рабочий стол и каталог: согласованная компоновка на действующих данных. */
+  body{background-image:none}
+  .wrap{max-width:1120px}
+  .topnav{background:var(--card);-webkit-backdrop-filter:none;backdrop-filter:none}
+  .topnav-inner{min-height:76px}
+  .badge{box-shadow:none}
+  .sub{font-size:11px;letter-spacing:.08em}
+  .title .t{font-size:23px;letter-spacing:-.02em}
+  .title .t::before{display:none}
+  .home{padding:8px 0 24px}
+  .home button:focus-visible,.tpl-nav :is(select,summary):focus-visible{outline:2px solid var(--accent-soft);outline-offset:3px}
+  .home-title{font:700 23px/1.3 var(--font-disp);margin-bottom:20px;letter-spacing:-.02em}
+  .home-shift{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px 20px;background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:20px}
+  .home-shift-head{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .home-shift-head svg{width:16px;height:16px}
+  .home-shift-tag{display:none}
+  .home-shift-date{font-size:13px;color:var(--muted)}
+  .home-shift-label{font-size:13px;color:var(--muted)}
+  .home-shift-people{display:flex;gap:16px;flex-wrap:wrap}
+  .home-shift-p{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600}
+  .home-shift-dot{width:6px;height:6px;border-radius:50%;background:var(--cc)}
+  .home-shift-go{margin-left:auto;min-height:44px;display:flex;align-items:center;gap:8px;border:0;background:none;color:var(--text);font:600 13px var(--font-text);cursor:pointer}
+  .home-overview{padding:24px;border:1px solid var(--line);border-radius:18px;background:var(--card);margin-bottom:28px}
+  .home-ask-title{font:700 21px/1.4 var(--font-disp);margin-bottom:16px}
+  .home-ask{display:flex;gap:12px}
+  .home-ask-field{position:relative;flex:1;min-width:0}
+  .home-ask-ico{position:absolute;left:16px;top:16px;display:flex;color:var(--muted);pointer-events:none}
+  .home-ask-ico svg{width:18px;height:18px}
+  .home-ask-field input{width:100%;min-height:50px;padding:12px 48px 12px 44px;background:var(--card2);border:1px solid var(--line-strong);border-radius:12px;color:var(--text);font:14px var(--font-text)}
+  .home-ask-field input::placeholder{color:var(--muted)}
+  .home-ask-field input:focus-visible{outline:2px solid var(--accent-soft);outline-offset:2px}
+  .home-ask-go{display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:12px 20px;border:0;border-radius:12px;background:var(--brand);color:#fff;font:700 13px var(--font-text);cursor:pointer}
+  .home-ask-go:hover{background:var(--brand-hover)}
+  .home-ask-go svg{width:16px;height:16px}
+  .home-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-top:10px}
+  .home-found{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .home-found[hidden],.home-top[hidden]{display:none}
+  .home-found-row{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card2);color:var(--text);font:13px var(--font-text);cursor:pointer;text-align:left}
+  .home-found-name{font-weight:700}.home-found-n{color:var(--muted)}
+  .home-found-row svg{width:14px;height:14px;margin-left:auto}
+  .home-found-none{font-size:13px;color:var(--muted)}
+  .home-top{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .home-top-l{width:100%;font-size:12px;font-weight:600;color:var(--muted)}
+  .home-top-chip{max-width:100%;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card2);color:var(--text);font:12px var(--font-text);cursor:pointer;text-align:left}
+  .home-tiles{display:grid;grid-template-columns:7fr 5fr;gap:32px}
+  .home-group-title{font:700 17px/1.4 var(--font-disp);margin-bottom:12px}
+  .home-client-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .home-secondary-groups{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .home-secondary-groups section{display:flex;flex-direction:column;min-width:0}
+  .home-link-list{display:flex;flex-direction:column;flex:1;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--card)}
+  .home-tile{display:flex;align-items:flex-start;gap:12px;min-width:0;padding:20px;border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--text);text-align:left;font:inherit;cursor:pointer}
+  .home-tile:hover{background:var(--fill-hover);border-color:var(--line-strong)}
+  .home-tile-ic{display:flex;color:var(--muted);margin-top:3px;flex:none}
+  .home-tile-ic svg{width:18px;height:18px}
+  .home-tile-tx{display:flex;flex-direction:column;min-width:0}
+  .home-tile-name{font:700 17px/1.4 var(--font-disp)}
+  .home-tile-hint{font-size:13px;line-height:1.5;color:var(--muted);margin-top:5px}
+  .home-tile-count{font-size:12px;color:var(--muted);margin-top:4px}.home-tile-count b{color:var(--accent-soft)}
+  .home-tile-go{margin-left:auto;display:flex;flex:none;color:var(--muted)}.home-tile-go svg{width:14px;height:14px}
+  .home-link-list .home-tile{flex:1;align-items:center;min-height:52px;padding:12px 16px;border:0;border-radius:0}
+  .home-link-list .home-tile+.home-tile{border-top:1px solid var(--line)}
+  .home-link-list .home-tile-ic{margin:0}.home-link-list .home-tile-name{font:600 14px var(--font-text)}
+  .home-link-list .home-tile-hint,.home-link-list .home-tile-go{display:none}
+  .home-count{display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding-top:20px;margin-top:28px;border-top:1px solid var(--line)}
+  .home-count[hidden]{display:none}
+  .home-count-card{display:flex;align-items:center;gap:8px;min-width:0}
+  .home-count-head{font-size:13px;color:var(--muted)}.home-count-head svg{display:none}
+  .home-count-r{font-size:12px;color:var(--muted)}.home-count-row{display:flex;align-items:center;gap:3px}
+  .home-count-plus{font:500 18px var(--font-mono)}.home-count-none{color:var(--muted)}
+  .odo{display:inline-flex;align-items:center;gap:3px;font:500 22px var(--font-mono);font-variant-numeric:tabular-nums;--dh:1.4em}
+  .odo-cell{display:block;width:.8em;height:var(--dh);overflow:hidden;background:var(--card2);border-radius:4px;text-align:center}
+  .odo-cell.odo-g{margin-left:5px}.odo-strip{display:flex;flex-direction:column;will-change:transform}
+  .odo-strip span{display:block;height:var(--dh);line-height:var(--dh);text-align:center}
+  .tpl-layout{gap:16px}
+  .tpl-nav{display:flex;align-items:center;gap:12px;min-width:0}
+  .tpl-select{min-height:44px;min-width:160px;max-width:100%;padding:10px 32px 10px 12px;border:1px solid var(--line-strong);border-radius:12px;background:var(--fill);color:var(--text);font:13px var(--font-text)}
+  .tpl-filter-toggle{margin-left:auto}.tpl-filter-toggle summary{display:flex;gap:8px;align-items:center;list-style:none;min-height:44px;font-size:13px;font-weight:600;cursor:pointer}
+  .tpl-filter-toggle summary::-webkit-details-marker{display:none}
+  #page-shablony .tpl-search{background:var(--card2);border-color:var(--line-strong)}
+  #page-shablony .tpl-search input:focus-visible{outline:none}
+  .tpl-workspace{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:20px;align-items:start}
+  .tpl-list{min-width:0}.tpl-results{margin:0 0 12px;gap:12px;min-height:44px}
+  .tpl-results-info{font-size:12px}.tpl-results-info strong{font-size:12px}.tpl-copyall{font-size:12px;padding:10px 12px;min-height:44px;white-space:normal}
+  .tpl-grid{display:grid;grid-template-columns:1fr;gap:10px;align-items:start}
+  .tpl-card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;scroll-margin-top:calc(var(--navh,76px) + 20px)}
+  .tpl-card.selected{border-color:var(--accent-soft);outline:1px solid var(--accent-soft)}
+  .tpl-card-head{display:flex;align-items:flex-start;gap:12px;width:100%;min-height:68px;padding:16px 16px 8px;border:0;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}
+  .tpl-card-head:hover{background:var(--card2)}
+  .tpl-brand-logo{display:block;width:28px;height:28px;flex:none;margin-top:2px}.tpl-brand-logo svg{display:block;width:100%;height:100%}
+  .tpl-head-main{display:flex;flex-direction:column;min-width:0;gap:4px}.tpl-title{font:700 14px/1.5 var(--font-text)}
+  .tpl-row-meta{font-size:12px;color:var(--muted)}
+  .tpl-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:0 16px 14px}
+  .tpl-price{display:flex;flex-direction:column;gap:3px;min-width:0}.tpl-price-label{font-size:11px;color:var(--muted)}
+  .tpl-price strong{font:500 18px/1.4 var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tpl-warning{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--warn);white-space:nowrap}.tpl-warning .mi{width:13px;height:13px}
+  .tpl-copy{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 12px;border:1px solid var(--line-strong);border-radius:12px;background:var(--fill);color:var(--text);font:600 12px var(--font-text);cursor:pointer;flex:none}
+  .tpl-copy:hover{background:var(--fill-hover)}.tpl-copy.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-bg)}
+  .tpl-copy .mi{width:15px;height:15px}.tpl-actions>.tpl-copy{margin-left:auto}.tpl-actions>.tpl-share{margin-left:0}
+  .tpl-preview{position:sticky;top:calc(var(--navh,76px) + 20px);min-width:0}
+  .tpl-preview-panel{display:flex;flex-direction:column;max-height:var(--tpl-panel-max,calc(100dvh - var(--navh,76px) - 40px));border:1px solid var(--line);border-radius:18px;background:var(--card);overflow:hidden}
+  .tpl-preview-head{padding:20px 24px 16px;border-bottom:1px solid var(--line);flex:none}
+  .tpl-preview-context{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:var(--muted);margin-bottom:12px}
+  .tpl-preview-head h2{font:700 18px/1.45 var(--font-disp)}
+  .tpl-preview-modes{display:flex;gap:4px;padding:4px;border-radius:10px;background:var(--card2);width:max-content;max-width:100%;margin-top:16px}
+  .tpl-preview-modes button{border:0;border-radius:8px;background:none;min-height:44px;padding:8px 12px;font:600 12px var(--font-text);color:var(--text);cursor:pointer}
+  .tpl-preview-modes button[aria-pressed="true"]{background:var(--card);outline:1px solid var(--line-strong)}
+  .tpl-builder{padding:16px 24px;border-bottom:1px solid var(--line);display:grid;gap:16px;flex:none}
+  .tpl-builder fieldset{min-width:0;border:0;padding:0;margin:0}.tpl-builder legend{font-size:13px;font-weight:700;margin-bottom:8px}
+  .tpl-addon-options{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.tpl-addon-toggle{display:flex;gap:4px;padding:4px;background:var(--card2);border-radius:12px}
+  .tpl-addon-toggle button{min-height:44px;border:0;border-radius:8px;padding:8px 12px;background:none;color:var(--muted);font:600 13px var(--font-text);cursor:pointer}
+  .tpl-addon-toggle button[aria-pressed="true"]{background:var(--card);color:var(--text);outline:1px solid var(--line-strong)}
+  .tpl-addon-select{min-width:0;max-width:100%}.tpl-reset{justify-self:start;min-height:44px;border:0;background:none;color:var(--muted);font:12px var(--font-text);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+  .tpl-body{padding:20px 24px;min-height:100px;overflow:auto;flex:1;font:13px/1.7 var(--font-text);scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent}
+  .tpl-doc-title,.tpl-doc-label{font-weight:700;color:var(--text)}.tpl-doc-title{margin-bottom:16px}.tpl-doc-label{margin-top:16px;margin-bottom:8px}
+  .tpl-doc-line{display:flex;justify-content:space-between;gap:16px;padding:6px 0;color:var(--muted)}.tpl-doc-line span{min-width:0}.tpl-doc-line b{flex:none;white-space:nowrap;color:var(--text);font:500 12px/1.7 var(--font-mono)}
+  .tpl-doc-total{display:flex;justify-content:space-between;gap:16px;padding-top:10px;margin-top:4px;border-top:1px solid var(--line);font-weight:800}.tpl-doc-total strong{font:600 16px var(--font-mono);white-space:nowrap}
+  .tpl-doc-rule{border:0;border-top:1px solid var(--line);margin:24px 0}.tpl-doc-note{color:var(--muted);margin-top:10px}
+  .tpl-preview-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:16px 24px;border-top:1px solid var(--line);background:var(--card);flex:none}
+  .tpl-preview-footer .tpl-copy{background:var(--brand);color:#fff;border-color:var(--brand)}.tpl-preview-footer .tpl-copy:hover{background:var(--brand-hover)}
+  .tpl-preview-footer .tpl-share{background:var(--fill);color:var(--text);border-color:var(--line-strong)}
+  .tpl-preview-empty{min-height:320px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:32px}
+  .tpl-preview-empty>.mi{width:28px;height:28px;color:var(--muted);margin-bottom:20px}.tpl-preview-empty h2{font:700 17px var(--font-disp)}.tpl-preview-empty p{color:var(--muted);font-size:13px;max-width:32ch;margin-top:8px}
+  .tpl-back{display:none}.tpl-todo-note{color:var(--muted);padding:24px;font-size:13px}
+  @media(max-width:1120px){.topnav-inner{min-height:0}.home-tiles{grid-template-columns:1fr 1fr;gap:24px}.home-secondary-groups{grid-template-columns:1fr;gap:20px;align-self:start}.home-link-list{flex-direction:row}.home-link-list .home-tile{justify-content:center;padding:12px 8px}.home-link-list .home-tile+.home-tile{border-top:0;border-left:1px solid var(--line)}.home-link-list .home-tile-name{font-size:13px}.home-tile{padding:16px}.home-client-grid .home-tile-ic{display:none}}
+  @media(max-height:700px){.tpl-preview{position:static}}
+  @media(max-width:720px){
+    body{padding-inline:16px}.topnav{margin-inline:-16px;padding-inline:16px}.sub{font-size:10px}.title .t{font-size:22px}
+    .home-shift{padding:12px 14px;gap:8px;margin-bottom:16px}.home-shift-head{width:100%}.home-shift-label{display:none}.home-shift-people{gap:12px}.home-shift-p{font-size:12px}.home-shift-go{font-size:12px}
+    .home-overview{padding:18px 16px;margin-bottom:24px}.home-ask-title{font-size:19px;margin-bottom:14px}.home-ask{flex-wrap:wrap;gap:8px}.home-ask-field{flex-basis:100%}.home-ask-field input{font-size:16px}.home-ask-go{width:100%;min-height:44px}
+    .home-tiles{grid-template-columns:1fr;gap:24px}.home-tile{min-height:124px;padding:16px 14px}.home-tile-go{display:none}.home-client-grid{gap:10px}.home-tile-name{font-size:17px}.home-count{gap:12px 20px}.odo{font-size:20px}
+    .tpl-nav{gap:8px;flex-wrap:nowrap}.tpl-select{flex:1;min-width:0;width:36%;font-size:12px}.tpl-filter-toggle{margin:0;flex:none}.tpl-filter-toggle summary{font-size:12px;gap:4px}.tpl-filter-toggle .mi{width:15px}
+    #tpl-search-help{font-size:12px;margin-bottom:10px}.tpl-workspace{display:block}.tpl-results{gap:8px}.tpl-copyall{max-width:156px}
+    .tpl-card{border-radius:14px}.tpl-card-head{padding:14px 14px 8px;min-height:60px;gap:10px}.tpl-title{font-size:13px}.tpl-brand-logo{width:24px;height:24px}.tpl-actions{padding:0 14px 12px}.tpl-price strong{font-size:17px}
+    .tpl-preview{display:none;position:static}.tpl-preview-panel{max-height:none;overflow:visible;border-radius:16px}.tpl-body{overflow:visible;min-height:0;padding:16px}
+    .tpl-detail-open .tpl-preview{display:block}.tpl-detail-open .tpl-list,.tpl-detail-open>.tpl-toolbar,.tpl-detail-open>#tpl-search-help,.tpl-detail-open .tpl-nav,.tpl-detail-open .tpl-facets{display:none}
+    .tpl-back{display:flex;align-items:center;gap:8px;min-height:44px;margin-bottom:12px;padding:0;border:0;background:none;color:var(--text);font:13px var(--font-text);cursor:pointer}.tpl-back .mi{transform:rotate(180deg)}
+    .tpl-preview-head{padding:16px}.tpl-preview-head h2{font-size:16px}.tpl-builder{padding:16px}.tpl-addon-select{flex:1;min-width:140px}.tpl-preview-footer{position:sticky;bottom:0;padding:12px;border-radius:0 0 16px 16px}.tpl-preview-footer .tpl-copy{flex:1}.tpl-preview-footer .tpl-price strong{font-size:15px}.tpl-doc-line{gap:12px}
+  }
+  @supports (appearance:base-select){
+    select,select::picker(select){appearance:base-select}
+    select{align-items:center;gap:12px;cursor:pointer;white-space:nowrap}.tpl-select{padding:10px 12px}
+    select:hover{background:var(--fill-hover);border-color:var(--line-strong)}select:open{background:var(--card);border-color:var(--accent-soft);outline:none}
+    select::picker-icon{content:"";color:var(--muted);margin-inline-start:auto;margin-inline-end:3px;inline-size:7px;block-size:7px;border-inline-end:1.5px solid currentColor;border-block-end:1.5px solid currentColor;transform:rotate(45deg);translate:0 -2px;flex:none}
+    select:open::picker-icon{color:var(--accent-soft);rotate:180deg}
+    select::picker(select){font:500 13px/1.5 var(--font-text);color:var(--text);background:var(--card);border:1px solid var(--line-strong);border-radius:14px;box-shadow:var(--shadow);padding:6px;margin-block:8px;min-inline-size:min(240px,calc(100vw - 32px));inline-size:anchor-size(width);max-inline-size:calc(100vw - 32px);max-block-size:min(560px,60dvh);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent}
+    select option{display:flex;align-items:center;gap:12px;min-height:44px;padding:10px 12px;border-radius:8px;color:var(--text);background:var(--card);font-weight:500;white-space:normal;cursor:pointer}
+    select option:hover,select option:focus{background:var(--fill-hover);outline:none}select option:checked{background:var(--weekend);color:var(--accent-soft);font-weight:700}select option::checkmark{order:1;margin-inline-start:auto;color:var(--accent-soft)}
+  }
+  @media(prefers-reduced-motion:no-preference){.home-tile,.home-ask-go,select::picker-icon{transition:background-color 150ms,color 150ms,border-color 150ms,rotate 150ms}}
+  @media print{.tpl-back,.tpl-nav,.tpl-preview-modes,.tpl-builder,.tpl-preview-footer{display:none!important}.tpl-preview{position:static;display:block}.tpl-preview-panel{max-height:none;overflow:visible;border:0}.tpl-body{overflow:visible}.tpl-detail-open .tpl-list{display:none}.home-tile,.home-overview,.home-shift{box-shadow:none}}
+
 </style>
 <script>(function(){try{var t=localStorage.getItem('md_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <!-- Ранний перехватчик ошибок. Живёт здесь, а не в основном скрипте, потому что MDLOG объявлен
@@ -1904,11 +1829,13 @@
         <nav class="tpl-nav" id="tpl-nav" aria-label="Выбор семейства и модели коробки"></nav>
         <section class="tpl-main">
           <div class="tpl-facets" id="tpl-facets" hidden></div>
+          <div class="tpl-workspace"><div class="tpl-list">
           <div class="tpl-results">
             <div class="tpl-results-info"><strong id="tpl-result-title">Семейства коробок</strong><span id="tpl-hint"></span></div>
             <button class="tpl-copyall" id="tpl-copyall" type="button">Копировать всё видимое</button>
           </div>
           <div class="tpl-grid" id="tpl-grid"></div>
+          </div><aside class="tpl-preview" id="tpl-preview" aria-label="Предпросмотр выбранной сметы"></aside></div>
         </section>
       </div>
     </div>
@@ -5083,11 +5010,13 @@
     const copyAllBtn = document.getElementById("tpl-copyall");
     const resultTitle = document.getElementById("tpl-result-title");
     searchInp.insertAdjacentHTML("beforebegin", ICO.search);
-    let activeBrand = "all", activeBox = "all", query = "", expandedBrand = null;
+    const preview = document.getElementById("tpl-preview");
+    let activeBrand = "all", activeBox = "all", query = "";
+    let selectedTemplate = null, previewMode = "plain", mobileDetail = false, listScroll = 0, filtersOpen = false;
     const filters = { type:null, pan:null, engine:null, lock:null, axle:null, transfer:null };
     const drafts = new Map(); // по объекту TEMPLATES: поиск/фильтры/сверка не сбрасывают выбор и не меняют другие карточки
     const currentDoc = t => tplDoc(t, drafts.get(t));
-    const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
     const cnt = n => n ? `<span class="tpl-count">${n}</span>` : "";   // бейдж-счётчик у вкладок/фильтров
     const plural = (n,a,b,c) => { const m=n%100,d=n%10; return n+" "+(m>=11&&m<=14?c:d===1?a:d>=2&&d<=4?b:c); };
 
@@ -5110,26 +5039,18 @@
     const boxesOf    = b => [...new Set(TEMPLATES.filter(t=>t.brand===b && t.box).map(t=>t.box))];
     // Ответы клиентам живут в каталоге, но сметами не считаются: «N смет» — только коробки
     const smetaCount = () => TEMPLATES.filter(t => !isAnswer(t)).length;
-    const countText  = list => list.length && list.every(isAnswer)
-      ? plural(list.length, "ответ", "ответа", "ответов") : plural(list.length, "смета", "сметы", "смет");
+    const countText = list => {
+      const cards = list.filter(t => !isAnswer(t)).length, answers = list.length - cards;
+      return [cards && plural(cards,"смета","сметы","смет"), answers && plural(answers,"ответ","ответа","ответов")].filter(Boolean).join(" · ") || "Нет совпадений";
+    };
 
-    // Те же семейства и модели — двумя компактными рядами, как фильтры «Комплектов».
+    // Те же данные каталога — компактный выбор семейства и модели.
     function renderNav(){
-      const home = `<button class="tpl-nav-head tpl-nav-home ${activeBrand==="all"?"active-home":""}" type="button" aria-pressed="${activeBrand==="all"}" data-home="1"><span class="tpl-nav-name">Все коробки</span>${cnt(smetaCount())}</button>`;
-      const families = brands.map(b=>{
-        const open   = b===expandedBrand;
-        const isCur  = b===activeBrand;
-        const logo   = BRAND_LOGOS[b] || "";
-        return `<button class="tpl-nav-head ${isCur?"active-brand":""}" type="button" aria-pressed="${isCur}" aria-expanded="${open}" data-brand="${esc(b)}">
-            ${logo?`<span class="tpl-nav-logo">${logo}</span>`:""}
-            <span class="tpl-nav-name">${esc(b)}</span>${cnt(brandCount(b))}
-          </button>`;
-      }).join("");
-      const models = expandedBrand ? boxesOf(expandedBrand).map(box=>
-        `<button class="tpl-nav-model ${box===activeBox?"active":""}" type="button" aria-pressed="${box===activeBox}" data-brand="${esc(expandedBrand)}" data-box="${esc(box)}">
-          <span>${esc(box)}</span>${cnt(boxCount(expandedBrand,box))}</button>`).join("") : "";
-      navBox.innerHTML = `<div class="tpl-nav-brands">${home}${families}</div>`
-        + (models ? `<div class="tpl-nav-models" aria-label="Модели ${esc(expandedBrand)}">${models}</div>` : "");
+      const boxes = activeBrand === "all" ? [...new Set(TEMPLATES.map(t => t.box).filter(Boolean))] : boxesOf(activeBrand);
+      navBox.innerHTML = `<select class="tpl-select" id="tpl-family" aria-label="Семейство коробки"><option value="all">Все семейства</option>${brands.map(b => `<option value="${esc(b)}" ${b === activeBrand ? "selected" : ""}>${esc(b)}</option>`).join("")}</select>
+        <select class="tpl-select" id="tpl-model" aria-label="Модель коробки"><option value="all">Все модели</option>${boxes.map(box => `<option value="${esc(box)}" ${box === activeBox ? "selected" : ""}>${esc(box)}</option>`).join("")}</select>
+        <details class="tpl-filter-toggle" ${filtersOpen ? "open" : ""}><summary>${ICO.list} Фильтры</summary></details>`;
+      navBox.querySelector("details").addEventListener("toggle", e => { filtersOpen = e.target.open; renderFacets(); });
     }
 
     // Базовый набор (марка+коробка) — из него строим фильтры
@@ -5138,7 +5059,6 @@
 
     // Фильтры-фасеты — видны только когда выбрана марка и есть из чего выбирать
     function renderFacets(){
-      if(activeBrand==="all"){ facetsBox.hidden = true; facetsBox.innerHTML = ""; return; }
       const base = baseSet();
       const rows = FACETS.map(f=>{
         const present = new Set(base.map(t=>f.get(t)));
@@ -5156,7 +5076,7 @@
         // кнопку сброса вставляем в конец первой строки фасета (уйдёт вправо)
         html = html.replace("</div>", `<button class="tpl-facet-reset" data-reset>Сбросить ${ICO.close}</button></div>`);
       }
-      facetsBox.hidden = false;
+      facetsBox.hidden = !filtersOpen;
       facetsBox.innerHTML = html;
     }
 
@@ -5251,51 +5171,16 @@
       return true;
     }
 
-    // ③ Каскад проявления карточек/плиток (перенос Magic UI BlurFade со stagger).
-    // Дёргается при навигации внутри каталога (выбор марки/коробки/домой),
-    // но НЕ на ввод в поиск — иначе каскад моргал бы на каждой букве.
-    function revealCards(){ mdBlurStagger(grid.querySelectorAll(".tpl-card, .tpl-tile")); }
-
-    // Выбор семейства (кнопка в ряду / плитка старта): показываем модели и открываем первую коробку.
+    function revealCards(){ mdBlurStagger(grid.querySelectorAll(".tpl-card")); }
     function selectBrand(b){
-      const boxes = boxesOf(b);
-      activeBrand = b; activeBox = boxes[0] || "all"; expandedBrand = b;
-      resetFilters(); renderNav(); renderFacets(); render(); revealCards();
+      activeBrand = b; activeBox = "all"; resetFilters();
+      renderNav(); renderFacets(); render(); revealCards();
     }
-    // Выбор конкретной модели коробки.
     function selectBox(b, box){
-      activeBrand = b; activeBox = box; expandedBrand = b;
-      resetFilters(); renderNav(); renderFacets(); render(); revealCards();
+      activeBrand = b; activeBox = box; resetFilters();
+      renderNav(); renderFacets(); render(); revealCards();
     }
-    // Сброс к стартовому экрану (плитки).
-    function goHome(){
-      activeBrand = "all"; activeBox = "all"; expandedBrand = null;
-      resetFilters(); renderNav(); renderFacets(); render(); revealCards();
-    }
-
-    // Стартовый экран: плитки семейств вместо стены из всех карточек.
-    function renderLanding(){
-      grid.innerHTML =
-        brands.map(b=>{
-          const boxes = [...new Set(TEMPLATES.filter(t=>t.brand===b && t.box).map(t=>t.box))];
-          const logo  = BRAND_LOGOS[b] || "";
-          const shown = boxes.slice(0,5).map(x=>`<span class="tpl-tile-chip">${esc(x)}</span>`).join("");
-          const more  = boxes.length>5 ? `<span class="tpl-tile-more">+${boxes.length-5}</span>` : "";
-          return `<button class="tpl-tile" type="button" data-brand="${esc(b)}">
-            <span class="tpl-tile-go">${ICO.arrow}</span>
-            <span class="tpl-tile-top">
-              ${logo?`<span class="tpl-tile-logo">${logo}</span>`:""}
-              <span class="tpl-tile-head">
-                <span class="tpl-tile-name">${esc(b)}</span>
-                <span class="tpl-tile-meta">${b === ANSWERS_BRAND ? plural(boxes.length,"раздел","раздела","разделов") : plural(boxes.length,"модель","модели","моделей")} · ${countText(TEMPLATES.filter(t=>t.brand===b))}</span>
-              </span>
-            </span>
-            <span class="tpl-tile-models">${shown}${more}</span>
-          </button>`;
-        }).join("");
-      grid.querySelectorAll(".tpl-tile").forEach(tile=>
-        tile.addEventListener("click", ()=> selectBrand(tile.dataset.brand)));
-    }
+    function goHome(){ selectBrand("all"); }
 
     /* Подсказка «нашли по номеру»: что это за номер и откуда портал его знает.
        Коробку по номеру НЕ угадываем. Соблазн есть — в каталоге «Цены» у номера написано
@@ -5340,19 +5225,124 @@
       });
     }
 
-    function render(){
-      // По умолчанию (никакая марка не выбрана и пустой поиск) — стартовый экран с плитками.
-      if(deferHiddenRender("shablony", render)) return;
-      const landing = activeBrand==="all" && !query;
-      grid.classList.toggle("is-landing", landing);
-      if(landing){
-        copyAllBtn.disabled = false;
-        resultTitle.textContent = "Семейства коробок";
-        hintEl.textContent = plural(smetaCount(),"смета","сметы","смет");
-        renderLanding(); return;
+    function displayTitle(t, doc = currentDoc(t)){
+      const choices = drafts.get(t) || {};
+      return tplAddonGroups(t).some(g => choices[g.id] === "none") ? doc.text.split("\n")[0] : tplTitle(t);
+    }
+    function priceLabel(doc){
+      const totals = doc.totals || [];
+      return totals.some(n => n == null) || !totals.length ? "уточню"
+        : (Math.min(...totals) !== Math.max(...totals) ? "от " : "") + CDOC.money(Math.min(...totals));
+    }
+    const priceWarning = doc => doc.stale || doc.unknown ? `<span class="tpl-warning">${ICO.warn} Проверить цены</span>` : "";
+    function previewDocument(text){
+      return text.split("\n").filter(Boolean).map((line, i) => {
+        if(line.startsWith("• ")){
+          const at = line.lastIndexOf(" — ");
+          if(at > 0) return `<div class="tpl-doc-line"><span>${esc(line.slice(2, at))}</span><b>${esc(line.slice(at + 3))}</b></div>`;
+        }
+        if(line.startsWith("Итого:")) return `<p class="tpl-doc-total"><span>Итого</span><strong>${esc(line.slice(6).trim())}</strong></p>`;
+        if(line === CDOC.SEP) return `<hr class="tpl-doc-rule">`;
+        const cls = i === 0 ? "tpl-doc-title" : line.startsWith("Вариант ") || line === "Motul" || line.startsWith("Оригинал ") ? "tpl-doc-label" : "tpl-doc-note";
+        return `<p class="${cls}">${esc(line)}</p>`;
+      }).join("");
+    }
+    function renderPreview(){
+      const root = document.getElementById("page-shablony");
+      root.classList.toggle("tpl-detail-open", mobileDetail && !!selectedTemplate);
+      if(!selectedTemplate){
+        preview.innerHTML = `<div class="tpl-preview-panel tpl-preview-empty">${ICO.copy}<h2>Выберите смету</h2><p>Здесь будет текст для клиента. Его можно проверить перед отправкой.</p></div>`;
+        return;
       }
+      const t = selectedTemplate, doc = currentDoc(t), groups = tplAddonGroups(t), choices = drafts.get(t) || {};
+      const codes = doc.plain !== doc.text;
+      if(!codes) previewMode = "plain";
+      const caption = isAnswer(t) ? "Ответ клиенту" : previewMode === "plain" ? "Смета клиенту · без номеров деталей" : "С номерами · для записи и заказа";
+      preview.innerHTML = `<button class="tpl-back" id="tpl-back" type="button">${ICO.arrow} К списку смет</button>
+        <div class="tpl-preview-panel"><div class="tpl-preview-head"><div class="tpl-preview-context"><span>${caption}</span>${priceWarning(doc)}</div><h2>${esc(displayTitle(t, doc))}</h2>
+          ${codes ? `<div class="tpl-preview-modes" aria-label="Вид сметы"><button type="button" data-preview-mode="plain" aria-pressed="${previewMode === "plain"}">Клиенту</button><button type="button" data-preview-mode="text" aria-pressed="${previewMode === "text"}">С номерами — себе</button></div>` : ""}</div>
+        ${groups.length ? `<div class="tpl-builder">${groups.map(g => {
+          const choice = choices[g.id] || "all";
+          return `<fieldset><legend>${esc(g.title)}</legend><div class="tpl-addon-options"><div class="tpl-addon-toggle">
+            <button type="button" data-addon="${g.id}" data-choice="none" aria-pressed="${choice === "none"}">Не добавлять</button>
+            <button type="button" data-addon="${g.id}" data-choice="${choice === "none" ? "all" : choice}" aria-pressed="${choice !== "none"}">Добавить</button></div>
+            ${choice !== "none" && g.labels.length > 1 ? `<select class="tpl-select tpl-addon-select" data-addon="${g.id}" aria-label="Вариант: ${esc(g.title)}"><option value="all" ${choice === "all" ? "selected" : ""}>Предложить все варианты</option>${g.labels.map((label, i) => `<option value="${i}" ${choice === String(i) ? "selected" : ""}>${esc(label)}</option>`).join("")}</select>` : ""}</div></fieldset>`;
+        }).join("")}${drafts.has(t) ? `<button type="button" class="tpl-reset">Вернуть исходный шаблон</button>` : ""}</div>` : ""}
+        <div class="tpl-body">${t.todo ? `<p class="tpl-todo-note">Шаблон ещё не заполнен.</p>` : previewDocument(doc[previewMode])}</div>
+        ${!t.todo && doc.text ? `<div class="tpl-preview-footer"><div class="tpl-price"><span class="tpl-price-label">${isAnswer(t) ? "Готовый ответ" : "Замена масла"}</span>${isAnswer(t) ? "" : `<strong>${esc(priceLabel(doc))}</strong>`}</div>
+          <button type="button" class="tpl-copy${previewMode === "text" ? " tpl-copy-codes" : ""}" id="tpl-preview-copy">${ICO.copy} ${previewMode === "text" ? "Копировать с номерами" : "Копировать клиенту"}</button>${shareBtn('class="tpl-copy tpl-share"')}</div>` : ""}</div>`;
+      preview.querySelector("#tpl-back").addEventListener("click", () => {
+        mobileDetail = false; renderPreview(); window.scrollTo({ top:listScroll, behavior:"instant" });
+        grid.querySelectorAll(".tpl-card-head")[visible().indexOf(t)]?.focus({ preventScroll:true });
+      });
+      preview.querySelectorAll("[data-preview-mode]").forEach(btn => btn.addEventListener("click", () => {
+        previewMode = btn.dataset.previewMode; renderPreview();
+        preview.querySelector(`[data-preview-mode="${previewMode}"]`)?.focus({ preventScroll:true });
+        syncPreviewHeight();
+      }));
+      const update = (id, value, selector) => {
+        drafts.set(t, { ...(drafts.get(t) || {}), [id]:value }); render();
+        preview.querySelector(selector)?.focus({ preventScroll:true });
+      };
+      preview.querySelectorAll("button[data-addon]").forEach(btn => btn.addEventListener("click", () => update(btn.dataset.addon, btn.dataset.choice, `button[data-addon="${btn.dataset.addon}"][aria-pressed="true"]`)));
+      preview.querySelectorAll("select[data-addon]").forEach(sel => sel.addEventListener("change", () => update(sel.dataset.addon, sel.value, `select[data-addon="${sel.dataset.addon}"]`)));
+      preview.querySelector(".tpl-reset")?.addEventListener("click", () => { drafts.delete(t); render(); });
+      preview.querySelector("#tpl-preview-copy")?.addEventListener("click", e => {
+        const d = currentDoc(t); copyText(d[previewMode], e.currentTarget, ICO.check + " Скопировано");
+        if(previewMode === "plain" && window.MDLOG) window.MDLOG.copy(tplCode(t));
+      });
+      preview.querySelector(".tpl-share")?.addEventListener("click", async e => {
+        const ok = await shareText(currentDoc(t).plain);
+        if(ok === false) copyText(currentDoc(t).plain, e.currentTarget);
+        if(ok !== null && window.MDLOG) window.MDLOG.copy(tplCode(t));
+      });
+    }
+    function renderRows(list){
+      return list.map((t, i) => {
+        const doc = currentDoc(t), title = displayTitle(t, doc), logo = BRAND_LOGOS[t.brand] || "";
+        return `<div class="tpl-card ${t === selectedTemplate ? "selected" : ""}"><button class="tpl-card-head" type="button" data-i="${i}" aria-pressed="${t === selectedTemplate}" aria-label="Открыть смету: ${esc(title)}">
+          ${logo ? `<span class="tpl-brand-logo">${logo}</span>` : ""}<span class="tpl-head-main"><span class="tpl-title">${esc(title)}</span><span class="tpl-row-meta">${esc(t.brand)}${isAnswer(t) ? " · Готовый ответ" : ""}</span></span></button>
+          ${!t.todo && doc.text ? `<div class="tpl-actions"><div class="tpl-price">${isAnswer(t) ? `<span class="tpl-price-label">Готовый ответ</span>` : `<strong>${esc(priceLabel(doc))}</strong>`}${priceWarning(doc)}</div>
+            <button class="tpl-copy" type="button" data-i="${i}" title="Клиенту: смета без номеров деталей">${ICO.copy} Копировать</button>${shareBtn(`class="tpl-copy tpl-share" data-i="${i}"`)}</div>` : ""}</div>`;
+      }).join("");
+    }
+    function bindRows(list){
+      grid.querySelectorAll(".tpl-card-head").forEach(btn => btn.addEventListener("click", () => {
+        listScroll = window.scrollY; selectedTemplate = list[+btn.dataset.i]; previewMode = "plain";
+        mobileDetail = matchMedia("(max-width:720px)").matches; render();
+        if(mobileDetail){ window.scrollTo({ top:0, behavior:"instant" }); preview.querySelector("#tpl-back")?.focus({ preventScroll:true }); }
+        else {
+          grid.querySelector(`.tpl-card-head[data-i="${btn.dataset.i}"]`)?.focus({ preventScroll:true });
+          if(preview.getBoundingClientRect().bottom > window.innerHeight - 20){
+            preview.scrollIntoView({ block:"end", behavior:"instant" }); syncPreviewHeight();
+          }
+        }
+      }));
+      grid.querySelectorAll(".tpl-copy:not(.tpl-share)").forEach(btn => btn.addEventListener("click", () => {
+        const t = list[+btn.dataset.i]; copyText(currentDoc(t).plain, btn, ICO.check + " Вставьте в WhatsApp");
+        if(window.MDLOG) window.MDLOG.copy(tplCode(t));
+      }));
+      grid.querySelectorAll(".tpl-share").forEach(btn => btn.addEventListener("click", async () => {
+        const t = list[+btn.dataset.i], ok = await shareText(currentDoc(t).plain);
+        if(ok === false) copyText(currentDoc(t).plain, btn);
+        if(ok !== null && window.MDLOG) window.MDLOG.copy(tplCode(t));
+      }));
+    }
+    function syncPreviewHeight(){
+      const panel = preview.querySelector(".tpl-preview-panel");
+      if(!panel || matchMedia("(max-width:720px)").matches || document.getElementById("page-shablony").hidden) return;
+      const top = Math.max(document.querySelector(".topnav").getBoundingClientRect().bottom + 20, preview.getBoundingClientRect().top);
+      const fixedHeight = [...panel.children].filter(el => !el.classList.contains("tpl-body"))
+        .reduce((sum, el) => sum + el.getBoundingClientRect().height, 2);
+      panel.style.setProperty("--tpl-panel-max", Math.max(fixedHeight + 100, window.innerHeight - top - 20) + "px");
+    }
+
+    function render(){
+      if(deferHiddenRender("shablony", render)) return;
       const list = visible();
-      resultTitle.textContent = query ? "Результаты поиска" : `${activeBrand} · ${activeBox}`;
+      if(selectedTemplate && !list.includes(selectedTemplate)){ selectedTemplate = null; mobileDetail = false; }
+      renderPreview();
+      resultTitle.textContent = query ? "Результаты поиска" : activeBrand === "all" && activeBox === "all" ? "Все шаблоны" : `${activeBrand === "all" ? "Коробка" : activeBrand} · ${activeBox === "all" ? "Все модели" : activeBox}`;
       hintEl.textContent = countText(list);
       copyAllBtn.disabled = !list.some(t => !t.todo && currentDoc(t).text);
       // Подсказка «машина → коробка»: почему показаны эти карточки + напоминание проверить VIN.
@@ -5403,131 +5393,19 @@
         });
         return;
       }
-      grid.innerHTML = carHint + artHint(true) + list.map((t,i)=>{
-        const tags = tplTags(t).map(x=>`<span class="tpl-tag">${esc(x)}</span>`).join("");
-        const logo = BRAND_LOGOS[t.brand] || "";
-        const choices = drafts.get(t);
-        const doc = currentDoc(t);
-        const addons = tplAddonGroups(t);
-        const body = doc.text;
-        const placeholder = t.todo || !body;   // нет данных по услуге → показываем как заготовку
-        const totals = doc.totals || [];
-        const amount = totals.some(n => n == null) || !totals.length ? "уточню"
-          : (Math.min(...totals) !== Math.max(...totals) ? "от " : "") + CDOC.money(Math.min(...totals));
-        const badges = isAnswer(t) ? [] : [`<span class="tpl-badge ${t.type==="Частичная"?"b-part":"b-app"}">${esc(t.type)}</span>`];
-        if(t.combo) badges.push(`<span class="tpl-badge b-all">Все поддоны</span>`);   // сводка: в одном тексте все поддоны метода
-        const eng = engineOf(t);
-        if(eng !== "Обычная") badges.push(`<span class="tpl-badge b-hybrid">${ICO.bolt} ${esc(eng)}</span>`);
-        if(t.lock)   badges.push(`<span class="tpl-badge b-lock">${ICO.lock} Блокировка</span>`);
-        // мягкий флаг «проверить»: цена не подтверждена (в смете она ПРЕЖНЯЯ) или позиции нет в PRICE.
-        // Бейдж живёт только на экране — в буфер уходит ровно смета (правило 9).
-        if(doc.stale || doc.unknown) badges.push(`<span class="tpl-badge b-check">${ICO.warn} Проверить цены</span>`);
-        return `<div class="tpl-card ${placeholder?"is-todo":""} ${choices?"open":""}">
-          <button class="tpl-card-head" type="button" aria-expanded="${!!choices}" aria-controls="tpl-detail-${i}">
-            <span class="tpl-brand-block">
-              ${logo ? `<span class="tpl-brand-logo">${logo}</span>` : `<span class="tpl-brand-tag">${esc(t.brand)}</span>`}
-            </span>
-            <span class="tpl-head-main">
-              <span class="tpl-title">${t.titleAccent
-                ? esc(tplTitle(t)).replace(esc(t.titleAccent), `<strong class="tpl-title-accent">${esc(t.titleAccent)}</strong>`)
-                : esc(tplTitle(t))}</span>
-              <span class="tpl-badges">${badges.join("")}</span>
-            </span>
-            <span class="tpl-chevron"></span>
-          </button>
-          <div class="tpl-collapse" id="tpl-detail-${i}"><div class="tpl-collapse-inner">
-            ${tags ? `<div class="tpl-tags">${tags}</div>` : ""}
-            ${!placeholder && addons.length ? `<div class="tpl-builder" id="tpl-builder-${i}" ${choices?"":"hidden"}>
-              <p>Смета на основе шаблона. Выберите допуслуги для клиента; масло и работы АКПП остаются прежними. Ниже — текст сметы; «Копировать» отправит его без номеров деталей.</p>
-              ${addons.map(g => `<fieldset><legend>${esc(g.title)}</legend><div class="tpl-addon-options">
-                ${[["none", "Не добавлять"], ["all", g.labels.length===1 ? g.labels[0] : "Предложить варианты"], ...(g.labels.length>1 ? g.labels.map((label, n) => [String(n), label]) : [])].map(([id, label]) =>
-                  `<button class="tpl-chip ${(choices?.[g.id] || "all")===id?"active":""}" type="button" aria-pressed="${(choices?.[g.id] || "all")===id}" data-i="${i}" data-addon="${g.id}" data-choice="${id}">${esc(label)}</button>`).join("")}
-              </div></fieldset>`).join("")}
-            </div>` : ""}
-            ${placeholder
-              ? `<div class="tpl-todo-note">Шаблон ещё не заполнен — пришли цифры, и он появится здесь.</div>`
-              : `<div class="tpl-body">${esc(body)}</div>`}
-          </div></div>
-          ${placeholder ? "" : `<div class="tpl-actions">
-            ${isAnswer(t) ? `<div class="tpl-price"><span class="tpl-price-label">Готовый ответ</span></div>`
-              : `<div class="tpl-price"><span class="tpl-price-label">Замена масла${totals.length>1?" · варианты в смете":""}</span><strong>${esc(amount)}</strong></div>`}
-            <button class="tpl-copy" type="button" data-i="${i}" title="Клиенту: смета без номеров деталей">${ICO.copy} Копировать</button>
-            ${shareBtn(`class="tpl-copy tpl-share" data-i="${i}"`)}
-            ${doc.plain !== body ? `<button class="tpl-copy tpl-copy-codes" type="button" data-i="${i}" title="Та же смета с номерами деталей — себе: записать клиента, заказать деталь. Клиенту её не отправляем">${ICO.copy} <span class="tpl-wide">Копировать с номерами</span><span class="tpl-narrow">С номерами</span></button>` : ""}
-            ${addons.length ? `<button class="tpl-copy tpl-build" type="button" data-i="${i}" aria-pressed="${!!choices}" aria-controls="tpl-builder-${i}">${choices?"Вернуть исходный шаблон":"Собрать на основе"}</button>` : ""}
-          </div>`}
-        </div>`;
-      }).join("");
-      bindArtOpen();
-      grid.querySelectorAll(".tpl-card-head").forEach(head=>{
-        head.addEventListener("click", ()=>{
-          const card = head.closest(".tpl-card");
-          const open = card.classList.toggle("open");
-          head.setAttribute("aria-expanded", open ? "true" : "false");
-        });
-      });
-      grid.querySelectorAll(".tpl-copy:not(.tpl-build):not(.tpl-copy-codes):not(.tpl-share)").forEach(btn=>{
-        btn.addEventListener("click", e=>{
-          e.stopPropagation();
-          const t = list[+btn.dataset.i];
-          copyText(currentDoc(t).plain, btn, ICO.check + " Вставьте в WhatsApp");
-          if(window.MDLOG) window.MDLOG.copy(tplCode(t));   // А3: лог нажатия «Копировать» (буфер не трогаем, КЛ2)
-        });
-      });
-      // «Отправить» — тот же клиентский текст; в журнал А3 идёт как «Копировать», если смета ушла
-      grid.querySelectorAll(".tpl-share").forEach(btn=>{
-        btn.addEventListener("click", async e=>{
-          e.stopPropagation();
-          const t = list[+btn.dataset.i], text = currentDoc(t).plain;
-          const ok = await shareText(text);
-          if(ok === false) copyText(text, btn, ICO.check + " Вставьте в WhatsApp");
-          if(ok !== null && window.MDLOG) window.MDLOG.copy(tplCode(t));
-        });
-      });
-      // «С номерами» — себе (запись, заказ детали). В MDLOG не пишем: метрика А3 считает сметы клиенту.
-      grid.querySelectorAll(".tpl-copy-codes").forEach(btn=>{
-        btn.addEventListener("click", e=>{
-          e.stopPropagation();
-          copyText(currentDoc(list[+btn.dataset.i]).text, btn, ICO.check + " Скопировано с номерами");
-        });
-      });
-      grid.querySelectorAll(".tpl-build").forEach(btn => btn.addEventListener("click", () => {
-        const t = list[+btn.dataset.i];
-        if(drafts.has(t)) drafts.delete(t); else drafts.set(t, {});
-        render();
-        grid.querySelector(`.tpl-build[data-i="${btn.dataset.i}"]`)?.focus({ preventScroll:true });
-      }));
-      grid.querySelectorAll("[data-addon]").forEach(btn => btn.addEventListener("click", () => {
-        const t = list[+btn.dataset.i];
-        drafts.get(t)[btn.dataset.addon] = btn.dataset.choice;
-        render();
-        grid.querySelector(`[data-i="${btn.dataset.i}"][data-addon="${btn.dataset.addon}"][data-choice="${btn.dataset.choice}"]`)?.focus({ preventScroll:true });
-      }));
-      equalizeHeads();
+      grid.innerHTML = carHint + artHint(true) + renderRows(list);
+      bindArtOpen(); bindRows(list); syncPreviewHeight();
     }
-
-    // Все свёрнутые карточки — одной высоты (= самой высокой). Вырос один → выросли все.
-    function equalizeHeads(){
-      const heads = grid.querySelectorAll(".tpl-card-head");
-      if(!heads.length) return;
-      heads.forEach(h => h.style.minHeight = "");        // сброс перед замером натуральной высоты
-      let max = 0;
-      heads.forEach(h => { if(h.offsetHeight > max) max = h.offsetHeight; });
-      if(!max) return;                                   // вкладка скрыта (высота 0) — пересчитаем при показе
-      heads.forEach(h => h.style.minHeight = max + "px");
-    }
-    const equalizeSoon = () => requestAnimationFrame(equalizeHeads);
-    window.equalizeTplHeads = equalizeSoon;              // дёргается из showPage, когда вкладка становится видимой
-    // Перерисовка после сверки цен: даты подтверждения пришли из таблицы (или владелец только что
-    // подтвердил) → бейджи «Проверить цены» должны погаснуть сразу, а не после перезагрузки.
-    // Состояние раздела (марка/коробка/фильтры/поиск) живёт в замыкании и не сбрасывается.
+    const equalizeSoon = () => requestAnimationFrame(syncPreviewHeight);
+    // Имя наружного хука сохраняется: оболочка вызывает его при входе в раздел.
+    window.equalizeTplHeads = equalizeSoon;
     window.tplRerender = () => { render(); equalizeSoon(); };
     /* Запрос извне (поиск цены на Главной, «Коробка» в ТО) приходит в чистые Шаблоны (аудит 2026-10-21).
        Без сброса оставались марка, коробка и фильтры прошлого захода: «DQ500» после ZF → 8HP давал
        ложное «Ничего не найдено» и ложную запись «не нашёл». Звать ДО showPage — тогда отложенный
        рендер скрытой вкладки отрисует один раз и сразу с запросом. */
     window.tplSearchFrom = q => {
-      activeBrand = "all"; activeBox = "all"; expandedBrand = null; resetFilters();
+      activeBrand = "all"; activeBox = "all"; selectedTemplate = null; mobileDetail = false; resetFilters();
       searchInp.value = q; query = q.trim().toLowerCase();
       renderNav(); renderFacets(); render();
     };
@@ -5537,12 +5415,14 @@
       const t = TEMPLATES.find(x => tplCode(x) === code);
       if(!t) return false;
       searchInp.value = ""; query = "";
+      selectedTemplate = t; previewMode = "plain"; mobileDetail = matchMedia("(max-width:720px)").matches;
       selectBox(t.brand, t.box);
       requestAnimationFrame(() => {
         const card = grid.querySelectorAll(".tpl-card")[visible().indexOf(t)];
         if(!card) return;
         card.classList.add("is-pinned");
-        card.scrollIntoView({ block:"center" });
+        if(mobileDetail){ window.scrollTo({ top:0, behavior:"instant" }); preview.querySelector("#tpl-back")?.focus({ preventScroll:true }); }
+        else card.scrollIntoView({ block:"center" });
         setTimeout(() => card.classList.remove("is-pinned"), 2400);
       });
       return true;
@@ -5556,21 +5436,17 @@
     let eqRaf;
     window.addEventListener("resize", () => {
       cancelAnimationFrame(eqRaf);
-      eqRaf = requestAnimationFrame(equalizeHeads);
+      eqRaf = requestAnimationFrame(syncPreviewHeight);
     });
 
     const resetFilters = () => FACETS.forEach(f=>filters[f.key]=null);
 
-    navBox.addEventListener("click", e=>{
-      if(e.target.closest(".tpl-nav-home")){ goHome(); return; }
-      const model = e.target.closest(".tpl-nav-model");
-      if(model){ selectBox(model.dataset.brand, model.dataset.box); return; }
-      const head = e.target.closest(".tpl-nav-head");
-      if(head){
-        const b = head.dataset.brand;
-        if(expandedBrand===b){ expandedBrand = null; renderNav(); }  // повторный клик по раскрытом — свернуть группу
-        else selectBrand(b);                                          // раскрыть семейство + открыть первую коробку
-      }
+    navBox.addEventListener("change", e => {
+      const id = e.target.id;
+      if(id === "tpl-family") selectBrand(e.target.value);
+      else if(id === "tpl-model") selectBox(activeBrand, e.target.value);
+      else return;
+      document.getElementById(id)?.focus({ preventScroll:true });
     });
     facetsBox.addEventListener("click", e=>{
       if(e.target.closest("[data-reset]")){ resetFilters(); renderFacets(); render(); return; }
@@ -5584,7 +5460,7 @@
       // между карточками разделитель ДЛИННЕЕ внутреннего (CDOC.SEP), иначе границы смет сливаются с границами блоков
       // клиенту — без номеров, и в заголовке карточки тоже («…Mahle HX124D»): вырезаем артикулы её позиций
       const text = visible().map(t=>[t, currentDoc(t)]).filter(([t,d])=>!t.todo && d.plain)
-        .map(([t,d])=>`${t.brand} · ${plainName(tplTitle(t), d.items.flatMap(l => l.art || []))}\n\n${d.plain}`)
+        .map(([t,d])=>`${t.brand} · ${plainName(displayTitle(t, d), d.items.flatMap(l => l.art || []))}\n\n${d.plain}`)
         .join(`\n\n${CDOC.SEP} ${CDOC.SEP}\n\n`);
       if(text) copyText(text, copyAllBtn);
     });
@@ -8132,10 +8008,15 @@
      Главное действие — поиск цены замены (ведёт в Шаблоны); ниже — плитки-вход в разделы. */
   const HOME = {
     label:   "Рабочий стол",
-    title:   "Что подобрать клиенту?",
-    sub:     "Коробка, марка или модель — найдём готовый чек-шаблон с ценой замены.",
-    askPlaceholder: "8HP, DQ500, BMW X5, номер фильтра…",
+    title:   "Найдите цену для клиента",
+    sub:     "Например: 8HP65, BMW X5 или HX187KIT",
+    askPlaceholder: "Коробка, машина или номер фильтра",
     askGo:   "Найти цену",
+    groups: [
+      { title:"Клиент и смета", pages:["shablony","to","komplekty","tseny"] },
+      { title:"Смена", pages:["grafik","yama","zametki"] },
+      { title:"Деньги", pages:["prodazhi","zarplaty","shtrafy"] },
+    ],
     // плитки-лаунчер: страница · иконка · название · назначение (что делает раздел)
     tiles: [
       { page:"shablony", ico:"car",      name:"Шаблоны", hint:"Цена замены по коробке", featured:true },
@@ -8174,78 +8055,36 @@
   function renderHome(){
     const root = document.getElementById("page-glavnaya");
     if(!root) return;
-    const typed = (root.querySelector("#home-ask-input") || {}).value || "";   // смена суток перерисует Главную — набранное не теряем
-    const tiles = HOME.tiles.map(t =>
-      `<button class="home-tile" type="button" data-goto="${t.page}"${t.featured ? " data-featured" : ""}>
-        <span class="home-tile-ic">${ICO[t.ico]||""}</span>
-        <span class="home-tile-tx">
-          <span class="home-tile-name">${t.name}</span>
-          <span class="home-tile-hint">${t.hint}</span>${t.badge ? `
-          <span class="home-tile-count" data-badge="${t.badge}" hidden></span>` : ""}
-        </span>
-        <span class="home-tile-go">${ICO.arrow}</span>
-      </button>`).join("");
-    // «сегодня на смене» — переиспользуем ROWS/todayKey/now из блока графика (данные → авто-рендер)
+    const typed = (root.querySelector("#home-ask-input") || {}).value || "";
+    const tile = t => `<button class="home-tile" type="button" data-goto="${t.page}"${t.featured ? " data-featured" : ""}>
+      <span class="home-tile-ic">${ICO[t.ico] || ""}</span>
+      <span class="home-tile-tx"><span class="home-tile-name">${t.name}</span><span class="home-tile-hint">${t.hint}</span>${t.badge ? `<span class="home-tile-count" data-badge="${t.badge}" hidden></span>` : ""}</span>
+      <span class="home-tile-go">${ICO.arrow}</span></button>`;
+    const group = (g, compact) => `<section><h2 class="home-group-title">${g.title}</h2><div class="${compact ? "home-link-list" : "home-client-grid"}">${g.pages.map(page => HOME.tiles.find(t => t.page === page)).filter(Boolean).map(tile).join("")}</div></section>`;
+    const tiles = group(HOME.groups[0], false) + `<div class="home-secondary-groups">${HOME.groups.slice(1).map(g => group(g, true)).join("")}</div>`;
     let shift = "";
     try {
       const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
       const dateText = cap(now.toLocaleDateString("ru-RU", { weekday:"long", day:"numeric", month:"long" }));
       const tr = ROWS.find(r => r.key === todayKey);
-      if(tr){
-        const on = tr.cells.filter(c => c.working);
-        const people = on.map(c => `<span class="home-shift-p" data-color="${c.color}"><span class="home-shift-dot"></span>${c.name}</span>`).join("");
-        shift =
-          `<aside class="home-shift" aria-label="Сегодня на смене">
-            <div class="home-shift-head">${ICO.calendar}<span class="home-shift-tag">Сегодня</span></div>
-            <span class="home-shift-date">${dateText}</span>
-            <span class="home-shift-label">${tr.solo
-              ? (tr.onHead === 1 ? "На смене один — все обязанности" : "Все обязанности на одном")
-              : "На смене"}</span>
-            <span class="home-shift-people">${people}</span>
-          </aside>`;
-      } else {
-        shift =
-          `<aside class="home-shift" aria-label="Сегодня на смене">
-            <div class="home-shift-head">${ICO.calendar}<span class="home-shift-tag">Сегодня</span></div>
-            <span class="home-shift-date">${dateText}</span>
-            <span class="home-shift-label">вне текущего графика</span>
-          </aside>`;
-      }
-    } catch(e){ shift = ""; }
-    root.innerHTML =
-      `<section class="home" aria-labelledby="home-title">
-        <div class="home-overview">
-          <div class="home-intro">
-            <div class="home-eyebrow">${HOME.label}</div>
-            <h1 class="home-title" id="home-title">${HOME.title}</h1>
-            <p class="home-sub">${HOME.sub}</p>
-            <form class="home-ask" id="home-ask" role="search">
-              <div class="home-ask-field">
-                <span class="home-ask-ico">${ICO.search}</span>
-                <input id="home-ask-input" type="search" enterkeyhint="search" autocomplete="off" placeholder="${HOME.askPlaceholder}" aria-label="Коробка, машина клиента или номер фильтра">
-                <button class="sx-clear" type="button" aria-label="Очистить поиск">${ICO.close}</button>
-              </div>
-              <button class="home-ask-go" type="submit">${HOME.askGo} ${ICO.arrow}</button>
-            </form>
-            <div class="home-found" id="home-found" aria-live="polite" hidden></div>
-            <div class="home-top" id="home-top" hidden></div>
-          </div>
-          ${shift}
-        </div>
-        <div class="home-count" id="home-count" hidden>
-          <div class="home-count-card">
-            <div class="home-count-head">${ICO.cycle}<span class="home-count-tag">Полные аппаратные замены</span></div>
-            <div class="odo" id="home-count-total"></div>
-            <span class="home-count-r">всего</span>
-          </div>
-          <div class="home-count-card">
-            <div class="home-count-head">${ICO.wrench}<span class="home-count-tag">Сделано сегодня</span></div>
-            <div class="home-count-row" id="home-count-today"></div>
-            <span class="home-count-r">по журналу «Ямы»</span>
-          </div>
-        </div>
-        <div class="home-tiles">${tiles}</div>
+      const people = tr ? tr.cells.filter(c => c.working).map(c => `<span class="home-shift-p" data-color="${c.color}"><span class="home-shift-dot"></span>${c.name}</span>`).join("") : "";
+      const label = !tr ? "вне текущего графика" : tr.solo ? (tr.onHead === 1 ? "На смене один — все обязанности" : "Все обязанности на одном") : "На смене";
+      shift = `<aside class="home-shift" aria-label="Сегодня на смене"><span class="home-shift-head">${ICO.calendar}<span class="home-shift-date">${dateText}</span></span>
+        <span class="home-shift-label">${label}</span><span class="home-shift-people">${people}</span><button type="button" class="home-shift-go">Обязанности ${ICO.arrow}</button></aside>`;
+    } catch(e){}
+    root.innerHTML = `<section class="home" aria-labelledby="home-title">
+      <h1 class="home-title" id="home-title">${HOME.label}</h1>${shift}
+      <div class="home-overview"><h2 class="home-ask-title">${HOME.title}</h2>
+        <form class="home-ask" id="home-ask" role="search"><div class="home-ask-field"><span class="home-ask-ico">${ICO.search}</span>
+          <input id="home-ask-input" type="search" enterkeyhint="search" autocomplete="off" placeholder="${HOME.askPlaceholder}" aria-label="Коробка, машина клиента или номер фильтра">
+          <button class="sx-clear" type="button" aria-label="Очистить поиск">${ICO.close}</button></div>
+          <button class="home-ask-go" type="submit">${HOME.askGo} ${ICO.arrow}</button></form>
+        <p class="home-sub">${HOME.sub}</p><div class="home-found" id="home-found" aria-live="polite" hidden></div><div class="home-top" id="home-top" hidden></div>
+      </div><div class="home-tiles">${tiles}</div>
+      <div class="home-count" id="home-count" hidden><div class="home-count-card"><span class="home-count-head">Полные аппаратные замены</span><div class="odo" id="home-count-total"></div><span class="home-count-r">всего</span></div>
+        <div class="home-count-card"><span class="home-count-head">Сделано сегодня</span><div class="home-count-row" id="home-count-today"></div><span class="home-count-r">по журналу «Ямы»</span></div></div>
       </section>`;
+    root.querySelector(".home-shift-go")?.addEventListener("click", () => showPage("grafik"));
     // поиск цены → раздел Шаблоны с этим запросом (общий поиск Шаблонов, tplSearchFrom)
     const ask = root.querySelector("#home-ask");
     const askInput = root.querySelector("#home-ask-input");
