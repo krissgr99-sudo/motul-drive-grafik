@@ -1605,8 +1605,6 @@
   .tpl-layout{gap:16px}
   .tpl-nav{display:flex;align-items:center;gap:12px;min-width:0}
   .tpl-select{min-height:44px;min-width:160px;max-width:100%;padding:10px 32px 10px 12px;border:1px solid var(--line-strong);border-radius:12px;background:var(--fill);color:var(--text);font:13px var(--font-text)}
-  .tpl-filter-toggle{margin-left:auto}.tpl-filter-toggle summary{display:flex;gap:8px;align-items:center;list-style:none;min-height:44px;font-size:13px;font-weight:600;cursor:pointer}
-  .tpl-filter-toggle summary::-webkit-details-marker{display:none}
   #page-shablony .tpl-search{background:var(--card2);border-color:var(--line-strong)}
   #page-shablony .tpl-search input:focus-visible{outline:none}
   .tpl-workspace{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:20px;align-items:start}
@@ -1659,7 +1657,7 @@
     .home-shift{padding:12px 14px;gap:8px;margin-bottom:16px}.home-shift-head{width:100%}.home-shift-label{display:none}.home-shift-people{gap:12px}.home-shift-p{font-size:12px}.home-shift-go{font-size:12px}
     .home-overview{padding:18px 16px;margin-bottom:24px}.home-ask-title{font-size:19px;margin-bottom:14px}.home-ask{flex-wrap:wrap;gap:8px}.home-ask-field{flex-basis:100%}.home-ask-field input{font-size:16px}.home-ask-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}.home-ask-go{width:100%;min-width:0;min-height:48px;padding:10px}
     .home-tiles{grid-template-columns:1fr;gap:24px}.home-tile{min-height:124px;padding:16px 14px}.home-tile-go{display:none}.home-client-grid{gap:10px}.home-tile-name{font-size:17px}.home-count{gap:12px 20px}.odo{font-size:20px}
-    .tpl-nav{gap:8px;flex-wrap:nowrap}.tpl-select{flex:1;min-width:0;width:36%;font-size:12px}.tpl-filter-toggle{margin:0;flex:none}.tpl-filter-toggle summary{font-size:12px;gap:4px}.tpl-filter-toggle .mi{width:15px}
+    .tpl-nav{gap:8px;flex-wrap:nowrap}.tpl-select{flex:1;min-width:0;width:36%;font-size:12px}
     #tpl-search-help{font-size:12px;margin-bottom:10px}.tpl-workspace{display:block}.tpl-results{gap:8px}.tpl-copyall{max-width:156px}
     .tpl-card{border-radius:14px}.tpl-card-head{padding:14px 14px 8px;min-height:60px;gap:10px}.tpl-title{font-size:13px}.tpl-brand-logo{width:24px;height:24px}.tpl-actions{padding:0 14px 12px}.tpl-price strong{font-size:17px}
     .tpl-preview{display:none;position:static}.tpl-preview-panel{max-height:none;overflow:visible;border-radius:16px}.tpl-body{overflow:visible;min-height:0;padding:16px}
@@ -6023,8 +6021,12 @@
       document.body.classList.add("blog-open"); fitViewport(); input.focus(); input.select();
     };
     close.addEventListener("click", () => dialog.close());
-    // В type=search Chrome перехватывает Escape для очистки; здесь он закрывает всё окно.
-    dialog.addEventListener("keydown", e => { if(e.key === "Escape" && !e.isComposing){ e.preventDefault(); dialog.close(); } });
+    dialog.addEventListener("keydown", e => {
+      if(e.key !== "Escape" || e.isComposing) return;
+      e.preventDefault();
+      if(e.target === input && input.value) sxClear(input);
+      else dialog.close();
+    });
     dialog.addEventListener("close", () => { document.body.classList.remove("blog-open"); (origin?.isConnected ? origin : document.getElementById("home-logo"))?.focus({preventScroll:true}); });
     dialog.addEventListener("click", e => {
       if(e.target !== dialog) return;
@@ -6085,7 +6087,7 @@
     searchInp.insertAdjacentHTML("beforebegin", ICO.search);
     const preview = document.getElementById("tpl-preview");
     let activeBrand = "all", activeBox = "all", query = "";
-    let selectedTemplate = null, previewMode = "plain", mobileDetail = false, listScroll = 0, filtersOpen = false;
+    let selectedTemplate = null, previewMode = "plain", mobileDetail = false, listScroll = 0;
     const filters = { type:null, pan:null, engine:null, lock:null, axle:null, transfer:null };
     const drafts = new Map(); // по объекту TEMPLATES: поиск/фильтры/сверка не сбрасывают выбор и не меняют другие карточки
     const currentDoc = t => tplDoc(t, drafts.get(t));
@@ -6121,9 +6123,7 @@
     function renderNav(){
       const boxes = activeBrand === "all" ? [...new Set(TEMPLATES.map(t => t.box).filter(Boolean))] : boxesOf(activeBrand);
       navBox.innerHTML = `<select class="tpl-select" id="tpl-family" aria-label="Семейство коробки"><option value="all">Все семейства</option>${brands.map(b => `<option value="${esc(b)}" ${b === activeBrand ? "selected" : ""}>${esc(b)}</option>`).join("")}</select>
-        <select class="tpl-select" id="tpl-model" aria-label="Модель коробки"><option value="all">Все модели</option>${boxes.map(box => `<option value="${esc(box)}" ${box === activeBox ? "selected" : ""}>${esc(box)}</option>`).join("")}</select>
-        <details class="tpl-filter-toggle" ${filtersOpen ? "open" : ""}><summary>${ICO.list} Фильтры</summary></details>`;
-      navBox.querySelector("details").addEventListener("toggle", e => { filtersOpen = e.target.open; renderFacets(); });
+        <select class="tpl-select" id="tpl-model" aria-label="Модель коробки"><option value="all">Все модели</option>${boxes.map(box => `<option value="${esc(box)}" ${box === activeBox ? "selected" : ""}>${esc(box)}</option>`).join("")}</select>`;
     }
 
     // Базовый набор (марка+коробка) — из него строим фильтры
@@ -6149,7 +6149,7 @@
         // кнопку сброса вставляем в конец первой строки фасета (уйдёт вправо)
         html = html.replace("</div>", `<button class="tpl-facet-reset" data-reset>Сбросить ${ICO.close}</button></div>`);
       }
-      facetsBox.hidden = !filtersOpen;
+      facetsBox.hidden = false;
       facetsBox.innerHTML = html;
     }
 
