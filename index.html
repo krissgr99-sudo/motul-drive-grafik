@@ -6691,13 +6691,20 @@
     /* Поиск по словам (аудит 2026-10-21): «bmw поддон» — каждое слово где угодно в строке. Слово с
        цифрой ещё сверяется с артикулом скелетом artNorm, как «по номеру» в Шаблонах: «23731-JA11B»
        и «0D5398009А» с русской «А» находят свою деталь. */
-    let words = [];
     const hit = (p, w) => hay(p).includes(w) || (/\d/.test(w) && artNorm(p[1]).includes(artNorm(w)));
+    const searchMatch = q => {
+      const qa = artQuery(q);
+      // Найденный цельный номер важнее отдельных слов: «0D5 398 009 А» не должен находить B/C.
+      if(qa && PARTS.some(p => artNorm(p[1]).includes(qa))) return p => artNorm(p[1]).includes(qa);
+      const ws = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+      return p => ws.every(w => hit(p, w));
+    };
+    let hitQuery = searchMatch("");
     // useCat/useBrand=false — счётчики фасета считаются без «своего» фильтра
     const match = (p, useCat, useBrand) =>
       (!useCat   || cat==="all"   || p[5]===cat) &&
       (!useBrand || brand==="all" || p[0]===brand) &&
-      words.every(w => hit(p, w));
+      hitQuery(p);
     const visible = () => PARTS.filter(p=>match(p,true,true));
 
     const chip = (val,label,n,active) =>
@@ -6719,7 +6726,7 @@
       brandRow.querySelectorAll(".tpl-chip").forEach(c=>
         c.addEventListener("click", ()=>{ brand = (c.dataset.val===brand) ? "all" : c.dataset.val; update(); }));
       const reset = document.getElementById("pr-reset");
-      if(reset) reset.addEventListener("click", ()=>{ cat="all"; brand="all"; query=""; words=[]; searchInp.value=""; update(); });
+      if(reset) reset.addEventListener("click", ()=>{ cat="all"; brand="all"; query=""; hitQuery=searchMatch(""); searchInp.value=""; update(); });
     }
 
     async function copyArt(btn){
@@ -6791,15 +6798,14 @@
     }));
 
     function update(){ renderFacets(); render(); }
-    searchInp.addEventListener("input", afterTyping(()=>{ query = searchInp.value.trim().toLowerCase(); words = query.split(/\s+/).filter(Boolean); update(); }));
+    searchInp.addEventListener("input", afterTyping(()=>{ query = searchInp.value.trim().toLowerCase(); hitQuery = searchMatch(query); update(); }));
     // Единый поиск с Главной (аудит 2026-10-29, 3.3): то же правило слов (hit), без категории и марки
     window.pricesCount = q => {
-      const ws = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
-      return ws.length ? PARTS.filter(p => ws.every(w => hit(p, w))).length : 0;
+      return q.trim() ? PARTS.filter(searchMatch(q)).length : 0;
     };
     window.pricesSearchFrom = q => {
       cat = "all"; brand = "all"; searchInp.value = q;
-      query = q.trim().toLowerCase(); words = query.split(/\s+/).filter(Boolean); update();
+      query = q.trim().toLowerCase(); hitQuery = searchMatch(query); update();
     };
     update();
   })();
