@@ -1627,15 +1627,15 @@
   .tpl-copy .mi{width:15px;height:15px}.tpl-actions>.tpl-copy{margin-left:auto}.tpl-actions>.tpl-share{margin-left:0}
   .tpl-preview{position:sticky;top:calc(var(--navh,76px) + 20px);min-width:0}
   .tpl-preview-panel{display:flex;flex-direction:column;max-height:var(--tpl-panel-max,calc(100dvh - var(--navh,76px) - 40px));border:1px solid var(--line);border-radius:18px;background:var(--card);overflow:hidden}
-  .tpl-preview-head{padding:20px 24px 16px;border-bottom:1px solid var(--line);flex:none}
-  .tpl-preview-context{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:var(--muted);margin-bottom:12px}
+  .tpl-preview-head{padding:16px 20px 12px;border-bottom:1px solid var(--line);flex:none}
+  .tpl-preview-context{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:var(--muted);margin-bottom:8px}
   .tpl-preview-head h2{font:700 18px/1.45 var(--font-disp)}
-  .tpl-preview-modes{display:flex;gap:4px;padding:4px;border-radius:10px;background:var(--card2);width:max-content;max-width:100%;margin-top:16px}
+  .tpl-preview-modes{display:flex;gap:4px;padding:4px;border-radius:10px;background:var(--card2);width:max-content;max-width:100%}
   .tpl-preview-modes button{border:0;border-radius:8px;background:none;min-height:44px;padding:8px 12px;font:600 12px var(--font-text);color:var(--text);cursor:pointer}
   .tpl-preview-modes button[aria-pressed="true"]{background:var(--card);outline:1px solid var(--line-strong)}
-  .tpl-builder{padding:16px 24px;border-bottom:1px solid var(--line);display:grid;gap:16px;flex:none}
-  .tpl-builder fieldset{min-width:0;border:0;padding:0;margin:0}.tpl-builder legend{font-size:13px;font-weight:700;margin-bottom:8px}
-  .tpl-addon-options{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.tpl-addon-toggle{display:flex;gap:4px;padding:4px;background:var(--card2);border-radius:12px}
+  .tpl-builder{padding:12px 20px;border-bottom:1px solid var(--line);display:grid;gap:12px;flex:none}
+  .tpl-builder fieldset{min-width:0;border:0;padding:0;margin:0}.tpl-builder legend{font-size:13px;font-weight:700;margin-bottom:4px}
+  .tpl-addon-options{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.tpl-addon-toggle{display:flex;gap:4px;background:var(--card2);border-radius:12px}
   .tpl-addon-toggle button{min-height:44px;border:0;border-radius:8px;padding:8px 12px;background:none;color:var(--muted);font:600 13px var(--font-text);cursor:pointer}
   .tpl-addon-toggle button[aria-pressed="true"]{background:var(--card);color:var(--text);outline:1px solid var(--line-strong)}
   .tpl-addon-select{min-width:0;max-width:100%}.tpl-reset{justify-self:start;min-height:44px;border:0;background:none;color:var(--muted);font:12px var(--font-text);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
@@ -1677,6 +1677,64 @@
   }
   @media(prefers-reduced-motion:no-preference){.home-tile,.home-ask-go,select::picker-icon{transition:background-color 150ms,color 150ms,border-color 150ms,rotate 150ms}}
   @media print{.tpl-back,.tpl-nav,.tpl-preview-modes,.tpl-builder,.tpl-preview-footer{display:none!important}.tpl-preview{position:static;display:block}.tpl-preview-panel{max-height:none;overflow:visible;border:0}.tpl-body{overflow:visible}.tpl-detail-open .tpl-list{display:none}.home-tile,.home-overview,.home-shift{box-shadow:none}}
+
+  /* Один код КПП → параметры существующего варианта → готовая смета. */
+  #page-shablony .tpl-nav,.kc-filters{display:flex;flex-wrap:wrap;gap:6px}
+  .catalog-family{min-height:44px;padding:9px 13px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font:600 13px var(--font-text);cursor:pointer}
+  .catalog-family:hover{background:var(--fill-hover);color:var(--text)}
+  .catalog-family[aria-pressed="true"]{background:var(--card);border-color:var(--line-strong);color:var(--text)}
+  .catalog-section{min-width:0}.catalog-section-title,#page-komplekty .catalog-section-title{font:700 13px/1.5 var(--font-text);color:var(--muted);margin:0 0 8px}
+  .catalog-rows{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+  #page-shablony .catalog-rows .tpl-card,.catalog-rows .kc-group{border:0;border-radius:0;box-shadow:none;overflow:visible}
+  .catalog-rows .tpl-card+.tpl-card,.catalog-rows .kc-group+.kc-group{border-top:1px solid var(--line)}
+  #page-shablony .catalog-box,#page-komplekty .catalog-box{display:grid;grid-template-columns:minmax(0,1fr) auto 16px;align-items:center;gap:12px;width:100%;min-height:62px;padding:12px 16px;border:0;border-radius:0;background:transparent;color:var(--text);text-align:left;cursor:pointer}
+  #page-shablony .catalog-box:hover,#page-komplekty .catalog-box:hover{background:var(--fill-hover)}
+  #page-shablony .catalog-box[aria-pressed="true"],#page-komplekty .catalog-box[aria-pressed="true"]{background:var(--weekend);color:var(--accent-soft)}
+  .catalog-box .tpl-title,.catalog-box .kc-group-title{font:700 15px/1.45 var(--font-text);overflow-wrap:anywhere}
+  .catalog-meta{font:500 12px/1.5 var(--font-text);color:var(--muted);white-space:nowrap}.catalog-box>.mi{width:16px;height:16px;color:var(--muted)}
+  .tpl-grid,.kc-groups{gap:20px}
+  .tpl-workspace,.kc-workbench{grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:24px}
+  .tpl-results{min-height:28px}.tpl-copyall{max-width:160px}
+  .tpl-preview-content,.kc-preview-content{min-height:100px;overflow:auto;flex:1;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent}
+  .tpl-preview-content .tpl-body{overflow:visible}.tpl-preview-head h2{overflow-wrap:anywhere}
+  .tpl-preview-tools{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 12px}
+  .tpl-preview-tools .tpl-blog{padding:0;border:0}
+  #page-shablony #tpl-facets{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px;padding:12px 20px;margin:0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:var(--card)}
+  #page-shablony #tpl-facets[hidden]{display:none}
+  #page-shablony #tpl-facets .tpl-facet{display:block;min-width:0;margin:0;padding:0;border:0;overflow:visible}
+  #page-shablony #tpl-facets .tpl-facet-label{position:static;display:block;width:auto;max-width:100%;padding:0;margin-bottom:4px;font:600 12px/1.5 var(--font-text);letter-spacing:0;text-transform:none;color:var(--muted)}
+  #page-shablony #tpl-facets .tpl-chip{margin:0 4px 0 0;max-width:100%;padding:8px 10px;white-space:normal;text-align:left;overflow-wrap:anywhere;box-shadow:none}
+  #page-shablony #tpl-facets .tpl-variants{grid-column:1/-1}
+  #kc-catalog-tools{margin-bottom:16px}#kc-catalog-tools[hidden]{display:none}
+  #kc-catalog-tools .kc-search{margin-bottom:8px}.kc-counter{font-variant-numeric:tabular-nums}
+  .kc-preview-card{box-shadow:none}.kc-preview-head .kc-note{margin-top:6px}
+  .kc-preview-content .kc-receipt{max-height:none;overflow:visible;background:var(--card)}
+  .kc-receipt pre{font:400 13px/1.8 var(--font-text);color:var(--text)}
+  .catalog-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px 20px;border-bottom:1px solid var(--line)}
+  .catalog-options[hidden]{display:none}
+  .catalog-option{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0;min-height:58px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:600 12px/1.5 var(--font-text);text-align:left;overflow-wrap:anywhere;cursor:pointer}
+  .catalog-option:hover{background:var(--fill-hover)}.catalog-option[aria-pressed="true"]{background:var(--weekend);border-color:var(--accent-soft)}
+  .catalog-option small{font:500 12px var(--font-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+  .kc-actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.kc-actions .kc-primary{grid-column:auto}
+  .kc-back{display:none}
+  #page-komplekty :is(button,input):focus-visible{outline:2px solid var(--accent-soft);outline-offset:3px}
+  @media(min-width:721px) and (min-height:701px){.tpl-grid,.kc-groups{max-height:calc(100dvh - var(--navh,76px) - 280px);overflow:auto;padding:3px 5px 6px 3px;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent}.kc-preview{position:sticky}.kc-preview-card{max-height:var(--kc-panel-max,calc(100dvh - var(--navh,76px) - 40px))}}
+  @media(max-width:900px){#page-shablony #tpl-facets,.catalog-options{grid-template-columns:1fr}.catalog-meta{font-size:11px}.tpl-workspace,.kc-workbench{grid-template-columns:minmax(0,4fr) minmax(0,6fr);gap:16px}.tpl-preview,.kc-preview{position:static}.tpl-preview-panel,.kc-preview-card{max-height:none!important}.tpl-preview-content,.kc-preview-content{overflow:visible}.kc-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.kc-actions .kc-primary{grid-column:1/-1}}
+  @media(max-height:700px){.tpl-preview,.kc-preview{position:static}.tpl-preview-panel,.kc-preview-card{max-height:none!important}.tpl-preview-content,.kc-preview-content{overflow:visible}.tpl-grid,.kc-groups{max-height:none;overflow:visible}}
+  @media(max-width:720px){
+    #page-shablony .tpl-nav,.kc-filters{flex-wrap:nowrap;overflow-x:auto;padding:2px 0 6px;scrollbar-width:thin}.catalog-family{flex:none;white-space:nowrap}
+    .tpl-workspace,.kc-workbench{display:block}.catalog-box .tpl-title,.catalog-box .kc-group-title{font-size:14px}
+    .tpl-preview-content,.kc-preview-content{overflow:visible}.tpl-preview-panel,.kc-preview-card{max-height:none}
+    #page-shablony.tpl-detail-open #tpl-facets:not([hidden]){display:grid}
+    #page-shablony.tpl-detail-open .tpl-nav{display:none}
+    #page-shablony #tpl-facets{padding:16px;grid-template-columns:1fr}
+    #page-komplekty:not(.kc-building) .kc-preview,#page-komplekty:not(.kc-building) .kc-mobile{display:none}
+    #page-komplekty.kc-detail-open .kc-preview{display:block}#page-komplekty.kc-detail-open .kc-mobile{display:flex}
+    #page-komplekty.kc-detail-open .kc-tabs,#page-komplekty.kc-detail-open #kc-catalog-tools,#page-komplekty.kc-detail-open .kc-left{display:none}
+    .kc-detail-open .kc-back{display:flex;align-items:center;gap:8px;min-height:44px;padding:0;margin-bottom:12px;border:0;background:none;color:var(--text);font:13px var(--font-text)}.kc-back>.mi{transform:rotate(180deg)}
+    .catalog-options{grid-template-columns:repeat(2,minmax(0,1fr));padding:16px}.kc-preview-content .kc-receipt{padding:16px}
+    #page-komplekty:not(.kc-detail-open):not(.kc-building){padding-bottom:0}
+  }
 
   /* Каталог статей — отдельная рабочая задача поверх текущей сметы. */
   .tpl-blog{padding:8px 20px;border-bottom:1px solid var(--line)}
@@ -6092,6 +6150,13 @@
     let selectedTemplate = null, previewMode = "plain", mobileDetail = false, listScroll = 0;
     const filters = { type:null, pan:null, engine:null, lock:null, axle:null, transfer:null };
     const drafts = new Map(); // по объекту TEMPLATES: поиск/фильтры/сверка не сбрасывают выбор и не меняют другие карточки
+    const selections = new Map(); // выбранный реальный вариант каждой коробки
+    const boxKey = t => JSON.stringify([t.brand, t.box]);
+    const catalogSet = () => visible(query, false).filter(t => activeBrand === "all" || t.brand === activeBrand);
+    const catalogRows = list => [...new Set(list.map(boxKey))].map(key => {
+      const variants = list.filter(t => boxKey(t) === key);
+      return variants.includes(selections.get(key)) ? selections.get(key) : variants[0];
+    });
     const currentDoc = t => tplDoc(t, drafts.get(t));
     const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
     const cnt = n => n ? `<span class="tpl-count">${n}</span>` : "";   // бейдж-счётчик у вкладок/фильтров
@@ -6102,7 +6167,7 @@
       { key:"type",   label:"Тип",   get:t=>t.type, order:["Аппаратная","Частичная","Слив-залив"] },
       // Поддон: глубокий 1087298361 (Jeep/Dodge) против штатного. Ось появляется только там, где есть оба
       // (сейчас — ZF 8HP45-76): иначе карточки глубокого поддона теряются среди «Обычная / Без блокировки».
-      { key:"pan",    label:"Поддон", get:t=>t.filter==="filter_deep"?"Глубокий":"Обычный", order:["Обычный","Глубокий"] },
+      { key:"pan",    label:"Поддон", get:t=>t.filter==="filter_deep"?"Глубокий":t.filter==="filter_m_alu"?"M-версия":"Обычный", order:["Обычный","Глубокий","M-версия"] },
       { key:"engine", label:"Мотор", get:engineOf,  order:["Обычная","Мягкий гибрид","Гибрид"] },
       { key:"lock",   label:"Блок.", get:lockOf,    order:["Без блокировки","С блокировкой"] },
       { key:"axle",   label:"Мост",  get:t=>t.diffsDetailed?"Трёхсекционный":"Обычный", order:["Обычный","Трёхсекционный"] },
@@ -6121,38 +6186,56 @@
       return [cards && plural(cards,"смета","сметы","смет"), answers && plural(answers,"ответ","ответа","ответов")].filter(Boolean).join(" · ") || "Нет совпадений";
     };
 
-    // Те же данные каталога — компактный выбор семейства и модели.
+    // Семейства видны сразу. Каждый код в каталоге представлен одной строкой.
     function renderNav(){
-      const boxes = activeBrand === "all" ? [...new Set(TEMPLATES.map(t => t.box).filter(Boolean))] : boxesOf(activeBrand);
-      navBox.innerHTML = `<select class="tpl-select" id="tpl-family" aria-label="Семейство коробки"><option value="all">Все семейства</option>${brands.map(b => `<option value="${esc(b)}" ${b === activeBrand ? "selected" : ""}>${esc(b)}</option>`).join("")}</select>
-        <select class="tpl-select" id="tpl-model" aria-label="Модель коробки"><option value="all">Все модели</option>${boxes.map(box => `<option value="${esc(box)}" ${box === activeBox ? "selected" : ""}>${esc(box)}</option>`).join("")}</select>`;
+      navBox.innerHTML = ["all", ...brands].map(b => `<button type="button" class="catalog-family" data-tpl-family="${esc(b)}" aria-pressed="${b === activeBrand}">${b === "all" ? "Все" : esc(b)}</button>`).join("");
     }
 
-    // Базовый набор (марка+коробка) — из него строим фильтры
-    const baseSet = () => TEMPLATES.filter(t =>
-      (activeBrand==="all"||t.brand===activeBrand) && (activeBox==="all"||t.box===activeBox));
+    // Параметры только выбранной коробки и только разрешённых текущим поиском вариантов.
+    const baseSet = () => selectedTemplate ? catalogSet().filter(t => boxKey(t) === boxKey(selectedTemplate)) : [];
 
-    // Фильтры-фасеты — видны только когда выбрана марка и есть из чего выбирать
     function renderFacets(){
       const base = baseSet();
       const rows = FACETS.map(f=>{
         const present = new Set(base.map(t=>f.get(t)));
         const vals = f.order.filter(v=>present.has(v));
-        if(vals.length < 2) return ""; // выбирать не из чего — ось скрываем
-        const chips = vals.map(v=>{
-          const n = base.filter(t=> f.get(t)===v && FACETS.every(o=> o.key===f.key || !filters[o.key] || o.get(t)===filters[o.key])).length;
-          return `<button class="tpl-chip ${filters[f.key]===v?"active":""}" type="button" aria-pressed="${filters[f.key]===v}" data-facet="${f.key}" data-val="${esc(v)}">${esc(v)}${cnt(n)}</button>`;
-        }).join("");
-        return `<div class="tpl-facet"><span class="tpl-facet-label">${esc(f.label)}</span>${chips}</div>`;
+        if(vals.length < 2) return "";
+        const chips = vals.map(v=>`<button class="tpl-chip ${f.get(selectedTemplate)===v?"active":""}" type="button" aria-pressed="${f.get(selectedTemplate)===v}" data-facet="${f.key}" data-val="${esc(v)}">${esc(v)}</button>`).join("");
+        return `<fieldset class="tpl-facet"><legend class="tpl-facet-label">${esc(f.label === "Блок." ? "Задний мост" : f.label === "Тип" ? "Замена" : f.label)}</legend>${chips}</fieldset>`;
       }).filter(Boolean);
-      if(!rows.length){ facetsBox.hidden = true; facetsBox.innerHTML = ""; return; }
-      let html = rows.join("");
-      if(FACETS.some(f=>filters[f.key])){
-        // кнопку сброса вставляем в конец первой строки фасета (уйдёт вправо)
-        html = html.replace("</div>", `<button class="tpl-facet-reset" data-reset>Сбросить ${ICO.close}</button></div>`);
+      // Оси не описывают масла Торсен, исполнения Mercedes и тексты ответов.
+      // Не склеиваем такие записи: каждый оставшийся реальный вариант доступен явно.
+      const alternatives = base.filter(t => FACETS.every(f => f.get(t) === f.get(selectedTemplate)));
+      if(alternatives.length > 1){
+        rows.push(`<fieldset class="tpl-facet tpl-variants"><legend class="tpl-facet-label">${isAnswer(selectedTemplate) ? "Ответ" : "Исполнение"}</legend>${alternatives.map(t => {
+          const title = tplTitle(t).replace(new RegExp("^" + String(t.box).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*[·—:]?\\s*"), "");
+          return `<button class="tpl-chip ${t === selectedTemplate ? "active" : ""}" type="button" data-template="${TEMPLATES.indexOf(t)}" aria-pressed="${t === selectedTemplate}">${esc(title || tplTitle(t))}</button>`;
+        }).join("")}</fieldset>`);
       }
-      facetsBox.hidden = false;
-      facetsBox.innerHTML = html;
+      facetsBox.hidden = !rows.length;
+      facetsBox.innerHTML = rows.join("");
+    }
+    function chooseTemplate(next, inherit = false){
+      const previous = selectedTemplate;
+      if(inherit && previous && next && boxKey(previous) === boxKey(next) && drafts.has(previous)){
+        const choices = { ...(drafts.get(next) || {}) }, oldGroups = tplAddonGroups(previous);
+        // Включение/исключение группы переживает исполнение, в котором этой группы нет.
+        Object.entries(drafts.get(previous)).forEach(([id, value]) => {
+          if(value === "none" || value === "all") choices[id] = value;
+        });
+        tplAddonGroups(next).forEach(g => {
+          const value = drafts.get(previous)[g.id];
+          if(value === "none" || value === "all") choices[g.id] = value;
+          else if(value != null){
+            const label = oldGroups.find(o => o.id === g.id)?.labels[+value], index = g.labels.indexOf(label);
+            if(index >= 0) choices[g.id] = String(index);
+          }
+        });
+        drafts.set(next, choices);
+      }
+      selectedTemplate = next;
+      if(next) selections.set(boxKey(next), next);
+      FACETS.forEach(f => filters[f.key] = next ? f.get(next) : null);
     }
 
     // Поиск по машине — общий с разбором по VIN: carsMatching живёт при данных CARS (см. там же).
@@ -6248,11 +6331,12 @@
 
     function revealCards(){ mdBlurStagger(grid.querySelectorAll(".tpl-card")); }
     function selectBrand(b){
-      activeBrand = b; activeBox = "all"; resetFilters();
+      activeBrand = b; activeBox = "all"; selectedTemplate = null; mobileDetail = false; resetFilters();
       renderNav(); renderFacets(); render(); revealCards();
     }
     function selectBox(b, box){
       activeBrand = b; activeBox = box; resetFilters();
+      if(selectedTemplate && selectedTemplate.brand === b && selectedTemplate.box === box) selections.set(boxKey(selectedTemplate), selectedTemplate);
       renderNav(); renderFacets(); render(); revealCards();
     }
     function goHome(){ selectBrand("all"); }
@@ -6326,30 +6410,32 @@
       const root = document.getElementById("page-shablony");
       root.classList.toggle("tpl-detail-open", mobileDetail && !!selectedTemplate);
       if(!selectedTemplate){
-        preview.innerHTML = `<div class="tpl-preview-panel tpl-preview-empty">${ICO.copy}<h2>Выберите смету</h2><p>Здесь будет текст для клиента. Его можно проверить перед отправкой.</p></div>`;
+        facetsBox.hidden = true;
+        preview.innerHTML = `<div class="tpl-preview-panel tpl-preview-empty">${ICO.list}<h2>Выберите коробку</h2><p>Её параметры и готовая смета появятся здесь.</p></div>`;
         return;
       }
       const t = selectedTemplate, doc = currentDoc(t), groups = tplAddonGroups(t), choices = drafts.get(t) || {};
       const codes = doc.plain !== doc.text;
       if(!codes) previewMode = "plain";
-      const caption = isAnswer(t) ? "Ответ клиенту" : previewMode === "plain" ? "Смета клиенту · без номеров деталей" : "С номерами · для записи и заказа";
-      preview.innerHTML = `<button class="tpl-back" id="tpl-back" type="button">${ICO.arrow} К списку смет</button>
-        <div class="tpl-preview-panel"><div class="tpl-preview-head"><div class="tpl-preview-context"><span>${caption}</span>${priceWarning(doc)}</div><h2>${esc(displayTitle(t, doc))}</h2>
-          ${codes ? `<div class="tpl-preview-modes" aria-label="Вид сметы"><button type="button" data-preview-mode="plain" aria-pressed="${previewMode === "plain"}">Клиенту</button><button type="button" data-preview-mode="text" aria-pressed="${previewMode === "text"}">С номерами — себе</button></div>` : ""}</div>
-        ${groups.length ? `<div class="tpl-builder">${groups.map(g => {
+      preview.innerHTML = `<button class="tpl-back" id="tpl-back" type="button">${ICO.arrow} К коробкам</button>
+        <div class="tpl-preview-panel"><div class="tpl-preview-head"><div class="tpl-preview-context"><h2>${esc(t.brand)} · ${esc(t.box)}</h2>${priceWarning(doc)}</div>
+          <div class="tpl-preview-tools">${codes ? `<div class="tpl-preview-modes" aria-label="Вид сметы"><button type="button" data-preview-mode="plain" aria-pressed="${previewMode === "plain"}">Клиенту</button><button type="button" data-preview-mode="text" aria-pressed="${previewMode === "text"}">С номерами — себе</button></div>` : ""}
+          ${!isAnswer(t) ? `<div class="tpl-blog"><button type="button" data-blog-open data-blog-query="${esc(blogTemplateQuery(t,searchInp.value.trim()))}">${ICO.list} Статьи по коробке ${ICO.arrow}</button></div>` : ""}</div></div>
+        <div class="tpl-preview-content">${groups.length ? `<div class="tpl-builder">${groups.map(g => {
           const choice = choices[g.id] || "all";
           return `<fieldset><legend>${esc(g.title)}</legend><div class="tpl-addon-options"><div class="tpl-addon-toggle">
             <button type="button" data-addon="${g.id}" data-choice="none" aria-pressed="${choice === "none"}">Не добавлять</button>
             <button type="button" data-addon="${g.id}" data-choice="${choice === "none" ? "all" : choice}" aria-pressed="${choice !== "none"}">Добавить</button></div>
             ${choice !== "none" && g.labels.length > 1 ? `<select class="tpl-select tpl-addon-select" data-addon="${g.id}" aria-label="Вариант: ${esc(g.title)}"><option value="all" ${choice === "all" ? "selected" : ""}>Предложить все варианты</option>${g.labels.map((label, i) => `<option value="${i}" ${choice === String(i) ? "selected" : ""}>${esc(label)}</option>`).join("")}</select>` : ""}</div></fieldset>`;
         }).join("")}${drafts.has(t) ? `<button type="button" class="tpl-reset">Вернуть исходный шаблон</button>` : ""}</div>` : ""}
-        ${!isAnswer(t) ? `<div class="tpl-blog"><button type="button" data-blog-open data-blog-query="${esc(blogTemplateQuery(t,searchInp.value.trim()))}">${ICO.list} Статьи по коробке ${ICO.arrow}</button></div>` : ""}
-        <div class="tpl-body">${t.todo ? `<p class="tpl-todo-note">Шаблон ещё не заполнен.</p>` : previewDocument(doc[previewMode])}</div>
+        <div class="tpl-body">${t.todo ? `<p class="tpl-todo-note">Шаблон ещё не заполнен.</p>` : previewDocument(doc[previewMode])}</div></div>
         ${!t.todo && doc.text ? `<div class="tpl-preview-footer"><div class="tpl-price"><span class="tpl-price-label">${isAnswer(t) ? "Готовый ответ" : "Замена масла"}</span>${isAnswer(t) ? "" : `<strong>${esc(priceLabel(doc))}</strong>`}</div>
           <button type="button" class="tpl-copy${previewMode === "text" ? " tpl-copy-codes" : ""}" id="tpl-preview-copy">${ICO.copy} ${previewMode === "text" ? "Копировать с номерами" : "Копировать клиенту"}</button>${shareBtn('class="tpl-copy tpl-share"')}</div>` : ""}</div>`;
+      preview.querySelector(".tpl-preview-content").prepend(facetsBox);
+      renderFacets();
       preview.querySelector("#tpl-back").addEventListener("click", () => {
         mobileDetail = false; renderPreview(); window.scrollTo({ top:listScroll, behavior:"instant" });
-        grid.querySelectorAll(".tpl-card-head")[visible().indexOf(t)]?.focus({ preventScroll:true });
+        [...grid.querySelectorAll("[data-tpl-box]")].find(el => el.dataset.tplBrand === t.brand && el.dataset.tplBox === t.box)?.focus({ preventScroll:true });
       });
       preview.querySelectorAll("[data-preview-mode]").forEach(btn => btn.addEventListener("click", () => {
         previewMode = btn.dataset.previewMode; renderPreview();
@@ -6373,53 +6459,51 @@
         if(ok !== null && window.MDLOG) window.MDLOG.copy(tplCode(t));
       });
     }
-    function renderRows(list){
-      return list.map((t, i) => {
-        const doc = currentDoc(t), title = displayTitle(t, doc), logo = BRAND_LOGOS[t.brand] || "";
-        return `<div class="tpl-card ${t === selectedTemplate ? "selected" : ""}"><button class="tpl-card-head" type="button" data-i="${i}" aria-pressed="${t === selectedTemplate}" aria-label="Открыть смету: ${esc(title)}">
-          ${logo ? `<span class="tpl-brand-logo">${logo}</span>` : ""}<span class="tpl-head-main"><span class="tpl-title">${esc(title)}</span><span class="tpl-row-meta">${esc(t.brand)}${isAnswer(t) ? " · Готовый ответ" : ""}</span></span></button>
-          ${!t.todo && doc.text ? `<div class="tpl-actions"><div class="tpl-price">${isAnswer(t) ? `<span class="tpl-price-label">Готовый ответ</span>` : `<strong>${esc(priceLabel(doc))}</strong>`}${priceWarning(doc)}</div>
-            <button class="tpl-copy" type="button" data-i="${i}" title="Клиенту: смета без номеров деталей">${ICO.copy} Копировать</button>${shareBtn(`class="tpl-copy tpl-share" data-i="${i}"`)}</div>` : ""}</div>`;
+    function renderRows(list, matches){
+      const counts = new Map();
+      matches.forEach(t => counts.set(boxKey(t), (counts.get(boxKey(t)) || 0) + 1));
+      return brands.map(brand => {
+        const rows = list.filter(t => t.brand === brand);
+        if(!rows.length) return "";
+        return `<section class="catalog-section"><h2 class="catalog-section-title">${esc(brand)}</h2><div class="catalog-rows">${rows.map(t => {
+          const n = counts.get(boxKey(t));
+          return `<div class="tpl-card"><button class="tpl-card-head catalog-box" type="button" data-i="${list.indexOf(t)}" data-tpl-brand="${esc(t.brand)}" data-tpl-box="${esc(t.box)}" aria-pressed="${!!selectedTemplate && boxKey(t) === boxKey(selectedTemplate)}"><span class="tpl-title">${esc(t.box)}</span><span class="catalog-meta">${plural(n, isAnswer(t) ? "ответ" : "вариант", isAnswer(t) ? "ответа" : "варианта", isAnswer(t) ? "ответов" : "вариантов")}</span>${ICO.arrow}</button></div>`;
+        }).join("")}</div></section>`;
       }).join("");
     }
     function bindRows(list){
       grid.querySelectorAll(".tpl-card-head").forEach(btn => btn.addEventListener("click", () => {
-        listScroll = window.scrollY; selectedTemplate = list[+btn.dataset.i]; previewMode = "plain";
+        listScroll = window.scrollY; chooseTemplate(list[+btn.dataset.i]); previewMode = "plain";
         mobileDetail = matchMedia("(max-width:720px)").matches; render();
         if(mobileDetail){ window.scrollTo({ top:0, behavior:"instant" }); preview.querySelector("#tpl-back")?.focus({ preventScroll:true }); }
         else {
           grid.querySelector(`.tpl-card-head[data-i="${btn.dataset.i}"]`)?.focus({ preventScroll:true });
-          if(preview.getBoundingClientRect().bottom > window.innerHeight - 20){
-            preview.scrollIntoView({ block:"end", behavior:"instant" }); syncPreviewHeight();
-          }
+          syncPreviewHeight();
         }
-      }));
-      grid.querySelectorAll(".tpl-copy:not(.tpl-share)").forEach(btn => btn.addEventListener("click", () => {
-        const t = list[+btn.dataset.i]; copyText(currentDoc(t).plain, btn, ICO.check + " Вставьте в WhatsApp");
-        if(window.MDLOG) window.MDLOG.copy(tplCode(t));
-      }));
-      grid.querySelectorAll(".tpl-share").forEach(btn => btn.addEventListener("click", async () => {
-        const t = list[+btn.dataset.i], ok = await shareText(currentDoc(t).plain);
-        if(ok === false) copyText(currentDoc(t).plain, btn);
-        if(ok !== null && window.MDLOG) window.MDLOG.copy(tplCode(t));
       }));
     }
     function syncPreviewHeight(){
       const panel = preview.querySelector(".tpl-preview-panel");
       if(!panel || matchMedia("(max-width:720px)").matches || document.getElementById("page-shablony").hidden) return;
       const top = Math.max(document.querySelector(".topnav").getBoundingClientRect().bottom + 20, preview.getBoundingClientRect().top);
-      const fixedHeight = [...panel.children].filter(el => !el.classList.contains("tpl-body"))
+      const fixedHeight = [...panel.children].filter(el => !el.classList.contains("tpl-preview-content"))
         .reduce((sum, el) => sum + el.getBoundingClientRect().height, 2);
       panel.style.setProperty("--tpl-panel-max", Math.max(fixedHeight + 100, window.innerHeight - top - 20) + "px");
     }
 
     function render(){
       if(deferHiddenRender("shablony", render)) return;
-      const list = visible();
-      if(selectedTemplate && !list.includes(selectedTemplate)){ selectedTemplate = null; mobileDetail = false; }
+      const matches = catalogSet();
+      if(!matches.includes(selectedTemplate)){
+        const same = selectedTemplate && matches.filter(t => boxKey(t) === boxKey(selectedTemplate));
+        chooseTemplate(same?.[0] || catalogRows(matches)[0] || null);
+        mobileDetail = false;
+      }
+      const list = catalogRows(matches);
       renderPreview();
-      resultTitle.textContent = query ? "Результаты поиска" : activeBrand === "all" && activeBox === "all" ? "Все шаблоны" : `${activeBrand === "all" ? "Коробка" : activeBrand} · ${activeBox === "all" ? "Все модели" : activeBox}`;
-      hintEl.textContent = countText(list);
+      resultTitle.textContent = query ? "Результаты поиска" : activeBrand === "all" ? "Все коробки" : activeBrand;
+      const boxes = list.filter(t => !isAnswer(t)).length, answers = list.length - boxes;
+      hintEl.textContent = [boxes && plural(boxes,"коробка","коробки","коробок"), answers && plural(answers,"раздел ответов","раздела ответов","разделов ответов")].filter(Boolean).join(" · ") || "Нет совпадений";
       copyAllBtn.disabled = !list.some(t => !t.todo && currentDoc(t).text);
       // Подсказка «машина → коробка»: почему показаны эти карточки + напоминание проверить VIN.
       const cars = carsForQuery();
@@ -6469,10 +6553,14 @@
         });
         return;
       }
-      grid.innerHTML = carHint + artHint(true) + renderRows(list);
+      grid.innerHTML = carHint + artHint(true) + renderRows(list, matches);
       bindArtOpen(); bindRows(list); syncPreviewHeight();
     }
-    const equalizeSoon = () => requestAnimationFrame(syncPreviewHeight);
+    let eqRaf;
+    const equalizeSoon = () => {
+      cancelAnimationFrame(eqRaf);
+      eqRaf = requestAnimationFrame(syncPreviewHeight);
+    };
     // Имя наружного хука сохраняется: оболочка вызывает его при входе в раздел.
     window.equalizeTplHeads = equalizeSoon;
     window.tplRerender = () => { render(); equalizeSoon(); };
@@ -6494,7 +6582,7 @@
       selectedTemplate = t; previewMode = "plain"; mobileDetail = matchMedia("(max-width:720px)").matches;
       selectBox(t.brand, t.box);
       requestAnimationFrame(() => {
-        const card = grid.querySelectorAll(".tpl-card")[visible().indexOf(t)];
+        const card = [...grid.querySelectorAll(".tpl-card")].find(el => el.querySelector("[data-tpl-box]")?.dataset.tplBox === t.box && el.querySelector("[data-tpl-brand]")?.dataset.tplBrand === t.brand);
         if(!card) return;
         card.classList.add("is-pinned");
         if(mobileDetail){ window.scrollTo({ top:0, behavior:"instant" }); preview.querySelector("#tpl-back")?.focus({ preventScroll:true }); }
@@ -6508,34 +6596,39 @@
       const list = q ? visible(q, false) : [];
       return { cards: list.filter(t => !isAnswer(t)).length, answers: list.filter(isAnswer).length };
     };
-    // при изменении ширины окна заголовки переносятся иначе — пересчитываем
-    let eqRaf;
-    window.addEventListener("resize", () => {
-      cancelAnimationFrame(eqRaf);
-      eqRaf = requestAnimationFrame(syncPreviewHeight);
-    });
+    // Доступная высота зависит от ширины окна и положения панели при прокрутке.
+    window.addEventListener("resize", equalizeSoon);
+    window.addEventListener("scroll", equalizeSoon, { passive:true });
 
     const resetFilters = () => FACETS.forEach(f=>filters[f.key]=null);
 
-    navBox.addEventListener("change", e => {
-      const id = e.target.id;
-      if(id === "tpl-family") selectBrand(e.target.value);
-      else if(id === "tpl-model") selectBox(activeBrand, e.target.value);
-      else return;
-      document.getElementById(id)?.focus({ preventScroll:true });
+    navBox.addEventListener("click", e => {
+      const button = e.target.closest("[data-tpl-family]");
+      if(!button) return;
+      selectBrand(button.dataset.tplFamily);
+      [...navBox.querySelectorAll("[data-tpl-family]")].find(el => el.dataset.tplFamily === button.dataset.tplFamily)?.focus({ preventScroll:true });
     });
     facetsBox.addEventListener("click", e=>{
-      if(e.target.closest("[data-reset]")){ resetFilters(); renderFacets(); render(); return; }
+      const explicit = e.target.closest("[data-template]");
+      if(explicit){ chooseTemplate(TEMPLATES[+explicit.dataset.template], true); render(); facetsBox.querySelector(`[data-template="${explicit.dataset.template}"]`)?.focus({ preventScroll:true }); return; }
       const chip = e.target.closest(".tpl-chip"); if(!chip) return;
-      const k = chip.dataset.facet, v = chip.dataset.val;
-      filters[k] = (filters[k]===v) ? null : v; // повторный клик снимает ось
-      renderFacets(); render();
+      const facet = FACETS.find(f => f.key === chip.dataset.facet);
+      if(!facet) return;
+      const candidates = baseSet().filter(t => facet.get(t) === chip.dataset.val);
+      // При равных осях сохраняем реальный поддон и масла выбранного исполнения.
+      const executionKeys = ["filter", "combo", "axles", "diffsBlock", "diffs", "diffsDetailed"];
+      const score = t => FACETS.filter(f => f !== facet && f.get(t) === f.get(selectedTemplate)).length * (executionKeys.length + 1)
+        + executionKeys.filter(key => t[key] === selectedTemplate[key]).length;
+      const next = candidates.reduce((a,b) => !a || score(b) > score(a) ? b : a, null);
+      if(next) chooseTemplate(next, true);
+      render();
+      facetsBox.querySelector(`[data-facet="${facet.key}"][aria-pressed="true"]`)?.focus({ preventScroll:true });
     });
-    searchInp.addEventListener("input", afterTyping(()=>{ query = searchInp.value.trim().toLowerCase(); render(); }));
+    searchInp.addEventListener("input", afterTyping(()=>{ query = searchInp.value.trim().toLowerCase(); activeBrand = "all"; activeBox = "all"; mobileDetail = false; resetFilters(); renderNav(); render(); }));
     copyAllBtn.addEventListener("click", ()=>{
       // между карточками разделитель ДЛИННЕЕ внутреннего (CDOC.SEP), иначе границы смет сливаются с границами блоков
       // клиенту — без номеров, и в заголовке карточки тоже («…Mahle HX124D»): вырезаем артикулы её позиций
-      const text = visible().map(t=>[t, currentDoc(t)]).filter(([t,d])=>!t.todo && d.plain)
+      const text = catalogRows(catalogSet()).map(t=>[t, currentDoc(t)]).filter(([t,d])=>!t.todo && d.plain)
         .map(([t,d])=>`${t.brand} · ${plainName(displayTitle(t, d), d.items.flatMap(l => l.art || []))}\n\n${d.plain}`)
         .join(`\n\n${CDOC.SEP} ${CDOC.SEP}\n\n`);
       if(text) copyText(text, copyAllBtn);
@@ -9611,11 +9704,13 @@
     <button class="kc-tab active" id="kc-catalog-tab" type="button" role="tab" aria-selected="true" aria-controls="kc-catalog">Готовые комплекты</button>
     <button class="kc-tab" id="kc-builder-tab" type="button" role="tab" aria-selected="false" aria-controls="kc-builder">Конструктор</button>
   </div>
+  <div id="kc-catalog-tools">
+    <label class="kc-search">${ICO.search}<input id="kc-search" type="search" enterkeyhint="search" aria-label="Найти комплект" placeholder="Код коробки, поддон или артикул…"><span class="kc-counter" id="kc-count"></span><button class="sx-clear" type="button" aria-label="Очистить поиск">${ICO.close}</button></label>
+    <div class="kc-filters" id="kc-filters" aria-label="Марки комплектов"></div>
+  </div>
   <div class="kc-workbench"><div class="kc-left">
     <section id="kc-catalog" role="tabpanel" aria-labelledby="kc-catalog-tab">
-      <label class="kc-search">${ICO.search}<input id="kc-search" type="search" enterkeyhint="search" aria-label="Найти комплект" placeholder="Коробка, поддон, артикул или слово…"><span class="kc-counter" id="kc-count"></span><button class="sx-clear" type="button" aria-label="Очистить поиск">${ICO.close}</button></label>
-      <div class="kc-filters" id="kc-filters"></div>
-      <div class="kc-caption"><span>Комплекты без работ · вживую и отправкой</span><span>Нажмите вариант, чтобы увидеть состав</span></div>
+      <div class="kc-caption"><span>Коробки</span><span>Комплекты без работ</span></div>
       <div class="kc-groups" id="kc-groups"></div>
     </section>
     <section id="kc-builder" role="tabpanel" aria-labelledby="kc-builder-tab" hidden>
@@ -9641,9 +9736,9 @@
       </div>
     </section>
   </div>
-  <aside class="kc-preview" id="kc-preview"><div class="kc-preview-card">
-    <div class="kc-preview-head"><div class="kc-eyebrow">Сообщение клиенту</div><h2 id="kc-preview-title"></h2><p class="kc-note" id="kc-description"></p></div>
-    <div class="kc-receipt"><pre id="kc-text"></pre></div>
+  <aside class="kc-preview" id="kc-preview"><button class="kc-back" id="kc-back" type="button">${ICO.arrow} К коробкам</button><div class="kc-preview-card">
+    <div class="kc-preview-head"><h2 id="kc-preview-title"></h2><p class="kc-note" id="kc-description"></p></div>
+    <div class="kc-preview-content"><div id="kc-options" class="catalog-options" role="group" aria-label="Вариант комплекта"></div><div class="kc-receipt"><pre id="kc-text"></pre></div></div>
     <div class="kc-total"><span id="kc-sum-label">Комплект АКПП</span><strong id="kc-sum"></strong></div>
     <div class="kc-total-more" id="kc-sum-more" hidden></div>
     <div class="kc-warning" id="kc-warning" hidden>Проверить цены: есть позиции без свежего подтверждения. В сообщении сохраняются текущие суммы.</div>
@@ -9672,7 +9767,8 @@
     const allowedRef = ref => typeof ref === "string" && /^[a-z0-9_]{1,80}$/.test(ref) && !/(^|_)work(_|$)/i.test(ref)
       && (!Object.hasOwn(PRICE, ref) || isGoods(ref));
     const rowKey = rows => JSON.stringify(rows.map(r => [r.ref, r.qty || 1]).sort((a,b) => a[0].localeCompare(b[0])));
-    let mode = "catalog", selectedId = KITS[0].id, filter = "Все", openGroup = groups[0];
+    let mode = "catalog", selectedId = KITS[0].id, filter = "Все", mobileDetail = false, catalogScroll = 0;
+    const selections = new Map();
     let draft = null, currentText = "", currentCodes = "", timer, saved = [], mounted = false;
 
     function readSaved(){
@@ -9704,6 +9800,10 @@
         rows:(k.items || []).map(r => ({ ref:r.ref, qty:1 })) };
       renderBuilder(); renderPreview();
     }
+    function startBlank(){
+      draft = { baseId:null, title:"Комплект запчастей", rows:[], addon:"none" };
+      renderBuilder(); renderPreview();
+    }
     function makeDraftKit(){
       const base = byId(draft.baseId);
       const k = { name:draft.title.trim() || "Комплект запчастей", items:draft.rows, sub:"Комплект запчастей без работ." };
@@ -9724,22 +9824,27 @@
       if(base && draft.title === base.name) draft.title = "Комплект запчастей · " + base.group;
     }
     function setMode(next){
-      mode = next;
+      mode = next; mobileDetail = false;
+      root.classList.toggle("kc-building", mode === "builder");
+      $("catalog-tools").hidden = mode !== "catalog";
       for(const name of ["catalog", "builder"]){
         $(name).hidden = mode !== name;
         $(name + "-tab").classList.toggle("active", mode === name);
         $(name + "-tab").setAttribute("aria-selected", String(mode === name));
         $(name + "-tab").tabIndex = mode === name ? 0 : -1;
       }
-      if(mode === "builder" && !draft) loadKit(selectedId);
+      if(mode === "builder" && !draft){
+        if(byId(selectedId)) loadKit(selectedId); else startBlank();
+      }
       else renderPreview();
     }
     function renderFilters(){
       const brands = ["Все", ...new Set(KITS.map(k => k.brand))];
-      $("filters").innerHTML = brands.map(b => `<button type="button" class="kc-chip ${filter === b ? "active" : ""}" aria-pressed="${filter === b}" data-brand="${esc(b)}">${esc(b)}</button>`).join("");
+      $("filters").innerHTML = brands.map(b => `<button type="button" class="catalog-family" aria-pressed="${filter === b}" data-brand="${esc(b)}">${esc(b)}</button>`).join("");
       $("filters").querySelectorAll("button").forEach(b => b.onclick = () => {
-        filter = b.dataset.brand; openGroup = KITS.find(k => filter === "Все" || k.brand === filter)?.group;
+        filter = b.dataset.brand; mobileDetail = false;
         renderFilters(); renderCatalog();
+        [...$("filters").querySelectorAll("[data-brand]")].find(el => el.dataset.brand === filter)?.focus({preventScroll:true});
       });
     }
     const kitHay = k => [k.name, k.brand, k.group, k.choice, ...kitBaseVariants(k).flatMap(v => v.lines.map(l => l.name)),
@@ -9748,46 +9853,45 @@
     window.kitsCount = q => q.trim() ? KITS.filter(k => matches(kitHay(k), q)).length : 0;
     let pendingQ = null;   // запрос пришёл до первого показа раздела: поля ещё нет, кладём при монтаже (refresh)
     window.kitsSearchFrom = q => {
-      filter = "Все";
+      filter = "Все"; mobileDetail = false;
       if(!mounted){ pendingQ = q; return; }
       setMode("catalog"); $("search").value = q; renderFilters(); renderCatalog();
     };
+    const catalogKits = () => KITS.filter(k => (filter === "Все" || k.brand === filter) && matches(kitHay(k), $("search").value));
     function renderCatalog(){
-      const q = $("search").value;
-      const visible = KITS.filter(k => (filter === "Все" || k.brand === filter) && matches(kitHay(k), q));
-      if(visible.length && !visible.some(k => k.id === selectedId)) selectedId = visible[0].id;
-      $("count").textContent = visible.length;
-      $("groups").innerHTML = groups.map(group => {
-        const rows = visible.filter(k => k.group === group); if(!rows.length) return "";
-        const open = q.trim() || openGroup === group;
-        const sums = rows.flatMap(k => kitBaseVariants(k).map(v => v.sum));
-        const from = sums.every(s => s != null) ? "от " + kitRub(Math.min(...sums)) : "уточню";
-        const oil = kitBaseVariants(rows[0])[0].lines[0]?.name || "";
-        const litres = oil.match(/\d+\s*л/gi)?.at(-1) || "";
-        const word = rows.length === 1 ? "вариант" : rows.length < 5 ? "варианта" : "вариантов";
-        return `<article class="kc-group"><button type="button" class="kc-group-head" data-group="${esc(group)}" aria-expanded="${!!open}">
-          <span><span class="kc-group-title">${esc(group)}</span><span class="kc-group-sub">${esc(rows[0].brand)}${litres ? " · масло " + esc(litres) : ""}</span></span>
-          <span class="kc-group-code">${rows.length} ${word}<br>${esc(from)} · ${open ? "−" : "+"}</span></button>${!open ? "" : rows.map(k => {
-            const bases = kitBaseVariants(k);
-            const amount = bases.every(v => v.sum != null) ? (k.variants ? "от " : "") + kitRub(Math.min(...bases.map(v => v.sum))) : "уточню";
-            const part = bases[0].lines.find(l => /поддон|фильтр/i.test(l.name));
-            const stale = bases.some(v => v.lines.some(l => l.stale)) || (kitAddonVariants(k.addons) || []).some(v => v.stale);
-            return `<div class="kc-option ${selectedId === k.id ? "selected" : ""}"><button type="button" class="kc-option-view" data-view="${esc(k.id)}" aria-pressed="${selectedId === k.id}">
-              <span class="kc-option-name">${esc(k.choice)}</span><span class="kc-option-meta">${esc(k.variants ? "Один текст со всеми вариантами поддонов" : part?.name || "")}</span></button>
-              <span class="kc-option-price">${esc(amount)}<small>комплект АКПП${stale ? " · проверить цены" : ""}</small></span>
-              <button type="button" class="kc-copy-row" data-copy="${esc(k.id)}" aria-label="Копировать ${esc(k.name)}">${ICO.copy}<span>Копировать</span></button></div>`;
-          }).join("")}</article>`;
-      }).join("") || '<div class="kc-empty">Комплект не найден. Попробуйте коробку, поддон или номер детали. Свой набор можно собрать в конструкторе.</div>';
-      $("groups").querySelectorAll("[data-view]").forEach(b => b.onclick = () => { selectedId = b.dataset.view; renderCatalog(); });
-      $("groups").querySelectorAll("[data-copy]").forEach(b => b.onclick = () => {
-        selectedId = b.dataset.copy; renderCatalog(); copyText(currentText, "Комплект·" + byId(selectedId).name);
-      });
+      const visible = catalogKits();
+      if(!visible.some(k => k.id === selectedId)) selectedId = visible.find(k => selections.get(k.group) === k.id)?.id || visible[0]?.id || null;
+      $("count").textContent = new Set(visible.map(k => k.group)).size;
+      $("groups").innerHTML = [...new Set(KITS.map(k => k.brand))].map(brand => {
+        const ownGroups = groups.filter(group => visible.some(k => k.brand === brand && k.group === group));
+        if(!ownGroups.length) return "";
+        return `<section class="catalog-section"><h2 class="catalog-section-title">${esc(brand)}</h2><div class="catalog-rows">${ownGroups.map(group => {
+          const rows = visible.filter(k => k.brand === brand && k.group === group), n = rows.length;
+          return `<article class="kc-group"><button type="button" class="kc-group-head catalog-box" data-group="${esc(group)}" aria-pressed="${byId(selectedId)?.group === group}"><span class="kc-group-title">${esc(group)}</span><span class="catalog-meta">${n} ${n === 1 ? "вариант" : n < 5 ? "варианта" : "вариантов"}</span>${ICO.arrow}</button></article>`;
+        }).join("")}</div></section>`;
+      }).join("") || '<div class="kc-empty">Комплект не найден. Попробуйте код коробки или номер детали. Свой набор можно собрать в конструкторе.</div>';
       $("groups").querySelectorAll("[data-group]").forEach(b => b.onclick = () => {
-        openGroup = openGroup === b.dataset.group ? "" : b.dataset.group;
-        if(openGroup && byId(selectedId)?.group !== openGroup) selectedId = KITS.find(k => k.group === openGroup).id;
+        catalogScroll = window.scrollY;
+        const rows = visible.filter(k => k.group === b.dataset.group);
+        selectedId = rows.find(k => k.id === selections.get(b.dataset.group))?.id || rows[0].id;
+        mobileDetail = matchMedia("(max-width:720px)").matches;
         renderCatalog();
+        if(mobileDetail){ window.scrollTo({top:0,behavior:"instant"}); $("back").focus({preventScroll:true}); }
+        else [...$("groups").querySelectorAll("[data-group]")].find(el => el.dataset.group === b.dataset.group)?.focus({preventScroll:true});
       });
       renderPreview();
+    }
+    function renderOptions(){
+      const rows = catalogKits().filter(k => k.group === byId(selectedId)?.group);
+      $("options").hidden = mode !== "catalog" || !rows.length;
+      $("options").innerHTML = rows.map(k => {
+        const bases = kitBaseVariants(k), amount = bases.every(v => v.sum != null) ? (k.variants ? "от " : "") + kitRub(Math.min(...bases.map(v => v.sum))) : "уточню";
+        return `<button type="button" class="catalog-option" data-view="${esc(k.id)}" aria-pressed="${k.id === selectedId}"><span>${esc(k.choice)}</span><small>${esc(amount)}</small></button>`;
+      }).join("");
+      $("options").querySelectorAll("[data-view]").forEach(b => b.onclick = () => {
+        selectedId = b.dataset.view; selections.set(byId(selectedId).group, selectedId); renderCatalog();
+        $("options").querySelector(`[data-view="${selectedId}"]`)?.focus({preventScroll:true});
+      });
     }
     function renderBuilder(){
       if(!draft) return;
@@ -9860,13 +9964,32 @@
         if(writeSaved(saved.filter(s => s.id !== b.dataset.forget))) notify("Шаблон удалён");
       });
     }
+    function syncPreviewHeight(){
+      if(!mounted || root.hidden || matchMedia("(max-width:720px), (max-height:700px)").matches) return;
+      const panel = root.querySelector(".kc-preview-card");
+      const top = Math.max(document.querySelector(".topnav").getBoundingClientRect().bottom + 20, $("preview").getBoundingClientRect().top);
+      const fixedHeight = [...panel.children].filter(el => !el.classList.contains("kc-preview-content"))
+        .reduce((sum, el) => sum + el.getBoundingClientRect().height, 2);
+      panel.style.setProperty("--kc-panel-max", Math.max(fixedHeight + 100, innerHeight - top - 20) + "px");
+    }
+    let previewRaf;
+    function queuePreviewHeight(){
+      cancelAnimationFrame(previewRaf);
+      previewRaf = requestAnimationFrame(syncPreviewHeight);
+    }
     function renderPreview(){
-      if(mode === "catalog" && $("count").textContent === "0"){
+      queuePreviewHeight();
+      root.classList.toggle("kc-detail-open", mode === "catalog" && mobileDetail);
+      $("back").hidden = mode !== "catalog";
+      renderOptions();
+      if(mode === "catalog" && !catalogKits().length){
         currentText = currentCodes = ""; $("text").textContent = "Измените запрос или соберите набор в конструкторе.";
         $("preview-title").textContent = "Комплект не найден"; $("description").textContent = "";
         $("sum-label").textContent = "Комплект АКПП"; $("sum").textContent = "—";
         $("sum-more").hidden = true; $("mobile-what").textContent = "";
-        $("warning").hidden = true; $("copy").disabled = true; $("copy-codes").disabled = true; $("mobile-copy").disabled = true; $("edit").hidden = true; return;
+        $("warning").hidden = true; $("copy").disabled = true; $("copy-codes").disabled = true; $("mobile-copy").disabled = true; $("edit").hidden = true;
+        for(const id of ["share","mobile-share"]) if($(id)) $(id).disabled = true;
+        return;
       }
       const k = mode === "builder" ? makeDraftKit() : byId(selectedId);
       currentText = kitBodyText(k); currentCodes = kitBodyText(k, true); $("text").textContent = currentText;
@@ -9913,6 +10036,8 @@
       if(!mounted){
         root.innerHTML = KIT_UI_SHELL;
         saved = readSaved(); mounted = true;
+        window.addEventListener("resize", queuePreviewHeight);
+        window.addEventListener("scroll", queuePreviewHeight, { passive:true });
         $("catalog-tab").onclick = () => setMode("catalog"); $("builder-tab").onclick = () => setMode("builder");
         $("builder-tab").tabIndex = -1;
         for(const name of ["catalog", "builder"]) $(name + "-tab").onkeydown = e => {
@@ -9920,7 +10045,12 @@
           e.preventDefault(); const next = e.key === "Home" ? "catalog" : e.key === "End" ? "builder" : name === "catalog" ? "builder" : "catalog";
           setMode(next); $(next + "-tab").focus();
         };
-        $("search").oninput = renderCatalog; $("product-search").oninput = renderProducts;
+        $("search").oninput = () => { filter = "Все"; mobileDetail = false; renderFilters(); renderCatalog(); };
+        $("product-search").oninput = renderProducts;
+        $("back").onclick = () => {
+          mobileDetail = false; renderPreview(); window.scrollTo({top:catalogScroll,behavior:"instant"});
+          [...$("groups").querySelectorAll("[data-group]")].find(el => el.dataset.group === byId(selectedId)?.group)?.focus({preventScroll:true});
+        };
         $("base").onchange = e => { if(e.target.value) loadKit(e.target.value); };
         $("title").oninput = e => { draft.title = e.target.value; renderPreview(); };
         $("edit").onclick = () => { loadKit(selectedId); setMode("builder"); };
@@ -9938,7 +10068,7 @@
         if($("mobile-share")) $("mobile-share").onclick = share;
         $("copy-codes").onclick = () => copyText(currentCodes, false);
         $("jump").onclick = () => $("preview").scrollIntoView({ behavior:"auto", block:"start" });
-        $("blank").onclick = () => { draft = { baseId:null, title:"Комплект запчастей", rows:[], addon:"none" }; renderBuilder(); renderPreview(); };
+        $("blank").onclick = startBlank;
         $("save").onclick = () => {
           if($("save").disabled || !draft.title.trim()){ notify("Укажите название шаблона и добавьте позиции."); return; }
           const old = saved.find(s => s.title === draft.title.trim());
