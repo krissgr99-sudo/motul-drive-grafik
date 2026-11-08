@@ -1982,7 +1982,6 @@
           <button class="sales-tab active" type="button" aria-pressed="true" data-ch="flush">Промывка</button>
           <button class="sales-tab" type="button" aria-pressed="false" data-ch="oil">Масло · Алексей</button>
         </div>
-        <select class="sales-month-sel" id="sales-month" aria-label="Месяц" hidden></select>
         <div class="sales-upd" id="sales-upd"></div>
       </div>
       <div class="kopilka" id="kopilka" hidden></div>
@@ -7129,37 +7128,11 @@
   })();
 
   /* ===================== ПРОДАЖИ (данные → авто-рендер) =====================
-     ДВА КАНАЛА: «Промывка» (владелец) и «Масло» (Алексей) — канал это параметр
-     рендера, не копия кода. Живые данные приходят из Google Apps Script
-     (SHEET_API?type=sales): его робот каждые 15 минут пересчитывает LiveSklad
-     ОДНИМ проходом для обоих каналов и держит историю в листах «Продажи» и
-     «Продажи-масло». SALES ниже — последний резерв: мгновенно и офлайн
-     (замороженный снимок 04.07.2026; отдельный файл sales.json с тем же снимком убран
-     2026-09-01 — он дублировал резерв и лежал в публичном репозитории). У масла резерва-файла нет: только
-     поле oil ответа Apps Script + кэш localStorage (md_sales_oil).
-     Правь данные, не вёрстку: таблица, карточки, плитки и «Итого» считаются сами.
+     Общий ответ Apps Script содержит оба канала, операции текущего месяца
+     и перенесённый остаток. Кэш хранит этот снимок целиком для офлайна.
      days[].orders: [номер заказ-наряда, продано(шт), сумма(₽), время(HH:mm)]
      — у масла 5-й элемент: индекс имени в словаре names[] (payload меньше).
      Время — момент создания заказ-наряда в LiveSklad; необязательное. */
-  const SALES = {
-    product: "Промывка двигателя Liqui Moly Engine Flush (0,3л)",
-    updated: "2026-07-04",
-    days: [
-      { date:"2026-07-01", orders:[ ["A024279",1,2200] ] },
-      { date:"2026-07-02", orders:[ ["A024302",1,2200] ] },
-      { date:"2026-07-03", orders:[ ["A024311",1,2200], ["A024307",1,2200] ] },
-      { date:"2026-07-04", orders:[ ["A024320",1,2200], ["A024332",1,2200] ] },
-    ],
-  };
-
-  /* Резерв канала масла (Алексей): живых данных до первого ответа Apps Script нет.
-     agg — помесячные агрегаты (дни старше 13 месяцев сервер отдаёт только итогом). */
-  const SALES_OIL = { product:"Моторное масло", updated:null, names:[], days:[], agg:[] };
-
-  /* Выводы копилки (факт снятия наличных). Живые данные — Google-таблица (кнопка
-     «Отметить вывод» пишет туда). Ниже — запас для офлайна/мгновенного показа. */
-  const WITHDRAWALS = { updated:null, withdrawals:[] };
-
   /* Google Apps Script — общее хранилище в Google-таблице (одно веб-приложение на всё):
      лист 1 — выводы копилки, лист «Заметки» — заметки команды. Код — копилка-apps-script.gs */
   const SHEET_API   = "https://script.google.com/macros/s/AKfycbwGxC7-EvzNs9Fv47tcR5iDUwCFEUVz_Y3ToWld1tOXR8pip2rHLeCThUm2yL0f5tie/exec";
@@ -7428,16 +7401,21 @@
     };
     const weekend = dt => dt.getDay()===0 || dt.getDay()===6;
     const dateFull = dt => `${dt.getDate()} ${MONF[dt.getMonth()]}`;
-    const monthKey = dt => dt.getFullYear()*12 + dt.getMonth(); // year*12+month — сортируемый ключ месяца
+    const salesClock = new Intl.DateTimeFormat("sv-SE", {
+      timeZone:"Europe/Moscow", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit",
+    });
+    const currentPeriod = () => salesClock.format(new Date()).slice(0, 7);
+    const salesCache = "md_sales_current";
+    let snapshot = null, observedPeriod = currentPeriod();
+    const currentSnapshot = () => snapshot && snapshot.period === currentPeriod();
 
+    const pageEl = document.getElementById("page-prodazhi");
     const updEl  = document.getElementById("sales-upd");
     const rowsEl = document.getElementById("sales-rows");
     const cardsEl= document.getElementById("sales-cards");
     const noteEl = document.getElementById("sales-note");
     const kopEl    = document.getElementById("kopilka");
-    const monthSel = document.getElementById("sales-month");
     const tabsEl   = document.getElementById("sales-tabs");
-    const MONN = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
     // ② Счётчик денег (перенос Magic UI NumberTicker): анимируем .num[data-to] 0→значение,
     // формат сохраняем (money / шт). Триггер — вход в раздел (showPage → window.salesReveal),
     // а не render(): фоновые обновления/вывод копилки не должны перезапускать счётчик.
@@ -7450,7 +7428,7 @@
         mdTicker(el, to, SALES_FMT[el.dataset.fmt] || SALES_FMT.money, i*70);
       });
     }
-    window.salesReveal = runSalesTickers;
+    window.salesReveal = () => { checkSalesPeriod(); runSalesTickers(); };
     // Хранилище — Google Apps Script (общая таблица, SHEET_API выше).
     const WITHDRAW_API   = SHEET_API;
     const WITHDRAW_TOKEN = SHEET_TOKEN;
@@ -7466,24 +7444,16 @@
     // экранируем перед вставкой в разметку (defense-in-depth)
     const escOrd = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-    /* ==== Каналы: «Промывка» (владелец) и «Масло» (Алексей). Канал — параметр рендера.
-       У каждого свои данные, копилка, settled/busy-гейты, выбранный месяц и кэши.
-       opening — старт копилки (касса до системы, спишется первым выводом; 0 = выкл). Живёт
-       на сервере (OPENING_BASE в копилка-apps-script.gs) и приходит ответом копилки; числа
-       ниже — фолбэк на первый запуск без сети и без кэша, держи их равными серверным. ==== */
+    /* Канал — параметр рендера. opening приходит с перенесённым остатком. */
     const CH = {
       flush: {
-        key:"flush", person:null, opening:17600, allowSpend:false, clampZero:true, unit:"шт",
-        data:SALES, rank:0, settled:false, connected:true,
-        ops:(WITHDRAWALS.withdrawals || []), pend:[],
-        selMonth:null, busy:false,
+        key:"flush", person:null, opening:0, allowSpend:false, clampZero:true, unit:"шт",
+        data:null, ops:[], pend:[], busy:false,
       },
       oil: {
         key:"oil", person:"Алексей", opening:0, allowSpend:true, clampZero:false,
         unit:"л", // масло считаем литрами (решение владельца 2026-07-25) — count из LiveSklad и есть литры
-        data:SALES_OIL, rank:0, settled:false, connected:false, // connected = бэкенд уже отдаёт oil-поля
-        ops:[], pend:[],  // pend — очередь недоставленных операций (постоянный opId → досыл идемпотентен)
-        selMonth:null, busy:false,
+        data:null, ops:[], pend:[], busy:false,
       },
     };
     let cur = CH.flush;
@@ -7528,16 +7498,12 @@
           sum: orders.reduce((s,o)=>s+(Number(o[2])||0), 0) };
       }).filter(d => !isNaN(d.dt.getTime()));
     }
-    const chanAgg = ch => (ch.data.agg || [])
-      .map(a => ({ m:String(a.m || ""), qty:Number(a.qty) || 0, sum:Number(a.sum) || 0 }))
-      .filter(a => /^\d{4}-\d{2}$/.test(a.m));
-    const aggKey = a => Number(a.m.slice(0,4)) * 12 + (Number(a.m.slice(5,7)) - 1);
-    // «к выводу»: старт + все продажи (дни + агрегаты) − выводы − расходы; у промывки минуса не бывает
+    // «к выводу»: перенесённый остаток + продажи месяца − выводы − расходы; у промывки минуса не бывает
     // (clampZero). Целые рубли (Math.round): сервер округляет сумму oil-op — без клиентского округления
     // дробные копейки розлива давали бы ложный минус −0,5 ₽ после перечитки.
-    function potOf(ch){
-      const grand = chanDays(ch).reduce((s,d)=>s+d.sum, 0) + chanAgg(ch).reduce((s,a)=>s+a.sum, 0);
-      const pot = Math.round(ch.opening + grand - chanOps(ch).reduce((s,o)=> s + opAmt(o), 0));
+    function potOf(ch, days = chanDays(ch), ops = chanOps(ch)){
+      const grand = days.reduce((s,d)=>s+d.sum, 0);
+      const pot = Math.round(ch.opening + grand - ops.reduce((s,o)=> s + opAmt(o), 0));
       return ch.clampZero ? Math.max(0, pot) : pot;
     }
 
@@ -7578,15 +7544,15 @@
       if(left.length !== CH.oil.pend.length){ CH.oil.pend = left; saveLS("md_oil_pending", left); }
     }
     function enqueueOp(kind, amount, note){
+      if(!currentSnapshot()) return false;
       // финансовая очередь падает ГРОМКО: при переполнении отказываем в новой записи,
       // а не выталкиваем молча старую недоставленную (это была бы тихая потеря денег)
       if(CH.oil.pend.length >= 20){
         alert("Уже 20 операций ждут отправки — эта НЕ записана.\nПроверь интернет, дождись отправки и повтори. Не уходит долго — сообщи владельцу.");
         return false;
       }
-      const d = new Date(), p = n => String(n).padStart(2, "0");
-      const op = { id:newOpId(), date:d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate()),
-        time:p(d.getHours()) + ":" + p(d.getMinutes()), amount:amount, kind:kind, note:note || "" };
+      const [date, time] = salesClock.format(new Date()).split(" ");
+      const op = { id:newOpId(), date, time, amount, kind, note:note || "" };
       CH.oil.pend.push(op);
       saveLS("md_oil_pending", CH.oil.pend);
       oilRecheck = 0;
@@ -7596,38 +7562,58 @@
       return true;
     }
 
-    // читаем выводы владельца + операции масла из таблицы (JSONP — обходит CORS у Apps Script)
-    let oilRecheck = 0;
+    function applySnapshot(data){
+      if(!data || data.period !== currentPeriod() || !Number.isFinite(data.opening?.flush) ||
+         !Number.isFinite(data.opening?.oil) || !Array.isArray(data.withdrawals) || !Array.isArray(data.oilOps) ||
+         !Array.isArray(data.sales?.days) || !Array.isArray(data.sales.oil?.days)) return false;
+      const inPeriod = row => typeof row?.date === "string" && row.date.slice(0, 7) === data.period;
+      const sales = ch => ({ product:ch.product, updated:ch.updated, days:ch.days.filter(inPeriod) });
+      const oil = data.sales.oil;
+      snapshot = {
+        period:data.period, opening:{ flush:data.opening.flush, oil:data.opening.oil },
+        withdrawals:data.withdrawals.filter(inPeriod), oilOps:data.oilOps.filter(inPeriod),
+        sales:{ ...sales(data.sales), oil:{ ...sales(oil), names:oil.names, active:oil.active } },
+      };
+      CH.flush.data = snapshot.sales;
+      CH.oil.data = snapshot.sales.oil;
+      CH.flush.ops = snapshot.withdrawals;
+      CH.oil.ops = snapshot.oilOps;
+      CH.flush.opening = snapshot.opening.flush;
+      CH.oil.opening = snapshot.opening.oil;
+      saveLS(salesCache, snapshot);
+      return true;
+    }
+
+    // Остаток, продажи и операции применяем одним снимком.
+    let oilRecheck = 0, lastRequest = 0, lastApplied = 0;
     function loadOps(){
       if(!WITHDRAW_API) return;
-      // токен обязателен с 2026-09-03: выводы копилки больше не отдаются по одному адресу ручки
-      jsonpChannel(WITHDRAW_API + "?token=" + encodeURIComponent(SHEET_TOKEN),
-                   "копилка", "withdraw", data => {
-        let dirty = false;
-        if(data && Array.isArray(data.withdrawals)){ CH.flush.ops = data.withdrawals; saveLS("md_withdrawals", data.withdrawals); dirty = true; }
-        // старт копилок («касса до системы») живёт на сервере и приходит этим ответом;
-        // поля нет (старый бэкенд) — остаёмся на своём числе, мусор не берём: NaN обнулил бы «К выводу»
-        if(data && data.opening && typeof data.opening === "object"){
-          const so = Number(data.opening.flush), oo = Number(data.opening.oil);
-          if(isFinite(so)) CH.flush.opening = so;
-          if(isFinite(oo)) CH.oil.opening   = oo;
-          saveLS("md_opening", { flush: CH.flush.opening, oil: CH.oil.opening });
-          dirty = true;
-        }
-        if(data && Array.isArray(data.oilOps)){    // поле есть ТОЛЬКО у нового бэкенда: отсутствие ≠ «пусто», кэш не трогаем
-          CH.oil.ops = data.oilOps; saveLS("md_oil_ops", data.oilOps);
-          if(!CH.oil.connected){ CH.oil.connected = true; try { localStorage.setItem("md_oil_connected", "1"); } catch(e){} }
-          reconcilePending(data.oilOps, data.oilAck);
-          sendPending(); // сначала подтверждение GET, потом досыл: отменённое не отправляем заново
-          // очередь ещё не подтверждена (медленная запись Apps Script: waitLock до 5 с) →
-          // страховочная перечитка, максимум две — потом ждём следующей загрузки/online
-          const live = CH.oil.pend.some(p => Date.now() - parse(p.date).getTime() <= 62 * 86400000);
-          if(live && oilRecheck < 2){ oilRecheck++; setTimeout(loadOps, 7000); }
-          else if(!CH.oil.pend.length) oilRecheck = 0;
-          dirty = true;
-        }
-        if(dirty) render();
+      const request = ++lastRequest;
+      const pending = CH.oil.pend.map(o => String(o?.id || ""))
+        .filter(id => id && id.length <= 60 && !id.includes(",")).slice(0, 20);
+      const ack = pending.length ? "&oilPending=" + encodeURIComponent(pending.join(",")) : "";
+      jsonpChannel(WITHDRAW_API + "?token=" + encodeURIComponent(SHEET_TOKEN) + ack,
+                   "продажи и копилка", "withdraw", data => {
+        if(request < lastApplied || !applySnapshot(data)) return;
+        lastApplied = request;
+        reconcilePending(snapshot.oilOps, data.oilAck);
+        sendPending(); // сначала подтверждение GET, потом досыл: отменённое не отправляем заново
+        const live = CH.oil.pend.some(p => Date.now() - parse(p.date).getTime() <= 62 * 86400000);
+        if(live && oilRecheck < 2){ oilRecheck++; setTimeout(loadOps, 7000); }
+        else if(!CH.oil.pend.length) oilRecheck = 0;
+        render();
       });
+    }
+
+    function checkSalesPeriod(){
+      const period = currentPeriod();
+      if(period === observedPeriod) return;
+      observedPeriod = period;
+      if(currentSnapshot()) return;
+      snapshot = null;
+      try { localStorage.removeItem(salesCache); } catch(e){}
+      render();
+      loadOps();
     }
 
     // сумма из prompt: терпим пробелы, «₽»/«р» и запятую как разделитель; общая для вывода и расхода
@@ -7639,12 +7625,9 @@
     // остаток показываем сразу (оптимистично), сохранение — фоном
     function doWithdraw(pot){
       const ch = cur;
-      if(pot <= 0) return;
+      if(pot <= 0 || !currentSnapshot()) return;
       if(ch.busy) return;                    // вывод уже отправляется → повторный клик/гонку игнорируем (Р5.1)
-      if(!ch.settled){ alert("Секунду — подгружаю свежие продажи. Нажми «Отметить вывод» ещё раз через пару секунд."); return; }
       if(!WITHDRAW_API){ alert("Копилка ещё не подключена к таблице."); return; }
-      // гейты канала масла — ДО ввода суммы (симметрично doSpend): без connected операции писать некуда
-      if(ch.key === "oil" && !ch.connected){ alert("Канал масла ещё не подключён к таблице — вывод пока не отметить."); return; }
       // Отмена (Cancel) на ЛЮБОМ шаге = полная отмена без записи.
       let s = prompt("В копилке" + (ch.person ? " (" + ch.person + ")" : "") + " — " + money(pot) + ".\nСколько выводишь, ₽? Оставь как есть — выведешь всё.", String(pot));
       if(s === null) return;
@@ -7664,6 +7647,7 @@
       const rest = pot - amount;
       if(!confirm("Отметить вывод " + money(amount) + (ch.person ? " (" + ch.person + ")" : "") + "?\n" +
                   (rest > 0 ? "В копилке останется " + money(rest) + "." : "Копилка обнулится."))) return;
+      if(!currentSnapshot()){ checkSalesPeriod(); return; }
       ch.busy = true;                        // с этого момента до реконсиляции повторный вывод заблокирован
       if(ch.key === "oil"){
         if(!enqueueOp("wd", amount, "")){ ch.busy = false; return; } // очередь переполнена — отказ уже показан
@@ -7671,11 +7655,10 @@
         return;
       }
       // промывка — прежний проверенный путь в первый лист (формат записи не меняем)
-      const d = new Date(), p = n => String(n).padStart(2, "0");
-      const today = d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate());
+      const [today, time] = salesClock.format(new Date()).split(" ");
       const withdrawalId = newOpId();
-      (ch.ops = ch.ops || []).push({ id: withdrawalId, date: today, amount: amount, time: p(d.getHours()) + ":" + p(d.getMinutes()) });
-      saveLS("md_withdrawals", ch.ops);
+      ch.ops.push({ id: withdrawalId, date: today, amount, time });
+      saveLS(salesCache, snapshot);
       render();
       // no-cors сохраняем (ответ Apps Script непрозрачен, CORS-заголовков не отдаёт); подтверждение — перечиткой loadOps.
       postChannel(WITHDRAW_API, { token: WITHDRAW_TOKEN, withdrawalId: withdrawalId, date: today, amount: amount },
@@ -7689,8 +7672,7 @@
     // Отмена (Cancel) на ЛЮБОМ шаге = полная отмена без записи.
     function doSpend(){
       const ch = cur;
-      if(!ch.allowSpend) return;
-      if(!ch.connected){ alert("Канал масла ещё не подключён к таблице — расход пока не записать."); return; }
+      if(!ch.allowSpend || !currentSnapshot()) return;
       let s = prompt("Расход из копилки: сколько взял, ₽?\nНапример: 3500");
       if(s === null) return;
       let amount = parseAmount(s);
@@ -7749,62 +7731,26 @@
         b.setAttribute("aria-pressed", act ? "true" : "false");
       });
 
-      const allDays = chanDays(ch);   // все дни: штуки/сумма как сумма заказов дня
-      const allOps  = chanOps(ch);    // все операции: выводы + расходы (сервер + очередь)
-      const aggList = chanAgg(ch);    // помесячные агрегаты (масло: дни старше 13 месяцев)
-
-      // канал масла до первых данных (старый бэкенд / нет сети и нет кэша) — честное «не подключён»
-      const virgin = ch.key === "oil" && !ch.connected && !ch.settled && !allDays.length && !allOps.length;
-
-      // ==== копилка сквозная: старт + все продажи (дни + агрегаты) − выводы − расходы ====
-      // целые рубли (как potOf) и без «не записанных» операций (opAmt)
-      const grandSum = allDays.reduce((s,d)=>s+d.sum, 0) + aggList.reduce((s,a)=>s+a.sum, 0);
-      let pot = Math.round(ch.opening + grandSum - allOps.reduce((s,o)=> s + opAmt(o), 0));
-      if(ch.clampZero) pot = Math.max(0, pot);
-      const wdList = allOps.filter(o => o.kind === "wd");
+      const ready = currentSnapshot();
+      const days = ready ? chanDays(ch) : [];
+      const allOps = ready ? chanOps(ch) : [];
+      const ops = ready ? allOps.filter(o => o.date.slice(0, 7) === snapshot.period) : [];
+      const pot = ready ? potOf(ch, days, allOps) : 0;
+      const wdList = ops.filter(o => o.kind === "wd");
       const lastW = wdList.length ? wdList[wdList.length - 1] : null;
 
-      // ==== список месяцев: продажи + операции + агрегаты + текущий календарный ====
-      const monthMap = {}; // ключ → {y,m}
-      const mark = dt => { monthMap[monthKey(dt)] = { y:dt.getFullYear(), m:dt.getMonth() }; };
-      allDays.forEach(d => mark(d.dt));
-      allOps.forEach(o => mark(o.dt));
-      aggList.forEach(a => { monthMap[aggKey(a)] = { y:Number(a.m.slice(0,4)), m:Number(a.m.slice(5,7)) - 1 }; });
-      mark(new Date()); // текущий месяц есть всегда, даже если продаж ещё нет
-      const monthKeys = Object.keys(monthMap).map(Number).sort((a,b)=> b - a); // новые сверху
-      const liveMonth = monthKeys[0]; // самый свежий месяц — живой (копилка + кнопки)
-      if(ch.selMonth == null || !monthMap[ch.selMonth]) ch.selMonth = liveMonth;
-
-      // выпадающий список месяцев
-      monthSel.hidden = false;
-      monthSel.innerHTML = monthKeys.map(k =>
-        `<option value="${k}"${k===ch.selMonth?" selected":""}>${MONN[monthMap[k].m]} ${monthMap[k].y}</option>`
-      ).join("");
-
-      // ==== срез по выбранному месяцу ====
-      const inSel = dt => monthKey(dt) === ch.selMonth;
-      const days = allDays.filter(d => inSel(d.dt));
-      const ops  = allOps.filter(o => inSel(o.dt));
-      const selAgg = aggList.find(a => aggKey(a) === ch.selMonth) || null; // архивный месяц без дней
-
-      // ==== копилка: всегда «к выводу на сегодня»; в архивном месяце — без кнопок ====
-      // сумм за месяц здесь нет намеренно: раздел не показывает, сколько продано за период
-      const isLive = ch.selMonth === liveMonth;
       kopEl.hidden = false;
-      if(virgin){
+      if(!ready){
         kopEl.className = "kopilka empty";
-        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">Масло · Алексей</div><div class="kopilka-v">—</div><div class="kopilka-sub">Канал ещё не подключён: жду первые данные из Google-таблицы (робот пересчитывает каждые 15 минут). Если долго пусто — сообщи владельцу.</div></div>`;
+        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">К выводу на сегодня${ch.person ? " · " + ch.person : ""}</div><div class="kopilka-v">—</div><div class="kopilka-sub">Данные за текущий месяц ещё не загружены.</div></div>`;
       } else {
-        const kopSub = (lastW ? `Прошлый вывод: ${opWhen(lastW)} — ${money(lastW.amount)}.` : "Выводов ещё не было.")
-          + (isLive ? "" : " Только просмотр — вывод отмечается в текущем месяце.");
+        const kopSub = lastW ? `Прошлый вывод: ${opWhen(lastW)} — ${money(lastW.amount)}.` : "В этом месяце выводов ещё не было.";
         const kopWarn = pot < 0 ? `<div class="kopilka-warnline">${ICO.warn} Расходы больше продаж — минус закроется следующими продажами.</div>` : "";
-        const btns = isLive
-          ? ((pot > 0 && ch.connected ? `<button class="kopilka-btn" type="button" data-act="wd" data-pot="${pot}">${ICO.cash} Отметить вывод</button>`
-                     : (pot === 0 ? `<span class="kopilka-btn is-disabled">Копилка пуста</span>` : "")) +
-            (ch.allowSpend && ch.connected ? `<button class="kopilka-btn ghost" type="button" data-act="spend">${ICO.box} Внести расход</button>` : ""))
-          : "";
+        const wdBtn = pot > 0 ? `<button class="kopilka-btn" type="button" data-act="wd" data-pot="${pot}">${ICO.cash} Отметить вывод</button>`
+          : (pot === 0 ? `<span class="kopilka-btn is-disabled">Копилка пуста</span>` : "");
+        const spendBtn = ch.allowSpend ? `<button class="kopilka-btn ghost" type="button" data-act="spend">${ICO.box} Внести расход</button>` : "";
         kopEl.className = "kopilka" + (pot === 0 ? " empty" : ""); // минус ≠ пусто: сумма остаётся в --text (.neg), не в muted
-        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">К выводу на сегодня${ch.person ? " · " + ch.person : ""}</div><div class="kopilka-v${pot < 0 ? " neg" : ""}"><span class="num" data-to="${pot}" data-fmt="money">${money(pot)}</span></div><div class="kopilka-sub">${kopSub}</div>${kopWarn}</div><div class="kopilka-btns">${btns}</div>`;
+        kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">К выводу на сегодня${ch.person ? " · " + ch.person : ""}</div><div class="kopilka-v${pot < 0 ? " neg" : ""}"><span class="num" data-to="${pot}" data-fmt="money">${money(pot)}</span></div><div class="kopilka-sub">${kopSub}</div>${kopWarn}</div><div class="kopilka-btns">${wdBtn}${spendBtn}</div>`;
       }
 
       // по возрастанию даты: раньше — выше
@@ -7818,8 +7764,7 @@
 
       const isOil = ch.key === "oil";
       if(!timeline.length){
-        const msg = virgin ? "Канал масла ещё не подключён." :
-          (selAgg ? "Итог месяца — из архива: подробности по дням хранятся 13 месяцев." : "Нет продаж в этом месяце.");
+        const msg = ready ? "Нет продаж в этом месяце." : "Ждём данные о продажах за текущий месяц.";
         rowsEl.innerHTML = `<tr class="sales-empty"><td colspan="4">${msg}</td></tr>`;
         cardsEl.innerHTML = `<div class="sales-empty-card">${msg}</div>`;
       } else {
@@ -7876,24 +7821,20 @@
       // подпись: когда обновлено + что считаем. Лучший день убран вместе с общей статистикой.
       // active=false от бэкенда = фильтр выключен (лист «Масла» пуст) — fail-closed сигнал
       // вместо ложного «Обновлено сегодня» при остановленном сборе.
-      const upd = ch.data.updated ? parse(ch.data.updated) : null;
-      updEl.textContent = (isOil && ch.data.active === false)
+      const upd = ready && ch.data.updated ? parse(ch.data.updated) : null;
+      updEl.textContent = (ready && isOil && ch.data.active === false)
         ? "Сбор остановлен: лист «Масла» пуст — добавь правила"
         : (upd && !isNaN(upd.getTime())
-            // ранг < 2 = на экране замороженный снимок из файла страницы, а не последние данные:
-            // дата такого снимка не выдаётся за свежую. Кэш (ранг 2) — настоящая дата, метка не нужна.
-            ? `Обновлено ${dateFull(upd)} ${upd.getFullYear()}${ch.rank < 2 ? " · подгружаю свежие…" : ""}`
+            ? `Обновлено ${dateFull(upd)} ${upd.getFullYear()}`
             : "");
       const src = isOil
         ? "Считаются моторные масла Motul и Ravenol — правила в листе «Масла» Google-таблицы. "
-        : `Товар: ${ch.data.product}. `;
-      noteEl.textContent = virgin
-        ? "Канал масла скоро появится — данные подтянутся сами. Долго пусто — сообщи владельцу."
+        : (ready ? `Товар: ${ch.data.product}. ` : "");
+      noteEl.textContent = !ready
+        ? "Продажи доступны после загрузки данных за текущий месяц."
         : src + (days.length
           ? "Нажми на день, чтобы увидеть заказ-наряды. Данные обновляются автоматически каждые 15 минут."
-          : (selAgg && selAgg.sum
-            ? "Месяц из архива: разбивка по дням хранится 13 месяцев."
-            : "Пока нет продаж в этом месяце."));
+          : "Пока нет продаж в этом месяце.");
     }
 
     // раскрытие дня — десктоп (строка-деталь = следующий tr)
@@ -7917,8 +7858,6 @@
       if(b.dataset.act === "spend") doSpend();
       else doWithdraw(Number(b.dataset.pot) || 0);
     });
-    // выбор месяца из выпадающего списка
-    monthSel.addEventListener("change", () => { cur.selMonth = Number(monthSel.value); render(); });
     // переключатель каналов: выбор запоминается; счётчики — one-shot на смену канала (навигационный триггер)
     if(tabsEl) tabsEl.addEventListener("click", e => {
       const b = e.target.closest(".sales-tab");
@@ -7929,49 +7868,18 @@
       runSalesTickers();
     });
 
-    // кэши: мгновенный показ и офлайн (выводы владельца; операции, очередь и продажи обоих каналов)
-    try { const c = JSON.parse(localStorage.getItem("md_withdrawals") || "null"); if(Array.isArray(c)) CH.flush.ops = c; } catch(e){}
-    try { const c = JSON.parse(localStorage.getItem("md_oil_ops") || "null"); if(Array.isArray(c)) CH.oil.ops = c; } catch(e){}
-    try { const c = JSON.parse(localStorage.getItem("md_oil_pending") || "null"); if(Array.isArray(c)) CH.oil.pend = c; } catch(e){} // не усекаем: молча терять денежные записи нельзя
-    // старт копилок из прошлого ответа сервера: до первой загрузки копилка считается по нему, а не по константам
-    try { const c = JSON.parse(localStorage.getItem("md_opening") || "null");
-          if(c && typeof c === "object"){ const s = Number(c.flush), o = Number(c.oil);
-            if(isFinite(s)) CH.flush.opening = s; if(isFinite(o)) CH.oil.opening = o; } } catch(e){}
-    // без этого кэша первый кадр каждой перезагрузки — июльский снимок (резерв SALES заморожен 04.07.2026)
-    try { const j = JSON.parse(localStorage.getItem("md_sales_flush") || "null"); if(j && Array.isArray(j.days)){ CH.flush.data = j; CH.flush.rank = 2; } } catch(e){}
-    try { const j = JSON.parse(localStorage.getItem("md_sales_oil") || "null"); if(j && Array.isArray(j.days)){ CH.oil.data = j; CH.oil.rank = 2; } } catch(e){}
-    try { if(localStorage.getItem("md_oil_connected")) CH.oil.connected = true; } catch(e){}
-
-    render(); // мгновенно рисуем запасные данные (и на случай офлайна)
-    // Свежие продажи. Ранги: 0 резерв в файле, 2 кэш устройства, 3 Apps Script (главнее всех).
-    // Ранг 1 был файлом sales.json — убран 2026-09-01, см. ниже.
-    // Масло: ТОЛЬКО Apps Script (поле oil того же ответа) — отсутствие поля означает
-    // старый бэкенд, а не «продаж нет»: кэш в этом случае не трогаем.
-    const applySales = (ch, j, rank) => {
-      if(j && Array.isArray(j.days) && rank >= ch.rank){ ch.rank = rank; ch.data = j; ch.settled = true; render(); return true; }
-      return false;
-    };
-    /* Ранг 1 (файл sales.json) убран 2026-09-01. Это была ТА ЖЕ замороженная сводка от
-       04.07.2026, что и резерв SALES внутри страницы (ранг 0), — то есть источник не давал
-       ничего сверх уже показанного, зато лежал отдельным файлом в ПУБЛИЧНОМ репозитории
-       вместе с номерами заказов и суммами чеков. Отметку settled оставляем здесь: у промывки
-       есть встроенный резерв, и вывод не должен ждать ответа Apps Script. */
-    CH.flush.settled = true; render();
-    function loadSalesApi(){
-      // токен обязателен с 2026-09-03: читающие ручки закрыты общими воротами в doGet
-      jsonpChannel(SHEET_API + "?type=sales&token=" + encodeURIComponent(SHEET_TOKEN),
-                   "продажи", "sales", j => {
-        if(j && Array.isArray(j.days)){
-          if(applySales(CH.flush, j, 3)){
-            const snap = Object.assign({}, j); delete snap.oil;  // кэш промывки — без чужого канала
-            saveLS("md_sales_flush", snap);
-          }
-          if(j.oil && Array.isArray(j.oil.days) && applySales(CH.oil, j.oil, 3))
-            saveLS("md_sales_oil", j.oil); // кэш пишем один раз — при приходе свежих данных
-        }
-      });
-    }
-    deferInitialLoad(["prodazhi"], loadSalesApi);
+    // Старые ключи содержали архив. Офлайн-очередь денег живёт отдельно и переживает смену месяца.
+    try { const c = JSON.parse(localStorage.getItem("md_oil_pending") || "null"); if(Array.isArray(c)) CH.oil.pend = c; } catch(e){}
+    try {
+      ["md_sales_flush", "md_sales_oil", "md_withdrawals", "md_oil_ops", "md_opening", "md_oil_connected"]
+        .forEach(k => localStorage.removeItem(k));
+      applySnapshot(JSON.parse(localStorage.getItem(salesCache) || "null"));
+    } catch(e){}
+    if(!snapshot){ try { localStorage.removeItem(salesCache); } catch(e){} }
+    render();
+    const checkVisibleSales = () => { if(!document.hidden && !pageEl.hidden) checkSalesPeriod(); };
+    document.addEventListener("visibilitychange", checkVisibleSales);
+    setInterval(checkVisibleSales, 60000);
     deferInitialLoad(["prodazhi"], loadOps, CH.oil.pend.length > 0);
     // Досыл масла запускает успешный loadOps, после проверки обработанных id.
   })();
