@@ -2765,6 +2765,8 @@
     axles_torsen_motul:     ["Масло Motul +замена", 17500],
     axles_torsen_orig_g055: ["Оригинал Vag +замена", 33000],
     axles_torsen_orig_g060: ["Оригинал Vag +замена", 39800],
+    axles_a6_motul:         ["Масло Motul и замена в мостах (задний двухсекционный) и Торсене", 20300],
+    axles_a6_orig:          ["Оригинальные масла и замена в мостах (задний двухсекционный) и Торсене", 42000],
     // Масло раздатки BMW xDrive, 1 л: DTF-1 — в «мостах и раздатке» и в комплектах, Motul — только в комплектах
     // (в услуге у Motul своя строка 0.6 л — diff_oil_transf). Правило «считаем литр»: заправка 0.6 л,
     // но берём за целый литр, остаток клиенту. Цены плоские (не по ставке RATES).
@@ -2833,7 +2835,7 @@
     // Фильтр-поддон ZF и работа с промывкой — общие. Мосты/Торсен — блок AXLES_TORSEN.
     oil_zf8hp_12:          ["Оригинальное трансмиссионное масло ZF8HP S671090312 12л", perL(RATES.zf8hp, 12), "S671090312"],
     filter_zf_8hp65:       ["Оригинальный Фильтр-поддон ZF 1103298006", 13000, "1103298006"],
-    filter_sollo_8hp65:    ["Фильтр поддон Sollo Germany", 10000],   // неоригинальный поддон 8HP65 (вариант на масле Motul)
+    filter_sollo_8hp65:    ["Фильтр поддон Sollo Germany", 8000],   // новая цена строки в прайсе DRIVE2
     work_full_8hp65_wash:  ["Полная аппаратная замена масла в АКПП ZF 8HP65 с промывкой системы", 7000],
     oil_zf8hp_6:           ["Оригинальное трансмиссионное масло ZF8HP S671090312 6л", perL(RATES.zf8hp, 6), "S671090312"],
     work_part_8hp65:       ["Частичная замена масла в АКПП ZF 8HP65 с заменой фильтра", 4000],
@@ -2853,8 +2855,13 @@
     oil_multiatf_14: ["Трансмиссионное масло Motul Multi ATF 105784 14л", perL(RATES.motul_multiatf, 14), "105784"],
     oil_multiatf_15: ["Трансмиссионное масло Motul Multi ATF 105784 15л", 25500, "105784"],  // не по ставке: 1700/л
     oil_multiatf_16: ["Трансмиссионное масло Motul Multi ATF 105784 16л", 27200, "105784"],  // не по ставке: 1700/л
-    oil_toyota_16: ["Трансмиссионное масло Toyota ATF WS 08886-81210 16л", perL(RATES.toyota_ws, 16), "08886-81210"],
+    oil_toyota_16: ["Трансмиссионное масло Toyota ATF WS 08886-81210 16л", 35200, "08886-81210"],  // смета TR80SD, цена за 16 л из DRIVE2
     oil_toyota_11: ["Трансмиссионное масло Toyota ATF WS 08886-81210 11л", perL(RATES.toyota_ws, 11), "08886-81210"],
+    tr80_axles_motul: ["Масло Motul и замена в переднем и заднем дифференциалах и раздатке", 13800],
+    tr80_oil_front: ["Трансмиссионное масло VAG G052145S2 (передний дифференциал)", 6500, "G052145S2"],
+    tr80_oil_rear:  ["Трансмиссионное масло VAG G055190A2 (задний дифференциал)", 6500, "G055190A2"],
+    tr80_oil_transf:["Трансмиссионное масло VAG G055515A2 (раздаточная коробка)", 6000, "G055515A2"],
+    oil_dctf_q6_6: ["Трансмиссионное масло Motul Multi DCTF 105786 6л", 18000, "105786"],  // смета Audi Q6 DMEA
     oil_dctf_9:    ["Трансмиссионное масло Motul Multi DCTF 105786 9л", perL(RATES.motul_dctf, 9), "105786"],
     oil_dctf_5:    ["Трансмиссионное масло Motul Multi DCTF 105786 5л", perL(RATES.motul_dctf, 5), "105786"],
     oil_dctf_35:   ["Трансмиссионное масло Motul Multi DCTF 105786 3.5л", 10500, "105786"],  // не по ставке: мелкий объём 3000/л (публичный прайс DRIVE2, п. 14.2)
@@ -2944,6 +2951,7 @@
     work_full_dq724:  ["Полная замена масла в DCT (DSG 724.020) с промывкой системы", 6000],
     work_full_dq500:  ["Полная замена масла в DSG DQ500 с промывкой системы", 6000],
     work_part_dq500:  ["Частичная замена масла в DSG DQ500", 3000],
+    work_part_q6:     ["Частичная замена масла в DSG 0AK", 1500],
     work_full_dq250:  ["Полная замена масла в DSG DQ250 с промывкой системы", 6000],
     work_part_dq250:  ["Частичная замена масла в DSG DQ250", 3000],
     work_full_dl501:  ["Полная замена масла в DSG S-Tronic DL501 0B5 с промывкой системы", 7000],
@@ -2973,12 +2981,15 @@
     plug_bmw_5258:   ["Свечи зажигания BMW 12122455258", 2400, "12122455258"],
     plug_bmw_7704:   ["Свечи зажигания BMW 12120057704", 2400, "12120057704"],
     plug_bmw_4ef60:  ["Свечи зажигания BMW 12125A4EF60", 3200, "12125A4EF60"],
+    plug_bmw_a1a259: ["Свечи зажигания BMW 12125A1A259", 2400, "12125A1A259"],
     plug_bosch_5541: ["Свечи зажигания Bosch 0242145541", 900, "0242145541"],
     plug_bosch_5555: ["Свечи зажигания Bosch 0242145555", 900, "0242145555"],
+    plug_bosch_5518: ["Свечи зажигания Bosch 0242135518", 1400, "0242135518"],
     plug_ngk_90654:  ["Свечи зажигания NGK 90654", 1400, "90654"],
     glow_bosch_3001: ["Свечи накаливания Bosch 0250703001", 3300, "0250703001"],
     glow_bosch_3006: ["Свечи накаливания Bosch 0250603006", 3300, "0250603006"],
     glow_denso_665:  ["Свечи накаливания Denso DG665", 3200, "DG665"],
+    glow_denso_617:  ["Свечи накаливания Denso DG617", 3200, "DG617"],
     to_work_plug:    ["Замена свечей зажигания", 500],   // за одну свечу
     // Промывка двигателя — допредложение в конце сметы ТО (TO_UPSELL). В «Итого» не входит:
     // это отдельная строка под чертой. Цена — та же, что в «Продажах» (чеки по 2200 ₽/шт).
@@ -3043,12 +3054,16 @@
   const TO_PLUGS = [
     { id:"bmw-9664",  brand:"BMW", kind:"spark", oem:["12120039664", "12120038704", "12120038896", "12120040573"],
       variants:[{ label:"Оригинал BMW", item:"plug_bmw_9664" }, { label:"Аналог Bosch", item:"plug_bosch_5541" }] },
-    { id:"bmw-5258",  brand:"BMW", kind:"spark", oem:["12122455258", "12120040551", "12120047375", "12120046646"],
+    { id:"bmw-5258",  brand:"BMW", kind:"spark", oem:["12122455258", "12120040551", "12120047375", "12120046646", "12120041666"],
       variants:[{ label:"Оригинал BMW", item:"plug_bmw_5258" }, { label:"Аналог Bosch", item:"plug_bosch_5555" }] },
     { id:"bmw-7704",  brand:"BMW", kind:"spark", oem:["12120057704"],
       variants:[{ label:"Оригинал BMW", item:"plug_bmw_7704" }] },
     { id:"bmw-4ef60", brand:"BMW", kind:"spark", oem:["12125A4EF60"],
       variants:[{ label:"Оригинал BMW", item:"plug_bmw_4ef60" }] },
+    { id:"bmw-a1a259", brand:"BMW", kind:"spark", oem:["12125A1A259"],
+      variants:[{ label:"Оригинал BMW", item:"plug_bmw_a1a259" }] },
+    { id:"bmw-bosch-5518", brand:"BMW", kind:"spark", oem:["12120035531", "12120034098"],
+      variants:[{ label:"Bosch", item:"plug_bosch_5518" }] },
     { id:"bmw-glow-3522", brand:"BMW", kind:"glow", oem:["12230053522"],
       variants:[{ label:"Bosch", item:"glow_bosch_3001" }] },
     { id:"bmw-glow-5934", brand:"BMW", kind:"glow", oem:["12230035934"],
@@ -3057,6 +3072,8 @@
       variants:[{ label:"NGK", item:"plug_ngk_90654" }] },
     { id:"mb-glow",  brand:"MERCEDES", kind:"glow",  oem:["A0011597301", "A0011598001"],
       variants:[{ label:"Denso", item:"glow_denso_665" }] },
+    { id:"mb-glow-617", brand:"MERCEDES", kind:"glow", oem:["A0011596601", "A0011595701"],
+      variants:[{ label:"Denso", item:"glow_denso_617" }] },
   ];
   // вид свечи: подпись на экране, первая строка предложения и работа (ключ PRICE за штуку).
   // work:null — работы нет вовсе: свечи накаливания только продаём, не меняем (владелец, 20.10.2026)
@@ -3115,7 +3132,7 @@
       "oil_zf6_6", "diff_oil_front", "diff_oil_transf", "diff_oil_rear", "oil_motul_11", "oil_ravenol_11",
       "oil_mb_9g_13", "oil_mb_9g_10", "mb_diff_oil", "oil_mb_7g_12", "oil_motul_atf6_12", "oil_zf8hp_12",
       "oil_zf8hp_6", "oil_motul_10", "oil_motul_15", "oil_motul_16", "oil_zf_4", "oil_zf_10",
-      "oil_multiatf_11", "oil_multiatf_15", "oil_multiatf_16", "oil_toyota_16", "oil_toyota_11", "oil_dctf_9",
+      "oil_multiatf_11", "oil_multiatf_15", "oil_multiatf_16", "oil_toyota_11", "oil_dctf_9",
       "oil_dctf_5", "oil_dctf_2", "oil_httdctf_9", "oil_gear300_4", "oil_gear300_38",
       "oil_cvtf_12", "oil_hf_1", "oil_kia_sp4_11",
       "kit_diff_motul_ls", "kit_diff_motul_reg",   // масла комплекта-с-блокировкой — по ставкам gear300_ls/gear300
@@ -3381,6 +3398,26 @@
   const AXLES_TORSEN_G060 = {
     head: "Также можем заменить масла в переднем, заднем дифференциале и в ТОРСЕН.",
     motulKey: "axles_torsen_motul", origKey: "axles_torsen_orig_g060", origBrand: "Vag", note: "Motul ничем не уступает оригиналу",
+  };
+  const AXLES_8HP65A_A6 = {
+    head: "Замена масла в переднем дифференциале, двухсекционном заднем дифференциале и Торсене",
+    motulKey: "axles_a6_motul", origKey: "axles_a6_orig", origBrand: "VAG",
+    note: "Перед работами сверяем по VIN исполнение заднего дифференциала.",
+  };
+  const DIFFS_BMW_REAR = {
+    title: "Задний дифференциал",
+    head: "Замена масла в заднем дифференциале",
+    variants: DIFFS_KIT_REAR.variants.map(v => ({ ...v, items: [...v.items, "diff_work_rear"] })),
+  };
+  const BMW_REAR_DRIVE_QUERY = ["задний привод", "заднеприводный", "rwd"];
+  const DIFFS_TR80 = {
+    head: "Замена масла в переднем и заднем дифференциалах и раздаточной коробке",
+    variants: [
+      { label: "Motul", items: ["tr80_axles_motul"] },
+      { label: "Оригинал VAG", items: [
+        "tr80_oil_front", "diff_work_front", "tr80_oil_rear", "diff_work_rear", "tr80_oil_transf", "diff_work_transf",
+      ] },
+    ],
   };
 
   // 2.3) Муфта Haldex (X1 F48) — отдельный блок с двумя вариантами. Цены — в PRICE.
@@ -3653,6 +3690,7 @@
 
     /* ===== Aisin (новые модели) ===== */
     "TR80SD 0C8": {
+      diffsBlock: DIFFS_TR80,
       "Аппаратная": {
         head: "Полная аппаратная замена масла в АКПП Aisin TR80SD 0C8",
         variants: () => [
@@ -3779,6 +3817,12 @@
     },
 
     /* ===== DSG / DCT ===== */
+    "0AK": {
+      "Частичная": {
+        head: "Audi Q6 DMEA · частичная замена масла в DSG 0AK без замены фильтра",
+        variants: () => [{ items: ["oil_dctf_q6_6", "work_part_q6"] }],
+      },
+    },
     "DCT 724.020": {
       "Аппаратная": {
         head: "Полная аппаратная замена масла в DCT (DSG 724.020)",
@@ -4080,7 +4124,7 @@
     if(t.diffsDetailed) add("detailed", "Трёхсекционный мост и раздатка", "detailed", DIFFS_DETAILED);
     const diffsBlock = t.diffsBlock || box.diffsBlock;   // карточка может заменить сноску коробки (9G с Ravenol)
     if(diffsBlock) add("box", diffsBlock.title || "Мосты и раздатка", diffsBlock.variants ? "multi" : "detailed", diffsBlock);
-    const axles = t.axles || box.axles;
+    const axles = t.axles ?? box.axles;
     if(axles) add("axles", axles.head, "axles", axles);
     if(box.haldex) add("haldex", "Муфта Haldex", "haldex", box.haldex);
     return groups;
@@ -4244,13 +4288,11 @@
       "https://www.drive2.ru/o/b/703740219408520041/"] },
     { id:"reviews", group:"О нас и отзывы", title:"Отзывы о нас: Яндекс, Drive2, Авито", text:[
       "Что о нас пишут на просторах интернета.",
-      "Yandex: Более 1000 отзывов.",
-      "https://yandex.ru/maps/org/motul_drive/13986282674",
-      "Drive2: Крупнейшая в Рунете автомобильная социальная сеть и уникальное сообщество автовладельцев.",
-      "Более 500 отзывов и 224 упоминаний.",
+      "Яндекс Карты · отметка «Хорошее место»",
+      "https://yandex.ru/maps/org/motul_drive/13986282674/reviews/",
+      "DRIVE2",
       "https://www.drive2.ru/o/BiBiAvTo#reviews",
-      "Крупнейший в России интернет-сервис объявлений Avito:",
-      "Более 1300 отзывов.",
+      "Авито",
       "https://www.avito.ru/brands/i201134025"] },
     { id:"avito-quality", group:"О нас и отзывы", title:"Качество сервиса Авито", text:[
       "Наш профиль отмечен как проверенный партнер Авито с зеленым уровнем качества сервиса, что говорит о максимальной надежности нашего магазина.",
@@ -4263,6 +4305,12 @@
       "Будем благодарны если оставите отзыв про нашу работу в яндекс картах.",
       "Заранее спасибо.",
       "https://yandex.ru/maps/org/motul_drive/13986282674"] },
+    { id:"mb-9g-314", group:"Замена масла", title:"Mercedes 9G-Tronic · поддон 314", text:[
+      "Для 9G-Tronic 725.172 с номером коробки A2232701301 и поддоном A7252703114 делаем частичную замену. Для расчёта берём 8 л масла.",
+      "Пришлите VIN, чтобы сверить номер коробки и поддон."] },
+    { id:"tank-9at", group:"Замена масла", title:"TANK 500 · масло для 9AT Hycet", text:[
+      "Для TANK 500 с коробкой 9AT в руководстве указано масло ATF 9.",
+      "Пришлите VIN, чтобы сверить исполнение коробки и объём масла для вашей машины."] },
   ];
   const isAnswer = t => t.answer != null;
 
@@ -4306,6 +4354,11 @@
       title:"8HP45-76 · M-серия · частичная (алюминиевый поддон) + мосты и раздатка (с блокировкой)", titleAccent:"M-серия",
       extraTags:["M-серия", "M-Версия", "Алюминиевый поддон", "6 л", "оригинал ZF"] },
 
+    { brand:"ZF", box:"8HP45-76", type:"Аппаратная", diffsBlock:DIFFS_BMW_REAR,
+      carBrand:"BMW", carQuery:BMW_REAR_DRIVE_QUERY,
+      code:"ZF·8HP45-76·Аппаратная·Задний привод", title:"8HP45-76 · BMW с задним приводом",
+      extraTags:["Задний привод", "BMW", "Задний дифференциал", "RWD"] },
+
     // ZF 8HP55 (фильтр Mahle HX189KIT)
     { brand:"ZF", box:"8HP55", type:"Аппаратная", title:"ZF 8HP55 · аппаратная (Motul / оригинал ZF)",
       titleAccent:"8HP55", extraTags:["8HP55", "Motul ATF6", "оригинал ZF", "Mahle HX189KIT"] },
@@ -4334,6 +4387,12 @@
     { brand:"ZF", box:"8HP65A", type:"Аппаратная", axles:AXLES_TORSEN_G060, title:"ZF 8HP65A + мосты и Торсен G060",
       code:"ZF·8HP65A·Аппаратная·Торсен G060",
       titleAccent:"G060", extraTags:["8HP65A", "Motul ATF6 / оригинал ZF", "Мосты", "Торсен"] },
+    { brand:"ZF", box:"8HP65A", type:"Аппаратная", axles:false, carBrand:"Porsche",
+      code:"ZF·8HP65A·Аппаратная·Porsche", title:"8HP65A · Porsche Cayenne (8HP65AX)",
+      extraTags:["Porsche", "Cayenne", "Порше", "Кайен", "8HP65AX"] },
+    { brand:"ZF", box:"8HP65A", type:"Аппаратная", axles:AXLES_8HP65A_A6, carBrand:"Audi", carQuery:["a6", "а6"],
+      code:"ZF·8HP65A·Аппаратная·Audi A6 2 секции", title:"8HP65A · Audi A6 с двухсекционным задним дифференциалом",
+      extraTags:["Audi A6", "Ауди А6", "2 секции", "Двухсекционный задний дифференциал", "Торсен"] },
     { brand:"ZF", box:"8HP65A", type:"Частичная", title:"ZF 8HP65A · частичная + мосты и Торсен G055",
       code:"ZF·8HP65A·Частичная·Торсен G055",
       titleAccent:"G055", extraTags:["8HP65A", "оригинал ZF 6л", "Мосты", "Торсен"] },
@@ -4405,6 +4464,8 @@
       titleAccent:"V6AWH-M-DA", extraTags:["V6AWH", "V6AWH-M-DA", "6/1", "Motul ATF6", "15 л", "LYNXauto LT-1150", "LT-1150"] },
 
     /* ==================== DSG / DCT ==================== */
+    { brand:"DSG / DCT", box:"0AK", type:"Частичная", title:"0AK · Audi Q6 DMEA без замены фильтра",
+      code:"DSG·0AK·Audi Q6 DMEA", extraTags:["Audi Q6", "Ауди Q6", "DMEA", "DQ501", "6 л", "Motul Multi DCTF"] },
     { brand:"DSG / DCT", box:"DCT 724.020", type:"Аппаратная", title:"DCT 724.020 (2 фильтра)",
       titleAccent:"724.020", extraTags:["724.020", "DCT", "Motul Multi DCTF"] },
     { brand:"DSG / DCT", box:"DQ500", type:"Аппаратная", title:"DSG DQ500 (Motul / HIGH TORQUE / оригинал)",
@@ -4935,7 +4996,7 @@
       vin:{ model:["a6","a7"], years:[2011,2018] },
       note:"Как у B8: 0BK/8HP55 либо DL501. Переднеприводные — multitronic, его не обслуживаем." },
     { brand:"Audi", model:"A6 / A7", gen:"C8 · 2018+ · ZF 8HP65A или S tronic DL-382", boxes:["8HP65","8HP65A","DL-382"], draft:true,
-      match:["a6 c8","a7 c8","ауди a6 c8","ауди c8"], allow:{base:true},
+      match:["a6 c8","a7 c8","ауди a6 c8","ауди c8","a6 4a","a6 4a2","a6 4a5","a6 4ah"], allow:{base:true, twoSectionRear:true},
       vin:{ model:["a6","a7"], years:[2018,null], body:["4ka"] },
       note:"Мягкий гибрид 48V → 8HP65A, без него → обычная 8HP65 (у них разный фильтр-поддон). На 3.0 TFSI/TDI 48V встречается часто. Робот S tronic — DL-382." },
     { brand:"Audi", model:"A8", gen:"D4 · 2010-2017 · ZF 8HP55", boxes:["8HP55"], draft:true,
@@ -4998,13 +5059,13 @@
       match:["cayenne 92a","кайен 92a","кайен 2"], allow:{base:true},
       vin:{ model:["cayenne"], years:[2010,2018] },
       note:"8-ст. Tiptronic S = Aisin 0C8. Гибрид S E-Hybrid сверяйте отдельно." },
-    { brand:"Porsche", model:"Cayenne", gen:"— уточните поколение", boxes:["TR60SN 09D","TR80SD 0C8"], draft:true,
+    { brand:"Porsche", model:"Cayenne", gen:"— уточните поколение", boxes:["TR60SN 09D","TR80SD 0C8","8HP65A"], draft:true,
       match:["cayenne","кайен","кайенн"], allow:{base:true},
-      note:"До 2010 — 09D, 2010-2018 — 0C8. Новый 9YA (с 2017) — ZF 8HP, готовой карточки нет." },
-    { brand:"Porsche", model:"Cayenne", gen:"9YA / 9YB · 2017+ · ZF 8HP", boxes:[], nocard:"ZF 8HP (Tiptronic S)", draft:true,
-      match:["cayenne 9y","кайен 3","cayenne 2018"], allow:{base:false},
+      note:"До 2010 — 09D, 2010–2018 — 0C8. Для 9YA с ZF 8HP сначала сверьте код коробки и поддон." },
+    { brand:"Porsche", model:"Cayenne", gen:"9YA / 9YB · 2017+ · ZF 8HP", boxes:["8HP65A"], draft:true,
+      match:["cayenne 9y","cayenne 9ya","cayenne 9yb","кайен 3","cayenne 2018"], allow:{base:true},
       vin:{ model:["cayenne"], years:[2017,null] },
-      note:"MLBevo, 8-ст. ZF. У нас есть 8HP65 (обычная) и 8HP65A (мягкий гибрид) — совпадёт ли по фильтру-поддону, сверьте по артикулу; иначе считайте вручную." },
+      note:"Смета подходит при подтверждении ZF 8HP65A / 8HP65AX и поддона 1103298119 по VIN." },
     { brand:"Porsche", model:"Macan / Panamera", gen:"PDK (робот)", boxes:[], nocard:"PDK", draft:true,
       match:["macan","макан","panamera","панамера"], allow:{base:false},
       vin:{ model:["macan","panamera"] },
@@ -6168,7 +6229,7 @@
       // (сейчас — ZF 8HP45-76): иначе карточки глубокого поддона теряются среди «Обычная / Без блокировки».
       { key:"pan",    label:"Поддон", get:t=>t.filter==="filter_deep"?"Глубокий":t.filter==="filter_m_alu"?"M-версия":"Обычный", order:["Обычный","Глубокий","M-версия"] },
       { key:"engine", label:"Мотор", get:engineOf,  order:["Обычная","Мягкий гибрид","Гибрид"] },
-      { key:"lock",   label:"Блок.", get:lockOf,    order:["Без блокировки","С блокировкой"] },
+      { key:"lock",   label:"Блок.", get:t=>t.diffsBlock===DIFFS_BMW_REAR ? "Задний привод" : lockOf(t), order:["Без блокировки","С блокировкой","Задний привод"] },
       { key:"axle",   label:"Мост",  get:t=>t.diffsDetailed?"Трёхсекционный":"Обычный", order:["Обычный","Трёхсекционный"] },
       // Раздатка Range Rover: одно- или двухскоростная (поле t.transfer); у остальных карточек оси нет.
       { key:"transfer", label:"Раздатка", get:t=>t.transfer, order:["Односкоростная","Двухскоростная"] },
@@ -6199,7 +6260,11 @@
         const present = new Set(base.map(t=>f.get(t)));
         const vals = f.order.filter(v=>present.has(v));
         if(vals.length < 2) return "";
-        const chips = vals.map(v=>`<button class="tpl-chip ${f.get(selectedTemplate)===v?"active":""}" type="button" aria-pressed="${f.get(selectedTemplate)===v}" data-facet="${f.key}" data-val="${esc(v)}">${esc(v)}</button>`).join("");
+        const withRearDrive = f.key === "lock" && vals.includes("Задний привод");
+        const chips = vals.map(v=>{
+          const label = withRearDrive && v === "Без блокировки" ? "Без LSD" : withRearDrive && v === "С блокировкой" ? "С LSD" : v;
+          return `<button class="tpl-chip ${f.get(selectedTemplate)===v?"active":""}" type="button" aria-pressed="${f.get(selectedTemplate)===v}" data-facet="${f.key}" data-val="${esc(v)}"${label !== v ? ` title="${esc(v)}"` : ""}>${esc(label)}</button>`;
+        }).join("");
         return `<fieldset class="tpl-facet"><legend class="tpl-facet-label">${esc(f.label === "Блок." ? "Задний мост" : f.label === "Тип" ? "Замена" : f.label)}</legend>${chips}</fieldset>`;
       }).filter(Boolean);
       // Оси не описывают масла Торсен, исполнения Mercedes и тексты ответов.
@@ -6249,7 +6314,13 @@
 
     // Какие ВАРИАНТЫ карточек коробки уместны конкретной машине (c.allow). База — всегда; гибрид/
     // блокировку/раздатку показываем, только если машина их разрешает. Нет c.allow → старое поведение (всё).
-    const cardAllowed = (t, c) => {
+    const cardAllowed = (t, c, q) => {
+      if(t.carBrand && t.carBrand !== c.brand) return false;
+      if(t.carQuery && !t.carQuery.some(m => carsToken(q, m))) return false;
+      if(t.axles === AXLES_8HP65A_A6 && !c.allow?.twoSectionRear) return false;
+      if(c.brand === "Porsche" && t.box === "8HP65A" && t.carBrand !== "Porsche") return false;
+      if(c.brand === "BMW" && t.box === "8HP45-76" && t.diffs
+        && BMW_REAR_DRIVE_QUERY.some(m => carsToken(q, m))) return false;
       // Глубокий поддон 1087298361 — Jeep/Dodge, а карта CARS у нас про BMW: в подборе ПО МАШИНЕ
       // такую карточку не показываем, пока машина её явно не разрешит (c.allow.deep). Fail-closed —
       // прячем и там, где c.allow вообще не задан, иначе BMW получит поддон не от своей машины.
@@ -6283,7 +6354,7 @@
             // Запрос распознан как МАШИНА → показываем только её подходящие карточки
             // (её коробка == t.box И вариант карточки разрешён). Текстовый поиск не подмешиваем,
             // иначе коды фильтров вроде «HX189KIT» ловят «x1» и т.п.
-            if(!cars.some(c => c.boxes.includes(t.box) && cardAllowed(t, c))) return false;
+            if(!cars.some(c => c.boxes.includes(t.box) && cardAllowed(t, c, q))) return false;
           } else {
             // Обычный текстовый поиск по коробке/тегам/телу карточки.
             const doc = tplDoc(t);
@@ -10690,6 +10761,9 @@
       //    однозначное совпадение с именем коробки: два имени на один код — уже развилка.
       let codeBox = "", code = "";
       for(const m of (String(c.gearbox || "").toUpperCase().match(/\b0[A-Z0-9]{2}\b/g) || [])){
+        // Для 0AK есть смета только на Audi Q6 с двигателем DMEA.
+        if(m === "0AK" && !(brand === "Audi" && carsToken(model, "q6")
+          && carsToken(String(c.engineFull || c.engine || "").toLowerCase(), "dmea"))) continue;
         const hit = Object.keys(BOXES).filter(n => n.toUpperCase().includes(m));
         if(hit.length === 1){ codeBox = hit[0]; code = m; break; }
       }
