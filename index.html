@@ -665,7 +665,7 @@
 
   /* ===================== ПРОДАЖИ ===================== */
   .sales-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-  /* переключатель каналов «Промывка / Масло» (заменяет пилюлю товара — имя товара в нижней подписи) */
+  /* переключатель каналов продаж */
   .sales-tabs{display:inline-flex;gap:4px;padding:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
   .sales-tab{font:inherit;font-family:var(--font-disp);font-weight:700;font-size:14px;padding:8px 14px;border:none;border-radius:8px;
     background:transparent;color:var(--muted);cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
@@ -698,7 +698,7 @@
     font-size:13px;cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s;white-space:nowrap}
   .kopilka-btn:hover{background:rgba(209,31,45,.18)}
   .kopilka-btn.is-disabled{border-color:var(--line);background:var(--fill-soft);color:var(--muted);opacity:.7;pointer-events:none}
-  /* группа кнопок копилки (вывод + расход у канала масла) */
+  /* группа кнопок копилки */
   .kopilka-btns{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
   .kopilka-btns .kopilka-btn{margin-left:0}
   .kopilka-btn.ghost{border-color:var(--line);background:var(--fill);color:var(--text)}
@@ -712,7 +712,7 @@
   .withdraw-card{background:rgba(209,31,45,.06);border:1px solid var(--open-border);border-radius:14px;padding:13px 15px;
     display:flex;align-items:center;gap:9px;font-weight:700;font-size:13px;color:var(--accent-soft)}
   .withdraw-card .wd-note{margin-left:auto;font-family:var(--font-mono);font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
-  /* расход из копилки масла (Алексей взял деньги — напр. купил масло): нейтральная строка, не красная */
+  /* расход из копилки: нейтральная строка */
   tbody tr.spend-row td{background:var(--fill-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
   .spend-cell{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:700;font-size:13px;color:var(--text)}
   .spend-cell .wd-amount{font-family:var(--font-disp);font-weight:800}
@@ -726,7 +726,7 @@
     border:1px solid var(--warn);border-radius:6px;padding:1px 5px;white-space:nowrap}
   @media(max-width:720px){ .kopilka{gap:12px} .kopilka-v{font-size:26px} .kopilka-btn{margin-left:0;width:100%;justify-content:center}
     .kopilka-btns{margin-left:0;width:100%;flex-direction:column;gap:8px}
-    .sales-tabs{width:100%} .sales-tab{flex:1;min-height:44px;text-align:center} }
+    .sales-tabs{width:100%} .sales-tab{flex:1;min-width:0;min-height:44px;padding:4px 6px;text-align:center;white-space:normal;line-height:1.25} }
   .sales-wd{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
   tr.weekend .sales-wd{color:var(--accent-soft)}
   /* раскрытие дня (десктоп): строка дня кликабельна, деталь — следующий tr */
@@ -1980,7 +1980,8 @@
         <!-- честный ARIA: группа кнопок-переключателей (не tablist — без клавиатурной модели вкладок) -->
         <div class="sales-tabs" id="sales-tabs" role="group" aria-label="Канал продаж">
           <button class="sales-tab active" type="button" aria-pressed="true" data-ch="flush">Промывка</button>
-          <button class="sales-tab" type="button" aria-pressed="false" data-ch="oil">Масло · Алексей</button>
+          <button class="sales-tab" type="button" aria-pressed="false" data-ch="oil">Масло ·&nbsp;Алексей</button>
+          <button class="sales-tab" type="button" aria-pressed="false" data-ch="washer">Омывайка ·&nbsp;Бекзод</button>
         </div>
         <div class="sales-upd" id="sales-upd"></div>
       </div>
@@ -7524,11 +7525,20 @@
       oil: {
         key:"oil", person:"Алексей", opening:0, allowSpend:true, clampZero:false,
         unit:"л", // масло считаем литрами (решение владельца 2026-07-25) — count из LiveSklad и есть литры
-        data:null, ops:[], pend:[], busy:false,
+        data:null, ops:[], pend:[], busy:false, sending:false, tries:new Map(),
+      },
+      washer: {
+        key:"washer", person:"Бекзод", opening:0, allowSpend:true, clampZero:false, unit:"шт",
+        data:null, ops:[], pend:[], busy:false, sending:false, tries:new Map(),
       },
     };
+    const queuedChannels = [CH.oil, CH.washer];
+    const washerPendingPrefix = "md_washer_pending:";
     let cur = CH.flush;
-    try { if(localStorage.getItem("md_sales_ch") === "oil") cur = CH.oil; } catch(e){}
+    try {
+      const saved = localStorage.getItem("md_sales_ch");
+      if(Object.hasOwn(CH, saved)) cur = CH[saved];
+    } catch(e){}
 
     // Общий журнал получает только действующие операции, без истории исправлений и отмен.
 
@@ -7578,57 +7588,89 @@
       return ch.clampZero ? Math.max(0, pot) : pot;
     }
 
-    /* ==== Очередь операций масла (паттерн MDLOG): постоянный opId + досыл при online/загрузке;
-       сервер дедупит по opId → ретрай идемпотентен, офлайн-расход не теряется. Запись висит
-       с меткой «не сохранено», пока перечитка не увидит её в таблице (reconcile). ==== */
-    let oilSending = false;
-    const oilTries = {};
-    function sendPending(){
-      const q = CH.oil.pend;
-      if(oilSending || !q.length || !WITHDRAW_API) return;
-      oilSending = true;
+    /* Постоянный opId позволяет дослать операцию после обрыва связи. Запись подтверждает перечитка журнала. */
+    const pendingLive = p => Date.now() - parse(p.date).getTime() <= 62 * 86400000;
+    function sendPending(ch){
+      const q = ch.pend;
+      if(!ch.data || ch.sending || !q.length || !WITHDRAW_API) return;
+      ch.sending = true;
       let i = 0, sentAny = false;
       const next = () => {
         if(i >= q.length){
-          oilSending = false;
+          ch.sending = false;
           if(sentAny) setTimeout(loadOps, 2000); // после досыла — перечитка, иначе бейдж «не сохранено» залипает до перезагрузки
           return;
         }
         const p = q[i++];
-        if(!CH.oil.pend.some(o => o.id === p.id) || (oilTries[p.id] || 0) >= 3) return next();
-        if(Date.now() - parse(p.date).getTime() > 62 * 86400000) return next(); // окно дат сервера прошло — не шлём (висит как «не записано»)
+        const tries = ch.tries.get(p.id) || 0;
+        if(!ch.pend.some(o => o.id === p.id) || tries >= 3 || !pendingLive(p)) return next();
         sentAny = true;
-        oilTries[p.id] = (oilTries[p.id] || 0) + 1;
-        postChannel(WITHDRAW_API, { token: WITHDRAW_TOKEN, kind:"oil-op", opId:p.id, date:p.date, amount:p.amount, op:p.kind, note:p.note || "", time:p.time || "" },
-                    "операции масла", "oil-op")
+        ch.tries.set(p.id, tries + 1);
+        const kind = `${ch.key}-op`;
+        postChannel(WITHDRAW_API, { token:WITHDRAW_TOKEN, kind, opId:p.id, date:p.date, amount:p.amount, op:p.kind, note:p.note || "", time:p.time || "" },
+                    `операции копилки · ${ch.person}`, kind)
           .then(next)
-          .catch(() => { oilSending = false; });  // офлайн — очередь остаётся, повтор при online/загрузке
+          .catch(() => { ch.sending = false; });
       };
       next();
     }
-    window.addEventListener("online", () => { Object.keys(oilTries).forEach(k => delete oilTries[k]); loadOps(); });
-    function reconcilePending(server, ack){
-      const ids = {};
-      server.forEach(o => { if(o && o.id) ids[o.id] = 1; });
-      if(Array.isArray(ack)) ack.forEach(id => { ids[id] = 1; });
-      const left = CH.oil.pend.filter(p => !ids[p.id]);
-      if(left.length !== CH.oil.pend.length){ CH.oil.pend = left; saveLS("md_oil_pending", left); }
+    function restoreWasherPending(){
+      try {
+        const pending = [];
+        for(let i = 0; i < localStorage.length; i++){
+          const key = localStorage.key(i);
+          if(!key?.startsWith(washerPendingPrefix)) continue;
+          try {
+            const op = JSON.parse(localStorage.getItem(key));
+            if(typeof op?.id === "string" && key === washerPendingPrefix + op.id) pending.push(op);
+          } catch(e){}
+        }
+        CH.washer.pend = pending.sort((a, b) => (Number(a.at) || 0) - (Number(b.at) || 0));
+      } catch(e){}
     }
-    function enqueueOp(kind, amount, note){
-      if(!currentSnapshot()) return false;
+    window.addEventListener("online", () => {
+      restoreWasherPending();
+      queuedChannels.forEach(ch => ch.tries.clear());
+      loadOps();
+    });
+    function reconcilePending(ch, ack){
+      const ids = new Set(Array.isArray(ack) ? ack : []);
+      ch.ops.forEach(o => { if(o?.id) ids.add(o.id); });
+      const left = ch.pend.filter(p => !ids.has(p.id));
+      if(left.length !== ch.pend.length){
+        ch.pend.forEach(p => {
+          if(!ids.has(p.id)) return;
+          ch.tries.delete(p.id);
+          if(ch === CH.washer){
+            try { localStorage.removeItem(washerPendingPrefix + p.id); } catch(e){}
+          }
+        });
+        ch.pend = left;
+        if(ch === CH.oil) saveLS("md_oil_pending", left);
+      }
+    }
+    function enqueueOp(ch, kind, amount, note){
+      if(!currentSnapshot() || !ch.data) return false;
       // финансовая очередь падает ГРОМКО: при переполнении отказываем в новой записи,
       // а не выталкиваем молча старую недоставленную (это была бы тихая потеря денег)
-      if(CH.oil.pend.length >= 20){
+      if(ch.pend.length >= 20){
         alert("Уже 20 операций ждут отправки — эта НЕ записана.\nПроверь интернет, дождись отправки и повтори. Не уходит долго — сообщи владельцу.");
         return false;
       }
-      const [date, time] = salesClock.format(new Date()).split(" ");
+      const now = new Date();
+      const [date, time] = salesClock.format(now).split(" ");
       const op = { id:newOpId(), date, time, amount, kind, note:note || "" };
-      CH.oil.pend.push(op);
-      saveLS("md_oil_pending", CH.oil.pend);
-      oilRecheck = 0;
+      if(ch === CH.washer){
+        // Отдельный ключ не даёт двум вкладкам перезаписать очередь друг друга.
+        op.at = now.getTime();
+        try { localStorage.setItem(washerPendingPrefix + op.id, JSON.stringify(op)); }
+        catch(e){ alert("Не удалось сохранить операцию на устройстве. Проверь, разрешено ли браузеру хранить данные сайта, и повтори."); return false; }
+      }
+      ch.pend.push(op);
+      if(ch === CH.oil) saveLS("md_oil_pending", ch.pend);
+      queueRecheck = 0;
       render();
-      sendPending();
+      sendPending(ch);
       setTimeout(loadOps, 1800);   // подтверждение — перечиткой (no-cors ответ непрозрачен)
       return true;
     }
@@ -7645,34 +7687,50 @@
         withdrawals:data.withdrawals.filter(inPeriod), oilOps:data.oilOps.filter(inPeriod),
         sales:{ ...sales(data.sales), oil:{ ...sales(oil), names:oil.names, active:oil.active } },
       };
+      if(Array.isArray(data.sales.washer?.days) && Number.isFinite(data.opening.washer) && Array.isArray(data.washerOps)){
+        snapshot.sales.washer = sales(data.sales.washer);
+        snapshot.opening.washer = data.opening.washer;
+        snapshot.washerOps = data.washerOps.filter(inPeriod);
+      }
       CH.flush.data = snapshot.sales;
       CH.oil.data = snapshot.sales.oil;
       CH.flush.ops = snapshot.withdrawals;
       CH.oil.ops = snapshot.oilOps;
       CH.flush.opening = snapshot.opening.flush;
       CH.oil.opening = snapshot.opening.oil;
+      CH.washer.data = snapshot.sales.washer || null;
+      CH.washer.ops = snapshot.washerOps || [];
+      CH.washer.opening = snapshot.opening.washer ?? 0;
       saveLS(salesCache, snapshot);
       return true;
     }
 
     // Остаток, продажи и операции применяем одним снимком.
-    let oilRecheck = 0, lastRequest = 0, lastApplied = 0;
+    let queueRecheck = 0, lastRequest = 0, lastApplied = 0;
     function loadOps(){
       if(!WITHDRAW_API) return;
       const request = ++lastRequest;
-      const pending = CH.oil.pend.map(o => String(o?.id || ""))
-        .filter(id => id && id.length <= 60 && !id.includes(",")).slice(0, 20);
-      const ack = pending.length ? "&oilPending=" + encodeURIComponent(pending.join(",")) : "";
+      const ack = queuedChannels.map(ch => {
+        const pending = ch.pend.map(o => String(o?.id || ""))
+          .filter(id => id && id.length <= 60 && !id.includes(",")).slice(0, 20);
+        return pending.length ? `&${ch.key}Pending=${encodeURIComponent(pending.join(","))}` : "";
+      }).join("");
       jsonpChannel(WITHDRAW_API + "?token=" + encodeURIComponent(SHEET_TOKEN) + ack,
                    "продажи и копилка", "withdraw", data => {
         if(request < lastApplied || !applySnapshot(data)) return;
         lastApplied = request;
-        reconcilePending(snapshot.oilOps, data.oilAck);
-        sendPending(); // сначала подтверждение GET, потом досыл: отменённое не отправляем заново
-        const live = CH.oil.pend.some(p => Date.now() - parse(p.date).getTime() <= 62 * 86400000);
-        if(live && oilRecheck < 2){ oilRecheck++; setTimeout(loadOps, 7000); }
-        else if(!CH.oil.pend.length) oilRecheck = 0;
+        const rejected = CH.washer.data && Array.isArray(data.washerRejected) &&
+          CH.washer.pend.some(p => data.washerRejected.includes(p.id));
+        for(const ch of queuedChannels){
+          if(!ch.data) continue;
+          reconcilePending(ch, data[`${ch.key}Ack`]);
+          sendPending(ch);
+        }
+        const live = queuedChannels.some(ch => ch.data && ch.pend.some(pendingLive));
+        if(live && queueRecheck < 2){ queueRecheck++; setTimeout(loadOps, 7000); }
+        else if(!live) queueRecheck = 0;
         render();
+        if(rejected) alert("Вывод из копилки Бекзода не записан: суммы к выводу уже не хватает. Проверь остаток и попробуй ещё раз.");
       });
     }
 
@@ -7696,7 +7754,7 @@
     // остаток показываем сразу (оптимистично), сохранение — фоном
     function doWithdraw(pot){
       const ch = cur;
-      if(pot <= 0 || !currentSnapshot()) return;
+      if(pot <= 0 || !currentSnapshot() || !ch.data) return;
       if(ch.busy) return;                    // вывод уже отправляется → повторный клик/гонку игнорируем (Р5.1)
       if(!WITHDRAW_API){ alert("Копилка ещё не подключена к таблице."); return; }
       // Отмена (Cancel) на ЛЮБОМ шаге = полная отмена без записи.
@@ -7712,16 +7770,15 @@
       // больше копилки не выводим: у «Промывки» минуса не бывает (clampZero) — лишнее растворилось бы
       // в нуле, и экран разошёлся бы с таблицей молча
       if(amount > pot){ alert("В копилке только " + money(pot) + " — вывести больше нельзя. Вывод не отмечен."); return; }
-      // потолок сервера один на оба канала: раньше проверяли только масло, но и вывод «Промывки»
-      // выше него бэкенд отклоняет молча (no-cors). Теперь сумму можно разделить на части.
+      // Лимит на вывод общий. Более крупную сумму можно записать частями.
       if(amount > WD_MAX){ alert("Больше " + money(WD_MAX) + " одним выводом записать нельзя. Раздели на части или напиши владельцу."); return; }
       const rest = pot - amount;
       if(!confirm("Отметить вывод " + money(amount) + (ch.person ? " (" + ch.person + ")" : "") + "?\n" +
                   (rest > 0 ? "В копилке останется " + money(rest) + "." : "Копилка обнулится."))) return;
       if(!currentSnapshot()){ checkSalesPeriod(); return; }
       ch.busy = true;                        // с этого момента до реконсиляции повторный вывод заблокирован
-      if(ch.key === "oil"){
-        if(!enqueueOp("wd", amount, "")){ ch.busy = false; return; } // очередь переполнена — отказ уже показан
+      if(ch.key !== "flush"){
+        if(!enqueueOp(ch, "wd", amount, "")){ ch.busy = false; return; }
         setTimeout(() => { ch.busy = false; }, 1600);
         return;
       }
@@ -7739,11 +7796,11 @@
         .finally(() => setTimeout(() => { ch.busy = false; }, 1600)); // окно debounce: гасит двойной клик, затем снова можно
     }
 
-    // «Внести расход» (только масло): сумма → комментарий → подтверждение → очередь.
+    // «Внести расход»: сумма → комментарий → подтверждение → очередь.
     // Отмена (Cancel) на ЛЮБОМ шаге = полная отмена без записи.
     function doSpend(){
       const ch = cur;
-      if(!ch.allowSpend || !currentSnapshot()) return;
+      if(!ch.allowSpend || !currentSnapshot() || !ch.data) return;
       let s = prompt("Расход из копилки: сколько взял, ₽?\nНапример: 3500");
       if(s === null) return;
       let amount = parseAmount(s);
@@ -7754,12 +7811,12 @@
         if(!(amount > 0)){ alert("Сумму разобрать не получилось — расход не записан."); return; }
       }
       if(amount > SPEND_MAX){ alert("Больше " + money(SPEND_MAX) + " одним расходом записать нельзя. Раздели на части или напиши владельцу."); return; }
-      let note = prompt("На что потратил? Коротко, без имён и телефонов клиентов.\nНапример: масло 5W-30. Можно оставить пустым.");
+      let note = prompt("На что потратил? Коротко, без имён и телефонов клиентов. Можно оставить пустым.");
       if(note === null) return;
       note = note.trim().slice(0, 80);
       const over = amount > potOf(ch) ? "\n\nВнимание: расход больше копилки — «К выводу» уйдёт в минус." : "";
       if(!confirm("Записать расход " + money(amount) + (note ? " — «" + note + "»" : "") + "?\nСумма спишется из «К выводу»." + over)) return;
-      enqueueOp("spend", amount, note);
+      enqueueOp(ch, "spend", amount, note);
     }
 
     // метка операции из очереди: «не сохранено» уйдёт после подтверждения таблицей;
@@ -7802,7 +7859,7 @@
         b.setAttribute("aria-pressed", act ? "true" : "false");
       });
 
-      const ready = currentSnapshot();
+      const ready = currentSnapshot() && ch.data !== null;
       const days = ready ? chanDays(ch) : [];
       const allOps = ready ? chanOps(ch) : [];
       const ops = ready ? allOps.filter(o => o.date.slice(0, 7) === snapshot.period) : [];
@@ -7940,7 +7997,11 @@
     });
 
     // Старые ключи содержали архив. Офлайн-очередь денег живёт отдельно и переживает смену месяца.
-    try { const c = JSON.parse(localStorage.getItem("md_oil_pending") || "null"); if(Array.isArray(c)) CH.oil.pend = c; } catch(e){}
+    try {
+      const pending = JSON.parse(localStorage.getItem("md_oil_pending") || "null");
+      if(Array.isArray(pending)) CH.oil.pend = pending;
+    } catch(e){}
+    restoreWasherPending();
     try {
       ["md_sales_flush", "md_sales_oil", "md_withdrawals", "md_oil_ops", "md_opening", "md_oil_connected"]
         .forEach(k => localStorage.removeItem(k));
@@ -7951,8 +8012,7 @@
     const checkVisibleSales = () => { if(!document.hidden && !pageEl.hidden) checkSalesPeriod(); };
     document.addEventListener("visibilitychange", checkVisibleSales);
     setInterval(checkVisibleSales, 60000);
-    deferInitialLoad(["prodazhi"], loadOps, CH.oil.pend.length > 0);
-    // Досыл масла запускает успешный loadOps, после проверки обработанных id.
+    deferInitialLoad(["prodazhi"], loadOps, queuedChannels.some(ch => ch.pend.length > 0));
   })();
 
   /* ===================== ЯМА — журнал работ и доля мастеров =====================
@@ -12023,7 +12083,7 @@
     to:       { t:"Расчёт ТО",       r:"Двигатель → масло, фильтры и работы · копируй и отправляй" },
     tseny:    { t:"Цены",            r:"Запчасти и масла · поиск по названию и артикулу" },
     komplekty:{ t:"Комплекты",       r:"Найдите готовый набор или соберите предложение клиенту" },
-    prodazhi: { t:"Продажи",         r:"Присадки и масло · выручка и копилки по дням" },
+    prodazhi: { t:"Продажи",         r:"Копилки и заказы по дням" },
     yama:     { t:"Яма",             r:"Работы по машинам · итог дня и доля мастеров" },
     shtrafy:  { t:"Штрафы",          r:"Дисциплина команды · кто, за что и сколько" },
     zarplaty: { t:"Зарплаты",        r:"Оклады и выдачи по каждому сотруднику" },
