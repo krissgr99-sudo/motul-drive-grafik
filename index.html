@@ -2666,6 +2666,7 @@
   };
   // цена строки-масла = ставка × объём, округлённая до рубля
   const perL = (rate, litres) => Math.round(rate * litres);
+  const DCTF_TRANSFER_RATE = 3000;  // Motul Multi DCTF для раздатки, ₽/л
 
   // 1) Позиции прайса: ключ → [название, цена ₽, артикул?]. Цены живут только здесь.
   //    Масла считаются из RATES (perL). Работы/фильтры — числом (одна строка = один источник).
@@ -2727,15 +2728,15 @@
     kit_diff_orig_lock: ["Оригинальное трансмиссионное масло BMW G OIL (в мосты, 4 шт)", 23000],                          // блокировка: 2×6500 (LSD) + 2×5000
     // BMW «только задний мост» (блок DIFFS_KIT_REAR): Motul 1 л по ставке; оригинал — bmw_g_oil.
     kit_rear_motul:     ["Трансмиссионное масло Motul Gear 300 75W90 105777 1л (задний дифференциал)", perL(RATES.gear300, 1), "105777"], // 4500
-    // Range Rover ZF 8HP (блоки DIFFS_KIT_LR): по целым литрам, одно масло в разных узлах — из общих бутылок
-    // (решение владельца 21.10.2026). Литры по узлам — документ «Шаблоны ответов»: раздатка односкоростная
-    // DCTF 0,75 / LR048849, двухскоростная LS 1,2 / LR019727; зад с блокировкой LS 1,2 / LR019727,
-    // без — Gear 300 0,8 / TYK500010; перед — Gear 300 0,5 / TYK500010. Motul Gear 300 2 л и DCTF 1 л — как у BMW.
+    // Range Rover: Motul по объёму заправки, оригинал целыми литровыми бутылками.
+    // Одно масло для двух узлов объединено в строку: Gear 300 — 0,5 + 0,8 л, Gear 300 LS — 1,2 + 1,2 л.
     filter_zf_rr:            ["Оригинальный Фильтр-поддон ZF для Range Rover", 9000],   // с маслом ZF 5 л — 20 000, номера в документе нет
-    kit_lr_motul_front:      ["Трансмиссионное масло Motul Gear 300 75W90 105777 1л (передний дифференциал)", perL(RATES.gear300, 1), "105777"],    // 4500
-    kit_lr_motul_ls_rear2:   ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 2л (задний дифференциал)", perL(RATES.gear300_ls, 2), "105778"], // 11000
-    kit_lr_motul_ls_transf2: ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 2л (раздаточная коробка)", perL(RATES.gear300_ls, 2), "105778"], // 11000
-    kit_lr_motul_ls_3:       ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 3л (задний дифференциал и раздаточная коробка)", perL(RATES.gear300_ls, 3), "105778"], // 16500
+    kit_lr_motul_front:      ["Трансмиссионное масло Motul Gear 300 75W90 105777 0,5 л (передний дифференциал)", perL(RATES.gear300, 0.5), "105777"],
+    kit_lr_motul_axles:      ["Трансмиссионное масло Motul Gear 300 75W90 105777 1,3 л (передний и задний дифференциалы)", perL(RATES.gear300, 1.3), "105777"],
+    kit_lr_motul_ls_rear:    ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 1,2 л (задний дифференциал)", perL(RATES.gear300_ls, 1.2), "105778"],
+    kit_lr_motul_ls_transf:  ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 1,2 л (раздаточная коробка)", perL(RATES.gear300_ls, 1.2), "105778"],
+    kit_lr_motul_ls_both:    ["Трансмиссионное масло Motul Gear 300 LS 75W90 105778 2,4 л (задний дифференциал и раздаточная коробка)", perL(RATES.gear300_ls, 2.4), "105778"],
+    kit_lr_motul_dctf:       ["Трансмиссионное масло Motul Multi DCTF 105786 0,75 л (раздаточная коробка)", perL(DCTF_TRANSFER_RATE, 0.75), "105786"],
     kit_lr_tyk_1:            ["Оригинальное трансмиссионное масло Land Rover TYK500010 1л (передний дифференциал)", perL(RATES.lr_oil, 1), "TYK500010"],
     kit_lr_tyk_2:            ["Оригинальное трансмиссионное масло Land Rover TYK500010 2л (передний и задний дифференциал)", perL(RATES.lr_oil, 2), "TYK500010"],
     kit_lr_048849_1:         ["Оригинальное трансмиссионное масло Land Rover LR048849 (Shell TF0870) 1л (раздаточная коробка)", perL(RATES.lr_oil, 1), "LR048849"],
@@ -2772,7 +2773,7 @@
     // (в услуге у Motul своя строка 0.6 л — diff_oil_transf). Правило «считаем литр»: заправка 0.6 л,
     // но берём за целый литр, остаток клиенту. Цены плоские (не по ставке RATES).
     // Отдельной услуги «только раздатка» нет (→ decisions/2026-09-21-bez-otdelnoj-uslugi-razdatki.md).
-    transfer_oil_motul: ["Трансмиссионное масло Motul Multi DCTF 105786 1л", 3000, "105786"],  // не по ставке: считаем литр, 3000/л
+    transfer_oil_motul: ["Трансмиссионное масло Motul Multi DCTF 105786 1л", DCTF_TRANSFER_RATE, "105786"],
     transfer_oil_dtf1:  ["Оригинальное трансмиссионное масло BMW DTF-1 1л", 5500],   // не по ставке: оригинал, 5500/л
     // Aisin 8F22 (BMW X1 F48)
     oil_motul_11:    ["Трансмиссионное масло Motul ATF6 105774 11л", perL(RATES.motul_atf6, 11), "105774"],
@@ -3138,7 +3139,7 @@
       "oil_cvtf_12", "oil_hf_1", "oil_kia_sp4_11",
       "kit_diff_motul_ls", "kit_diff_motul_reg",   // масла комплекта-с-блокировкой — по ставкам gear300_ls/gear300
       // (первая сверка 09.07.2026)
-      "transfer_oil_motul", "transfer_oil_dtf1",
+      "transfer_oil_motul", "transfer_oil_dtf1", "kit_lr_motul_dctf",
       // (первая сверка 10.07.2026)
       "diffs_motul_nolock", "diffs_orig_nolock", "diffs_motul_lock", "diffs_orig_lock", "axles_x1_motul", "axles_torsen_motul",
       "axles_torsen_orig_g055", "axles_torsen_orig_g060",
@@ -3222,10 +3223,8 @@
     "2026-10-20": ["to_work_air2", "to_work_cabin2", "plug_bmw_9664", "plug_bmw_5258", "plug_bmw_7704",
                    "plug_bmw_4ef60", "plug_bosch_5541", "plug_bosch_5555", "plug_ngk_90654",
                    "glow_bosch_3001", "glow_bosch_3006", "glow_denso_665", "to_work_plug"],
-    // Range Rover: бутылка оригинала 7 000, поддон 9 000 (= 20 000 − масло ZF 5 л) и итоги мостов/раздатки по целым
-    // литрам — владелец выбрал в чате 21.10.2026.
-    "2026-10-21": ["lr_oil", "filter_zf_rr", "kit_lr_motul_front", "kit_lr_motul_ls_rear2", "kit_lr_motul_ls_transf2",
-                   "kit_lr_motul_ls_3", "kit_lr_tyk_1", "kit_lr_tyk_2", "kit_lr_048849_1", "kit_lr_019727_rear2",
+    // Range Rover: оригинал Land Rover целыми бутылками и поддон — цены от владельца.
+    "2026-10-21": ["lr_oil", "filter_zf_rr", "kit_lr_tyk_1", "kit_lr_tyk_2", "kit_lr_048849_1", "kit_lr_019727_rear2",
                    "kit_lr_019727_transf2", "kit_lr_019727_3",
                    // Santa Fe: DCTF 2 л за 4000 — выбор владельца в чате
                    "oil_dctf_2_sf",
@@ -3240,6 +3239,8 @@
     "2026-10-29": ["motul_multiatf", "oil_multiatf_14", "bardahl", "filter_lt1158", "work_full_pilot5"],
     // ZF 8HP по 2 500 ₽/л — свежий прайс DRIVE2, цена подтверждена владельцем в чате.
     "2026-11-04": ["zf8hp", "oil_zf_12", "oil_zf_5", "oil_zf_13", "oil_zf8hp_12", "oil_zf8hp_6", "oil_zf_4", "oil_zf_10"],
+    // Range Rover: ставки Gear 300 и Gear 300 LS из сметы владельца на розлив.
+    "2026-11-17": ["kit_lr_motul_front", "kit_lr_motul_axles", "kit_lr_motul_ls_rear", "kit_lr_motul_ls_transf", "kit_lr_motul_ls_both"],
   };
   // плоская карта ключ→дата (строится один раз из CHECKED_ON)
   const CHECKED = Object.fromEntries(Object.entries(CHECKED_ON).flatMap(([d,ks]) => ks.map(k => [k, d])));
@@ -3344,8 +3345,7 @@
     ],
   };
   // 2.0.4) Range Rover ZF 8HP — четыре сочетания раздатки (одно-/двухскоростная) и заднего моста (без/с блокировкой).
-  //        Шапка и примечание общие, состав — по таблице владельца (21.10.2026), цены — в PRICE.
-  //        Итого Motul / оригинал Land Rover: 12000 / 21000, 18500 / 28000, 20000 / 28000, 21000 / 28000.
+  //        Шапка и примечание общие, масла и цены — в PRICE.
   const diffsKitLr = (motul, lr) => ({
     head:  "Также можем предложить масло для переднего, заднего дифференциала и раздаточной коробки.",
     intro: "2 варианта:",
@@ -3356,15 +3356,13 @@
     ],
   });
   const DIFFS_KIT_LR = {
-    oneSpeedOpen: diffsKitLr(["kit_diff_motul", "transfer_oil_motul"], ["kit_lr_tyk_2", "kit_lr_048849_1"]),
-    oneSpeedLock: diffsKitLr(["kit_lr_motul_front", "kit_lr_motul_ls_rear2", "transfer_oil_motul"],
+    oneSpeedOpen: diffsKitLr(["kit_lr_motul_axles", "kit_lr_motul_dctf"], ["kit_lr_tyk_2", "kit_lr_048849_1"]),
+    oneSpeedLock: diffsKitLr(["kit_lr_motul_front", "kit_lr_motul_ls_rear", "kit_lr_motul_dctf"],
                              ["kit_lr_tyk_1", "kit_lr_019727_rear2", "kit_lr_048849_1"]),
-    twoSpeedOpen: diffsKitLr(["kit_diff_motul", "kit_lr_motul_ls_transf2"], ["kit_lr_tyk_2", "kit_lr_019727_transf2"]),
-    twoSpeedLock: diffsKitLr(["kit_lr_motul_front", "kit_lr_motul_ls_3"], ["kit_lr_tyk_1", "kit_lr_019727_3"]),
+    twoSpeedOpen: diffsKitLr(["kit_lr_motul_axles", "kit_lr_motul_ls_transf"], ["kit_lr_tyk_2", "kit_lr_019727_transf2"]),
+    twoSpeedLock: diffsKitLr(["kit_lr_motul_front", "kit_lr_motul_ls_both"], ["kit_lr_tyk_1", "kit_lr_019727_3"]),
   };
-  // 2.0.5) Range Rover в «Шаблонах» — УСЛУГА: масла те же, что в комплектах (DIFFS_KIT_LR, целые литры),
-  //        плюс замена в каждом узле, шапка — как у BMW (DIFFS_REGULAR). Состав руками не повторяем.
-  //        Итого Motul / оригинал Land Rover: 15000 / 24000, 21500 / 31000, 23000 / 31000, 24000 / 31000.
+  // 2.0.5) Range Rover в «Шаблонах» — масла из DIFFS_KIT_LR плюс замена в каждом узле.
   const DIFFS_LR = Object.fromEntries(Object.entries(DIFFS_KIT_LR).map(([combo, kit]) => [combo, {
     head: DIFFS_REGULAR.head, intro: DIFFS_REGULAR.intro, note: DIFFS_REGULAR.note,
     variants: kit.variants.map((v, i) => ({ label: ["Motul:", "Оригинал Land Rover:"][i],
