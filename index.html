@@ -7527,21 +7527,21 @@
     /* Канал — параметр рендера. opening приходит с перенесённым остатком. */
     const CH = {
       flush: {
-        key:"flush", person:null, opening:0, allowSpend:false, clampZero:true, unit:"шт",
-        data:null, ops:[], pend:[], busy:false,
+        key:"flush", person:null, opening:0, unit:"шт",
+        data:null, ops:[], pend:[], busy:false, sending:false, tries:new Map(),
       },
       oil: {
-        key:"oil", person:"Алексей", opening:0, allowSpend:true, clampZero:false,
+        key:"oil", person:"Алексей", opening:0,
         unit:"л", // масло считаем литрами (решение владельца 2026-07-25) — count из LiveSklad и есть литры
         data:null, ops:[], pend:[], busy:false, sending:false, tries:new Map(),
       },
       washer: {
-        key:"washer", person:"Бекзод", opening:0, allowSpend:true, clampZero:false, unit:"шт",
+        key:"washer", person:"Бекзод", opening:0, unit:"шт",
         data:null, ops:[], pend:[], busy:false, sending:false, tries:new Map(),
       },
     };
-    const queuedChannels = [CH.oil, CH.washer];
-    const washerPendingPrefix = "md_washer_pending:";
+    const queuedChannels = [CH.flush, CH.oil, CH.washer];
+    const pendingPrefix = ch => `md_${ch.key}_pending:`;
     let cur = CH.flush;
     try {
       const saved = localStorage.getItem("md_sales_ch");
@@ -7587,13 +7587,10 @@
           sum: orders.reduce((s,o)=>s+(Number(o[2])||0), 0) };
       }).filter(d => !isNaN(d.dt.getTime()));
     }
-    // «к выводу»: перенесённый остаток + продажи месяца − выводы − расходы; у промывки минуса не бывает
-    // (clampZero). Целые рубли (Math.round): сервер округляет сумму oil-op — без клиентского округления
-    // дробные копейки розлива давали бы ложный минус −0,5 ₽ после перечитки.
+    // Перенесённый остаток + продажи месяца − выводы − расходы, с округлением до целых рублей.
     function potOf(ch, days = chanDays(ch), ops = chanOps(ch)){
       const grand = days.reduce((s,d)=>s+d.sum, 0);
-      const pot = Math.round(ch.opening + grand - ops.reduce((s,o)=> s + opAmt(o), 0));
-      return ch.clampZero ? Math.max(0, pot) : pot;
+      return Math.round(ch.opening + grand - ops.reduce((s,o)=> s + opAmt(o), 0));
     }
 
     /* Постоянный opId позволяет дослать операцию после обрыва связи. Запись подтверждает перечитка журнала. */
@@ -7622,22 +7619,24 @@
       };
       next();
     }
-    function restoreWasherPending(){
+    function restorePending(ch){
       try {
+        const prefix = pendingPrefix(ch);
         const pending = [];
         for(let i = 0; i < localStorage.length; i++){
           const key = localStorage.key(i);
-          if(!key?.startsWith(washerPendingPrefix)) continue;
+          if(!key?.startsWith(prefix)) continue;
           try {
             const op = JSON.parse(localStorage.getItem(key));
-            if(typeof op?.id === "string" && key === washerPendingPrefix + op.id) pending.push(op);
+            if(typeof op?.id === "string" && key === prefix + op.id) pending.push(op);
           } catch(e){}
         }
-        CH.washer.pend = pending.sort((a, b) => (Number(a.at) || 0) - (Number(b.at) || 0));
+        ch.pend = pending.sort((a, b) => (Number(a.at) || 0) - (Number(b.at) || 0));
       } catch(e){}
     }
     window.addEventListener("online", () => {
-      restoreWasherPending();
+      restorePending(CH.flush);
+      restorePending(CH.washer);
       queuedChannels.forEach(ch => ch.tries.clear());
       loadOps();
     });
@@ -7649,8 +7648,8 @@
         ch.pend.forEach(p => {
           if(!ids.has(p.id)) return;
           ch.tries.delete(p.id);
-          if(ch === CH.washer){
-            try { localStorage.removeItem(washerPendingPrefix + p.id); } catch(e){}
+          if(ch !== CH.oil){
+            try { localStorage.removeItem(pendingPrefix(ch) + p.id); } catch(e){}
           }
         });
         ch.pend = left;
@@ -7668,10 +7667,10 @@
       const now = new Date();
       const [date, time] = salesClock.format(now).split(" ");
       const op = { id:newOpId(), date, time, amount, kind, note:note || "" };
-      if(ch === CH.washer){
+      if(ch !== CH.oil){
         // Отдельный ключ не даёт двум вкладкам перезаписать очередь друг друга.
         op.at = now.getTime();
-        try { localStorage.setItem(washerPendingPrefix + op.id, JSON.stringify(op)); }
+        try { localStorage.setItem(pendingPrefix(ch) + op.id, JSON.stringify(op)); }
         catch(e){ alert("Не удалось сохранить операцию на устройстве. Проверь, разрешено ли браузеру хранить данные сайта, и повтори."); return false; }
       }
       ch.pend.push(op);
@@ -7775,8 +7774,7 @@
         amount = parseAmount(s);
         if(!(amount > 0)){ alert("Сумму разобрать не получилось — вывод не отмечен."); return; }
       }
-      // больше копилки не выводим: у «Промывки» минуса не бывает (clampZero) — лишнее растворилось бы
-      // в нуле, и экран разошёлся бы с таблицей молча
+      // Отрицательный остаток допускается при записи расхода.
       if(amount > pot){ alert("В копилке только " + money(pot) + " — вывести больше нельзя. Вывод не отмечен."); return; }
       // Лимит на вывод общий. Более крупную сумму можно записать частями.
       if(amount > WD_MAX){ alert("Больше " + money(WD_MAX) + " одним выводом записать нельзя. Раздели на части или напиши владельцу."); return; }
@@ -7808,7 +7806,7 @@
     // Отмена (Cancel) на ЛЮБОМ шаге = полная отмена без записи.
     function doSpend(){
       const ch = cur;
-      if(!ch.allowSpend || !currentSnapshot() || !ch.data) return;
+      if(!currentSnapshot() || !ch.data) return;
       let s = prompt("Расход из копилки: сколько взял, ₽?\nНапример: 3500");
       if(s === null) return;
       let amount = parseAmount(s);
@@ -7884,7 +7882,7 @@
         const kopWarn = pot < 0 ? `<div class="kopilka-warnline">${ICO.warn} Расходы больше продаж — минус закроется следующими продажами.</div>` : "";
         const wdBtn = pot > 0 ? `<button class="kopilka-btn" type="button" data-act="wd" data-pot="${pot}">${ICO.cash} Отметить вывод</button>`
           : (pot === 0 ? `<span class="kopilka-btn is-disabled">Копилка пуста</span>` : "");
-        const spendBtn = ch.allowSpend ? `<button class="kopilka-btn ghost" type="button" data-act="spend">${ICO.box} Внести расход</button>` : "";
+        const spendBtn = `<button class="kopilka-btn ghost" type="button" data-act="spend">${ICO.box} Внести расход</button>`;
         kopEl.className = "kopilka" + (pot === 0 ? " empty" : ""); // минус ≠ пусто: сумма остаётся в --text (.neg), не в muted
         kopEl.innerHTML = `<div class="kopilka-main"><div class="kopilka-k">К выводу на сегодня${ch.person ? " · " + ch.person : ""}</div><div class="kopilka-v${pot < 0 ? " neg" : ""}"><span class="num" data-to="${pot}" data-fmt="money">${money(pot)}</span></div><div class="kopilka-sub">${kopSub}</div>${kopWarn}</div><div class="kopilka-btns">${wdBtn}${spendBtn}</div>`;
       }
@@ -8009,7 +8007,8 @@
       const pending = JSON.parse(localStorage.getItem("md_oil_pending") || "null");
       if(Array.isArray(pending)) CH.oil.pend = pending;
     } catch(e){}
-    restoreWasherPending();
+    restorePending(CH.flush);
+    restorePending(CH.washer);
     try {
       ["md_sales_flush", "md_sales_oil", "md_withdrawals", "md_oil_ops", "md_opening", "md_oil_connected"]
         .forEach(k => localStorage.removeItem(k));
